@@ -21,6 +21,7 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          fetch-depth: 0
           persist-credentials: false
       - name: 配置 Java
         uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
@@ -37,7 +38,9 @@ jobs:
         with:
           packages: 'platform-tools platforms;android-37.0 build-tools;37.0.0'
       - name: 检查差异格式
-        run: git show --format= --check HEAD
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || 'HEAD^' }}
+        run: git diff --check "$BASE_SHA" HEAD
       - name: 执行 Lint 与 debug/release 构建
         run: |
           set -euo pipefail
