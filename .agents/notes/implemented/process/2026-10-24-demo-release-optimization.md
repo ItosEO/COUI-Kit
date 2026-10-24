@@ -21,6 +21,8 @@ Demo release 未启用代码与资源优化，未使用内容会进入最终 App
 
 ## Consequences
 
+[Demo 固定签名与 CI](2026-10-25-demo-signing-ci.md) 扩展签名配置并通过真实构建验证优化链，保留本篇的 R8 配置与未预混淆库边界。
+
 release 可以裁剪未使用的组件、图标和资源，并优化已用调用链。调试 release 堆栈需要保留该次构建的 mapping，实际体积和运行效果以用户构建结果为准。
 
 静态验证核对当前 AGP 的 Optimization/ApplicationBuildType API、内部代码与资源开关合并、默认规则装配、无禁用优化属性和无宽泛保留规则。未运行 Gradle 分析任务、Android 构建或设备测试，未产生 R8 分析报告或体积数据。

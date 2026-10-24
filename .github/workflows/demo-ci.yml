@@ -71,8 +71,11 @@ jobs:
             "-PdemoVersionCode=$DEMO_VERSION_CODE" \
             "-PdemoVersionNameSuffix=-ci.$DEMO_VERSION_CODE.$DEMO_COMMIT" \
             2>&1 | tee "$RUNNER_TEMP/coui-demo-build.log"
-      - name: 验证 APK 签名
-        run: '"$ANDROID_HOME/build-tools/37.0.0/apksigner" verify --verbose --print-certs demo/build/outputs/apk/release/demo-release.apk'
+      - name: 验证 APK 签名与 mapping
+        run: |
+          set -euo pipefail
+          test -s demo/build/outputs/mapping/release/mapping.txt
+          "$ANDROID_HOME/build-tools/37.0.0/apksigner" verify --verbose --print-certs demo/build/outputs/apk/release/demo-release.apk
       - name: 上传 APK 与 mapping
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
