@@ -2,22 +2,29 @@ name: 校验开发笔记
 
 on:
   pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: notes-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify-notes:
     name: 校验 Note 目录、格式与归档
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: 配置 Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
       - name: 执行静态校验

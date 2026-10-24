@@ -20,3 +20,5 @@
 组件及效果的新增、重命名、移除、参数语义、平台要求或装配方式变化，必须同步普通使用文档。PR 需要列出所改文档；没有使用影响时说明原因。只写 Note 或修改 Demo 不能替代使用文档。
 
 验证方式见[验证与评审](docs/development/validation.md)。构建与设备操作按当前任务授权执行，填写实际结果。
+
+指向 main 的 PR 自动执行 Note、Lint 和 Demo debug/release 构建，不运行单测，不需要固定签名凭据。失败时查看 Actions 诊断，修复后再请求合并。Demo 的按需打包与附件下载见 [CI 指南](docs/development/ci.md)。自动检查成功不替代维护者审核或原厂效果验收。

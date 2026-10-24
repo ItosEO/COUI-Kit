@@ -96,11 +96,13 @@ internal fun couiMenuMaterial(
             if (target != null && target.isAttached && size.width > 0f && size.height > 0f &&
                 scaleX > 0f && scaleY > 0f && translation.isFinite
             ) {
-                edge?.let { backgroundLayer.renderEffect = it.renderEffect(size, density.density) }
+                if (Build.VERSION.SDK_INT >= 33) {
+                    edge?.let { backgroundLayer.renderEffect = it.renderEffect(size, density.density) }
+                }
                 backgroundLayer.record(
                     size = IntSize(size.width.toInt() + blurPadding * 2, size.height.toInt() + blurPadding * 2),
                 ) {
-                    if (blurredBackdrop != null) {
+                    if (Build.VERSION.SDK_INT >= 33 && blurredBackdrop != null) {
                         blurredBackdrop.draw(this, target)
                     } else {
                         drawRect(surface)

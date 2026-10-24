@@ -11,6 +11,7 @@
 | 公开入口、单位、资源与 API 变更          | [API 设计](api-design.md)                |
 | 新增或修改 component / effect 文档 | [文档维护](documentation.md)               |
 | 对照、检查、设备验收与诊断               | [验证与评审](validation.md)                 |
+| Demo 打包、固定测试签名、PR 检查与失败诊断 | [CI 与 PR 检查](ci.md)                     |
 
 使用者入口为[快速开始](../guide/getting-started.md)、[组件](../components/README.md)和[效果](../effects/README.md)。开发文档解释如何维护实现，使用文档解释如何调用接口。
 

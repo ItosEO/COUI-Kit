@@ -28,7 +28,7 @@ ChipTab 案例链接到[输入中断记录](../bug-fix/2026-10-24-chip-scroll-in
 
 Skill 要求 Note 正文使用简体中文，确无真实备选时允许在备选节写“无”，每次修改 Note 后执行校验。校验器兼容尖括号链接、额外中文节名，并排除归档目录根部的 AGENTS；看板保留多段章节内容，同日按稳定 id 排序，抽屉打开时锁定背景并重置内容滚动。
 
-PR 模板要求官方依据、API 影响、Note、实际检查和待验收项；变更通过功能分支与 PR 进入 main。CI 使用 Node 类型擦除执行已有静态校验器，无需 npm 安装，不执行 Android 构建或发布。远端保护由维护者配置，本地文档不能代替服务端强制设置。
+PR 模板要求官方依据、API 影响、Note、实际检查和待验收项；变更通过功能分支与 PR 进入 main。Note CI 使用 Node 类型擦除执行已有静态校验器，无需 npm 安装。Android 检查与按需打包由 [Demo 签名与 CI](../../proposed/process/2026-10-25-demo-signing-ci.md) 扩展，库发行仍暂缓。远端保护由维护者配置，本地文档不能代替服务端强制设置。
 
 ## Alternatives considered
 

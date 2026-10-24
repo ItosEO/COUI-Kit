@@ -1,6 +1,27 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+}
+
+val signingKeys = listOf("KEYSTORE_FILE", "KEYSTORE_PASSWORD", "KEYSTORE_ALIAS", "KEYSTORE_ALIAS_PASSWORD")
+val signingEnvironment = signingKeys.associateWith { providers.environmentVariable(it).orNull }
+val hasSigningEnvironment = signingEnvironment.values.any { it != null }
+val signingPropertiesFile = rootProject.file("signing.properties")
+val signingProperties = Properties().apply {
+    if (!hasSigningEnvironment && signingPropertiesFile.exists()) {
+        signingPropertiesFile.inputStream().use { load(it) }
+    }
+}
+val signingValues = if (hasSigningEnvironment || signingPropertiesFile.exists()) {
+    signingKeys.associateWith { key ->
+        val value = if (hasSigningEnvironment) signingEnvironment[key] else signingProperties.getProperty(key)
+        require(!value.isNullOrBlank()) { "Demo 签名缺少 $key" }
+        value
+    }
+} else {
+    emptyMap()
 }
 
 android {
@@ -10,16 +31,31 @@ android {
         applicationId = "com.itos.coui.demo"
         minSdk = 31
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = providers.gradleProperty("demoVersionCode").map(String::toInt).orElse(1).get()
+        versionName = "1.0" + providers.gradleProperty("demoVersionNameSuffix").orElse("").get()
     }
     buildFeatures { compose = true }
+    val demoSigning = if (signingValues.isNotEmpty()) {
+        signingConfigs.create("demo") {
+            storeFile = rootProject.file(signingValues.getValue("KEYSTORE_FILE")).also {
+                require(it.isFile) { "Demo 签名密钥文件不存在" }
+            }
+            storePassword = signingValues.getValue("KEYSTORE_PASSWORD")
+            keyAlias = signingValues.getValue("KEYSTORE_ALIAS")
+            keyPassword = signingValues.getValue("KEYSTORE_ALIAS_PASSWORD")
+        }
+    } else {
+        signingConfigs.getByName("debug")
+    }
     buildTypes {
+        debug {
+            signingConfig = demoSigning
+        }
         release {
             optimization {
                 enable = true
             }
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = demoSigning
         }
     }
     compileOptions {
