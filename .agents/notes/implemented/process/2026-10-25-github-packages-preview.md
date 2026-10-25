@@ -16,6 +16,8 @@ Status: implemented
 
 源码与文档归档从根声明及既有 Skia 许可生成随包声明，不维护另一份许可副本。使用说明归普通指南，维护者操作归开发指南，AGENTS 只维护任务入口与权限边界。
 
+归档声明通过显式导入的 `org.gradle.jvm.tasks.Jar` 基类装配。AGP 源码任务继承旧包中的 Jar，而 Vanniktech 文档任务直接继承新基类；只匹配 Kotlin DSL 默认导入的旧类型会漏掉文档包。检查失败须指出具体归档与缺失声明。
+
 ## Alternatives considered
 
 - **先使用 JitPack。** 能直接按提交消费，但引入另一套远端构建环境和私有仓库授权；当前先用 GitHub Actions 已有工具链构建并上传预览包。
@@ -29,6 +31,8 @@ Status: implemented
 Vanniktech 与 Dokka 是新的构建依赖，PR 会增加库发行与文档生成时间。源码、公开 API、绘制行为及 Demo 消费方式不改变。Maven Central 与 JitPack 不属于当前接线范围。
 
 本地只执行差异、Note、文档、YAML 与脚本静态检查，不运行 Android 构建。实际工具链兼容、包写入和远端读取以对应 Actions 结果为准，工作流尚未成功时不声称预览包可用。
+
+首次 main 发布的发行检查发现文档归档缺少许可通知，上传因此被阻止。Gradle 本地类层次和 Vanniktech 源码确认上述新旧 Jar 类型边界；修复继续由真实发行检查验证，不跳过许可断言。
 
 ## Existing-note audit
 

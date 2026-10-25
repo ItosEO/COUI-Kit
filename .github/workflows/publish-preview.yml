@@ -97,7 +97,7 @@ jobs:
           assert(entries('-javadoc.jar').includes('index.html'), 'API 文档包没有生成 HTML');
           for (const suffix of ['-sources.jar', '-javadoc.jar']) {
             for (const notice of ['LICENSE', 'NOTICE', 'TRADEMARKS.md', 'coui-skia-LICENSE']) {
-              assert(entries(suffix).includes(`META-INF/coui/${notice}`), `缺少声明: ${notice}`);
+              assert(entries(suffix).includes(`META-INF/coui/${notice}`), `${suffix} 缺少声明: ${notice}`);
             }
           }
           console.log(`发行产物检查通过: ${group}:${artifact}:${version}`);

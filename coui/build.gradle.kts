@@ -2,6 +2,7 @@ import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.SourcesJar
 import org.gradle.api.credentials.PasswordCredentials
+import org.gradle.jvm.tasks.Jar
 
 plugins {
     alias(libs.plugins.android.library)
