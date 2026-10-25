@@ -13,6 +13,7 @@
 | 新增、修改或移动普通文档              | [文档维护规则](docs/development/documentation.md)及对应组件/效果页面                                                  |
 | 修改 Demo                   | [Demo 指南](docs/guide/demo.md)、[架构的 Demo 契约](docs/development/architecture.md#demo-契约)及所用公开 API         |
 | 修改签名、CI 或 PR 检查 | [CI 与 PR 检查](docs/development/ci.md)、[验证与评审](docs/development/validation.md)及实际工作流；不得复制本地密钥或密码到 Git、日志或附件 |
+| 修改库打包、版本或上传流程 | [预览版发布](docs/development/publishing.md)、[兼容要求](docs/guide/compatibility.md)及实际发布配置 |
 
 所有任务先检查工作区及目标文件的当前内容，保留用户已有修改。不能用旧快照、摘要或其他代理结论替代核心文档、原厂关键入口和即将修改的实现。
 
@@ -42,12 +43,12 @@
 - 状态、回调、参数语义、平台、失败行为、采样、坐标或资源生命周期变化：同步对应页面和受影响消费者；公共要求在所属页面完整维护，其他位置链接。
 - 实现参数由代码和构建配置持有。仅调参且契约不变时不复制数值表；纯内部修改在 PR 说明无需更改普通文档的原因。
 - 文档示例必须调用当前公开 API，说明宿主依赖和作用域，不调用 Demo 私有函数。PR 列出文档路径及使用影响。
-- 根 README 提供项目介绍与使用导航，AGENTS 提供开发任务的阅读入口；贡献流程见 CONTRIBUTING。普通文档当前使用 Markdown，不自行加入网站、Maven 发布或发行配置。
+- 根 README 提供项目介绍与使用导航，AGENTS 提供开发任务的阅读入口；贡献流程见 CONTRIBUTING。普通文档当前使用 Markdown；库预览发布按发布指南维护，不自行接入网站、Maven Central 或 JitPack。
 
 ## Note 与交付
 
 - 非平凡变更使用仓库内 [write-notes-like-deepseek](.agents/skills/write-notes-like-deepseek/SKILL.md)，先检索活跃决定，再更新或新增 Note。纯机械修改不新建；已有用户授权不因 Skill 通用确认流程失效。
 - 只修改当前任务范围。未经用户明确要求，不执行 Git 初始化、创建分支、commit、push、rebase、reset 或 merge。贡献流程要求 PR 不代表代理已获 Git 操作授权。
 - 开发通过功能分支与 PR 进入主分支，使用 [PR 模板](.github/pull_request_template.md)。维护者另行授权的直接操作按该授权执行；不自行合并或推送。
-- 默认不新增测试，PR 工作流只执行 Note、Lint 和 Demo debug/release 构建，不加入单测或模拟器任务。按风险执行必要的差异、引用及针对性静态检查，参见[验证与评审](docs/development/validation.md)，报告真实结果与未验证行为。
-- 已配置的 GitHub CI 可按其触发规则自动执行构建与 Demo 测试签名。本地不得自行运行 Android 构建、Gradle Sync、Preview、安装、签名、发布或设备操作；用户当前明确授权的验证按该授权执行。不自行增加外部宿主消费切换。
+- 默认不新增测试，PR 工作流执行 Note、Lint、Demo debug/release 和库本地 Maven 发行构建，不加入单测、模拟器或远端上传任务。按风险执行必要的差异、引用及针对性静态检查，参见[验证与评审](docs/development/validation.md)，报告真实结果与未验证行为。
+- 已配置的 GitHub CI 可按其触发规则执行构建与 Demo 测试签名；库上传独立手动触发，只向上传及远端确认步骤传入包凭据。本地不得自行运行 Android 构建、Gradle Sync、Preview、安装、签名、发布或设备操作；用户当前明确授权的验证按该授权执行。不自行增加外部宿主消费切换。

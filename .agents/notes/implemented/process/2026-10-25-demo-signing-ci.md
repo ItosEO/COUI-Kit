@@ -24,6 +24,8 @@ Demo 的 versionCode 在 Gradle 中直接读取当前 HEAD 的 Git 提交总数�
 
 ## Consequences
 
+[库预览发布](2026-10-25-github-packages-preview.md)增加独立手动 GitHub Packages 上传及 PR 本地库发行构建，本篇继续持有 Demo 签名、按需打包和无单测边界。
+
 切换证书后，旧测试包需要卸载一次。GitHub 的提交标题判断发生在 job 条件，普通 push 可能保留 skipped 记录。GPU 效果与原厂一致性仍需设备验收。固定测试密钥仅用于 Demo，不复用其他 App 或 Maven GPG 密钥。
 
 本地与 CI 使用同一密钥时可以连续覆盖安装；代价是需要备份并维护固定测试密钥与 Secrets。PR 使用临时证书，不作为固定签名的下载渠道。工作流尚未合入 main 时，不提前添加全仓必需状态，避免其他 PR 因缺少工作流而被阻塞；合入后再接入状态规则，已有审核与 bypass 保留。

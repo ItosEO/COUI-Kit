@@ -1,0 +1,158 @@
+name: 发布库预览版
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-preview-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: 发布到 GitHub Packages
+    if: github.repository == 'ItosEO/COUI-Kit'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: 配置 Java
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: 配置 Gradle
+        uses: gradle/actions/setup-gradle@07d1f8453baaff67fb503883367f8b13e6158a54 # v6
+        with:
+          cache-disabled: true
+      - name: 配置 Android SDK
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+        with:
+          packages: 'platform-tools platforms;android-37.0 build-tools;37.0.0'
+      - name: 配置 Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: 生成预览版本
+        id: version
+        run: |
+          set -euo pipefail
+          base=$(sed -n 's/^VERSION_NAME=//p' gradle.properties)
+          if [[ ! "$base" =~ ^[0-9]+\.[0-9]+\.[0-9]+-SNAPSHOT$ ]]; then
+            echo 'VERSION_NAME 必须为 x.y.z-SNAPSHOT' >&2
+            exit 1
+          fi
+          commit=$(git rev-parse --short=12 HEAD)
+          echo "name=${base%-SNAPSHOT}-$commit-SNAPSHOT" >> "$GITHUB_OUTPUT"
+          echo "group=$(sed -n 's/^GROUP=//p' gradle.properties)" >> "$GITHUB_OUTPUT"
+          echo "artifact=$(sed -n 's/^POM_ARTIFACT_ID=//p' gradle.properties)" >> "$GITHUB_OUTPUT"
+      - name: 构建本地 Maven 产物
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.name }}
+        run: |
+          set -euo pipefail
+          ./gradlew :coui:publishAllPublicationsToLocalRepository \
+            "-PVERSION_NAME=$PACKAGE_VERSION" --no-configuration-cache --stacktrace \
+            2>&1 | tee "$RUNNER_TEMP/coui-publish-build.log"
+      - name: 检查发行文件与传递依赖
+        env:
+          PACKAGE_GROUP: ${{ steps.version.outputs.group }}
+          PACKAGE_ARTIFACT: ${{ steps.version.outputs.artifact }}
+          PACKAGE_VERSION: ${{ steps.version.outputs.name }}
+        run: |
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const { execFileSync } = require('node:child_process');
+          const { PACKAGE_GROUP: group, PACKAGE_ARTIFACT: artifact, PACKAGE_VERSION: version } = process.env;
+          const dir = path.join('coui/build/repository', group.replaceAll('.', '/'), artifact, version);
+          const modules = fs.readdirSync(dir).filter(name => name.endsWith('.module'));
+          assert.equal(modules.length, 1, '应只生成一个库 publication');
+          const stem = modules[0].slice(0, -'.module'.length);
+          const file = suffix => path.join(dir, stem + suffix);
+          for (const suffix of ['.aar', '.pom', '.module', '-sources.jar', '-javadoc.jar']) {
+            assert(fs.statSync(file(suffix)).size > 0, `缺少有效发行文件: ${suffix}`);
+          }
+          const metadata = JSON.parse(fs.readFileSync(file('.module'), 'utf8'));
+          assert.equal(metadata.component.group, group);
+          assert.equal(metadata.component.module, artifact);
+          assert.equal(metadata.component.version, version);
+          const dependencies = metadata.variants.flatMap(variant => variant.dependencies ?? []);
+          assert(dependencies.some(dep => dep.group === 'androidx.compose' && dep.module === 'compose-bom-alpha'), '缺少 Compose BOM');
+          assert(dependencies.some(dep => dep.group === 'androidx.dynamicanimation' && dep.module === 'dynamicanimation' && dep.version?.strictly), '丢失动画严格版本约束');
+          assert(!dependencies.some(dep => dep.module === 'demo' || dep.module === 'capsule'), '发行依赖包含 Demo 装配');
+          const entries = suffix => execFileSync('unzip', ['-Z1', file(suffix)], { encoding: 'utf8' }).split('\n');
+          assert(entries('.aar').includes('classes.jar'), 'AAR 缺少 classes.jar');
+          assert(entries('-sources.jar').some(name => name.endsWith('/CouiSlider.kt')), '源码包缺少库源码');
+          assert(entries('-javadoc.jar').includes('index.html'), 'API 文档包没有生成 HTML');
+          for (const suffix of ['-sources.jar', '-javadoc.jar']) {
+            for (const notice of ['LICENSE', 'NOTICE', 'TRADEMARKS.md', 'coui-skia-LICENSE']) {
+              assert(entries(suffix).includes(`META-INF/coui/${notice}`), `缺少声明: ${notice}`);
+            }
+          }
+          console.log(`发行产物检查通过: ${group}:${artifact}:${version}`);
+          NODE
+      - name: 上传到 GitHub Packages
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.name }}
+          ORG_GRADLE_PROJECT_GitHubPackagesUsername: ${{ github.actor }}
+          ORG_GRADLE_PROJECT_GitHubPackagesPassword: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          ./gradlew :coui:publishAllPublicationsToGitHubPackagesRepository \
+            "-PVERSION_NAME=$PACKAGE_VERSION" --no-configuration-cache --stacktrace \
+            2>&1 | tee "$RUNNER_TEMP/coui-publish-upload.log"
+      - name: 确认远端版本可读取
+        env:
+          PACKAGE_GROUP: ${{ steps.version.outputs.group }}
+          PACKAGE_ARTIFACT: ${{ steps.version.outputs.artifact }}
+          PACKAGE_VERSION: ${{ steps.version.outputs.name }}
+          PACKAGE_USER: ${{ github.actor }}
+          PACKAGE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          group_path=${PACKAGE_GROUP//./\/}
+          curl --fail --silent --show-error --retry 3 \
+            --user "$PACKAGE_USER:$PACKAGE_TOKEN" \
+            "https://maven.pkg.github.com/itoseo/COUI-Kit/$group_path/$PACKAGE_ARTIFACT/$PACKAGE_VERSION/maven-metadata.xml" \
+            --output "$RUNNER_TEMP/coui-published-metadata.xml"
+          grep -Fq "<version>$PACKAGE_VERSION</version>" "$RUNNER_TEMP/coui-published-metadata.xml"
+      - name: 输出接入坐标
+        env:
+          PACKAGE_GROUP: ${{ steps.version.outputs.group }}
+          PACKAGE_ARTIFACT: ${{ steps.version.outputs.artifact }}
+          PACKAGE_VERSION: ${{ steps.version.outputs.name }}
+        run: |
+          {
+            echo '## COUI 预览版已发布'
+            echo
+            echo '```kotlin'
+            echo "implementation(\"$PACKAGE_GROUP:$PACKAGE_ARTIFACT:$PACKAGE_VERSION\")"
+            echo '```'
+            echo
+            echo "源码提交: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$GITHUB_SHA"
+            echo
+            echo "包页面: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/packages"
+            echo
+            echo '仓库认证与接入步骤见 docs/guide/github-packages.md。'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: 上传失败诊断
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: publish-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/coui-publish-build.log
+            ${{ runner.temp }}/coui-publish-upload.log
+            coui/build/reports/**
+          retention-days: 14

@@ -21,7 +21,7 @@
 
 验证方式见[验证与评审](docs/development/validation.md)。构建与设备操作按当前任务授权执行，填写实际结果。
 
-指向 main 的 PR 自动执行 Note、Lint 和 Demo debug/release 构建，不运行单测，不需要固定签名凭据。失败时查看 Actions 诊断，修复后再请求合并。Demo 的按需打包与附件下载见 [CI 指南](docs/development/ci.md)。自动检查成功不替代维护者审核或原厂效果验收。
+指向 main 的 PR 自动执行 Note、Lint、Demo debug/release 和库本地 Maven 发行构建，不运行单测，不需要固定签名或包写入凭据。失败时查看 Actions 诊断，修复后再请求合并。Demo 的按需打包与附件下载见 [CI 指南](docs/development/ci.md)，库的手动发布见[预览发布指南](docs/development/publishing.md)。自动检查成功不替代维护者审核或原厂效果验收。
 
 ## 许可与第三方内容
 

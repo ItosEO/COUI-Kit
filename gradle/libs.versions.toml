@@ -6,6 +6,8 @@ activityCompose = "1.13.0"
 composeBom = "2026.08.01"
 composeFoundation = "1.12.0"
 capsule = "2.1.3"
+mavenPublish = "0.37.0"
+dokka = "2.2.0"
 
 [libraries]
 capsule = { module = "io.github.kyant0:capsule", version.ref = "capsule" }
@@ -24,3 +26,5 @@ androidx-dynamicanimation = { group = "androidx.dynamicanimation", name = "dynam
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

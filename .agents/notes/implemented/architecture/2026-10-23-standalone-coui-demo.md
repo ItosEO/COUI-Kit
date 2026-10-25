@@ -26,6 +26,8 @@ Demo 负责主题、形状、受控状态和页面导航，展示全部现有组
 
 ## Consequences
 
+[库预览发布](../process/2026-10-25-github-packages-preview.md)持有 GitHub Packages 的后续接线，保留本篇的独立模块边界与 Demo project 依赖。
+
 项目自有源码许可与分叉发行的名称规则见 [MPL 与名称政策](../process/2026-10-25-mpl-and-project-name-policy.md)，保留本篇的独立模块与既有第三方许可边界。
 
 [Demo 固定签名与 CI](../process/2026-10-25-demo-signing-ci.md) 扩展本篇的测试签名策略，保留无配置时的默认签名与独立模块边界。

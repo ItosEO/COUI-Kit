@@ -9,7 +9,8 @@
 | main 普通 push | Demo job 跳过，不占用 Android 构建 Runner |
 | main 最新提交标题以 `[ci]` 开头 | 构建固定测试签名的 release，上传 APK 与对应 mapping |
 | Actions 手动运行 Demo 打包 | 构建所选受信任分支，日常使用 main |
-| 指向 main 的 PR | 自动执行 Note、库与 Demo Lint、Demo debug/release 构建 |
+| 指向 main 的 PR | 自动执行 Note、库与 Demo Lint、Demo debug/release 与库发行构建 |
+| Actions 手动运行发布库预览版 | 构建并检查库产物，上传 GitHub Packages；见[发布指南](publishing.md) |
 
 前缀判断使用本次 push 最后一个提交的标题，不扫描之前的提交。GitHub 的 startsWith 比较不区分大小写。条件在 job 层执行，因此普通 push 仍可能显示 skipped 工作流记录。PR 检查不受此前缀限制，也不按文档路径整体跳过，避免必需检查一直 Pending。
 
@@ -41,8 +42,9 @@ Demo 工作流将密钥放在 Runner 临时目录，仅在签名步骤传入同�
 - [PR Android 工作流](../../.github/workflows/pr-checks.yml)持有实际 Gradle 命令，不执行单测、模拟器或真机测试。
 - [Note 工作流](../../.github/workflows/verify-notes.yml)检查目录、格式、链接与归档封印，归档比较使用 PR base SHA。
 - [Demo 打包工作流](../../.github/workflows/demo-ci.yml)构建 release、检查 APK 签名并上传产物，不创建 Release，不发布库。
+- PR Android 检查还生成库的本地 Maven 产物及源码、API 文档，不上传远端，不读取包写入凭据；[预览发布](publishing.md)独立手动触发。
 
-同一 PR 或分支的新任务取消旧任务。失败时查看 Actions 中的报错与诊断附件，修复原因；不关闭 Lint、R8 或增加整包 keep 来使检查表面通过。Lint 警告按其实际影响处理，不新增历史问题 baseline。
+Demo 与 PR 检查的新任务取消同一分支的旧任务；库发布保留正在上传的任务并串行执行。失败时查看 Actions 中的报错与诊断附件，修复原因；不关闭 Lint、R8 或增加整包 keep 来使检查表面通过。Lint 警告按其实际影响处理，不新增历史问题 baseline。
 
 工作流合入 main 且首次实际检查成功后，再将“Android Lint 与 Demo 构建”和“校验 Note 目录、格式与归档”加入主分支必需检查；维护者审核与现有 bypass 单独保留。在工作流尚未进入主分支时，不提前要求其他 PR 提供不存在的检查。
 

@@ -27,15 +27,15 @@ Note 校验只检查结构、状态、相对链接和归档封印；代码与效
 
 ## Android 与远端检查
 
-PR 自动执行 Note、库与 Demo Lint，以及 Demo debug/release 构建，不执行单测或设备测试。Demo 的固定签名打包独立按需触发，具体规则、凭据和附件见 [CI 与 PR 检查](ci.md)。
+PR 自动执行 Note、库与 Demo Lint、Demo debug/release 构建及库本地 Maven 发行构建，不执行单测或设备测试。Demo 的固定签名打包独立按需触发，具体规则、凭据和附件见 [CI 与 PR 检查](ci.md)。库发行验证与手动上传见[预览版发布](publishing.md)。
 
 本地需要执行同一检查时，先获得当前任务授权，再运行：
 
 ~~~sh
-./gradlew :coui:lintDebug :demo:lintRelease :demo:assembleDebug :demo:assembleRelease
+./gradlew :coui:lintDebug :demo:lintRelease :demo:assembleDebug :demo:assembleRelease :coui:publishAllPublicationsToLocalRepository
 ~~~
 
-需要避免签名参数进入本地 configuration cache 时，加 `--no-configuration-cache`。失败须查看实际 Lint 或构建错误，不建立吞掉失败的路径。现阶段不配置 JitPack、Maven Central 或发行工作流。
+需要避免签名参数进入本地 configuration cache 时，加 `--no-configuration-cache`。失败须查看实际 Lint 或构建错误，不建立吞掉失败的路径。远端库上传只由手动发布入口执行，现阶段不配置 JitPack 或 Maven Central。
 
 ## 开发诊断
 

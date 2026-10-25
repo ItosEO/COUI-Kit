@@ -9,6 +9,7 @@
 | 你要做什么            | 从这里开始                                 |
 |------------------|---------------------------------------|
 | 将 COUI 用到自己的 App | [快速开始](docs/guide/getting-started.md) |
+| 下载库预览版 | [GitHub Packages 接入](docs/guide/github-packages.md) |
 | 查找组件及示例          | [组件目录](docs/components/README.md)     |
 | 单独使用绘制效果或算法      | [效果目录](docs/effects/README.md)        |
 | 确认环境和平台要求        | [兼容要求](docs/guide/compatibility.md)   |
@@ -16,7 +17,7 @@
 | 运行示例 App         | [Demo 指南](docs/guide/demo.md)         |
 | 修改 COUI 或提交文档    | [贡献指南](CONTRIBUTING.md)               |
 
-当前通过源码模块接入，尚未提供 Maven 发行坐标。工程包含 coui 库和 demo App；包名为 com.itos.coui。
+可通过源码模块或 GitHub Packages 预览版接入；可用坐标以手动发布工作流的成功摘要为准，尚未提供 Maven Central 发行。工程包含 coui 库和 demo App；包名为 com.itos.coui。
 
 ## 许可与名称使用
 

@@ -1,6 +1,6 @@
 # 快速开始
 
-在已有 Compose 页面中显示一个可调节的 COUI 滑条。当前通过源码模块接入，先确认[环境与平台要求](compatibility.md)。
+在已有 Compose 页面中显示一个可调节的 COUI 滑条。可以按下文接入源码模块，或按 [GitHub Packages 指南](github-packages.md)使用已经成功发布的预览版；先确认[环境与平台要求](compatibility.md)。
 
 ## 添加模块
 
