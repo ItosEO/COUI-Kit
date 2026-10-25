@@ -12,6 +12,8 @@ Demo 使用独立固定测试密钥，本地通过 signing.properties 提供，C
 
 Demo 打包仅由 main 的 [ci] 提交标题或手动入口触发，保留 release 的 R8 与 mapping；PR 独立运行 Note、Lint 和 debug/release 构建，使用临时默认测试签名，不读取固定密钥，不增加或执行单测、模拟器测试。工作流只读仓库，新任务取消同一分支的旧任务。
 
+Demo 的 versionCode 在 Gradle 中直接读取当前 HEAD 的 Git 提交总数，本地与 CI 共用，不保留单独覆盖参数或固定回退值。显示版本名与系统版本码分开，CI 后缀只含 ci 与短 SHA，不重复提交计数。构建需要完整 Git 历史，Git 读取失败保持可见。
+
 本轮不接 JitPack、Maven Central、库发行或外部宿主消费切换。使用者签名步骤归 Demo 指南，CI 与协作步骤归开发验证文档，AGENTS 保留执行授权边界。
 
 ## Alternatives considered

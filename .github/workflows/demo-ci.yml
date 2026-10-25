@@ -55,7 +55,6 @@ jobs:
         id: version
         run: |
           set -euo pipefail
-          echo "code=$(git rev-list --count HEAD)" >> "$GITHUB_OUTPUT"
           echo "commit=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
       - name: 构建 release
         env:
@@ -63,13 +62,11 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
           KEYSTORE_ALIAS_PASSWORD: ${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
-          DEMO_VERSION_CODE: ${{ steps.version.outputs.code }}
           DEMO_COMMIT: ${{ steps.version.outputs.commit }}
         run: |
           set -euo pipefail
           ./gradlew :demo:assembleRelease --no-configuration-cache --stacktrace \
-            "-PdemoVersionCode=$DEMO_VERSION_CODE" \
-            "-PdemoVersionNameSuffix=-ci.$DEMO_VERSION_CODE.$DEMO_COMMIT" \
+            "-PdemoVersionNameSuffix=-ci.$DEMO_COMMIT" \
             2>&1 | tee "$RUNNER_TEMP/coui-demo-build.log"
       - name: 验证 APK 签名与 mapping
         run: |

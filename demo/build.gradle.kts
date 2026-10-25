@@ -5,6 +5,11 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+val gitCommitCount = providers.exec {
+    commandLine("git", "rev-list", "--count", "HEAD")
+    workingDir(rootDir)
+}.standardOutput.asText.map { it.trim().toInt() }
+
 val signingKeys = listOf("KEYSTORE_FILE", "KEYSTORE_PASSWORD", "KEYSTORE_ALIAS", "KEYSTORE_ALIAS_PASSWORD")
 val signingEnvironment = signingKeys.associateWith { providers.environmentVariable(it).orNull }
 val hasSigningEnvironment = signingEnvironment.values.any { it != null }
@@ -31,7 +36,7 @@ android {
         applicationId = "com.itos.coui.demo"
         minSdk = 31
         targetSdk = 37
-        versionCode = providers.gradleProperty("demoVersionCode").map(String::toInt).orElse(1).get()
+        versionCode = gitCommitCount.get()
         versionName = "1.0" + providers.gradleProperty("demoVersionNameSuffix").orElse("").get()
     }
     buildFeatures { compose = true }

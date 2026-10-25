@@ -13,7 +13,7 @@
 
 前缀判断使用本次 push 最后一个提交的标题，不扫描之前的提交。GitHub 的 startsWith 比较不区分大小写。条件在 job 层执行，因此普通 push 仍可能显示 skipped 工作流记录。PR 检查不受此前缀限制，也不按文档路径整体跳过，避免必需检查一直 Pending。
 
-Demo 下载位于对应 Actions run 的 Artifacts。版本名包含提交计数与短 SHA，versionCode 使用该次提交的完整历史计数；本地默认版本由 Demo 构建配置持有。APK 与 mapping 必须来自同一次构建。附件保留期以工作流配置为准，固定测试密钥不进入附件。
+Demo 下载位于对应 Actions run 的 Artifacts。CI 版本名只追加 ci 与短 SHA，不包含提交计数；本地默认版本名由 Demo 构建配置持有。本地与 CI 的 versionCode 均由 Gradle 直接读取当前 HEAD 的完整 Git 历史计数，不另传版本码参数；克隆时保留完整历史。APK 与 mapping 必须来自同一次构建。附件保留期以工作流配置为准，固定测试密钥不进入附件。
 
 ## 签名凭据
 
