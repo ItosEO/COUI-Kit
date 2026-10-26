@@ -5,14 +5,22 @@ import androidx.annotation.RequiresApi
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 
+/** 独立轮廓预设；Menu 保留既有菜单分布，Dialog/Button 对应原厂 ShadowEdge Drawable。 */
+enum class CouiContourStyle { Menu, Dialog, Button }
+
 /**
  * 在实际半透明表面上绘制轮廓与内晕, 不采样系统 Window 背景。
  * 输出已包含 surfaceColor, 调用方不能再叠加一次底色; effectAlpha 只衰减光效。
  * floating 使用 FAB 的加亮算法并保持表面 alpha, 默认仍使用独立白光覆盖率。
  */
 @RequiresApi(33)
-class CouiContour(private val floating: Boolean = false) {
+class CouiContour(private val floating: Boolean = false, private val style: CouiContourStyle = CouiContourStyle.Menu) {
+    init { require(!floating || style == CouiContourStyle.Menu) { "浮动轮廓不可同时使用 Drawable 预设" } }
     private val shader = RuntimeShader(if (floating) couiFloatingContourShader() else CouiContourShader)
+
+    private var nativeParameters: NativeParameters? = null
+    private var lastSurface = Color.Unspecified
+    private var lastEffectAlpha = Float.NaN
 
     fun shader(
         size: Size,
@@ -23,14 +31,21 @@ class CouiContour(private val floating: Boolean = false) {
         innerGlowAlpha: Float,
         lineAlpha: Float,
         effectAlpha: Float,
+        lineWidthPx: Float = 2.5f * density,
     ): RuntimeShader {
         require(radiusPx.isFinite() && radiusPx >= 0f) { "圆角半径必须为有限非负值" }
-        require(cornerWeight.isFinite() && cornerWeight >= 2f) { "圆角权重必须为有限值且不小于 2" }
+        require(cornerWeight.isFinite() && cornerWeight >= if (style == CouiContourStyle.Menu) 2f else 1f) { "圆角权重不符合所选轮廓预设" }
         require(innerGlowAlpha.isFinite() && innerGlowAlpha in 0f..1f) { "内晕透明度必须为 0 到 1 的有限值" }
         require(lineAlpha.isFinite() && lineAlpha in 0f..1f) { "描边透明度必须为 0 到 1 的有限值" }
         require(effectAlpha.isFinite() && effectAlpha in 0f..1f) { "光效透明度必须为 0 到 1 的有限值" }
-        shader.setFloatUniform("uSurfaceColor", surfaceColor.red, surfaceColor.green, surfaceColor.blue, surfaceColor.alpha)
-        shader.setFloatUniform("uEffectAlpha", effectAlpha)
+        if (lastSurface != surfaceColor) {
+            shader.setFloatUniform("uSurfaceColor", surfaceColor.red, surfaceColor.green, surfaceColor.blue, surfaceColor.alpha)
+            lastSurface = surfaceColor
+        }
+        if (lastEffectAlpha != effectAlpha) {
+            shader.setFloatUniform("uEffectAlpha", effectAlpha)
+            lastEffectAlpha = effectAlpha
+        }
         if (floating) {
             val halfWidth = size.width.coerceAtLeast(1f) * 0.5f
             val halfHeight = size.height.coerceAtLeast(1f) * 0.5f
@@ -49,16 +64,39 @@ class CouiContour(private val floating: Boolean = false) {
             shader.setFloatUniform("u_shadowArray", glow)
             shader.setFloatUniform("u_shadowShapeCtxArray", floatingShadowShapeContext(ball, glow))
         } else {
+            require(density.isFinite() && density > 0f && lineWidthPx.isFinite() && lineWidthPx > 0f)
             shader.setFloatUniform("uUseLightEdgeColor", 0f)
-            shader.setCouiContourUniforms(size, density, radiusPx, cornerWeight, innerGlowAlpha, lineAlpha)
+            shader.setFloatUniform("uNativeWhiteEdge", if (style == CouiContourStyle.Menu) 0f else 1f)
+            shader.setFloatUniform("uNativeShadowEdge", if (style == CouiContourStyle.Menu) 0f else 1f)
+            if (style == CouiContourStyle.Menu) {
+                shader.setCouiContourUniforms(size, density, radiusPx, cornerWeight, innerGlowAlpha, lineAlpha)
+            } else {
+                val width = size.width.coerceAtLeast(1f)
+                val height = size.height.coerceAtLeast(1f)
+                val previous = nativeParameters
+                if (previous == null || previous.size != size || previous.density != density ||
+                    previous.radius != radiusPx || previous.weight != cornerWeight || previous.inner != innerGlowAlpha ||
+                    previous.line != lineAlpha || previous.width != lineWidthPx) {
+                    nativeParameters = NativeParameters(size, density, radiusPx, cornerWeight, innerGlowAlpha, lineAlpha, lineWidthPx)
+                    shader.setFloatUniform("u_commonArray", floatArrayOf(width / 2f, height / 2f, 0f, 0f,
+                        width / 2f, height / 2f, radiusPx.coerceAtMost(size.minDimension / 2f), cornerWeight))
+                    shader.setFloatUniform("u_edgeArray", shadowEdgeArray(width, height, density, lineWidthPx,
+                        lineAlpha, style == CouiContourStyle.Button))
+                    shader.setFloatUniform("u_shadowArray", shadowGlowArray(width, height, density, innerGlowAlpha))
+                }
+            }
         }
         return shader
     }
+
+    private data class NativeParameters(val size: Size, val density: Float, val radius: Float,
+        val weight: Float, val inner: Float, val line: Float, val width: Float)
 }
 
 private const val CouiContourShader = CouiMaterialShaderFunctions + CouiContourShaderFunctions + """
     uniform float4 uSurfaceColor;
     uniform float uEffectAlpha;
+    uniform float uNativeShadowEdge;
 
     half4 main(float2 fragCoord) {
         float2 coords = float2(fragCoord.x, u_commonArray[1]*2.0-fragCoord.y);
@@ -70,7 +108,16 @@ private const val CouiContourShader = CouiMaterialShaderFunctions + CouiContourS
         rectData.weight = u_commonArray[7];
         float d = smoothSDF_D(rectData.pos, rectData.halfSize, rectData.coner, rectData.weight);
         half4 surface = half4(uSurfaceColor.rgb * uSurfaceColor.a, uSurfaceColor.a);
-        half4 color = blendMenuInnerGlow(rectData, surface, d, fragCoord);
+        if (uNativeShadowEdge > 0.5) {
+            float coverage = shadowEdgeCoverage(rectData, d);
+            if (coverage < EFFECT_PARAM_THRESHOLD) return half4(0.0);
+            half4 color = half4(blendMenuInnerGlow(rectData, surface, d, fragCoord));
+            if (dot(rectData.pos, rectData.pos) >= EPS) {
+                color = blendEdge(rectData, color, half4(1.0), d, 1.0);
+            }
+            return mix(surface, color, uEffectAlpha) * coverage;
+        }
+        half4 color = half4(blendMenuInnerGlow(rectData, surface, d, fragCoord));
         // 小尺寸窗口中心可能进入描边带, 此处没有周长方向, 避免原公式 normalize(0)。
         if (dot(rectData.pos, rectData.pos) >= EPS) {
             // 直边保留菜单原有描边分布, 仅在最外侧圆角段淡出, 不从中心重复衰减。

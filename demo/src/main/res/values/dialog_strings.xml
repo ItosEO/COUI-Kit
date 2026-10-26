@@ -1,0 +1,18 @@
+<resources>
+    <string name="dialog_title">Dialogs</string>
+    <string name="dialog_bottom">Bottom confirmation</string>
+    <string name="dialog_center">Centered confirmation</string>
+    <string name="dialog_long">Scrollable message</string>
+    <string name="dialog_three">Three actions</string>
+    <string name="dialog_disabled">Disabled confirmation</string>
+    <string name="dialog_primary">Themed confirmation</string>
+    <string name="dialog_material">Dialog background material</string>
+    <string name="dialog_material_unavailable">Background material requires Android 13.</string>
+    <string name="dialog_sample_title">This is a dialog!</string>
+    <string name="dialog_sample_message">Yes, this is a dialog.</string>
+    <string name="dialog_confirm">Confirm</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_reset">Reset choice</string>
+    <string name="dialog_applied">You tapped Confirm.</string>
+    <string name="dialog_not_applied">You have not tapped Confirm yet.</string>
+</resources>

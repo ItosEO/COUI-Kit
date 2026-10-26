@@ -21,19 +21,28 @@ import com.itos.coui.backdrop.CouiBackdrop
 import kotlin.math.ceil
 
 @Composable
-fun rememberCouiMenuBlur(backdrop: CouiBackdrop, background: Color): CouiMenuBlur? {
+fun rememberCouiMenuBlur(backdrop: CouiBackdrop, background: Color): CouiMenuBlur? =
+    rememberCouiKawaseBlur(backdrop, background, CouiMenuBlurRadius)
+
+/** 菜单固定 radius160; 弹窗使用原厂 integer/coui_dialog_blur_radius = 200。 */
+private const val CouiMenuBlurRadius = 160
+
+/** 原厂 BackgroundBlurDrawable 的 Fast Kawase 载体, radius 为引擎等级而不是像素。 */
+@Composable
+internal fun rememberCouiKawaseBlur(backdrop: CouiBackdrop, background: Color, radius: Int): CouiMenuBlur? {
     if (Build.VERSION.SDK_INT < 33) return null
     val layers = List(10) { rememberGraphicsLayer() }
-    return remember(backdrop, background, layers) {
-        CouiMenuBlur(backdrop, background, layers)
+    return remember(backdrop, background, radius, layers) {
+        CouiMenuBlur(backdrop, background, radius, layers)
     }
 }
 
-/** 移植 PJZ110 type2/radius160 的 Fast Kawase, 每轮保留独立像素网格。 */
+/** 移植 PJZ110 type2 的 Fast Kawase, radius 使用原厂引擎等级; 每轮保留独立像素网格。 */
 @RequiresApi(33)
 class CouiMenuBlur internal constructor(
     private val backdrop: CouiBackdrop,
     private val background: Color,
+    private val radius: Int,
     private val layers: List<GraphicsLayer>,
 ) {
     private val downsampleShader = RuntimeShader(MenuDownsampleShader)
@@ -50,6 +59,11 @@ class CouiMenuBlur internal constructor(
     fun draw(scope: DrawScope, coordinates: LayoutCoordinates) {
         val menuSize = scope.size
         if (!coordinates.isAttached || menuSize.width <= 0f || menuSize.height <= 0f) return
+        if (radius == 0) {
+            scope.drawRect(background)
+            backdrop.draw(scope, coordinates)
+            return
+        }
         val origin = coordinates.localToScreen(Offset.Zero)
         val right = coordinates.localToScreen(Offset(menuSize.width, 0f))
         val bottom = coordinates.localToScreen(Offset(0f, menuSize.height))
@@ -97,8 +111,8 @@ class CouiMenuBlur internal constructor(
             .asComposeRenderEffect()
         blurShaders.forEachIndexed { index, shader ->
             shader.setFloatUniform("inputSize", blurSize.width.toFloat(), blurSize.height.toFloat())
-            // fastKawase 的 radius160 分支先减十, p=10, 再执行 i=1..9。
-            shader.setFloatUniform("in_blurOffset", (index + 1) * (150f / (9f * 10f)) / 8f)
+            // fastKawase 的 radius 分支先减十, p=10, 再执行 i=1..9; 160 对应原菜单取样。
+            shader.setFloatUniform("in_blurOffset", (index + 1) * ((radius - 10f) / (9f * 10f)) / 8f)
             layers[index + 1].renderEffect = RenderEffect.createRuntimeShaderEffect(shader, "child")
                 .asComposeRenderEffect()
         }

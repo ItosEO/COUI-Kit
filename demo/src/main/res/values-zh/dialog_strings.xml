@@ -1,0 +1,18 @@
+<resources>
+    <string name="dialog_title">弹窗</string>
+    <string name="dialog_bottom">底部确认弹窗</string>
+    <string name="dialog_center">居中确认弹窗</string>
+    <string name="dialog_long">长内容滚动</string>
+    <string name="dialog_three">三个操作</string>
+    <string name="dialog_disabled">禁用确认操作</string>
+    <string name="dialog_primary">主题色确认弹窗</string>
+    <string name="dialog_material">弹窗背景材质</string>
+    <string name="dialog_material_unavailable">背景材质需要 Android 13 或更高版本。</string>
+    <string name="dialog_sample_title">这是一个弹窗！</string>
+    <string name="dialog_sample_message">是的，这是一个弹窗。</string>
+    <string name="dialog_confirm">确定</string>
+    <string name="dialog_cancel">取消</string>
+    <string name="dialog_reset">重置选择</string>
+    <string name="dialog_applied">你点击了确定。</string>
+    <string name="dialog_not_applied">你还没有点击确定。</string>
+</resources>

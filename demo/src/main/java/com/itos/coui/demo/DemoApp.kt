@@ -118,7 +118,7 @@ internal fun DemoApp(dark: Boolean, onToggleTheme: () -> Unit) {
     val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     val sections = when (page) {
-        0 -> listOf(R.string.slider_title, R.string.checkbox_title, R.string.menu_title, R.string.chip_tab_title)
+        0 -> listOf(R.string.dialog_title, R.string.slider_title, R.string.checkbox_title, R.string.menu_title, R.string.chip_tab_title)
         1 -> listOf(R.string.shadow_title, R.string.fusion_title, R.string.backdrop_title, R.string.material_title)
         else -> listOf(R.string.presets_title)
     }.map { stringResource(it) }

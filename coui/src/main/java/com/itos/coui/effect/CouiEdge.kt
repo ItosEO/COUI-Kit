@@ -106,7 +106,7 @@ internal fun RuntimeShader.setCouiContourUniforms(
     )
 }
 
-private fun rectLineFadeForSize(
+internal fun rectLineFadeForSize(
     solid: Float,
     fade: Float,
     baseWidth: Float,
@@ -130,6 +130,7 @@ private fun rectLineFadeForSize(
 // 通知描边与 COUI 菜单内晕共用距离场; 裁剪 Shape 须使用相同圆角和权重。
 internal const val CouiContourShaderFunctions = """
         uniform float uUseLightEdgeColor;
+        uniform float uNativeWhiteEdge;
         uniform float uContourGlowEnabled;
         uniform float u_commonArray[8];
         uniform float u_shadowArray[16];
@@ -264,6 +265,25 @@ internal const val CouiContourShaderFunctions = """
             return rectSdf;
         }
 
+        // ShadowEdge NEW_G2：直边到圆角区的 AA 宽度，不改既有菜单/FAB 的裁剪契约。
+        float shadowEdgeCoverage(CommonDataRect rectData, float d) {
+            vec2 q = abs(rectData.pos) - rectData.halfSize + vec2(rectData.coner);
+            float zone = min(q.x, q.y);
+            float transitionPixels = 4.0;
+            if (rectData.weight < 2.0) {
+                bool vertical = rectData.halfSize.x < rectData.halfSize.y;
+                vec2 hs = vertical ? rectData.halfSize.yx : rectData.halfSize;
+                vec2 p = vertical ? rectData.pos.yx : rectData.pos;
+                float zoneCap = abs(p.x) - max(hs.x - hs.y, 0.0);
+                transitionPixels = max(4.0, hs.y * 0.0125 * 70.0);
+                zone = rectData.weight > 1.005
+                    ? mix(zone, zoneCap, smoothstep(2.0, 1.0, rectData.weight)) : zoneCap;
+            }
+            float factor = smoothstep(-transitionPixels - 2.0, -transitionPixels * 0.2, zone);
+            float aa = mix(EPS, 1.0, factor);
+            return 1.0 - smoothstep(-aa, aa, d);
+        }
+
         float4 blendMenuInnerGlow(CommonDataRect rectData, float4 color, float d, float2 fragCoord) {
             float3 uFadeColor = float3(u_shadowArray[0], u_shadowArray[1], u_shadowArray[2]);
             float3 uFadeAlpha = float3(u_shadowArray[3], u_shadowArray[4], u_shadowArray[5]);
@@ -375,6 +395,12 @@ internal const val CouiContourShaderFunctions = """
             lineFarAlpha*=lineFarSdf;
 
             float lineAlpha = clamp(lineNearAlpha+lineFarAlpha,0.,1.);
+
+            if (uNativeWhiteEdge > 0.5) {
+                // ShadowEdge Drawable 输出预乘白光；这里没有后景感知提亮。
+                half4 edge = half4(uRectLineColor * lineAlpha, lineAlpha);
+                return color * (1.0 - lineAlpha) + edge;
+            }
 
             float gray = clamp(dot(float3(0.2126, 0.7152, 0.0722), rawColor.rgb)*1.2,0.0,1.0);
             float edgeImprove = (1.0 - gray);

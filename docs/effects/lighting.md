@@ -73,3 +73,15 @@ fun LitSurface(
 轮廓和背景感知效果要求 API 33，旧平台的跟手光工厂没有等价 Shader 回调。尺寸或颜色改变时更新对应 Effect，不复用旧 uniform 快照；详见[平台要求](../guide/compatibility.md)。
 
 [轮廓](../../coui/src/main/java/com/itos/coui/effect/CouiContour.kt)、[背景感知描边](../../coui/src/main/java/com/itos/coui/effect/CouiEdge.kt)、[跟手光 / 预设 / 诊断](../../coui/src/main/java/com/itos/coui/effect/CouiSpotlight.kt)、[状态反馈](../../coui/src/main/java/com/itos/coui/effect/CouiStateFeedback.kt)。组合绘制实例见[顶栏按钮](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButton.kt)。
+
+## 独立 Drawable 轮廓
+
+CouiContour 的 style 默认为 Menu，保留既有菜单独立白光分布；floating = true 保留 FAB 加亮分支，不能与其他 style 组合。新增 Dialog 和 Button 分别对应原厂 ShadowEdge 的面板/控件预设，复用同一距离场、内晕与周长分布，并按 NEW_G2 计算圆角区的边缘覆盖率，不是统一画一圈白色 Border。
+
+shader 的 size、radiusPx、lineWidthPx 使用节点本地像素，density 为正数。Menu / floating 的 cornerWeight 至少为 2；Dialog / Button 允许胶囊权重 1。所有透明度为 0..1。独立覆盖光效传入 Color.Transparent，然后覆盖到实际表面；传入表面颜色时输出已经包含该底色，不能重复叠加。
+
+每个独立节点持有自己的 CouiContour；尺寸、几何或强度变化时更新 shader 参数。Drawable 预设缓存未变化的几何映射，按压和跟手光逐帧绘制不重复分配预设数组。外部裁剪 Shape 应与距离场匹配。原厂独立 Drawable 分支使用白光 SrcOver；需要真实后景颜色参与的菜单分支继续使用 CouiEdge，两者不是同一合成契约。
+
+[弹窗](../components/dialog.md)在内部面板与操作按钮中完成该组合，调用方无需自行复制 Shader。
+
+弹窗内部操作按钮将同一个 InteractionSource 交给状态蒙层与唯一的 clickable；内部反馈 Modifier 不创建点击。

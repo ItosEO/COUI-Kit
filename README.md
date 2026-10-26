@@ -2,7 +2,7 @@
 
 面向 Android Jetpack Compose 的 COUI 组件与视觉效果库，使用公开 Android / Compose API 实现。
 
-提供顶栏与搜索、底栏、FAB、菜单、滑条、复选框和 ChipTab，以及可独立使用的阴影、模糊、材质混色、光效与融合算法。
+提供顶栏与搜索、底栏、FAB、菜单、滑条、复选框、ChipTab 和弹窗，以及可独立使用的阴影、模糊、材质混色、光效与融合算法。
 
 首次接入可先显示一个[滑动选择条](docs/components/slider.md)，再按需要添加依赖背景采样的浮动组件。
 

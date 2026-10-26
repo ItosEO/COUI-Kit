@@ -5,6 +5,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.runtime.Composable
@@ -77,6 +78,27 @@ private fun rememberMaskProgress(active: Boolean): Float {
     val effect = remember(scope) { CouiMaskProgress(scope) }
     SideEffect { effect.setActive(active) }
     return effect.progress.value
+}
+
+/** 普通按钮的状态蒙层；点击由组件唯一的 clickable 提交，材质分支关闭 pressed 蒙层。 */
+@Composable
+internal fun Modifier.couiButtonFeedback(
+    dark: Boolean,
+    interactionSource: MutableInteractionSource,
+    enabled: Boolean,
+    pressFeedback: Boolean,
+): Modifier {
+    val hovered by interactionSource.collectIsHoveredAsState()
+    val focused by interactionSource.collectIsFocusedAsState()
+    val pressed by interactionSource.collectIsPressedAsState()
+    val hover = rememberMaskProgress(enabled && hovered)
+    val focus = rememberMaskProgress(enabled && focused)
+    val press = rememberMaskProgress(enabled && pressed && pressFeedback)
+    return hoverable(interactionSource, enabled).drawBehind {
+        drawRect(maskColor(hover, if (dark) 0x26FFFFFF else 0x14000000))
+        drawRect(maskColor(focus, if (dark) 0x331A8CFF else 0x1F0080FF))
+        drawRect(maskColor(press, if (dark) 0x33FFFFFF else 0x1F000000))
+    }
 }
 
 /** 各状态沿用 StateEffectAnimator 的弹簧。 */

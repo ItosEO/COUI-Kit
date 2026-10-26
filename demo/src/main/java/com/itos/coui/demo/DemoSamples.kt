@@ -78,6 +78,7 @@ private fun DemoCheckboxRow(label: String, checked: Boolean, onCheckedChange: (B
 
 @Composable
 internal fun ControlsDemo(dark: Boolean, query: String) {
+    DemoSection(R.string.dialog_title, query) { DialogSample(dark) }
     var value by rememberSaveable { mutableFloatStateOf(0.4f) }
     var section by rememberSaveable { mutableFloatStateOf(2f) }
     var implicitStep by rememberSaveable { mutableFloatStateOf(5f) }
