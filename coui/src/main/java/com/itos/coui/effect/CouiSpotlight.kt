@@ -76,7 +76,7 @@ sealed interface SpotlightDiagnostic {
  * 只观察触摸, 不拦截点击、滑选或滚动。绘制回调应置于透明前景层, 熄灭后为 null。
  * 必须选择预设和深浅色; 可选参数为 null 时继承预设, 非 null 时只覆盖该项。
  * inputTarget 接收本地触点及是否已有光效会话; 返回 null 时取消会话。
- * cancelOnConsumedMove 用于分类项：父容器接管移动后取消当前会话，后续移动不重新点亮。
+ * cancelOnConsumedMove 用于滚动子项：父容器接管后取消当前会话，直到所有手指抬起都不重新点亮。
  */
 @Composable
 fun rememberCouiSpotlight(
@@ -146,11 +146,17 @@ private fun runtimeSpotlight(
             try {
                 awaitPointerEventScope {
                     var activePointer: PointerId? = null
+                    var cancelled = false
                     while (true) {
                         val event = awaitPointerEvent(PointerEventPass.Initial)
                         if (event.isCouiTouchCancelled()) {
                             activePointer = null
                             light.release()
+                            cancelled = false
+                            continue
+                        }
+                        if (cancelled) {
+                            if (event.changes.none { it.pressed }) cancelled = false
                             continue
                         }
                         val wasIdle = activePointer == null
@@ -190,10 +196,12 @@ private fun runtimeSpotlight(
                         }
                         if (cancelOnConsumedMove) {
                             val finalEvent = awaitPointerEvent(PointerEventPass.Final)
-                            if (finalEvent.changes.any { it.id == activePointer && it.isConsumed &&
-                                    it.pressed && it.position != it.previousPosition }) {
+                            if (activePointer != null && finalEvent.changes.any {
+                                    it.isConsumed && it.pressed && it.position != it.previousPosition
+                                }) {
                                 activePointer = null
                                 light.release()
+                                cancelled = true
                             }
                         }
                     }

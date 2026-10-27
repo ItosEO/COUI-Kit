@@ -31,7 +31,7 @@ fun rememberCouiTouchMotion(expanded: Boolean): CouiTouchMotion {
     return motion
 }
 
-/** 只观察按下与取消；分类项可在父容器消费移动后释放，直到本次触摸结束都不重新按压。 */
+/** 只观察按下与取消；滚动子项可在父容器消费移动后释放，直到本次触摸结束都不重新按压。 */
 fun Modifier.couiPressMotion(
     press: CouiPressMotion,
     enabled: Boolean = true,
@@ -73,9 +73,17 @@ fun Modifier.couiTouchMotion(
     motion: CouiTouchMotion,
     expanded: Boolean,
     targetSize: ((Offset) -> IntSize?)? = null,
+): Modifier = couiTouchMotion(motion, expanded, cancelOnConsumedMove = false, targetSize = targetSize)
+
+/** 弹窗按钮在父级滚动接管后按 CANCEL 收尾，保留公开入口及其他消费者的会话规则。 */
+internal fun Modifier.couiTouchMotion(
+    motion: CouiTouchMotion,
+    expanded: Boolean,
+    cancelOnConsumedMove: Boolean,
+    targetSize: ((Offset) -> IntSize?)? = null,
 ): Modifier =
     onGloballyPositioned { motion.coordinates = it }
-        .pointerInput(motion, expanded) {
+        .pointerInput(motion, expanded, cancelOnConsumedMove) {
             if (!expanded) return@pointerInput
             val trackers = mutableMapOf<PointerId, VelocityTracker>()
             var downTime = 0L
@@ -83,6 +91,7 @@ fun Modifier.couiTouchMotion(
                 awaitPointerEventScope {
                     var active: PointerId? = null
                     var velocityPointer: PointerId? = null
+                    var cancelled = false
 
                     fun cancelTouch() {
                         motion.release(Offset.Zero)
@@ -96,6 +105,11 @@ fun Modifier.couiTouchMotion(
                         val event = awaitPointerEvent(PointerEventPass.Initial)
                         if (event.isCouiTouchCancelled()) {
                             cancelTouch()
+                            cancelled = false
+                            continue
+                        }
+                        if (cancelled) {
+                            if (event.changes.none { it.pressed }) cancelled = false
                             continue
                         }
                         val coordinates = motion.coordinates?.takeIf { it.isAttached } ?: continue
@@ -167,6 +181,15 @@ fun Modifier.couiTouchMotion(
                             trackers.clear()
                             active = null
                             velocityPointer = null
+                        }
+                        if (cancelOnConsumedMove) {
+                            val finalEvent = awaitPointerEvent(PointerEventPass.Final)
+                            if (active != null && finalEvent.changes.any {
+                                    it.isConsumed && it.pressed && it.position != it.previousPosition
+                                }) {
+                                cancelTouch()
+                                cancelled = true
+                            }
                         }
                     }
                 }

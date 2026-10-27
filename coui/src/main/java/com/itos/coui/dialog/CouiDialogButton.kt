@@ -84,13 +84,15 @@ internal fun DialogButton(
     val density = LocalDensity.current.density
     val press = remember(scope, density) { CouiPressMotion(scope, density) }
     val (lightInput, drawLight) = rememberCouiSpotlight(interactive = enabled, dark = dark,
-        preset = if (style == CouiDialogActionStyle.Primary) SpotlightPreset.OpaqueMedium1 else SpotlightPreset.OpaqueMedium2)
+        preset = if (style == CouiDialogActionStyle.Primary) SpotlightPreset.OpaqueMedium1 else SpotlightPreset.OpaqueMedium2,
+        cancelOnConsumedMove = true)
     Box(modifier.heightIn(min = DialogButtonDefaults.minHeight).graphicsLayer {
         scaleX = motion.scaleX.value * press.scale.value
         scaleY = motion.scaleY.value * press.scale.value
         translationX = motion.translationX.value
         translationY = motion.translationY.value
-    }.couiTouchMotion(motion, enabled).couiPressMotion(press, enabled).then(lightInput)
+    }.couiTouchMotion(motion, enabled, cancelOnConsumedMove = true)
+        .couiPressMotion(press, enabled, cancelOnConsumedMove = true).then(lightInput)
         .clip(DialogButtonDefaults.shape).drawWithContent {
             drawContent()
             drawLight?.invoke(this)
