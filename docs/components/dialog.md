@@ -1,6 +1,6 @@
 # 弹窗
 
-CouiAlertDialog 显示带标题、正文与受控操作的 COUI 弹窗，支持底部或居中位置以及可选项目材质。
+CouiAlertDialog 显示带标题、正文与受控操作的 COUI 弹窗，支持底部或居中位置以及可选项目材质。CouiInputDialog 是复用它的单输入预设。
 
 ## 在页面中装配
 
@@ -86,6 +86,38 @@ content 是正文区的 ColumnScope slot，供宿主加入非滚动内容；草�
 
 标题、正文、操作按目标字体、字重、缩放和 TextView 字体度量在 Compose 中排版；按钮、文字与窗口承载均为内部实现，不另建公共按钮或 Typography 组件。字体来自运行设备，没有打包 OEM 字体。
 
+## 输入型弹窗预设
+
+需要标准输入区时直接使用 CouiInputDialog；自行装配其他内容时继续使用 CouiAlertDialog.content。预设组合现有窗口、标题、操作区和项目材质，增加输入框、计数及清除操作，没有另造窗口或材质后端。
+
+下面片段放在宿主的 Composable 作用域内。draft 是宿主通过 rememberSaveable(stateSaver = TextFieldValue.Saver) 保存的 TextFieldValue；onDraftChange 负责按宿主规则过滤并更新草稿，canSave 与 counterLabel 由宿主的校验/计数策略计算。onSave 只在确认时保存并关闭，close 丢弃本次草稿并关闭。dark、accent、title、message、saveLabel、cancelLabel、clearLabel 和 backdrop 由宿主提供，源装配沿用上文。
+
+~~~kotlin
+import androidx.compose.ui.text.input.TextFieldValue
+import com.itos.coui.dialog.CouiInputDialog
+
+CouiInputDialog(
+    value = draft,
+    onValueChange = onDraftChange,
+    onDismissRequest = close,
+    dark = dark,
+    accent = accent,
+    title = title,
+    message = message,
+    counter = counterLabel,
+    counterIsError = atLimit,
+    clearContentDescription = clearLabel,
+    confirmAction = CouiDialogAction(saveLabel, onSave, enabled = canSave),
+    dismissAction = CouiDialogAction(cancelLabel, close),
+    material = if (CouiDialogDefaults.isMaterialSupported()) CouiDialogDefaults.material(dark) else null,
+    backdrop = backdrop,
+)
+~~~
+
+输入值、选区和输入法组合区都属于 value；onValueChange 不自动提交业务或关闭弹窗。库不内置设备名称、长度或敏感词规则，counter 可省略，counterIsError 只改变计数颜色。placeholder 可提供空值提示；清除键在输入获焦且非空时出现，回调空值后保留焦点。accent 只用于光标与下划线，确认操作仍通过 CouiDialogAction 决定配色。
+
+默认 autoFocus 等待弹窗窗口获焦后请求编辑焦点和键盘；需要手动进入编辑时传 false。预设显式设置窗口 ADJUST_RESIZE，内容不再叠加 imePadding；默认的 decorFitsSystemWindows = true 必须保留，传 false 会明确拒绝。覆盖 properties 时也应保留 usePlatformDefaultWidth = false；其他窗口属性约束与普通弹窗一致。输入区采用 SingleInput 的正文间距、下划线、15sp 输入/10sp 计数及从物理左侧展开的焦点动画，复用项目平滑圆角的窗口与操作按钮。跨 ROM 键盘调度、选择浮窗、RTL 和字体缩放仍需设备验收。
+
 ## 背景材质
 
 默认不透明分支可直接使用。API 33 起，可传入 material = CouiDialogDefaults.material(dark)。需要背景采样时，显式提供所属窗口的 CouiBackdrop，或在已有 ProvideCouiMenuBackdrop 范围内调用弹窗。内容源按[背景采样](../effects/backdrop.md)装配，使用 Provider 提供的 Modifier 录制页面；弹窗、应用自画遮罩及采样效果自身不进入源。缺少平台支持或窗口源时明确报错。
@@ -102,7 +134,7 @@ Tiny、推荐/AI Payment 按钮、列表 Controller 与原厂极端高度的完�
 
 ## Demo 中的样式与示例
 
-进入 Demo 的“组件 → 弹窗”分组，可体验以下装配示例。它们均使用 CouiAlertDialog，通过位置、内容与操作参数组合，不是六个独立组件。
+进入 Demo 的“组件 → 弹窗”分组，可体验以下装配示例。前六项直接装配 CouiAlertDialog，输入示例使用专门的 CouiInputDialog 预设；它们共用同一个弹窗后端。
 
 | 示例 | 展示内容 |
 | --- | --- |
@@ -112,7 +144,10 @@ Tiny、推荐/AI Payment 按钮、列表 Controller 与原厂极端高度的完�
 | 三个操作 | 增加“重置选择”，演示三项操作的竖排及独立回调。 |
 | 禁用确认操作 | 确认按钮显示禁用状态，取消仍可使用。 |
 | 主题色确认弹窗 | 将确定操作改为宿主主题色，取消保持次操作外观。 |
+| 输入型弹窗：重命名设备 | 标题、说明、带下划线的输入框、右侧计数与清除键，以及取消/保存；初次打开保存禁用，编辑有效名称后才可保存。 |
 
 支持平台可通过分组中的“弹窗背景材质”开关，在项目模糊材质和不透明表面间比较；轮廓总开关及深浅色沿用 Demo 现有设置。确定更新示例结果，取消、外点和返回只关闭窗口，“重置选择”清除示例结果。
 
-装配源码见 [DemoDialogSamples.kt](../../demo/src/main/java/com/itos/coui/demo/DemoDialogSamples.kt)。公开参数见 [CouiAlertDialog / CouiDialogAction](../../coui/src/main/java/com/itos/coui/dialog/CouiAlertDialog.kt) 与 [CouiDialogDefaults](../../coui/src/main/java/com/itos/coui/dialog/CouiDialogDefaults.kt)。
+重命名示例只更新 Demo 的示例名称。其宿主策略核对 Settings 的 Utf8ByteLengthFilter：按 UTF-16 单元计 1/2/3 的 32 单位上限，保留选区替换和粘贴截断，达到上限计数变为错误色，过滤指定特殊字符并提示。空白或字面值 null 禁止保存；保存时去除首尾空白，取消后再次进入仍以已保存名称开始。不调用系统改名、网络名称审核或 OEM 业务服务。这些规则属于 Demo，调用库时可以替换为自己的规则。
+
+装配源码见 [DemoDialogSamples.kt](../../demo/src/main/java/com/itos/coui/demo/DemoDialogSamples.kt) 与[输入型示例](../../demo/src/main/java/com/itos/coui/demo/DemoDialogInputSample.kt)。公开参数见 [CouiAlertDialog / CouiDialogAction](../../coui/src/main/java/com/itos/coui/dialog/CouiAlertDialog.kt)、[CouiInputDialog](../../coui/src/main/java/com/itos/coui/dialog/CouiInputDialog.kt) 与 [CouiDialogDefaults](../../coui/src/main/java/com/itos/coui/dialog/CouiDialogDefaults.kt)。

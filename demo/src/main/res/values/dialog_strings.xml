@@ -6,6 +6,15 @@
     <string name="dialog_three">Three actions</string>
     <string name="dialog_disabled">Disabled confirmation</string>
     <string name="dialog_primary">Themed confirmation</string>
+    <string name="dialog_input">Input dialog: rename device</string>
+    <string name="dialog_device_name_initial">COUI Demo</string>
+    <string name="dialog_device_name_title">Change phone name</string>
+    <string name="dialog_device_name_message">Your phone name is visible when using Bluetooth, Wi-Fi Direct, and other connections.</string>
+    <string name="dialog_device_name_value">Example device name: %1$s</string>
+    <string name="dialog_input_clear">Clear input</string>
+    <string name="dialog_input_save">Save</string>
+    <string name="dialog_input_counter">%1$d/%2$d</string>
+    <string name="dialog_input_unsupported">Special characters are not supported.</string>
     <string name="dialog_material">Dialog background material</string>
     <string name="dialog_material_unavailable">Background material requires Android 13.</string>
     <string name="dialog_sample_title">This is a dialog!</string>

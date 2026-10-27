@@ -32,6 +32,8 @@ internal enum class DialogTextKind(internal val size: Float, internal val family
     Title(18f, "sans-serif-semibold", 550),
     Message(13f, "sans-serif", 400),
     Button(16f, "sans-serif-medium", 500),
+    Input(15f, "sans-serif", 400),
+    Counter(10f, "sans-serif", 400),
 }
 
 /** 系统资源决定排版，组件与语义由 Compose 承载，不继承宿主 M3 Typography。 */
@@ -84,4 +86,6 @@ private fun couiLineSpacing(kind: DialogTextKind, configuration: Configuration):
         1.2f else if (Build.VERSION.SDK_INT >= 35) 1.1429f else 1.15f
     DialogTextKind.Message -> if (Build.VERSION.SDK_INT >= 35) 1.1739f else 1.1f
     DialogTextKind.Button -> if (Build.VERSION.SDK_INT >= 35) 1.1579f else 1.2f
+    DialogTextKind.Input -> if (Build.VERSION.SDK_INT >= 35) 1.1321f else 1.1f
+    DialogTextKind.Counter -> 1f
 }

@@ -21,6 +21,8 @@ internal fun DialogSample(dark: Boolean) {
     var opened by rememberSaveable { mutableStateOf<String?>(null) }
     var confirmed by rememberSaveable { mutableStateOf(false) }
     var material by rememberSaveable { mutableStateOf(true) }
+    val initialName = stringResource(R.string.dialog_device_name_initial)
+    var deviceName by rememberSaveable { mutableStateOf(initialName) }
     val materialSupported = CouiDialogDefaults.isMaterialSupported()
     if (materialSupported) DemoSwitchRow(stringResource(R.string.dialog_material), material, { material = it })
     else Text(stringResource(R.string.dialog_material_unavailable), color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -28,6 +30,7 @@ internal fun DialogSample(dark: Boolean) {
         "bottom" to R.string.dialog_bottom, "center" to R.string.dialog_center,
         "long" to R.string.dialog_long, "three" to R.string.dialog_three,
         "disabled" to R.string.dialog_disabled, "primary" to R.string.dialog_primary,
+        "input" to R.string.dialog_input,
     )
     examples.forEach { (key, label) ->
         FilledTonalButton(onClick = { opened = key }, shape = DemoShapes.capsule) {
@@ -35,8 +38,13 @@ internal fun DialogSample(dark: Boolean) {
         }
     }
     Text(stringResource(if (confirmed) R.string.dialog_applied else R.string.dialog_not_applied))
+    Text(stringResource(R.string.dialog_device_name_value, deviceName))
     val example = opened
-    if (example != null) {
+    if (example == "input") {
+        RenameDeviceDialogSample(dark = dark, initialName = deviceName,
+            material = material && materialSupported, onDismissRequest = { opened = null },
+            onSave = { deviceName = it; opened = null })
+    } else if (example != null) {
         val close = { opened = null }
         val title = stringResource(R.string.dialog_sample_title)
         val message = stringResource(R.string.dialog_sample_message)

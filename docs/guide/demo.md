@@ -33,7 +33,7 @@ Demo 包含三个页面：
 | 效果 | 胶囊阴影及便捷 / 底层入口；双主体融合、内容遮罩和跟随回弹；背景采样与模糊；材质混色                                                         |
 | 预设 | 全部 FAB 固定配色、轮廓光、左右附件独立收放及顶栏按钮禁用态                                                                    |
 
-组件页新增一个弹窗分组，沿用原有 DemoSection 和 Material 按钮，集中展示底部、居中、长文、三个操作、禁用确认和主题色确认的装配；支持平台可切换背景材质。确定才更新示例结果，取消、返回和外点只关闭窗口，“重置选择”清除结果。详见[弹窗示例说明](../components/dialog.md#demo-中的样式与示例)。
+组件页新增一个弹窗分组，沿用原有 DemoSection 和 Material 按钮，集中展示底部、居中、长文、三个操作、禁用确认、主题色确认及 CouiInputDialog 输入预设；支持平台可切换背景材质。确定才更新示例结果，取消、返回和外点只关闭窗口，“重置选择”清除结果。输入预设演示重命名设备，保存只更新 Demo 名称，包含初始禁用、计数、清除、长度限制和草稿丢弃。详见[弹窗示例说明](../components/dialog.md#demo-中的样式与示例)。
 
 顶栏演示渐进模糊、图标按钮、文字按钮和搜索，搜索时同时展示退场动作与常驻动作的布局。搜索仅匹配当前页的分组标题。底栏切换示例页；独立 FAB 与右侧附件打开外观预设页；顶栏“重置”恢复默认 FAB 配色。深浅色通过顶栏或左侧附件切换。全部数值滑条使用 CouiSlider，切页和筛选保留受控值。融合示例使用三条独立的示例记录，展示侧滑、跟随回弹、内容遮罩、删除确认和离场动画；删除只改变 Demo 内存状态，清空后可恢复。侧滑装配只在 Demo，库继续提供算法。滑条占满分组的可用宽度；长菜单限制高度并保留四组三项。
 
@@ -46,6 +46,7 @@ Demo 的 M3 页面使用 `surfaceContainer` 层级，示例卡片使用 `surface
 - [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)：页面、采样源、顶栏、搜索、底栏和 FAB。
 - [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)：滑条、复选框与菜单。
 - [DemoDialogSamples](../../demo/src/main/java/com/itos/coui/demo/DemoDialogSamples.kt)：弹窗、材质开关与宿主受控回调。
+- [DemoDialogInputSample](../../demo/src/main/java/com/itos/coui/demo/DemoDialogInputSample.kt)：输入型预设、重命名草稿与宿主校验策略。
 - [DemoChipSamples](../../demo/src/main/java/com/itos/coui/demo/DemoChipSamples.kt)：ChipTab 与分类菜单。
 - [DemoVisualEffects](../../demo/src/main/java/com/itos/coui/demo/DemoVisualEffects.kt)：采样模糊与材质混色。
 - [DemoShadowSamples](../../demo/src/main/java/com/itos/coui/demo/DemoShadowSamples.kt)：便捷和底层阴影。
