@@ -12,6 +12,4 @@
 | [运动与跟随回弹](motion.md) | 触摸形变、按压与双主体跟随 |
 | [横向双主体融合](metaball.md) | 同色融合背景及 DstIn 内容遮罩 |
 
-绘制接口的单位、坐标和资源所有权见各页；运行要求集中在[兼容要求](../guide/compatibility.md)。Shape 和组件 Defaults 见[外观与预设](../guide/appearance.md)。
-
-维护这些页面时遵循[effect 文档写法](../development/documentation.md#effect-页面)。
+运行要求见[兼容要求](../guide/compatibility.md)，Shape 和组件 Defaults 见[外观与预设](../guide/appearance.md)。

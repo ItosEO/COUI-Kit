@@ -14,6 +14,4 @@
 | [ChipTab](chip-tab.md) | 单选分类、横向滚动与独立图标动作 |
 | [弹窗](dialog.md) | 底部/居中窗口、受控操作与输入型预设 |
 
-各页说明状态、回调及平台要求。浮动材质需要的公共准备见[背景采样](../effects/backdrop.md)；单独使用算法见[效果目录](../effects/README.md)。
-
-维护这些页面时遵循[component 文档写法](../development/documentation.md#component-页面)。
+浮动材质需要的公共准备见[背景采样](../effects/backdrop.md)；单独使用算法见[效果目录](../effects/README.md)。

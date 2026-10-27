@@ -14,6 +14,4 @@
 | Demo 打包、固定测试签名、PR 检查与失败诊断 | [CI 与 PR 检查](ci.md)                     |
 | 发布库预览版、版本来源与上传权限 | [预览版发布](publishing.md) |
 
-使用者入口为[快速开始](../guide/getting-started.md)、[组件](../components/README.md)和[效果](../effects/README.md)。开发文档解释如何维护实现，使用文档解释如何调用接口。
-
 AI 代理的任务阅读顺序与执行权限由 [AGENTS.md](../../AGENTS.md)规定。

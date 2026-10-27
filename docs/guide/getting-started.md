@@ -64,10 +64,3 @@ fun SliderExample(
 ~~~
 
 在 App 中，业务数值及保存操作由宿主状态层持有。步进和提交示例见[滑条](../components/slider.md)。
-
-## 继续接入
-
-- 按[外观与预设](appearance.md)提供配色、字体和 Shape。
-- 从[组件目录](../components/README.md)选择菜单、顶栏、底栏等控件。
-- 浮动组件先装配[背景采样源](../effects/backdrop.md)，再按组件页放置消费者。
-- 查看完整效果与交互，运行 [Demo](demo.md)。
