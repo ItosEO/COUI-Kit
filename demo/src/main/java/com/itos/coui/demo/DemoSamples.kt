@@ -105,6 +105,7 @@ internal fun ControlsDemo(dark: Boolean, query: String) {
         DemoCheckboxRow(stringResource(R.string.checkbox_disabled), true, {}, dark, enabled = false)
         DemoCheckboxRow(stringResource(R.string.checkbox_disabled_unchecked), false, {}, dark, enabled = false)
     }
+    DemoSection(R.string.switch_title, query) { SwitchSample(dark) }
     DemoSection(R.string.menu_title, query) { MenuSample(dark) }
     DemoSection(R.string.chip_tab_title, query) { ChipTabSample(dark) }
 }

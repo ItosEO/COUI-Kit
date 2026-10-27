@@ -1,0 +1,12 @@
+<resources>
+    <string name="switch_title">开关</string>
+    <string name="switch_sample_toggle">点击或拖动</string>
+    <string name="switch_sample_toggle_summary">这是一个开关！点击切换，也可以拖动滑块选择状态。</string>
+    <string name="switch_sample_description">带说明的开关</string>
+    <string name="switch_sample_description_summary">同一个开关，也可以搭配标题和说明文字。</string>
+    <string name="switch_sample_loading">加载状态</string>
+    <string name="switch_sample_loading_summary">这个示例模拟等待过程，完成后才改变开关的值。</string>
+    <string name="switch_sample_loading_description">正在加载</string>
+    <string name="switch_sample_disabled_off">禁用 · 未选中</string>
+    <string name="switch_sample_disabled_on">禁用 · 已选中</string>
+</resources>

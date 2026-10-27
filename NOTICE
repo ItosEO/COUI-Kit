@@ -25,3 +25,11 @@ file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 名称和标识的使用政策见根目录 TRADEMARKS.md。该政策独立于代码许可，
 不增加或改变 MPL-2.0 授予的代码权利。
+
+COUI 开关加载图像
+-----------------
+
+coui/src/main/res/drawable-xxhdpi/coui_switch_loading.png 是用户要求采用的
+ColorOS 17 Settings 原始 switch_loading 图像，来源与校验值见
+coui/RESOURCE_SOURCES.md。该图像不适用本项目的 MPL-2.0 声明；原厂及
+上游的权利继续适用，本项目不额外授予该第三方资源的权利。

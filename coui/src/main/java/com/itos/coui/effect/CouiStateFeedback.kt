@@ -7,6 +7,7 @@ import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -77,6 +78,26 @@ private fun rememberMaskProgress(active: Boolean): Float {
     val effect = remember(scope) { CouiMaskProgress(scope) }
     SideEffect { effect.setActive(active) }
     return effect.progress.value
+}
+
+/** COUISwitch 的 hover/focus/press 蒙层，复用同一 StateEffectAnimator 后端，不创建点击。 */
+@Composable
+internal fun Modifier.couiSwitchFeedback(
+    dark: Boolean,
+    interactionSource: MutableInteractionSource,
+    enabled: Boolean,
+): Modifier {
+    val hovered by interactionSource.collectIsHoveredAsState()
+    val focused by interactionSource.collectIsFocusedAsState()
+    val pressed by interactionSource.collectIsPressedAsState()
+    val hover = rememberMaskProgress(enabled && hovered)
+    val focus = rememberMaskProgress(enabled && focused)
+    val press = rememberMaskProgress(enabled && pressed)
+    return hoverable(interactionSource, enabled).drawBehind {
+        drawRect(maskColor(hover, if (dark) 0x26FFFFFF else 0x14000000))
+        drawRect(maskColor(focus, if (dark) 0x331A8CFF else 0x1F0080FF))
+        drawRect(maskColor(press, if (dark) 0x33FFFFFF else 0x1F000000))
+    }
 }
 
 /** 各状态沿用 StateEffectAnimator 的弹簧。 */
