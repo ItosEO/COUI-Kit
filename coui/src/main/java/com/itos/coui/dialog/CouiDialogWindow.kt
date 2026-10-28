@@ -9,6 +9,7 @@ import android.content.res.Configuration
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.view.Gravity
+import android.view.Window
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityManager
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -30,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,6 +63,9 @@ import com.itos.coui.effect.LocalCouiContourGlowEnabled
 import com.itos.coui.effect.rememberCouiMaterialEffect
 import com.itos.coui.menu.LocalCouiMenuBackdrop
 import com.itos.coui.menu.rememberCouiKawaseBlur
+
+/** 输入预设只声明窗口策略，实际写入由窗口 owner 排在 Compose 参数更新之后。 */
+internal val LocalCouiDialogSoftInputMode = staticCompositionLocalOf<Int?> { null }
 
 /**
  * 普通警告窗口。宿主持有可见性、回调和不包含弹窗自身的窗口源。
@@ -99,6 +104,21 @@ internal fun CouiDialogWindow(
     val accessibility = remember(context) { context.getSystemService(AccessibilityManager::class.java) }
     var touchExploration by remember(accessibility) { mutableStateOf(accessibility?.isTouchExplorationEnabled == true) }
     val dismiss = rememberUpdatedState(onDismissRequest)
+    val softInputMode = LocalCouiDialogSoftInputMode.current
+    val windowReference = remember { mutableStateOf<Window?>(null) }
+    // 在组合阶段读取，首个 Dialog 子组合发布 Window 后会触发 owner 再次应用策略。
+    val ownedWindow = windowReference.value
+    fun configureWindow(window: Window) {
+        window.setGravity(if (placement == CouiDialogPlacement.Bottom) Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL else Gravity.CENTER)
+        window.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
+        window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+        window.setBackgroundBlurRadius(0)
+        window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        window.setDimAmount(colors.dimAmount)
+        window.setWindowAnimations(if (placement == CouiDialogPlacement.Bottom)
+            R.style.CouiDialogAnimation_Bottom else R.style.CouiDialogAnimation_Center)
+        softInputMode?.let(window::setSoftInputMode)
+    }
     DisposableEffect(accessibility) {
         val listener = AccessibilityManager.TouchExplorationStateChangeListener { touchExploration = it }
         accessibility?.addTouchExplorationStateChangeListener(listener)
@@ -116,14 +136,8 @@ internal fun CouiDialogWindow(
     )) {
         val window = checkNotNull((LocalView.current.parent as? DialogWindowProvider)?.window) { "未找到对话框所属 Window" }
         SideEffect {
-            window.setGravity(if (placement == CouiDialogPlacement.Bottom) Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL else Gravity.CENTER)
-            window.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
-            window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-            window.setBackgroundBlurRadius(0)
-            window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-            window.setDimAmount(colors.dimAmount)
-            window.setWindowAnimations(if (placement == CouiDialogPlacement.Bottom)
-                R.style.CouiDialogAnimation_Bottom else R.style.CouiDialogAnimation_Center)
+            windowReference.value = window
+            configureWindow(window)
         }
         val configuration = LocalConfiguration.current
         val maxHeight = if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
@@ -157,6 +171,9 @@ internal fun CouiDialogWindow(
                     material, windowBackdrop, colors, shape, edge, dark, radiusPx, content)
         }
     }
+    // 位于 Dialog 调用之后，保证晚于其 updateParameters 的 SOFT_INPUT_MODE 重置；
+    // 不依赖输入内容子组合是否因为 properties.windowTitle 等外部更新而重组。
+    SideEffect { ownedWindow?.let(::configureWindow) }
 }
 
 @Composable

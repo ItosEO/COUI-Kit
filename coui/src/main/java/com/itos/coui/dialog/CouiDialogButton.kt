@@ -51,8 +51,6 @@ internal object DialogButtonDefaults {
         override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density) =
             (if (size.width == size.height) circle else CouiCapsuleShape).createOutline(size, layoutDirection, density)
     }
-    val minHeight = 44.dp
-    val horizontalPadding = 12.dp
     /** 关闭弹窗材质时使用中性底色，材质分支使用半透明白色。 */
     fun secondaryColors(dark: Boolean, material: Boolean = false) = CouiDialogActionColors(
         Color(if (material) { if (dark) 0x33FFFFFF else 0xA6FFFFFF } else { if (dark) 0xFF353535 else 0xFFEBEBEB }), Color(if (dark) 0xE6FFFFFF else 0xE6000000),
@@ -86,7 +84,7 @@ internal fun DialogButton(
     val (lightInput, drawLight) = rememberCouiSpotlight(interactive = enabled, dark = dark,
         preset = if (style == CouiDialogActionStyle.Primary) SpotlightPreset.OpaqueMedium1 else SpotlightPreset.OpaqueMedium2,
         cancelOnConsumedMove = true)
-    Box(modifier.heightIn(min = DialogButtonDefaults.minHeight).graphicsLayer {
+    Box(modifier.heightIn(min = CouiDialogDefaults.buttonHeight).graphicsLayer {
         scaleX = motion.scaleX.value * press.scale.value
         scaleY = motion.scaleY.value * press.scale.value
         translationX = motion.translationX.value
@@ -99,7 +97,7 @@ internal fun DialogButton(
         }.dialogButtonSurface(dark, enabled, if (enabled) resolvedColors.surface else resolvedColors.disabledSurface, style)
         .couiButtonFeedback(dark, source, enabled, pressFeedback = !material)
         .clickable(source, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
-        .padding(horizontal = DialogButtonDefaults.horizontalPadding, vertical = 4.dp), contentAlignment = Alignment.Center) {
+        .padding(horizontal = CouiDialogDefaults.buttonHorizontalPadding, vertical = 4.dp), contentAlignment = Alignment.Center) {
         DialogText(text = text, kind = DialogTextKind.Button, color = if (enabled) resolvedColors.content else resolvedColors.disabledContent)
     }
 }

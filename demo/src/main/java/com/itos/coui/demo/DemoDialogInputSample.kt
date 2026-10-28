@@ -4,19 +4,26 @@ import android.os.SystemClock
 import android.widget.Toast
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.TextFieldBuffer
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.TextFieldValue
 import com.itos.coui.dialog.CouiDialogAction
 import com.itos.coui.dialog.CouiDialogDefaults
 import com.itos.coui.dialog.CouiInputDialog
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.collect
 
 /** 重命名设备只更新 Demo 中的示例名称，不读取或修改系统设置。 */
 @Composable
@@ -27,28 +34,31 @@ internal fun RenameDeviceDialogSample(
     onDismissRequest: () -> Unit,
     onSave: (String) -> Unit,
 ) {
-    var draft by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue(initialName, TextRange(initialName.length)))
-    }
+    val draft = rememberTextFieldState(initialText = initialName, initialSelection = TextRange(initialName.length))
     var edited by rememberSaveable { mutableStateOf(false) }
-    val name = draft.text.trim { it <= ' ' }
+    LaunchedEffect(draft) { snapshotFlow { draft.text.toString() }.drop(1).collect { edited = true } }
+    val text = draft.text.toString()
+    val name = text.trim { it <= ' ' }
     val canSave = edited && name.isNotEmpty() && name != "null"
-    val count = deviceNameByteCount(draft.text)
+    val count = deviceNameByteCount(text)
     val context = LocalContext.current
     val unsupported = stringResource(R.string.dialog_input_unsupported)
     var lastWarning by remember { mutableLongStateOf(-2201L) }
-    CouiInputDialog(value = draft, onValueChange = { proposed ->
-        val filtered = filterDeviceNameEdit(draft, proposed)
-        if (proposed.text != draft.text && deviceNameEmoji.containsMatchIn(proposed.text)) {
-            val now = SystemClock.elapsedRealtime()
-            if (now - lastWarning > 2200L) {
-                Toast.makeText(context, unsupported, Toast.LENGTH_SHORT).show()
-                lastWarning = now
+    val transformation = remember(context, unsupported) {
+        InputTransformation {
+            val blocked = filterDeviceNameEdit(this)
+            if (asCharSequence().toString() != originalText.toString()) edited = true
+            if (blocked) {
+                val now = SystemClock.elapsedRealtime()
+                if (now - lastWarning > 2200L) {
+                    Toast.makeText(context, unsupported, Toast.LENGTH_SHORT).show()
+                    lastWarning = now
+                }
             }
         }
-        if (filtered.text != draft.text) edited = true
-        draft = filtered
-    }, onDismissRequest = onDismissRequest, dark = dark, accent = MaterialTheme.colorScheme.primary,
+    }
+    CouiInputDialog(state = draft, inputTransformation = transformation,
+        onDismissRequest = onDismissRequest, dark = dark, accent = MaterialTheme.colorScheme.primary,
         title = stringResource(R.string.dialog_device_name_title),
         message = stringResource(R.string.dialog_device_name_message),
         clearContentDescription = stringResource(R.string.dialog_input_clear),
@@ -70,38 +80,30 @@ private val deviceNameEmoji = Regex(
 
 private fun deviceNameByteCount(text: String): Int = text.sumOf { if (it.code < 128) 1 else if (it.code < 2048) 2 else 3 }
 
-private fun filterDeviceNameEdit(previous: TextFieldValue, proposed: TextFieldValue): TextFieldValue {
-    if (previous.text == proposed.text) return proposed
-    val before = previous.text
-    val after = proposed.text
-    var start = 0
-    while (start < minOf(before.length, after.length) && before[start] == after[start]) start++
-    if (start > 0 && start < after.length && Character.isSurrogatePair(after[start - 1], after[start])) start--
-    var suffix = 0
-    while (suffix < minOf(before.length, after.length) - start &&
-        before[before.lastIndex - suffix] == after[after.lastIndex - suffix]) suffix++
-    if (suffix > 0 && suffix < after.length - start &&
-        Character.isSurrogatePair(after[after.length - suffix - 1], after[after.length - suffix])) suffix--
-    val inserted = after.substring(start, after.length - suffix)
-    val blocked = deviceNameEmoji.containsMatchIn(inserted)
-    var remaining = DEVICE_NAME_MAX_BYTES - deviceNameByteCount(before.take(start) + before.takeLast(suffix))
-    var retained = 0
-    while (!blocked && retained < inserted.length) {
-        val size = Character.charCount(inserted.codePointAt(retained))
-        val cost = deviceNameByteCount(inserted.substring(retained, retained + size))
-        if (cost > remaining) break
-        remaining -= cost
-        retained += size
+@OptIn(ExperimentalFoundationApi::class)
+private fun filterDeviceNameEdit(buffer: TextFieldBuffer): Boolean {
+    val text = buffer.asCharSequence().toString()
+    // ChangeList 记录真实替换区间，包括与旧文相同的粘贴内容；先快照，避免改写时追踪表变化。
+    val replacements = List(buffer.changes.changeCount) { buffer.changes.getRange(it) }
+    var remaining = DEVICE_NAME_MAX_BYTES - deviceNameByteCount(text) +
+        replacements.sumOf { deviceNameByteCount(text.substring(it.min, it.max)) }
+    var blocked = false
+    val retained = replacements.map { range ->
+        val inserted = text.substring(range.min, range.max)
+        var length = 0
+        if (deviceNameEmoji.containsMatchIn(inserted)) blocked = true
+        else while (length < inserted.length) {
+            val units = Character.charCount(inserted.codePointAt(length))
+            val cost = deviceNameByteCount(inserted.substring(length, length + units))
+            if (cost > remaining) break
+            remaining -= cost
+            length += units
+        }
+        inserted.take(length)
     }
-    if (retained == inserted.length) return proposed
-    val removed = inserted.length - retained
-    val end = start + inserted.length
-    fun mapOffset(index: Int) = when {
-        index <= start + retained -> index
-        index < end -> start + retained
-        else -> index - removed
+    for (index in replacements.indices.reversed()) {
+        val range = replacements[index]
+        if (retained[index].length != range.length) buffer.replace(range.min, range.max, retained[index])
     }
-    fun mapRange(range: TextRange) = TextRange(mapOffset(range.start), mapOffset(range.end))
-    return TextFieldValue(after.take(start) + inserted.take(retained) + after.takeLast(suffix),
-        selection = mapRange(proposed.selection), composition = proposed.composition?.let(::mapRange)?.takeUnless { it.collapsed })
+    return blocked
 }

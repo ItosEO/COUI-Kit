@@ -51,3 +51,5 @@ Demo 使用系统动态色。M3 导航在竖屏使用底栏、横屏使用侧栏
 - [DemoVisualEffects](../../demo/src/main/java/com/itos/coui/demo/DemoVisualEffects.kt)：采样模糊与材质混色。
 - [DemoShadowSamples](../../demo/src/main/java/com/itos/coui/demo/DemoShadowSamples.kt)：便捷和底层阴影。
 - [DemoRecordSamples](../../demo/src/main/java/com/itos/coui/demo/DemoRecordSamples.kt)：侧滑驱动融合、确认和示例删除。
+
+重命名示例用 TextFieldState 和 InputTransformation 保存真实编辑范围：整段粘贴包含禁用字符时，将本次插入部分置空；长度超限只保留配额内的插入内容。过滤和计数仍归 Demo，清除与取消不提交名称。

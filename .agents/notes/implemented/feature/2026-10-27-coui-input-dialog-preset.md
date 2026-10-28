@@ -2,6 +2,8 @@
 
 Status: implemented
 
+窗口参数更新顺序与 Demo 编辑范围的后续修复见[输入预设审查修正](../bug-fix/2026-10-28-dialog-review-window-and-edit-range.md)。原 TextFieldValue 调用保持，真实事务过滤新增同名 TextFieldState 重载；本篇早期按字符串差异推断替换区间及由内容 SideEffect 写窗口模式的实现说明不再作为当前依据。
+
 ## Problem
 
 普通弹窗虽提供 content slot，使用者仍需自行处理标准输入区的排版、焦点、计数和清除。用户明确要求在首个弹窗 PR 基础上提供专门的输入预设，以设置的设备名称弹窗为依据；只在 Demo 拼一份示例不能满足这个接入需求。

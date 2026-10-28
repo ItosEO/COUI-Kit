@@ -116,7 +116,28 @@ CouiInputDialog(
 
 输入值、选区和输入法组合区都属于 value；onValueChange 不自动提交业务或关闭弹窗。库不内置设备名称、长度或敏感词规则，counter 可省略，counterIsError 只改变计数颜色。placeholder 可提供空值提示；清除键在输入获焦且非空时出现，回调空值后保留焦点。accent 只用于光标与下划线，确认操作仍通过 CouiDialogAction 决定配色。
 
-默认 autoFocus 等待弹窗窗口获焦后请求编辑焦点和键盘；需要手动进入编辑时传 false。预设显式设置窗口 ADJUST_RESIZE，内容不再叠加 imePadding；默认的 decorFitsSystemWindows = true 必须保留，传 false 会明确拒绝。覆盖 properties 时也应保留 usePlatformDefaultWidth = false；其他窗口属性约束与普通弹窗一致。输入区采用 SingleInput 的正文间距、下划线、15sp 输入/10sp 计数及从物理左侧展开的焦点动画，复用项目平滑圆角的窗口与操作按钮。跨 ROM 键盘调度、选择浮窗、RTL 和字体缩放仍需设备验收。
+需要按真实替换选区过滤粘贴或组合输入时，使用同名的 TextFieldState 重载。输入状态由宿主保存，inputTransformation 在用户编辑事务中得到 TextFieldBuffer.changes；不要用新旧字符串的公共前后缀推断粘贴范围。下面仍位于宿主 Composable，initialText、nameFilter、标签、确认条件与 close 均由宿主提供；nameFilter 是宿主的 InputTransformation，保存回调读取 editorState.text。
+
+~~~kotlin
+import androidx.compose.foundation.text.input.rememberTextFieldState
+
+val editorState = rememberTextFieldState(initialText = initialText)
+CouiInputDialog(
+    state = editorState,
+    inputTransformation = nameFilter,
+    onDismissRequest = close,
+    dark = dark,
+    accent = accent,
+    title = title,
+    clearContentDescription = clearLabel,
+    confirmAction = CouiDialogAction(saveLabel, { save(editorState.text.toString()) }, enabled = canSave),
+    dismissAction = CouiDialogAction(cancelLabel, close),
+)
+~~~
+
+清除和宿主 state.edit 属于程序性编辑，不经过 inputTransformation；转换只处理键盘、粘贴、拖入和无障碍等用户输入。宿主可以通过 snapshotFlow 观察文本变化以更新业务状态。两个重载共享输入布局、焦点、计数、清除、窗口和材质；原 TextFieldValue 调用保持可用。
+
+默认 autoFocus 等待弹窗窗口获焦后请求编辑焦点和键盘；需要手动进入编辑时传 false。预设声明的 ADJUST_RESIZE 与键盘显示策略由窗口层在 Compose 参数更新后统一应用，因此只修改 properties.windowTitle 等参数也会恢复策略，不依赖输入内容重组。内容不再叠加 imePadding；默认的 decorFitsSystemWindows = true 必须保留，传 false 会明确拒绝。覆盖 properties 时也应保留 usePlatformDefaultWidth = false；其他窗口属性约束与普通弹窗一致。输入区采用 SingleInput 的正文间距、下划线、15sp 输入/10sp 计数及从物理左侧展开的焦点动画，复用项目平滑圆角的窗口与操作按钮。跨 ROM 键盘调度、选择浮窗、RTL 和字体缩放仍需设备验收。
 
 ## 背景材质
 
