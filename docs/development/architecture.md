@@ -16,7 +16,7 @@ demo 只消费公开 API，负责页面、主题和示例交互；示例不读�
 
 | 包                                                                   | 职责                        |
 |---------------------------------------------------------------------|---------------------------|
-| topappbar、navigation、floatingactionbutton、menu、slider、checkbox、switch、chip | 组件的布局、状态装配、语义与公开 Defaults |
+| topappbar、navigation、floatingactionbutton、menu、slider、checkbox、switch、chip、dialog | 组件的布局、状态装配、语义与公开 Defaults |
 | backdrop                                                            | 所属窗口的内容源、绘制录制与采样坐标映射      |
 | effect                                                              | 普通投影、模糊、材质、光效与融合绘制        |
 | shape                                                               | 公共 Shape 与几何约定            |

@@ -13,5 +13,6 @@
 | [复选框](checkbox.md) | 勾选状态与切换动画 |
 | [开关](switch.md) | 二值切换、拖动吸附与加载状态 |
 | [ChipTab](chip-tab.md) | 单选分类、横向滚动与独立图标动作 |
+| [弹窗](dialog.md) | 底部/居中窗口、受控操作与输入型预设 |
 
 浮动材质需要的公共准备见[背景采样](../effects/backdrop.md)；单独使用算法见[效果目录](../effects/README.md)。

@@ -7,14 +7,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 
-/** 两层材质混色, 只作用于背景输入。组件负责选择颜色预设。 */
+/** BackgroundBlurDrawable 的普通材质模式，亮度混色后执行第二层混合。 */
+enum class CouiMaterialBlendMode { Overlay, ColorDodge }
+
+/** 两层材质混色, 只作用于背景输入。组件负责选择颜色和模式预设。 */
 @RequiresApi(33)
 @Composable
-fun rememberCouiMaterialEffect(mix: Color, blend: Color): RenderEffect =
-    remember(mix, blend) {
+fun rememberCouiMaterialEffect(mix: Color, blend: Color,
+    blendMode: CouiMaterialBlendMode = CouiMaterialBlendMode.Overlay): RenderEffect =
+    remember(mix, blend, blendMode) {
         val shader = RuntimeShader(CouiMaterialShader)
         shader.setFloatUniform("uMixColor", mix.red, mix.green, mix.blue, mix.alpha)
         shader.setFloatUniform("uBlendColor", blend.red, blend.green, blend.blue, blend.alpha)
+        shader.setFloatUniform("uColorDodge", if (blendMode == CouiMaterialBlendMode.ColorDodge) 1f else 0f)
         RenderEffect.createRuntimeShaderEffect(shader, "content")
     }
 
@@ -64,8 +69,14 @@ private const val CouiMaterialShader = CouiMaterialShaderFunctions + """
     uniform shader content;
     uniform float4 uMixColor;
     uniform float4 uBlendColor;
+    uniform float uColorDodge;
 
     half4 main(float2 coordinate) {
-        return couiMaterial(content.eval(coordinate), uMixColor, uBlendColor);
+        half4 color = content.eval(coordinate);
+        if (uColorDodge < 0.5) return couiMaterial(color, uMixColor, uBlendColor);
+        color.rgb = mix(color.rgb, luminosity(uMixColor.rgb, color.rgb), uMixColor.a);
+        // MaterialFilter::appendColorDodge：不提前限幅；在最终 SDR 输出处合成。
+        color.rgb = mix(color.rgb, color.rgb / (1.0 - uBlendColor.rgb), uBlendColor.a);
+        return color;
     }
 """

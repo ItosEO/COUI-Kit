@@ -130,6 +130,27 @@ internal fun Modifier.couiSwitchFocusOutline(
     }
 }
 
+/** 普通按钮的状态蒙层；点击由组件唯一的 clickable 提交，材质分支关闭 pressed 蒙层。 */
+@Composable
+internal fun Modifier.couiButtonFeedback(
+    dark: Boolean,
+    interactionSource: MutableInteractionSource,
+    enabled: Boolean,
+    pressFeedback: Boolean,
+): Modifier {
+    val hovered by interactionSource.collectIsHoveredAsState()
+    val focused by interactionSource.collectIsFocusedAsState()
+    val pressed by interactionSource.collectIsPressedAsState()
+    val hover = rememberMaskProgress(enabled && hovered)
+    val focus = rememberMaskProgress(enabled && focused)
+    val press = rememberMaskProgress(enabled && pressed && pressFeedback)
+    return hoverable(interactionSource, enabled).drawBehind {
+        drawRect(maskColor(hover.value, if (dark) 0x26FFFFFF else 0x14000000))
+        drawRect(maskColor(focus.value, if (dark) 0x331A8CFF else 0x1F0080FF))
+        drawRect(maskColor(press.value, if (dark) 0x33FFFFFF else 0x1F000000))
+    }
+}
+
 /** 各状态沿用 StateEffectAnimator 的弹簧。 */
 private class CouiMaskProgress(private val scope: CoroutineScope) {
     val progress = Animatable(0f, visibilityThreshold = 0.001f)
