@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import com.itos.coui.effect.couiSwitchFeedback
+import com.itos.coui.effect.couiSwitchFocusOutline
 import com.itos.coui.shape.CouiCapsuleShape
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -56,7 +57,8 @@ import com.itos.coui.input.isCouiTouchCancelled
 
 @Immutable
 data class CouiSwitchColors(val checkedTrack: Color, val uncheckedTrack: Color, val thumb: Color,
-    val disabledCheckedTrack: Color, val disabledUncheckedTrack: Color, val disabledThumb: Color)
+    val disabledCheckedTrack: Color, val disabledUncheckedTrack: Color, val disabledThumb: Color,
+    val focusOutline: Color = checkedTrack.copy(alpha = .4f))
 
 object CouiSwitchDefaults {
     val width = 44.dp
@@ -77,7 +79,7 @@ object CouiSwitchDefaults {
     fun colors(accent: Color, dark: Boolean) = CouiSwitchColors(accent,
         Color(if (dark) 0x40FFFFFF else 0x29000000), Color.White,
         Color(accent.toArgb() and 0x4DFFFFFF), Color(if (dark) 0x26FFFFFF else 0x14000000),
-        Color(if (dark) 0x29FFFFFF else 0x8AFFFFFF))
+        Color(if (dark) 0x29FFFFFF else 0x8AFFFFFF), Color(if (dark) 0x665C9DFF else 0x660080FF))
 }
 
 /**
@@ -115,6 +117,7 @@ fun CouiSwitch(
     val callback by rememberUpdatedState(onCheckedChange)
     val dragCallback by rememberUpdatedState(onDragCheckedChange)
     val source = interactionSource ?: remember { MutableInteractionSource() }
+    var touchPressed by remember { mutableStateOf(false) }
     var coordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     SideEffect {
         state.onCommit = { target -> if (target != currentChecked) dragCallback?.let { change ->
@@ -122,8 +125,9 @@ fun CouiSwitch(
             change(target)
         } }
         state.update(checked, interactive)
+        if (!interactive) touchPressed = false
     }
-    DisposableEffect(state) { onDispose { state.dispose(); coordinates = null } }
+    DisposableEffect(state) { onDispose { touchPressed = false; state.dispose(); coordinates = null } }
     LaunchedEffect(state.settled, checked) {
         withFrameNanos { }
         state.reconcile(currentChecked)
@@ -164,6 +168,8 @@ fun CouiSwitch(
                 if (accepted) sample(currentEvent, down.position.x)
                 var dragging = false
                 var complete = false
+                // 点击识别在 MOVE 被消费后会 Cancel；原厂按压仍由整次触摸会话持有。
+                touchPressed = true
                 try {
                     while (true) {
                         val event = awaitPointerEvent(PointerEventPass.Initial)
@@ -193,6 +199,7 @@ fun CouiSwitch(
                         }
                     }
                 } finally {
+                    touchPressed = false
                     if (!complete && accepted) state.cancel()
                     tracker.recycle()
                 }
@@ -208,13 +215,15 @@ fun CouiSwitch(
         if (loading && loadingDescription != null) { stateDescription = loadingDescription; liveRegion = LiveRegionMode.Polite }
     }.onGloballyPositioned { coordinates = it }
         .wrapContentSize(Alignment.Center).requiredSize(CouiSwitchDefaults.width, CouiSwitchDefaults.height)
+        // 焦点位于轨道外侧，必须在轨道自身的裁剪层之外绘制。
+        .couiSwitchFocusOutline(source, enabled, colors.focusOutline, CouiSwitchDefaults.shape)
         .clip(CouiSwitchDefaults.shape).drawBehind {
             // 与滑块在绘制阶段读取同一帧，避免颜色先经重组、位置直接绘制造成错帧。
             val track = if (enabled) Color(ColorUtils.blendARGB(
                 colors.uncheckedTrack.toArgb(), colors.checkedTrack.toArgb(), state.fraction))
                 else if (checked) colors.disabledCheckedTrack else colors.disabledUncheckedTrack
             drawRect(track)
-        }.couiSwitchFeedback(dark, source, enabled)) {
+        }.couiSwitchFeedback(dark, source, enabled, touchPressed)) {
         Canvas(Modifier.requiredSize(CouiSwitchDefaults.width, CouiSwitchDefaults.height)) {
             thumbPaint.color = (if (enabled) colors.thumb else colors.disabledThumb).toArgb()
             if (enabled) thumbPaint.setShadowLayer(8f, 0f, 4f, android.graphics.Color.argb(25, 0, 0, 0))

@@ -9,12 +9,20 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.ClipOp
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -38,8 +46,8 @@ fun Modifier.couiNavigationFeedback(
     return hoverable(interactionSource).drawBehind {
         val radius = size.height * 0.5f
         val maskSize = Size(size.width + inset * 2f, size.height)
-        drawRoundRect(maskColor(hover, if (dark) 0x26FFFFFF else 0x14000000), Offset(-inset, 0f), maskSize, CornerRadius(radius))
-        drawRoundRect(maskColor(focus, if (dark) 0x331A8CFF else 0x1F0080FF), Offset(-inset, 0f), maskSize, CornerRadius(radius))
+        drawRoundRect(maskColor(hover.value, if (dark) 0x26FFFFFF else 0x14000000), Offset(-inset, 0f), maskSize, CornerRadius(radius))
+        drawRoundRect(maskColor(focus.value, if (dark) 0x331A8CFF else 0x1F0080FF), Offset(-inset, 0f), maskSize, CornerRadius(radius))
     }
 }
 
@@ -50,7 +58,7 @@ fun Modifier.couiFabFeedback(dark: Boolean, interactionSource: MutableInteractio
     val hover = rememberMaskProgress(hovered)
     return hoverable(interactionSource).drawBehind {
         val radius = CornerRadius(size.minDimension * 0.5f)
-        drawRoundRect(maskColor(hover, if (dark) 0x26FFFFFF else 0x14000000), cornerRadius = radius)
+        drawRoundRect(maskColor(hover.value, if (dark) 0x26FFFFFF else 0x14000000), cornerRadius = radius)
     }
 }
 
@@ -67,36 +75,58 @@ fun Modifier.couiToolbarFeedback(
     val focus = rememberMaskProgress(enabled && focused)
     return hoverable(interactionSource, enabled).drawBehind {
         val radius = CornerRadius(size.minDimension * 0.5f)
-        drawRoundRect(maskColor(hover, if (dark) 0x26FFFFFF else 0x14000000), cornerRadius = radius)
-        drawRoundRect(maskColor(focus, if (dark) 0x331A8CFF else 0x1F0080FF), cornerRadius = radius)
+        drawRoundRect(maskColor(hover.value, if (dark) 0x26FFFFFF else 0x14000000), cornerRadius = radius)
+        drawRoundRect(maskColor(focus.value, if (dark) 0x331A8CFF else 0x1F0080FF), cornerRadius = radius)
     }
 }
 
 @Composable
-private fun rememberMaskProgress(active: Boolean): Float {
+private fun rememberMaskProgress(active: Boolean): State<Float> {
     val scope = rememberCoroutineScope()
     val effect = remember(scope) { CouiMaskProgress(scope) }
     SideEffect { effect.setActive(active) }
-    return effect.progress.value
+    return effect.progress.asState()
 }
 
-/** COUISwitch 的 hover/focus/press 蒙层，复用同一 StateEffectAnimator 后端，不创建点击。 */
+/** COUISwitch 的 hover/press 蒙层；触摸会话与点击识别取消分别收尾。 */
 @Composable
 internal fun Modifier.couiSwitchFeedback(
     dark: Boolean,
     interactionSource: MutableInteractionSource,
     enabled: Boolean,
+    touchPressed: Boolean,
 ): Modifier {
     val hovered by interactionSource.collectIsHoveredAsState()
-    val focused by interactionSource.collectIsFocusedAsState()
     val pressed by interactionSource.collectIsPressedAsState()
     val hover = rememberMaskProgress(enabled && hovered)
-    val focus = rememberMaskProgress(enabled && focused)
-    val press = rememberMaskProgress(enabled && pressed)
+    val press = rememberMaskProgress(enabled && (pressed || touchPressed))
     return hoverable(interactionSource, enabled).drawBehind {
-        drawRect(maskColor(hover, if (dark) 0x26FFFFFF else 0x14000000))
-        drawRect(maskColor(focus, if (dark) 0x331A8CFF else 0x1F0080FF))
-        drawRect(maskColor(press, if (dark) 0x33FFFFFF else 0x1F000000))
+        if (enabled) {
+            drawRect(maskColor(hover.value, if (dark) 0x26FFFFFF else 0x14000000))
+            drawRect(maskColor(press.value, if (dark) 0x33FFFFFF else 0x1F000000))
+        }
+    }
+}
+
+/** COUIStrokeDrawable 的 TYPE_OUTER：沿项目形状画双倍笔宽，再裁掉轨道内部。 */
+@Composable
+internal fun Modifier.couiSwitchFocusOutline(
+    interactionSource: MutableInteractionSource,
+    enabled: Boolean,
+    color: Color,
+    shape: Shape,
+): Modifier {
+    val focused by interactionSource.collectIsFocusedAsState()
+    val focus = rememberMaskProgress(enabled && focused)
+    return drawWithCache {
+        val path = (shape.createOutline(size, layoutDirection, this) as Outline.Generic).path
+        // getDimensionPixelOffset(default_focus_stroke_radius) 先取整；外半笔宽为 3dp。
+        val stroke = Stroke(3.dp.toPx().toInt() * 2f)
+        onDrawBehind {
+            if (enabled) clipPath(path, ClipOp.Difference) {
+                drawPath(path, maskColor(focus.value, color.toArgb()), style = stroke)
+            }
+        }
     }
 }
 

@@ -28,6 +28,8 @@ CouiSwitch(
 
 点击请求新 checked，宿主决定是否接受。超过拖动阈值后，开关拥有本次拖动，抬手按最近锚点、速度与位移门控吸附；结束后只请求一次业务变化。RTL 反转几何位置，checked 的逻辑含义不变。动画中反向保留已有位置和速度。
 
+按住后开始拖动，触摸会话继续持有按压反馈，直到松手或真实取消；点击识别因 MOVE 被消费而取消，不会提前结束这层反馈。父容器接管、禁用、进入加载和移除都会清理触摸会话。
+
 CANCEL、父容器接管、禁用和移除终止手势，不提交新业务值，并回到宿主状态。这是受控组件的明确适配：提取版本的原厂 CompoundButton 在 CANCEL 后仍可能吸附并改变值。宿主拒绝拖动候选时，组件回到实际 checked。
 
 需要整行交互时，外层使用同一个 MutableInteractionSource 持有唯一 toggleable 和语义，子开关传 onCheckedChange = null。若仍需在滑块区域拖动，再把同一业务回调传给 onDragCheckedChange；子开关不建立第二个点击 owner。外层应自行提供文案、布局及点击反馈，不把 Demo 的私有行布局当作库 API。
@@ -60,6 +62,8 @@ requestChange 和 loading 由宿主业务管理；loadingDescription 为宿主�
 ## 外观与平台
 
 轨道与拉伸后的滑块使用项目 CouiCapsuleShape；这是保留的平滑几何适配，原厂滑块使用 drawRoundRect。原厂这一分支明确关闭 spotlight，普通开关不叠按钮材质和高光描边。宿主通过 colors 提供配色，加载图保持原图白色，不随 thumb 配色染色。
+
+键盘焦点沿轨道外侧显示独立描边，轨道内部仍由选中、悬停和按压状态绘制。focusOutline 由 CouiSwitchColors 提供，可通过 copy 覆盖；Defaults.colors 使用目标 Settings 默认主题的焦点色。旧的六项颜色构造仍可使用，新增末尾字段默认取 checkedTrack 的透明色。焦点继续复用既有状态弹簧和项目平滑形状，不作为材质轮廓光。
 
 沿库最低平台运行，无 RuntimeShader 门槛。不包含 OEM 换肤分支。参数与源码核对、原图一致或构建通过不等于所有设备和帧率均已完成 1:1 验收。
 
