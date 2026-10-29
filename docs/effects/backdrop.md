@@ -57,7 +57,7 @@ backgroundColor 需不透明，background 绘制实际图案或页面内容。�
 
 源按自身尺寸录制真实内容。自定义 drawSource 时必须绘制内容，不能只录制补底；parent 用于所属窗口的源叠加。消费者负责本地坐标映射，跨窗口通过真实屏幕坐标转换。透明窗口不是屏幕截图源。
 
-Dialog / BottomSheet 需要所属窗口自己的源。[菜单](../components/menu.md)使用 ProvideCouiMenuBackdrop 返回的 Modifier 挂到窗口页面内容，Popup 自身不进入该采样树。
+材质弹窗采样宿主窗口里不包含弹窗自身的背景源，不能只在 Dialog 内新建一个源来代替宿主背景，装配见[弹窗](../components/dialog.md#使用背景材质)。弹窗窗口里的内容若还要供菜单或其他面板采样，再为该窗口挂源。[菜单](../components/menu.md)使用 ProvideCouiMenuBackdrop 返回的 Modifier 挂到窗口页面内容，Popup 自身不进入该采样树。
 
 ## 资源与失败处理
 

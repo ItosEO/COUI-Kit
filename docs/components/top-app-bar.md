@@ -134,7 +134,7 @@ CouiTopAppBarButton(onClick = onReset, text = true, enabled = canReset, style = 
 }
 ~~~
 
-按钮自己处理按压形变、点触光和键盘语义，外面不用再包一层 `clickable`。`enabled = false` 只改变交互和内容透明度，不会让按钮消失。图标由你传，组件不会重新着色；深色底上要自己给 `tint`。Material 图标依赖需要自己声明。
+按钮自己处理按压形变、点触光和键盘语义，外面不用再包一层 `clickable`。`enabled = false` 只改变交互和内容透明度，不会让按钮消失。组件通过 `LocalContentColor` 提供内容色，默认的 Material `Icon` 会跟随该颜色；显式传了 `tint` 或使用不读取它的图片时，颜色由页面处理。Material 图标依赖需要自己声明。
 
 ## 显示和隐藏操作
 

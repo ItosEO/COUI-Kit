@@ -70,7 +70,7 @@ CouiChipTabRow(
 )
 ~~~
 
-动作有退出过渡时，保留 `leadingAction` 的内容，只切换 `leadingActionVisible`，这样宽度、透明度和留白会一起收放。`CouiChipTabButton` 在同一个包里。图标不会被重新着色，颜色由页面传的 icon 决定。
+动作有退出过渡时，保留 `leadingAction` 的内容，只切换 `leadingActionVisible`，这样宽度、透明度和留白会一起收放。`CouiChipTabButton` 在同一个包里。按钮通过 `LocalContentColor` 提供内容色，示例里的 Material `Icon` 会跟随该颜色；显式传了 `tint` 或使用不读取它的图片时，颜色由页面处理。
 
 ## 文字、间距和动画
 

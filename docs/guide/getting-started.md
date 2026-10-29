@@ -6,7 +6,7 @@ COUI 目前提供源码模块和 GitHub Packages 预览版两种接入方式，�
 
 ### 源码模块
 
-1) 把仓库里的 `coui/` 复制到应用工程根目录。库资源、许可和构建配置要一起保留，只复制 Kotlin 文件会缺资源。
+1) 把仓库里的 `coui/` 复制到应用工程根目录，并把[版本目录](../../gradle/libs.versions.toml)中该模块引用的库和插件别名一起合并。库资源、许可和构建配置要一起保留，只复制 Kotlin 文件会缺资源。
 
 2) 在 `settings.gradle.kts` 中加入模块：
 
@@ -26,7 +26,7 @@ dependencies {
 }
 ```
 
-上面只是增量配置，应用自己的 Android/Compose 插件、SDK 和主题仍然要有。版本目录里的 Compose 编译插件和 DynamicAnimation 约束也要一起合并，否则会出现编译或运行时找不到类的问题。
+上面只是增量配置，应用自己的 Android/Compose 插件、SDK 和主题仍然要有。模块还引用了 Maven Publish、Dokka 等插件别名，不能只合并 Compose 编译插件和 DynamicAnimation；插件版本由宿主统一声明，DynamicAnimation 的 `strictly` 约束也要保留。工具链和依赖对齐见[兼容要求](compatibility.md)。
 
 [demo/build.gradle.kts](../../demo/build.gradle.kts) 是完整示例，但不用照抄它的签名、应用标识或 Capsule 依赖。
 
@@ -81,7 +81,7 @@ fun SliderExample(
 
 ## 浮动组件的背景源
 
-顶栏、底栏、FAB、菜单和材质弹窗都要采样页面背景。先在窗口里建源，再把 `Modifier.couiBackdrop(source)` 挂到一个不透明的内容节点上：
+顶栏、底栏、FAB 和材质弹窗需要采样页面背景；菜单也可以接入背景源，未接入时使用 `style.colors.container`。先在宿主窗口里建源，再把 `Modifier.couiBackdrop(source)` 挂到一个不透明的内容节点上：
 
 ~~~kotlin
 import androidx.compose.foundation.background
@@ -110,17 +110,17 @@ fun PageContent(
 }
 ~~~
 
-请注意，源只能挂一个节点，组件要放在源子树外。菜单用 `ProvideCouiMenuBackdrop` 返回的 Modifier 挂到窗口内容上；弹窗用自己窗口的源。每个绘制节点单独持有 renderer，单主体用 `CouiFloatingRenderer.standalone()`，底栏用 `CouiFloatingRenderer()`，不要跨节点共用。
+请注意，源只能挂一个节点，组件要放在源子树外。菜单用 `ProvideCouiMenuBackdrop` 返回的 Modifier 挂到窗口内容上；材质弹窗使用宿主窗口里不包含弹窗自身的背景源，装配见[弹窗](../components/dialog.md#使用背景材质)。每个绘制节点单独持有 renderer，单主体用 `CouiFloatingRenderer.standalone()`，底栏用 `CouiFloatingRenderer()`，不要跨节点共用。
 
-API 34 以下或 renderer 创建失败时，由页面显示错误或降级 UI。坐标和失败处理的细节见[背景采样](../effects/backdrop.md)。
+底栏、FAB 等要求 API 34 的组件在低版本上，由页面显示错误或降级 UI；renderer 创建失败时也由页面处理。坐标和失败处理的细节见[背景采样](../effects/backdrop.md)。
 
 ## 常见问题
 
 如果你遇到问题，可以按下面顺序排查：
 
-1. 依赖解析不到或 Compose 编译失败，先检查版本目录里的 Compose 编译插件和 DynamicAnimation 约束是否一起合并了。
+1. 依赖解析不到或 Compose 编译失败，先检查模块引用的库和插件别名是否全部合并，再核对 Compose 编译插件和 DynamicAnimation 的 `strictly` 约束。
 2. 组件能显示但没有模糊或材质，检查运行版本，确认背景源挂在真正的不透明页面上，组件又在源子树外。
-3. 材质弹窗没有效果，确认同时传了 `material` 和所属窗口的 `backdrop`，不要只改窗口背景。
+3. 材质弹窗没有效果，确认传了 `material`，并通过 `backdrop` 或 `ProvideCouiMenuBackdrop` 提供了不含弹窗自身的宿主背景源，不要只改窗口背景。
 
 还是没解决的话，先在 [Demo](demo.md)里找同族示例，对比自己的接入方式。
 
