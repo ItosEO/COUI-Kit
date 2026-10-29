@@ -37,6 +37,8 @@ COUIStrokeDrawable 构造使用 default_focus_stroke_radius 的两倍笔宽，�
 
 ## Existing-note audit
 
+[普通弹簧持久通道](../architecture/2026-10-29-persistent-motion-channels.md)进一步替换共享状态进度承载，保留本篇的触摸会话、焦点外描边和颜色。
+
 [开关组件](../feature/2026-10-27-coui-switch.md)部分重叠并互链，原型、物理、PNG 和宿主职责保持。本篇补 Compose 消费导致的蒙层会话差异与遗漏的原厂焦点消费者。[公开边界](../architecture/2026-10-23-public-api-boundary.md)沿用；只扩展已有配色对象，内部绘制入口不公开。[ChipTab](../feature/2026-10-24-chip-tab.md)保持各自手势，未修改公共点击分发。没有同范围待清理提案。
 
 ## Alternatives considered

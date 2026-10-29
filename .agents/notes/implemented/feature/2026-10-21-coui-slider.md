@@ -22,6 +22,8 @@ steps 保留等分语义，showTickMarks 控制连续/Section 点位及交互，
 
 ## Consequences
 
+普通位置弹簧的完整重置与后端复用见[持久运动通道](../architecture/2026-10-29-persistent-motion-channels.md)，不改变本篇惯性和边界的取舍。
+
 连续惯性保留可见范围内的无约束单轴计算，到边界结束；未搬运不可见的越界约束体。需要精确越界效果或边界结束时机时必须重访该决定，不能把现有结束回调当成完整原厂物理等价。反馈优先尝试厂商码，再按已有路径使用系统标准反馈；跨设备马达波形不是保证。
 
 本篇由原宿主的同名 Note 和滑条契约整理迁入，首次决定日期保留。当前入口为 [CouiSlider](../../../../coui/src/main/java/com/itos/coui/slider/CouiSlider.kt)，不依赖原宿主的样式开关、主题和 Capsule。宿主可选择自己的 Shape，但不能将其称为原厂默认。

@@ -20,7 +20,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,7 +36,6 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -47,9 +45,9 @@ import com.itos.coui.effect.SpotlightPreset
 import com.itos.coui.effect.couiFloatingSurface
 import com.itos.coui.effect.couiToolbarFeedback
 import com.itos.coui.effect.rememberCouiSpotlight
-import com.itos.coui.motion.CouiPressMotion
 import com.itos.coui.motion.couiPressMotion
 import com.itos.coui.motion.couiTouchMotion
+import com.itos.coui.motion.rememberCouiPressMotion
 import com.itos.coui.motion.rememberCouiTouchMotion
 
 @RequiresApi(34)
@@ -64,7 +62,6 @@ fun CouiTopAppBarButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     val backdrop = checkNotNull(LocalCouiToolbarBackdrop.current) { "顶栏按钮必须位于 CouiTopAppBar 内" }
-    val density = LocalDensity.current.density
     val dark = style.dark
     val contour = style.contourGlowEnabled
     var boundsSize by remember { mutableStateOf(IntSize.Zero) }
@@ -74,8 +71,7 @@ fun CouiTopAppBarButton(
     val shadow = remember(style, capsule) { style.shadow(capsule) }
     val contentLayer = rememberGraphicsLayer()
     val motion = rememberCouiTouchMotion(enabled)
-    val scope = rememberCoroutineScope()
-    val press = remember(scope, density) { CouiPressMotion(scope, density) }
+    val press = rememberCouiPressMotion()
     val interactionSource = remember { MutableInteractionSource() }
     val (lightInput, drawLight) = rememberCouiSpotlight(
         interactive = enabled,
@@ -96,7 +92,7 @@ fun CouiTopAppBarButton(
                     if (drawLight != null) {
                         withTransform({
                             translate(motion.translationX.value, motion.translationY.value)
-                            scale(motion.scaleX.value * press.scale.value, motion.scaleY.value * press.scale.value, center)
+                            scale(motion.scaleX.value + press.scale.value - 1f, motion.scaleY.value + press.scale.value - 1f, center)
                         }) {
                             clipPath(lightClip) { drawLight.invoke(this) }
                         }
@@ -118,8 +114,8 @@ fun CouiTopAppBarButton(
                         Offset(motion.translationX.value, motion.translationY.value),
                         Size(boundsSize.width.toFloat(), boundsSize.height.toFloat()),
                     ),
-                    scaleX = motion.scaleX.value * press.scale.value,
-                    scaleY = motion.scaleY.value * press.scale.value,
+                    scaleX = motion.scaleX.value + press.scale.value - 1f,
+                    scaleY = motion.scaleY.value + press.scale.value - 1f,
                     cornerWeight = if (capsule) 1f else 2f,
                 )
             },
@@ -130,8 +126,8 @@ fun CouiTopAppBarButton(
                 .graphicsLayer {
                     translationX = motion.translationX.value
                     translationY = motion.translationY.value
-                    scaleX = motion.scaleX.value * press.scale.value
-                    scaleY = motion.scaleY.value * press.scale.value
+                    scaleX = motion.scaleX.value + press.scale.value - 1f
+                    scaleY = motion.scaleY.value + press.scale.value - 1f
                 }
                 .couiTouchMotion(motion, enabled)
                 .couiPressMotion(press, enabled)

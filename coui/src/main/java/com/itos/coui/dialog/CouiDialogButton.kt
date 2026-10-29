@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,9 +31,9 @@ import com.itos.coui.effect.LocalCouiContourGlowEnabled
 import com.itos.coui.effect.SpotlightPreset
 import com.itos.coui.effect.couiButtonFeedback
 import com.itos.coui.effect.rememberCouiSpotlight
-import com.itos.coui.motion.CouiPressMotion
 import com.itos.coui.motion.couiPressMotion
 import com.itos.coui.motion.couiTouchMotion
+import com.itos.coui.motion.rememberCouiPressMotion
 import com.itos.coui.motion.rememberCouiTouchMotion
 import com.itos.coui.shape.CouiCapsuleShape
 import com.itos.coui.shape.CouiShape
@@ -78,15 +77,14 @@ internal fun DialogButton(
         else error("主操作必须由宿主显式提供配色")
     val source = interactionSource ?: remember { MutableInteractionSource() }
     val motion = rememberCouiTouchMotion(enabled)
-    val scope = rememberCoroutineScope()
     val density = LocalDensity.current.density
-    val press = remember(scope, density) { CouiPressMotion(scope, density) }
+    val press = rememberCouiPressMotion()
     val (lightInput, drawLight) = rememberCouiSpotlight(interactive = enabled, dark = dark,
         preset = if (style == CouiDialogActionStyle.Primary) SpotlightPreset.OpaqueMedium1 else SpotlightPreset.OpaqueMedium2,
         cancelOnConsumedMove = true)
     Box(modifier.heightIn(min = CouiDialogDefaults.buttonHeight).graphicsLayer {
-        scaleX = motion.scaleX.value * press.scale.value
-        scaleY = motion.scaleY.value * press.scale.value
+        scaleX = motion.scaleX.value + press.scale.value - 1f
+        scaleY = motion.scaleY.value + press.scale.value - 1f
         translationX = motion.translationX.value
         translationY = motion.translationY.value
     }.couiTouchMotion(motion, enabled, cancelOnConsumedMove = true)

@@ -32,6 +32,8 @@ CouiMenuBlur 保留公开 draw 和 remember 工厂，构造器收为 internal，
 
 ## Existing-note audit
 
+[普通弹簧持久通道](2026-10-29-persistent-motion-channels.md)进一步将 Touch/Press 轴改为只读 State，保留构造和读取；其迁移与二进制边界由该篇持有。
+
 - [独立工程](2026-10-23-standalone-coui-demo.md)：部分重叠；保留初次原样迁移和工具链决定，本篇记录后续收口，互链。
 - [模块分层](2026-10-21-coui-module-boundary.md)：部分重叠；职责与通用算法不变，本篇调整内部暴露面，互链。
 - [Demo 展示](../feature/2026-10-23-demo-material-and-gallery.md)：部分重叠；保留消费者定位和高级示例，互链。

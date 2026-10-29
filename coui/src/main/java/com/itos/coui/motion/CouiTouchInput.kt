@@ -26,9 +26,19 @@ fun rememberCouiTouchMotion(expanded: Boolean): CouiTouchMotion {
         if (!expanded) motion.release(Offset.Zero)
     }
     DisposableEffect(motion) {
-        onDispose { motion.cancel() }
+        onDispose { motion.dispose() }
     }
     return motion
+}
+
+/** 普通按压随节点释放；保留构造函数供显式 CoroutineScope 生命周期使用。 */
+@Composable
+fun rememberCouiPressMotion(): CouiPressMotion {
+    val scope = rememberCoroutineScope()
+    val density = LocalDensity.current.density
+    val press = remember(scope, density) { CouiPressMotion(scope, density) }
+    DisposableEffect(press) { onDispose { press.dispose() } }
+    return press
 }
 
 /** 只观察按下与取消；滚动子项可在父容器消费移动后释放，直到本次触摸结束都不重新按压。 */

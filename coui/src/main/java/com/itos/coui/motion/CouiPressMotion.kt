@@ -1,22 +1,36 @@
 package com.itos.coui.motion
 
 import android.view.animation.PathInterpolator
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.spring
+import androidx.compose.runtime.State
 import androidx.compose.ui.unit.IntSize
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.launch
-import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.min
 
-/** OlivelinkDefault 普通按压, 与 rubber/deform 的缩放相乘, 不替换其状态。 */
-class CouiPressMotion(private val scope: CoroutineScope, private val density: Float) {
-    val scale = Animatable(1f, visibilityThreshold = 0.001f)
+/**
+ * OlivelinkDefault 普通按压，与同一触摸组合内的形变缩放增量相加。
+ * 在主线程创建和调用；scope 使用主线程上下文，取消后停止弹簧且实例不再接收输入。
+ * size 使用像素；Compose 中优先使用 rememberCouiPressMotion。
+ */
+class CouiPressMotion(scope: CoroutineScope, private val density: Float) {
+    private val spring = CouiSpring(1f, 0.001f)
+    private var disposed = false
     private var candy = false
+    val scale: State<Float> = spring.state
+    private val lifetime = scope.launch(start = CoroutineStart.UNDISPATCHED) {
+        try {
+            awaitCancellation()
+        } finally {
+            disposed = true
+            spring.cancel()
+        }
+    }
 
     fun press(size: IntSize) {
-        if (size.width <= 0 || size.height <= 0) return
+        if (disposed || size.width <= 0 || size.height <= 0) return
         val width = size.width.toFloat()
         val height = size.height.toFloat()
         val minArea = 20f * density * 20f * density
@@ -27,18 +41,19 @@ class CouiPressMotion(private val scope: CoroutineScope, private val density: Fl
         candy = aspect > 2f
         val aspectScale = 0.85f + 0.15f * Interpolator.getInterpolation(((aspect - 2f) / 13f).coerceIn(0f, 1f))
         val target = (if (candy) (areaScale + aspectScale) * 0.5f else areaScale).coerceIn(0.4f, 1f)
-        scope.launch {
-            scale.animateTo(target, spring(1f, stiffness(if (candy) 0.3f else 0.25f), 0.001f), initialVelocity = 0f)
-        }
+        spring.animateTo(target, if (candy) 0.3f else 0.25f, minimumChange = 0.001f, velocity = 0f)
     }
 
     fun release() {
-        scope.launch {
-            scale.animateTo(1f, spring(if (candy) 0.5f else 0.4f, stiffness(0.5f), 0.0001f))
-        }
+        if (disposed) return
+        spring.animateTo(1f, 0.5f, if (candy) 0.5f else 0.6f, minimumChange = 0.0001f)
     }
 
-    private fun stiffness(response: Float): Float = ((2.0 * PI / response) * (2.0 * PI / response)).toFloat()
+    internal fun dispose() {
+        disposed = true
+        spring.cancel()
+        lifetime.cancel()
+    }
 
     private companion object {
         val Interpolator = PathInterpolator(0f, 0f, 0f, 1f)

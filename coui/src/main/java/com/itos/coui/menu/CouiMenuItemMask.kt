@@ -1,25 +1,18 @@
 package com.itos.coui.menu
 
 import android.animation.ArgbEvaluator
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.AnimationState
-import androidx.compose.animation.core.animateTo
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.HoverInteraction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import com.itos.coui.effect.CouiStateProgress
 
 /** 普通菜单项沿用 COUIMaskEffectDrawable 的色值、弹簧和短按最低进度。 */
 @Composable
@@ -32,19 +25,16 @@ internal fun couiMenuItemMask(
     val pressColor = if (dark) 0x33FFFFFF else 0x1F000000
     val hoverColor = if (dark) 0x26FFFFFF else 0x14000000
     val evaluator = remember { ArgbEvaluator() }
-    var pressProgress by remember { mutableStateOf(AnimationState(0f)) }
-    val hoverProgress = remember { Animatable(0f) }
-    // COUISpringForce: stiffness = (2π / response)², dampingRatio = 1 - bounce。
-    val animation = remember { spring<Float>(dampingRatio = 1f, stiffness = 438.6491f) }
+    val pressProgress = remember(interactionSource, enabled) { CouiStateProgress() }
+    val hoverProgress = remember(interactionSource, enabled) { CouiStateProgress() }
+    DisposableEffect(pressProgress, hoverProgress) {
+        onDispose { pressProgress.dispose(); hoverProgress.dispose() }
+    }
 
     LaunchedEffect(interactionSource, enabled) {
-        pressProgress = AnimationState(0f)
-        hoverProgress.snapTo(0f)
         if (!enabled) return@LaunchedEffect
         val presses = mutableSetOf<PressInteraction.Press>()
         val hovers = mutableSetOf<HoverInteraction.Enter>()
-        var pressAnimation: Job? = null
-        var hoverAnimation: Job? = null
         interactionSource.interactions.collect { interaction ->
             when (interaction) {
                 is PressInteraction.Press,
@@ -55,21 +45,7 @@ internal fun couiMenuItemMask(
                         is PressInteraction.Release -> presses.remove(interaction.press)
                         is PressInteraction.Cancel -> presses.remove(interaction.press)
                     }
-                    val wasRunning = pressProgress.isRunning
-                    pressAnimation?.cancel()
-                    pressAnimation = launch {
-                        if (presses.isNotEmpty()) {
-                            pressProgress.animateTo(1f, animation, sequentialAnimation = wasRunning)
-                        } else {
-                            if (wasRunning && pressProgress.value <= 0.7f) {
-                                // 厂商在首个超过阈值的实际帧反向, 保留该帧进度和速度。
-                                pressProgress.animateTo(1f, animation, sequentialAnimation = true) {
-                                    if (value > 0.7f) cancelAnimation()
-                                }
-                            }
-                            pressProgress.animateTo(0f, animation, sequentialAnimation = wasRunning)
-                        }
-                    }
+                    pressProgress.setActive(presses.isNotEmpty(), minimumPress = true)
                 }
                 is HoverInteraction.Enter,
                 is HoverInteraction.Exit -> {
@@ -77,15 +53,7 @@ internal fun couiMenuItemMask(
                         is HoverInteraction.Enter -> hovers.add(interaction)
                         is HoverInteraction.Exit -> hovers.remove(interaction.enter)
                     }
-                    val velocity = hoverProgress.velocity
-                    hoverAnimation?.cancel()
-                    hoverAnimation = launch {
-                        hoverProgress.animateTo(
-                            if (hovers.isNotEmpty()) 1f else 0f,
-                            animation,
-                            initialVelocity = velocity,
-                        )
-                    }
+                    hoverProgress.setActive(hovers.isNotEmpty())
                 }
                 else -> Unit
             }

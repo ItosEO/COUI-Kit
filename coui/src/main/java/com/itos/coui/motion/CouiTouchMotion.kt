@@ -1,14 +1,13 @@
 package com.itos.coui.motion
 
 import android.view.animation.PathInterpolator
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.AnimationVector1D
-import androidx.compose.animation.core.spring
+import androidx.compose.runtime.State
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.unit.IntSize
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.exp
@@ -17,13 +16,21 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sign
 
-/** COUIDeformAnimatorUnit / COUIRubberAnimatorUnit 的共享计算, 输入归各组件持有。 */
+/**
+ * COUIDeformAnimatorUnit / COUIRubberAnimatorUnit 的共享计算，输入归各组件持有。
+ * 在主线程创建和调用；scope 使用主线程上下文，取消后停止弹簧且实例不再接收输入。
+ * 位移和触点使用像素，缩放为只读倍率；Compose 中优先使用 rememberCouiTouchMotion。
+ */
 class CouiTouchMotion(
-    private val scope: CoroutineScope,
+    scope: CoroutineScope,
     private val density: Float,
     private val deformationEnabled: Boolean = true,
 ) {
-    private val jobs = mutableMapOf<Animatable<Float, AnimationVector1D>, Job>()
+    private var disposed = false
+    private val scaleXSpring = CouiSpring(1f, 0.0005f)
+    private val scaleYSpring = CouiSpring(1f, 0.0005f)
+    private val translationXSpring = CouiSpring(0f, 0.5f)
+    private val translationYSpring = CouiSpring(0f, 0.5f)
     private val stretchDistance = Math.rint((28f * density).toDouble()).toFloat()
     private val deformDistance = 150f * density
     private var rubberOrigin = Offset.Zero
@@ -33,13 +40,23 @@ class CouiTouchMotion(
     private var dragging = false
     private var moved = false
 
-    val scaleX = Animatable(1f, visibilityThreshold = 0.0005f)
-    val scaleY = Animatable(1f, visibilityThreshold = 0.0005f)
-    val translationX = Animatable(0f, visibilityThreshold = 0.5f)
-    val translationY = Animatable(0f, visibilityThreshold = 0.5f)
+    val scaleX: State<Float> = scaleXSpring.state
+    val scaleY: State<Float> = scaleYSpring.state
+    val translationX: State<Float> = translationXSpring.state
+    val translationY: State<Float> = translationYSpring.state
     var coordinates: LayoutCoordinates? = null
 
+    private val lifetime = scope.launch(start = CoroutineStart.UNDISPATCHED) {
+        try {
+            awaitCancellation()
+        } finally {
+            disposed = true
+            cancel()
+        }
+    }
+
     fun begin(position: Offset, size: IntSize) {
+        if (disposed) return
         cancel()
         targetSize = size
         maximumScale = maximumScale(size)
@@ -71,8 +88,8 @@ class CouiTouchMotion(
         val rubberDelta = position - rubberOrigin
         if (abs(rubberDelta.x) >= 5f || abs(rubberDelta.y) >= 5f) {
             moved = true
-            animate(translationX, rubber(rubberDelta.x, 0.05f, stretchDistance), 0.15f, 0.15f, 0.5f)
-            animate(translationY, rubber(rubberDelta.y, 0.05f, stretchDistance), 0.15f, 0.15f, 0.5f)
+            translationXSpring.animateTo(rubber(rubberDelta.x, 0.05f, stretchDistance), 0.15f, 0.15f)
+            translationYSpring.animateTo(rubber(rubberDelta.y, 0.05f, stretchDistance), 0.15f, 0.15f)
         }
         if (!deformationEnabled) return
         val delta = position - deformOrigin
@@ -94,8 +111,8 @@ class CouiTouchMotion(
             x == 0f -> sy
             else -> exp(yWeight * ln(sy) + xWeight * ln(1f / sx))
         }
-        animate(scaleX, targetX, 0.15f, 0.15f, 0.0005f)
-        animate(scaleY, targetY, 0.15f, 0.15f, 0.0005f)
+        scaleXSpring.animateTo(targetX, 0.15f, 0.15f)
+        scaleYSpring.animateTo(targetY, 0.15f, 0.15f)
     }
 
     fun release(velocity: Offset) {
@@ -108,44 +125,51 @@ class CouiTouchMotion(
         val fraction = ((area - smallSide * smallSide) /
             (largeSide * largeSide - smallSide * smallSide)).coerceIn(0f, 1f)
         val response = 0.42f + (0.45f - 0.42f) * HandUpAreaInterpolator.getInterpolation(fraction)
-        releaseAxis(translationX, 0f, velocity.x, response, 0.5f)
-        releaseAxis(translationY, 0f, velocity.y, response, 0.5f)
+        releaseAxis(translationXSpring, 0f, velocity.x, response)
+        releaseAxis(translationYSpring, 0f, velocity.y, response)
         if (!deformationEnabled) return
-        releaseAxis(scaleX, 1f, velocity.x, response, 0.0005f)
-        releaseAxis(scaleY, 1f, velocity.y, response, 0.0005f)
+        releaseAxis(scaleXSpring, 1f, velocity.x, response)
+        releaseAxis(scaleYSpring, 1f, velocity.y, response)
     }
 
+    /** 停在当前位置；保留底层速度与 pending 目标，不等于恢复未变形状态。 */
     fun cancel() {
-        jobs.values.forEach { it.cancel() }
-        jobs.clear()
+        scaleXSpring.cancel()
+        scaleYSpring.cancel()
+        translationXSpring.cancel()
+        translationYSpring.cancel()
         dragging = false
     }
 
+    /** 立即恢复未变形位置；退出节点时不保留旧目标、速度或输入会话。 */
+    fun reset() {
+        dragging = false
+        moved = false
+        scaleXSpring.snapTo(1f)
+        scaleYSpring.snapTo(1f)
+        translationXSpring.snapTo(0f)
+        translationYSpring.snapTo(0f)
+    }
+
+    internal fun dispose() {
+        disposed = true
+        cancel()
+        coordinates = null
+        lifetime.cancel()
+    }
+
     private fun releaseAxis(
-        axis: Animatable<Float, AnimationVector1D>, target: Float, velocity: Float,
-        response: Float, threshold: Float,
+        axis: CouiSpring, target: Float, velocity: Float, response: Float,
     ) {
         val rest = abs(axis.value - target)
         if (target == 1f && rest < 0.002f) {
-            jobs.remove(axis)?.cancel()
-            jobs[axis] = scope.launch { axis.snapTo(1f) }
+            axis.snapTo(1f)
             return
         }
         // 两个厂商 unit 均传 true, 手抬归一化距离是 maxStretchDistance 而非形变上限。
         val initialVelocity = (velocity / max(28f * density, 1f) * rest).coerceIn(-1000f, 1000f)
         val bounce = max(0.65f, min(abs(initialVelocity) / 1000f, 1f))
-        animate(axis, target, response, bounce, threshold, initialVelocity)
-    }
-
-    private fun animate(
-        axis: Animatable<Float, AnimationVector1D>, target: Float, response: Float,
-        bounce: Float, threshold: Float, velocity: Float = axis.velocity,
-    ) {
-        val stiffness = Math.pow(2.0 * Math.PI / response.toDouble(), 2.0).toFloat()
-        // animateTo 会先保存上一帧时间再接续; MOVE 提前 cancel 会清空时间并反复停在首帧。
-        jobs[axis] = scope.launch {
-            axis.animateTo(target, spring(1f - bounce, stiffness, threshold), initialVelocity = velocity)
-        }
+        axis.animateTo(target, response, bounce, velocity = initialVelocity)
     }
 
     private fun maximumScale(size: IntSize): Float {

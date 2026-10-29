@@ -20,6 +20,8 @@ Status: implemented
 
 SpringData 的构造顺序为 bounce、response、velocity，已经由 smali 字段写入确认。普通切换根据命名 getter 设置 Force，不能将构造调用的前两项读反，也不误用 SpringData.getDampingRatio 的另一条换算。拖动和吸附来自 COUISwitchParams 的独立字段。复用已有严格版本约束的 AndroidX DynamicAnimation，保持原厂闭式积分、阈值、整数可见位置与浮点拉伸/颜色。普通反向只改变目标并保留速度；吸附开始使用原始浮点速度，选锚点先量化速度，并等 X/Y 两路收尾。
 
+[CouiSwitchMotion](../../../../coui/src/main/java/com/itos/coui/switch/CouiSwitchMotion.kt)负责 checked 同步、普通切换、拉伸、颜色进度与单一提交；[CouiSwitchDrag](../../../../coui/src/main/java/com/itos/coui/switch/CouiSwitchDrag.kt)仅持有拖动阈值、双锚点和双轴吸附完成，不接触业务值。两者复用内部 CouiSpring，不另造物理后端或公开通用拖动框架。通道生命周期、拆分代价及逐帧回归边界见[普通弹簧持久通道](../architecture/2026-10-29-persistent-motion-channels.md)，公开 API 与加载实现保持。
+
 触摸位移来自原始坐标差；速度采样沿 convertToTranslationCoordinates，把局部 X 映射并夹紧到行程、固定 Y=0，再交给平台 VelocityTracker。原厂限制弹簧目标而不截断物理当前位置。切换完成、快速反向、未过阈值 UP、取消、父容器接管、禁用和移除分别收尾；宿主拒绝拖动候选时恢复实际 checked。CANCEL 不提交是用户批准的受控适配，原厂 CompoundButton 的 CANCEL 可能吸附并改变值。
 
 轨道和滑块使用已有 CouiCapsuleShape；在拉伸尺寸下重建滑块轮廓，而非退回普通圆角。这是用户批准的项目平滑几何，原厂滑块自身使用 drawRoundRect。当前原厂关闭 spotlight，不叠材质玻璃或虚假轮廓光。轨道颜色和滑块在绘制阶段同步读取。

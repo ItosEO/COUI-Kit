@@ -100,7 +100,7 @@ fun CouiSlider(
     }
     DisposableEffect(touch, renderer) {
         onDispose {
-            touch.cancel()
+            touch.dispose()
             renderer.dispose()
         }
     }

@@ -33,7 +33,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -91,6 +90,7 @@ import com.itos.coui.motion.CouiPressMotion
 import com.itos.coui.motion.CouiTouchMotion
 import com.itos.coui.motion.couiPressMotion
 import com.itos.coui.motion.couiTouchMotion
+import com.itos.coui.motion.rememberCouiPressMotion
 import com.itos.coui.motion.rememberCouiTouchMotion
 
 data class CouiNavigationItem(val title: String, val icon: ImageVector, val selectedIcon: ImageVector)
@@ -181,10 +181,9 @@ fun CouiBottomBar(
     val menuMotion = rememberCouiTouchMotion(true)
     val leftMotion = rememberCouiTouchMotion(leftExpansion.touchMotionEnabled)
     val rightMotion = rememberCouiTouchMotion(rightExpansion.touchMotionEnabled)
-    val scope = rememberCoroutineScope()
-    val menuPress = remember(scope, density) { CouiPressMotion(scope, density.density) }
-    val leftPress = remember(scope, density) { CouiPressMotion(scope, density.density) }
-    val rightPress = remember(scope, density) { CouiPressMotion(scope, density.density) }
+    val menuPress = rememberCouiPressMotion()
+    val leftPress = rememberCouiPressMotion()
+    val rightPress = rememberCouiPressMotion()
     var rowCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     var menuBounds by remember { mutableStateOf(Rect.Zero) }
     var leftBounds by remember { mutableStateOf(Rect.Zero) }
@@ -413,9 +412,9 @@ private fun FloatingNode(
             Modifier.fillMaxSize().graphicsLayer {
                 translationX = motion.translationX.value + (expansion?.offsetX() ?: 0f)
                 translationY = motion.translationY.value
-                scaleX = (if (touchMotionEnabled) motion.scaleX.value * press.scale.value else 1f) *
+                scaleX = (if (touchMotionEnabled) motion.scaleX.value + press.scale.value - 1f else 1f) *
                     (expansion?.snappedScale(size.width) ?: 1f)
-                scaleY = (if (touchMotionEnabled) motion.scaleY.value * press.scale.value else 1f) *
+                scaleY = (if (touchMotionEnabled) motion.scaleY.value + press.scale.value - 1f else 1f) *
                     (expansion?.snappedScale(size.height) ?: 1f)
             }.then(
                 // 禁用 FAB 时移除输入节点; 空的 pointerInput 仍会挡住下方导航项。
@@ -436,6 +435,6 @@ private fun surface(
     touchMotionEnabled: Boolean = true,
 ): CouiFloatingSurface = CouiFloatingSurface(
     bounds.translate(Offset(motion.translationX.value, motion.translationY.value)),
-    if (touchMotionEnabled) motion.scaleX.value * press.scale.value else 1f,
-    if (touchMotionEnabled) motion.scaleY.value * press.scale.value else 1f, cornerWeight,
+    if (touchMotionEnabled) motion.scaleX.value + press.scale.value - 1f else 1f,
+    if (touchMotionEnabled) motion.scaleY.value + press.scale.value - 1f else 1f, cornerWeight,
 )

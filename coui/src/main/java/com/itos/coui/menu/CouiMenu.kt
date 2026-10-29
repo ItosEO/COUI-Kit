@@ -3,13 +3,8 @@ package com.itos.coui.menu
 import android.animation.ArgbEvaluator
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityManager
-import androidx.compose.animation.core.AnimationState
-import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -42,6 +37,7 @@ import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -93,6 +89,7 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.window.SecureFlagPolicy
 import com.itos.coui.checkbox.CouiCheckbox
+import com.itos.coui.effect.CouiStateProgress
 import com.itos.coui.effect.SpotlightDiagnostic
 import com.itos.coui.input.isCouiTouchCancelled
 import com.itos.coui.motion.CouiTouchMotion
@@ -218,24 +215,27 @@ internal class CouiMenuSelection {
     val pressedIndex = mutableStateOf<Int?>(null)
     val pressedIndicatorIndex = mutableStateOf<Int?>(null)
     val pressedIndicatorSession = mutableIntStateOf(0)
-    var pressedIndicatorProgress by mutableStateOf(AnimationState(0f))
+    var pressedIndicatorProgress by mutableStateOf(CouiStateProgress())
     var pressHandoff by mutableStateOf(false)
 
     fun restartIndicator() {
-        pressedIndicatorProgress = AnimationState(0f)
+        pressedIndicatorProgress.dispose()
+        pressedIndicatorProgress = CouiStateProgress()
         pressHandoff = false
         pressedIndicatorSession.intValue++
     }
 
     fun handoffPress(progress: Float) {
+        pressedIndicatorProgress.dispose()
         pressedIndex.value = null
         pressedIndicatorIndex.value = 0
-        pressedIndicatorProgress = AnimationState(progress)
+        pressedIndicatorProgress = CouiStateProgress(progress)
         pressHandoff = true
         pressedIndicatorSession.intValue++
     }
 
     fun clear() {
+        pressedIndicatorProgress.dispose()
         pressedIndex.value = null
         pressedIndicatorIndex.value = null
     }
@@ -591,7 +591,7 @@ internal fun CouiMenuPopup(
 private fun CouiMenuPressedIndicator(
     itemTop: Dp?,
     visible: Boolean,
-    progress: AnimationState<Float, AnimationVector1D>,
+    progress: CouiStateProgress,
     pressHandoff: Boolean,
     onFadeOutFinished: () -> Unit
 ) {
@@ -602,16 +602,11 @@ private fun CouiMenuPressedIndicator(
     // COUITouchRecyclerView 的共享遮罩以 hover 色作为按压终色。
     val maskColor = if (dark) 0x26FFFFFF else 0x14000000
     val evaluator = remember { ArgbEvaluator() }
-    val animation = remember { spring<Float>(dampingRatio = 1f, stiffness = 438.6491f) }
-    LaunchedEffect(visible) {
-        // 原厂 animateToProgressFrom 清除短按最低进度, 交接后直接淡出。
-        if (!pressHandoff && !visible && progress.value > 0f && progress.value <= 0.7f) {
-            progress.animateTo(1f, animation, sequentialAnimation = true) {
-                if (value > 0.7f) cancelAnimation()
-            }
-        }
-        progress.animateTo(if (visible) 1f else 0f, animation, sequentialAnimation = progress.value > 0f)
-        if (!visible) onFadeOutFinished()
+    val currentOnFadeOutFinished by rememberUpdatedState(onFadeOutFinished)
+    DisposableEffect(progress) { onDispose { progress.dispose() } }
+    LaunchedEffect(visible, progress, pressHandoff) {
+        // animateToProgressFrom 交接的预选框直接淡出，不补短按最低进度。
+        progress.setActive(visible, minimumPress = !pressHandoff, onHidden = { currentOnFadeOutFinished() })
     }
     val offsetY by animateDpAsState(
         targetValue = itemTop,

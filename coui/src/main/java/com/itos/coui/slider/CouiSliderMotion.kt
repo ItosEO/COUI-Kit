@@ -8,10 +8,7 @@ import android.view.animation.PathInterpolator
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.setValue
-import androidx.dynamicanimation.animation.FloatValueHolder
-import androidx.dynamicanimation.animation.SpringAnimation
-import androidx.dynamicanimation.animation.SpringForce
-import kotlin.math.PI
+import com.itos.coui.motion.CouiSpring
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.roundToInt
@@ -48,17 +45,17 @@ internal class CouiSliderMotion(
     private var pressed = false
     private var dragging = false
 
-    val height: SliderSpring = SliderSpring(0f) {
+    val height: CouiSpring = CouiSpring(0f) {
         if (pendingRelease && heightFraction >= 0.5f) {
             pendingRelease = false
             height.animateTo(0f, 0.5f)
         }
     }
-    val thumbRadius = SliderSpring(6f)
-    val texture = SliderSpring(0f)
-    val thumbCover = SliderSpring(100f)
-    val position = SliderSpring(0f)
-    val glitter = SliderSpring(0f)
+    val thumbRadius = CouiSpring(6f)
+    val texture = CouiSpring(0f)
+    val thumbCover = CouiSpring(100f)
+    val position = CouiSpring(0f)
+    val glitter = CouiSpring(0f)
     var value by mutableFloatStateOf(initialValue.coerceIn(range))
         private set
     var length = 0f
@@ -325,7 +322,7 @@ internal class CouiSliderMotion(
         fastRelease = false
         transition?.cancel()
         dragSnap?.cancel()
-        position.cancel()
+        position.cancelComplete()
         fling?.let { Choreographer.getInstance().removeFrameCallback(it) }
         fling = null
     }
@@ -350,54 +347,5 @@ internal class CouiSliderMotion(
 
     private companion object {
         val DragInterpolator = PathInterpolator(0f, 0f, 0.25f, 1f)
-    }
-}
-
-internal class SliderSpring(initial: Float, private val onUpdate: () -> Unit = {}) {
-    private val holder = FloatValueHolder(initial)
-    private var onFrame: ((Float) -> Unit)? = null
-    private var onEnd: (() -> Unit)? = null
-    private val animation = SpringAnimation(holder).apply {
-        spring = SpringForce(initial)
-        addUpdateListener { _, next, _ ->
-            value = next
-            onFrame?.invoke(next)
-            onUpdate()
-        }
-        addEndListener { _, cancelled, _, _ -> if (!cancelled) onEnd?.invoke() }
-    }
-    var value by mutableFloatStateOf(initial)
-        private set
-    val isRunning: Boolean get() = animation.isRunning
-
-    fun animateTo(
-        target: Float,
-        response: Float,
-        bounce: Float = 0f,
-        minimumChange: Float = 1f,
-        velocity: Float? = null,
-        onFrame: ((Float) -> Unit)? = null,
-        onEnd: (() -> Unit)? = null,
-    ) {
-        this.onFrame = onFrame
-        this.onEnd = onEnd
-        animation.spring.dampingRatio = 1f - bounce
-        animation.spring.stiffness = ((2.0 * PI / response) * (2.0 * PI / response)).toFloat()
-        animation.setMinimumVisibleChange(minimumChange)
-        if (!animation.isRunning) animation.setStartValue(value)
-        if (velocity != null) animation.setStartVelocity(velocity)
-        animation.animateToFinalPosition(target)
-    }
-
-    fun snapTo(next: Float) {
-        cancel()
-        holder.value = next
-        value = next
-    }
-
-    fun cancel() {
-        onFrame = null
-        onEnd = null
-        animation.cancel()
     }
 }

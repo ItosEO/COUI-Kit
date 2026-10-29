@@ -22,7 +22,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,8 +54,8 @@ import com.itos.coui.effect.LocalCouiContourGlowEnabled
 import com.itos.coui.effect.SpotlightPreset
 import com.itos.coui.effect.couiFloatingSurface
 import com.itos.coui.effect.rememberCouiSpotlight
-import com.itos.coui.motion.CouiPressMotion
 import com.itos.coui.motion.couiPressMotion
+import com.itos.coui.motion.rememberCouiPressMotion
 import com.itos.coui.shape.CouiCapsuleShape
 import kotlin.math.PI
 
@@ -147,8 +146,7 @@ private fun ChipSurface(
     LaunchedEffect(selected) { alpha.select(selected) }
     DisposableEffect(alpha) { onDispose { alpha.dispose() } }
     val density = LocalDensity.current.density
-    val scope = rememberCoroutineScope()
-    val press = remember(scope, density) { CouiPressMotion(scope, density) }
+    val press = rememberCouiPressMotion()
     val interaction = remember { MutableInteractionSource() }
     val contentLayer = rememberGraphicsLayer()
     var bounds by remember { mutableStateOf(IntSize.Zero) }

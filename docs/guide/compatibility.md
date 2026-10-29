@@ -23,6 +23,10 @@ DynamicAnimation 保持版本目录中的 **strictly** 约束。持续重定向�
 
 Material3 与图标依赖仍供库内部装配使用。宿主自己调用 Material3、Activity 或其他 API 时，应直接声明相应依赖。`capsule` 只属于 Demo 的 G2 装配，不是 COUI 的公共或运行依赖。库不依赖外部业务工程、Hilt、宿主日志框架、第三方 Backdrop 或厂商 SDK。
 
+### 运动接口迁移
+
+Touch/Press 的动画轴改为只读 State<Float>，原 `.value` 读取和构造入口保留，直接轴控制改走组件方法。这是二进制不兼容变更，所有调用模块需要重新编译；具体替换方式与生命周期要求见[运动与跟随回弹](../effects/motion.md#从公开-animatable-迁移)。
+
 ## 效果门槛
 
 | 能力                                  | 运行边界                                                                 |

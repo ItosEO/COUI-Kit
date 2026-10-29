@@ -2,8 +2,7 @@ package com.itos.coui.checkbox
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.size
@@ -39,6 +38,7 @@ data class CouiCheckboxColors(
 )
 
 private val CheckboxEasing = CubicBezierEasing(0.3f, 0f, 0.1f, 1f)
+private val CheckmarkReturnEasing = CubicBezierEasing(0.3f, 0f, 0.633f, 1f)
 
 /** 承接短信 coui_btn_check 的几何和切换动效; 点击和无障碍语义由宿主提供。 */
 @Composable
@@ -56,34 +56,21 @@ fun CouiCheckbox(
                 "10.347,15.796L7,12.386L7.967,11.401L10.831,14.318Z",
         ).toPath()
     }
-    val fill by animateFloatAsState(
-        targetValue = if (checked) 1f else 0f,
-        animationSpec = tween(
-            durationMillis = if (enabled) 150 else 0,
-            delayMillis = if (enabled && !checked) 150 else 0,
-            easing = CheckboxEasing,
-        ),
-        label = "couiCheckboxFill",
-    )
-    val checkProgress by animateFloatAsState(
-        targetValue = if (checked) 1f else 0f,
-        animationSpec = tween(if (enabled) 300 else 0, easing = CheckboxEasing),
-        label = "couiCheckboxCheck",
-    )
-    val pulse = remember { Animatable(1f) }
+    val timeline = remember { Animatable(1f) }
     var previousChecked by remember { mutableStateOf(checked) }
+    var previousEnabled by remember { mutableStateOf(enabled) }
+    var animated by remember { mutableStateOf(false) }
     LaunchedEffect(checked, enabled) {
-        val changed = previousChecked != checked
+        val changed = enabled && previousEnabled && previousChecked != checked
         previousChecked = checked
-        if (enabled && changed) {
-            pulse.animateTo(1f, keyframes {
-                durationMillis = 300
-                pulse.value at 0 using CheckboxEasing
-                1.08f at 150 using CheckboxEasing
-                1f at 300
-            })
+        previousEnabled = enabled
+        animated = changed
+        if (changed) {
+            // 原 animated-selector 不可逆；反向从旧目标对应的另一条时间线起点重新播放。
+            timeline.snapTo(0f)
+            timeline.animateTo(1f, tween(300, easing = LinearEasing))
         } else {
-            pulse.snapTo(1f)
+            timeline.snapTo(1f)
         }
     }
     Canvas(modifier.size(24.dp)) {
@@ -91,12 +78,27 @@ fun CouiCheckbox(
         val fillColor = if (enabled) colors.checked else colors.disabledChecked
         val borderColor = if (enabled) colors.unchecked else colors.disabledUnchecked
         val checkColor = if (enabled) colors.checkmark else colors.disabledCheckmark
-        scale(pulse.value) {
+        val transitioning = enabled && previousEnabled && (animated || previousChecked != checked)
+        val time = if (!transitioning) 1f else if (previousChecked != checked) 0f else timeline.value
+        val returning = time >= 0.5f
+        val phase = (if (returning) time * 2f - 1f else time * 2f).coerceIn(0f, 1f)
+        val groupPulse = if (!transitioning) 1f else if (returning) {
+            1.08f - 0.08f * CheckboxEasing.transform(phase)
+        } else {
+            1f + 0.08f * CheckboxEasing.transform(phase)
+        }
+        val checkPulse = if (transitioning && checked && returning) {
+            1.08f - 0.08f * CheckmarkReturnEasing.transform(phase)
+        } else groupPulse
+        val fill = if (checked) CheckboxEasing.transform((time * 2f).coerceIn(0f, 1f))
+            else 1f - CheckboxEasing.transform((time * 2f - 1f).coerceIn(0f, 1f))
+        val checkProgress = if (checked) CheckboxEasing.transform(time) else 1f - CheckboxEasing.transform(time)
+        scale(groupPulse) {
             translate(3.8f * unit, 3.799f * unit) {
                 drawOutline(
                     outline = borderShape.createOutline(Size(16.4f * unit, 16.4f * unit), layoutDirection, this),
                     color = borderColor,
-                    style = Stroke((if (pulse.isRunning) 1.8f else 1.6f) * unit),
+                    style = Stroke((if (transitioning && checked) 1.6f else 1.3f) * unit),
                 )
             }
             translate(3f * unit, 3f * unit) {
@@ -106,6 +108,8 @@ fun CouiCheckbox(
                     alpha = fill,
                 )
             }
+        }
+        scale(checkPulse) {
             val check = Path().apply {
                 moveTo((12f - 14.12f / 3f) * unit, (12f - 0.236f / 3f) * unit)
                 lineTo((12f - 3.44f / 3f) * unit, (12f + 10.454f / 3f) * unit)
@@ -114,7 +118,7 @@ fun CouiCheckbox(
             val measure = PathMeasure().apply { setPath(check, false) }
             val segment = Path()
             measure.getSegment(0f, measure.length * checkProgress, segment)
-            if (checkProgress == 1f && !pulse.isRunning) {
+            if (checked && !transitioning) {
                 scale(unit, unit, pivot = Offset.Zero) {
                     drawPath(checkedPath, color = checkColor)
                 }

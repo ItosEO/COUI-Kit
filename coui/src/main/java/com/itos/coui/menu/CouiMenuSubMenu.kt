@@ -214,11 +214,7 @@ internal fun <T> CouiMenuWithSubMenu(
         if (!state.open) {
             // 退出结束再清理滚动位置, 避免可见内容在收起首帧跳顶。
             childScroll.scrollTo(0)
-            childTouch.cancel()
-            childTouch.scaleX.snapTo(1f)
-            childTouch.scaleY.snapTo(1f)
-            childTouch.translationX.snapTo(0f)
-            childTouch.translationY.snapTo(0f)
+            childTouch.reset()
             // 原厂 removeSubMenuView 后才替换下一条事件, 不在退出期间给父项补按下。
             if (state.parentIndex != null) state.mainNeedsDown = true
             state.parentIndex = null

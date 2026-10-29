@@ -1,19 +1,17 @@
 package com.itos.coui.effect
 
 import android.animation.ArgbEvaluator
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
@@ -29,8 +27,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 /** 导航项过滤 state_pressed, COUIMaskRippleDrawable 实际只绘 hover -> focus。 */
 @Composable
@@ -82,10 +78,10 @@ fun Modifier.couiToolbarFeedback(
 
 @Composable
 private fun rememberMaskProgress(active: Boolean): State<Float> {
-    val scope = rememberCoroutineScope()
-    val effect = remember(scope) { CouiMaskProgress(scope) }
+    val effect = remember { CouiStateProgress() }
     SideEffect { effect.setActive(active) }
-    return effect.progress.asState()
+    DisposableEffect(effect) { onDispose { effect.dispose() } }
+    return effect.progress
 }
 
 /** COUISwitch 的 hover/press 蒙层；触摸会话与点击识别取消分别收尾。 */
@@ -148,25 +144,6 @@ internal fun Modifier.couiButtonFeedback(
         drawRect(maskColor(hover.value, if (dark) 0x26FFFFFF else 0x14000000))
         drawRect(maskColor(focus.value, if (dark) 0x331A8CFF else 0x1F0080FF))
         drawRect(maskColor(press.value, if (dark) 0x33FFFFFF else 0x1F000000))
-    }
-}
-
-/** 各状态沿用 StateEffectAnimator 的弹簧。 */
-private class CouiMaskProgress(private val scope: CoroutineScope) {
-    val progress = Animatable(0f, visibilityThreshold = 0.001f)
-    private var active = false
-
-    fun setActive(value: Boolean) {
-        if (active == value) return
-        active = value
-        animate(if (value) 1f else 0f)
-    }
-
-    private fun animate(target: Float) {
-        scope.launch {
-            // response=.3, bounce=0; 与厂商 StateEffectAnimator 的物理参数一致。
-            progress.animateTo(target, spring(1f, 438.64908f, 0.001f))
-        }
     }
 }
 

@@ -65,6 +65,8 @@ fun CheckboxRow(
 
 checked 与 enabled 同时传给行和绘制组件。子控件不再添加点击节点，以免一次操作触发两次更新。CouiCheckbox 不创建自己的业务状态或持久化值。
 
+外框、底色与勾线按原厂分组绘制；勾线的选中回落曲线独立于外框和底色。切换中再次反向时，从新方向的原厂时间线起点播放，不从当前帧连续倒放。禁用时停止切换并立即绘制目标状态，重新启用不补播动画。Shape 继续由宿主提供。
+
 ## 入口与示例
 
 [CouiCheckbox](../../coui/src/main/java/com/itos/coui/checkbox/CouiCheckbox.kt)、[Defaults](../../coui/src/main/java/com/itos/coui/checkbox/CouiCheckboxDefaults.kt)；完整禁用态见 [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)。

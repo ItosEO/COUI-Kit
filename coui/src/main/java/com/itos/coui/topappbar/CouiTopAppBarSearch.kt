@@ -31,7 +31,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,9 +84,9 @@ import com.itos.coui.effect.CouiFloatingSurface
 import com.itos.coui.effect.SpotlightPreset
 import com.itos.coui.effect.couiFloatingSurface
 import com.itos.coui.effect.rememberCouiSpotlight
-import com.itos.coui.motion.CouiPressMotion
 import com.itos.coui.motion.couiPressMotion
 import com.itos.coui.motion.couiTouchMotion
+import com.itos.coui.motion.rememberCouiPressMotion
 import com.itos.coui.motion.rememberCouiTouchMotion
 import kotlin.math.abs
 import kotlin.math.max
@@ -365,7 +364,6 @@ private fun SearchSurface(
 ) {
     val backdrop = checkNotNull(LocalCouiToolbarBackdrop.current)
     val overlay = checkNotNull(LocalCouiToolbarOverlay.current)
-    val density = LocalDensity.current.density
     val style = LocalCouiToolbarStyle.current
     val dark = style.dark
     val contour = style.contourGlowEnabled
@@ -376,9 +374,8 @@ private fun SearchSurface(
     val shadow = remember(style) { style.shadow(true) }
     val contentLayer = rememberGraphicsLayer()
     SideEffect { contentLayer.renderEffect = contentRenderEffect }
-    val scope = rememberCoroutineScope()
     val motion = rememberCouiTouchMotion(deform)
-    val press = remember(scope, density) { CouiPressMotion(scope, density) }
+    val press = rememberCouiPressMotion()
     val (lightInput, drawLight) = rememberCouiSpotlight(interactive, SpotlightPreset.OpaqueMedium2, dark)
     val interactions = remember { MutableInteractionSource() }
     CompositionLocalProvider(LocalContentColor provides style.contentColor) {
@@ -390,7 +387,7 @@ private fun SearchSurface(
                     drawContent()
                     if (drawLight != null) withTransform({
                             translate(motion.translationX.value, motion.translationY.value)
-                            scale(motion.scaleX.value * press.scale.value, motion.scaleY.value * press.scale.value, center)
+                            scale(motion.scaleX.value + press.scale.value - 1f, motion.scaleY.value + press.scale.value - 1f, center)
                     }) { clipPath(path) { drawLight.invoke(this) } }
                 }
             }
@@ -398,7 +395,7 @@ private fun SearchSurface(
                 foregroundComposition = true) {
                 CouiFloatingSurface(
                     bounds = Rect(Offset(motion.translationX.value, motion.translationY.value), Size(boundsSize.width.toFloat(), boundsSize.height.toFloat())),
-                    scaleX = motion.scaleX.value * press.scale.value, scaleY = motion.scaleY.value * press.scale.value,
+                    scaleX = motion.scaleX.value + press.scale.value - 1f, scaleY = motion.scaleY.value + press.scale.value - 1f,
                     cornerWeight = 1f,
                 )
             },
@@ -406,7 +403,7 @@ private fun SearchSurface(
             Box(
                 Modifier.matchParentSize().graphicsLayer {
                     translationX = motion.translationX.value; translationY = motion.translationY.value
-                    scaleX = motion.scaleX.value * press.scale.value; scaleY = motion.scaleY.value * press.scale.value
+                    scaleX = motion.scaleX.value + press.scale.value - 1f; scaleY = motion.scaleY.value + press.scale.value - 1f
                 }.couiTouchMotion(motion, deform).couiPressMotion(press, deform).then(lightInput)
                     .drawWithContent { contentLayer.record { this@drawWithContent.drawContent() } }
                     .clip(shape)
