@@ -1,8 +1,8 @@
-# COUI Compose
+# COUI-Kit
 
 面向 Android Jetpack Compose 的 COUI 组件与视觉效果库，使用公开 Android / Compose API 实现。
 
-COUI Compose 基于 ColorOS 17 最新的「凝光视效」做还原，包含背景渐进模糊、材质混色、轮廓与跟手光，以及控件按压、拖动时的跟手运动；库把这些拆成可复用的组件和效果。
+COUI-Kit 基于 ColorOS 17 最新的「凝光视效」做还原，包含背景渐进模糊、材质混色、轮廓与跟手光，以及控件按压、拖动时的跟手运动；库把这些拆成可复用的组件和效果。
 
 目前提供顶栏与搜索、底栏、FAB、菜单、滑条、复选框、开关、ChipTab 和弹窗，以及可独立使用的阴影、模糊、材质混色、光效与融合算法。所有实现只依赖 Android、Compose 和 AndroidX，不读应用主题，也不依赖 OEM SDK、私有 SO 或运行时反射。
 
