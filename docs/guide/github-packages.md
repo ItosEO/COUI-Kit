@@ -55,4 +55,4 @@ env:
 
 出现 `401` 时检查令牌类型、有效期和凭据；`403` 时检查账号及仓库权限；解析不到版本时，先确认对应发布运行成功并复制了完整坐标。
 
-发布者操作见[预览版发布](../development/publishing.md)，源码接入仍见[快速开始](getting-started.md#添加模块)。认证要求以 [GitHub 官方文档](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry)为准。
+发布者操作见[预览版发布](../development/publishing.md)，源码接入仍见[快速开始](getting-started.md#源码模块)。认证要求以 [GitHub 官方文档](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry)为准。

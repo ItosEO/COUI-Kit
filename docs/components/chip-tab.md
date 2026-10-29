@@ -1,10 +1,10 @@
-# ChipTab 分类栏
+# 🏷️ChipTab 分类栏
 
-CouiChipTabRow 显示可横向滚动的单选分类，并可在分类组外放置一个独立动作。它负责选中项露出、惯性和回弹，宿主负责分类数据与选中值。
+CouiChipTabRow 是横向滚动的受控单选分类栏，也可以在分类组外放一个独立动作。分类数据和选中值由页面传入，选中露出、惯性和回弹由组件处理。
 
-## 受控选择
+## 显示一个分类栏
 
-下面函数接收页面背景源、项目列表及受控选择，使用组件自身的 renderer 工厂：
+使用以下代码显示一个受控分类栏：
 
 ~~~kotlin
 import androidx.annotation.RequiresApi
@@ -19,11 +19,11 @@ import com.itos.coui.chip.CouiChipTabRow
 @Composable
 fun Categories(
     modifier: Modifier = Modifier,
+    backdrop: CouiBackdrop,
+    dark: Boolean,
     items: List<CouiChipTabItem>,
     selectedKey: Any?,
     onSelectedKeyChange: (Any) -> Unit,
-    backdrop: CouiBackdrop,
-    dark: Boolean,
 ) {
     CouiChipTabRow(
         modifier = modifier.fillMaxWidth(),
@@ -36,20 +36,52 @@ fun Categories(
 }
 ~~~
 
-## 项目与交互
+`CouiChipTabItem` 的 `key` 在同一栏里必须唯一，重排和重组时也要保持稳定。非空列表的 `selectedKey` 必须属于列表；空列表传 `null`。重复点击不会取消选择，点击、键盘焦点和选中值变化都会把对应项目完整露出来。
 
-- key 在同一栏中唯一，并在重排和重组期间保持稳定。非空列表的 selectedKey 必须属于列表，空列表使用 null。
-- 重复点击不取消选择。点击、键盘焦点和选中值变化会露出对应项目；可用宽度改变时重新露出选中项，首次布局保留初始或恢复的滚动位置。
-- 长项目按完整可用宽度测量，文字超出后省略。横向裁剪同时限制点击，纵向保留阴影空间。
-- leadingAction 位于单选组外，null 表示只显示分类。需要退出过渡时保留槽位内容，仅改变 leadingActionVisible，让动作宽度、透明度和留白同步过渡。
-- itemSpacing 和 animationLevel 控制间距与动画等级；参数含义见公开声明，不读取厂商私有系统属性。
+分类栏要求 API 34，`backdrop` 要是真正的不透明兄弟节点，不能采样分类栏自己。
 
-## 样式与平台
+## 添加独立动作
 
-要求 API 34，源必须是不透明兄弟节点。宿主提供文字样式、内容色与图标；图标不被组件重新染色。默认样式从 CouiChipTabDefaults 获取。
+`leadingAction` 放在单选组外，`leadingActionVisible` 控制它的动画显隐。需要在分类栏外放动作时：
 
-分类项与独立图标按钮各持有单主体 renderer。显式传 renderers 时，与 items 按顺序对应且实例唯一。需要处理创建失败时，在调用前创建并处理结果，见[资源规则](../effects/backdrop.md#资源与失败处理)。
+~~~kotlin
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Icon
+import com.itos.coui.chip.CouiChipTabButton
 
-## 独立入口与示例
+CouiChipTabRow(
+    items = items,
+    selectedKey = selectedKey,
+    onSelectedKeyChange = onSelectedKeyChange,
+    backdrop = backdrop,
+    dark = dark,
+    leadingAction = {
+        CouiChipTabButton(
+            onClick = onOpenCategories,
+            contentDescription = categoriesLabel,
+            backdrop = backdrop,
+            dark = dark,
+        ) {
+            Icon(Icons.Default.Menu, contentDescription = null)
+        }
+    },
+    leadingActionVisible = categoriesVisible,
+)
+~~~
 
-[CouiChipTabRow / CouiChipTabItem](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabRow.kt)、[CouiChipTab / CouiChipTabButton](../../coui/src/main/java/com/itos/coui/chip/CouiChipTab.kt)、[Defaults](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabDefaults.kt)。单独使用分类项或按钮时，宿主负责组装选中值、背景源、语义与独立 renderer。分类菜单、图标动作和纯色背景见 [DemoChipSamples](../../demo/src/main/java/com/itos/coui/demo/DemoChipSamples.kt)。
+动作有退出过渡时，保留 `leadingAction` 的内容，只切换 `leadingActionVisible`，这样宽度、透明度和留白会一起收放。`CouiChipTabButton` 在同一个包里。图标不会被重新着色，颜色由页面传的 icon 决定。
+
+## 文字、间距和动画
+
+默认文字样式和内容色从 `CouiChipTabDefaults` 取，也可以自己传 `textStyle` 和 `contentColor`。`itemSpacing` 默认是 0，按页面需要加间距；`animationLevel` 的 1 最明显，4 最弱。
+
+每个分类项和独立图标按钮各自持有单主体 renderer。显式传 `renderers` 时，数量要和 `items` 一致，实例不能重复。
+
+## 尺寸和 renderer
+
+文字超宽会省略。横向裁剪同时限制点击范围，纵向会保留阴影空间。
+
+renderer 创建可能失败，需要自己兜底。要自定义错误 UI 时，在调用前创建并检查结果。
+
+源码见 [CouiChipTabRow / CouiChipTabItem](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabRow.kt)、[CouiChipTab / CouiChipTabButton](../../coui/src/main/java/com/itos/coui/chip/CouiChipTab.kt)、[Defaults](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabDefaults.kt)，分类菜单、图标动作和纯色背景见 [DemoChipSamples](../../demo/src/main/java/com/itos/coui/demo/DemoChipSamples.kt)。

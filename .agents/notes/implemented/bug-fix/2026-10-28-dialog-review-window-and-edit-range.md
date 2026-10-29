@@ -38,7 +38,7 @@ PR #6 的审查指出：仅改变 DialogProperties 时 Compose Dialog.updatePara
 
 ## Consequences
 
-键盘策略不再依赖内容是否重组，Demo 的整段拒绝与超限过滤拥有真实范围，按钮尺寸只维护一处。代价是同一预设维护两种公开编辑状态契约，宿主需明确程序性 state.edit 不经输入转换。新使用说明见[弹窗](../../../../docs/components/dialog.md#输入型弹窗预设)及 [Demo](../../../../docs/guide/demo.md)；静态调用顺序与构建不能代替真实窗口、粘贴和 IME 验收。
+键盘策略不再依赖内容是否重组，Demo 的整段拒绝与超限过滤拥有真实范围，按钮尺寸只维护一处。代价是同一预设维护两种公开编辑状态契约，宿主需明确程序性 state.edit 不经输入转换。新使用说明见[弹窗](../../../../docs/components/dialog.md#输入型弹窗)及 [Demo](../../../../docs/guide/demo.md)；静态调用顺序与构建不能代替真实窗口、粘贴和 IME 验收。
 
 ## Verification
 

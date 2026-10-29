@@ -1,16 +1,20 @@
-# 顶栏搜索
+# 🔍顶栏搜索
 
-CouiTopAppBarSearchButton 与 CouiTopAppBarSearch 使用同一个搜索状态，将按钮转场为输入框。宿主持有查询、展开目标、焦点请求、IME 和返回操作。
+CouiTopAppBarSearch 把顶栏里的搜索按钮展开成输入框，按钮和输入框共用同一份转场状态。查询、展开状态和返回处理放在页面里。
 
-## 展开与关闭
+## 显示一个可展开的搜索
 
-下面的顶栏示例在 API 34 及以上使用。backdrop 来自页面背景源，style 与 searchStyle 是宿主的普通按钮、搜索外观；所有文案从宿主资源传入。
+使用以下代码显示一个搜索顶栏：
 
 ~~~kotlin
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
@@ -22,8 +26,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.unit.dp
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.topappbar.CouiToolbarStyle
 import com.itos.coui.topappbar.CouiTopAppBar
@@ -46,55 +52,118 @@ fun SearchToolbar(
     query: String,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
+    actions: @Composable RowScope.() -> Unit = {},
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     var focusPending by remember { mutableStateOf(false) }
     val state = rememberCouiTopAppBarSearchState(expanded)
     val keyboard = LocalSoftwareKeyboardController.current
-    val close = { expanded = false; focusPending = false; keyboard?.hide(); Unit }
+    val close = {
+        expanded = false
+        focusPending = false
+        keyboard?.hide()
+        Unit
+    }
     BackHandler(enabled = expanded, onBack = close)
     CouiTopAppBar(modifier = modifier, backdrop = backdrop) {
-        CouiTopAppBarSearch(
-            state = state,
-            style = searchStyle,
-            query = query,
-            onQueryChange = onQueryChange,
-            onSearch = onSearch,
-            placeholder = placeholder,
-            focusPending = focusPending,
-            onFocused = { focusPending = false },
-            trailingIcon = {
-                IconButton(onClick = close) {
-                    Icon(Icons.Default.Close, contentDescription = closeDescription)
-                }
-            },
+        Row(
+            modifier = Modifier.fillMaxWidth().statusBarsPadding()
+                .heightIn(min = 64.dp).padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(Modifier.fillMaxWidth()) {
-                Text(title, Modifier.weight(1f))
-                CouiTopAppBarButtonGroup {
-                    CouiTopAppBarSearchButton(
-                        state = state,
-                        style = style,
-                        onClick = { expanded = true; focusPending = true },
-                        contentDescription = searchDescription,
-                    )
-                }
+            CouiTopAppBarSearch(
+                modifier = Modifier.weight(1f),
+                state = state,
+                style = searchStyle,
+                query = query,
+                onQueryChange = onQueryChange,
+                onSearch = onSearch,
+                placeholder = placeholder,
+                focusPending = focusPending,
+                onFocused = { focusPending = false },
+                trailingIcon = {
+                    IconButton(onClick = close) {
+                        Icon(Icons.Default.Close, contentDescription = closeDescription)
+                    }
+                },
+            ) {
+                Text(title)
+            }
+            CouiTopAppBarButtonGroup {
+                actions()
+                CouiTopAppBarSearchButton(
+                    state = state,
+                    style = style,
+                    onClick = {
+                        expanded = true
+                        focusPending = true
+                    },
+                    contentDescription = searchDescription,
+                )
             }
         }
     }
 }
 ~~~
 
-示例使用 Activity Compose 的 BackHandler 与 Material3 图标按钮；宿主需直接声明这些依赖。
+请注意，搜索按钮和输入框必须放在同一个 CouiTopAppBar 里，并共用同一个 `state`。把 `state` 提到页面层，不要在两处各建一个。
 
-## 状态与转场
+`expanded` 是搜索唯一的展开目标。关闭时同时清掉 `focusPending`、收起键盘；返回键只在展开时拦截。`onFocused` 在焦点请求发出后调用，记得把 `focusPending` 设回 `false`，否则每次重组都会重复请求。
 
-按钮和输入框必须在 CouiTopAppBar 内，共享同一 state。组件不持久化查询，不替宿主执行搜索业务。焦点请求完成后清除 focusPending，避免重复请求。
+组件不保存查询值。关闭时要不要清空查询，由页面决定。
 
-CouiTopAppBarSearchAction 的 visibleWhileSearching 选择常驻动作；普通动作按搜索状态退场。UI 的 visible、展开目标和查询分别维护：仅隐藏顶栏时保留展开目标，业务结束搜索时再关闭、处理查询和键盘。
+## 添加常驻动作
 
-搜索状态工厂默认持有独立单主体 renderer；需要展示构造错误时，可自行创建并显式传入。常驻动作移动、收起避让及部分速度包含已有适配。固定顶栏的可见范围与父级滚动协调，不通过延迟焦点或跳页掩盖布局问题。
+右侧动作可以这样放：
 
-## 入口与示例
+~~~kotlin
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
+import com.itos.coui.topappbar.CouiTopAppBarButton
+import com.itos.coui.topappbar.CouiTopAppBarSearchAction
 
-[搜索与动作](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarSearch.kt)、[状态工厂](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarSearchState.kt)。常驻/退场操作、返回和页面搜索见 [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)；公共准备见[顶栏](top-app-bar.md)与[背景采样](../effects/backdrop.md)。
+CouiTopAppBarButtonGroup {
+    CouiTopAppBarSearchAction(state = state) {
+        CouiTopAppBarButton(onClick = onReset, style = style) {
+            Icon(Icons.Default.Refresh, contentDescription = resetLabel)
+        }
+    }
+    CouiTopAppBarSearchAction(state = state, visibleWhileSearching = true) {
+        CouiTopAppBarButton(onClick = onSettings, style = style) {
+            Icon(Icons.Default.Settings, contentDescription = settingsLabel)
+        }
+    }
+    CouiTopAppBarSearchButton(
+        state = state,
+        style = style,
+        onClick = {
+            expanded = true
+            focusPending = true
+        },
+        contentDescription = searchDescription,
+    )
+}
+~~~
+
+默认动作在搜索展开时原位淡出；`visibleWhileSearching = true` 的动作会移到新位置并保持可用。`CouiTopAppBarSearchAction` 和 `CouiTopAppBarButton` 在同一个包里。
+
+## 搜索框样式
+
+搜索框用 `searchStyle`，通常和顶栏按钮共用一套构造。在 `rememberToolbarStyle` 里把材质和阴影换成：
+
+~~~kotlin
+material = { capsule -> CouiTopAppBarButtonDefaults.material(dark, capsule, search = true) },
+shadow = { capsule -> CouiTopAppBarButtonDefaults.shadow(dark, capsule, density, contour, search = true) },
+~~~
+
+`dark`、`density`、`contour` 就是 `rememberToolbarStyle` 里的同名变量，完整构造见[顶栏与按钮](top-app-bar.md#配置顶栏样式)。`CouiTopAppBarSearch` 的 `visible` 控制整组显隐，不会改变展开目标；设为 `false` 时搜索框也不接受输入。只想隐藏顶栏时别顺手把 `expanded` 设成 `false`。
+
+## 版本和键盘
+
+搜索入口要求 API 34。`BackHandler` 来自 Activity Compose，`IconButton` 来自 Material3，页面需要自己声明这两个依赖。
+
+部分 ROM 上请求焦点后键盘仍可能不弹，用户点一下输入框就能输入。
+
+搜索框会占满可用宽度，放在 Row 里用 `Modifier.weight(1f)`，再按页面需要调 `endPadding`。源码见[搜索与动作](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarSearch.kt)、[状态工厂](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarSearchState.kt)，页面示例见 [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)。

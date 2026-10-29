@@ -1,6 +1,8 @@
 # COUI 库模块
 
-coui 是独立 Android Library，包名 com.itos.coui，依赖 Android、Compose 和 AndroidX。宿主提供主题、Shape、业务状态与回调。
+`coui` 是独立的 Android Library，包名 `com.itos.coui`，只依赖 Android、Compose 和 AndroidX。页面负责主题、Shape、业务状态和回调，库不读 MaterialTheme。
+
+## 入口
 
 | 需要的内容 | 入口 |
 | --- | --- |
