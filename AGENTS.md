@@ -4,16 +4,16 @@
 
 开发与文档维护从[贡献指南](CONTRIBUTING.md)进入，专题导航见[开发文档](docs/development/README.md)。流程、原厂分析与 1:1 复刻、代码规范及 component / effect 文档写法按下面的任务表阅读。
 
-| 任务                        | 必须先读                                                                                                   |
-|---------------------------|--------------------------------------------------------------------------------------------------------|
-| 实现、修复、重构或性能改动             | 完整阅读[开发流程](docs/development/workflow.md)和[代码规范](docs/development/coding-style.md)                      |
-| 新增组件/效果，修改视觉、动画、手势或排查原厂差异 | 继续阅读[原厂分析与 1:1 复刻方法](docs/development/replication-guide.md)的相关完整章节、当前调用链与对应 Note                       |
-| 新增组件或基础效果                 | 先检查[效果目录](docs/effects/README.md)、对应实现与已有消费者，按[基础效果复用规则](docs/development/workflow.md#基础效果复用)确认复用或扩展方案 |
-| 修改模块职责或公开接口               | [架构](docs/development/architecture.md)、[API 设计](docs/development/api-design.md)及受影响的使用页                |
-| 新增、修改或移动普通文档              | [文档维护规则](docs/development/documentation.md)及对应组件/效果页面                                                  |
-| 修改 Demo                   | [Demo 指南](docs/guide/demo.md)、[架构的 Demo 契约](docs/development/architecture.md#demo-契约)及所用公开 API         |
-| 修改签名、CI 或 PR 检查 | [CI 与 PR 检查](docs/development/ci.md)、[验证与评审](docs/development/validation.md)及实际工作流；不得复制本地密钥或密码到 Git、日志或附件 |
-| 修改库打包、版本或上传流程 | [预览版发布](docs/development/publishing.md)、[兼容要求](docs/guide/compatibility.md)及实际发布配置 |
+| 任务                        | 必须先读                                                                                                      |
+|---------------------------|-----------------------------------------------------------------------------------------------------------|
+| 实现、修复、重构或性能改动             | 完整阅读[开发流程](docs/development/workflow.md)和[代码规范](docs/development/coding-style.md)                         |
+| 新增组件/效果，修改视觉、动画、手势或排查原厂差异 | 继续阅读[原厂分析与 1:1 复刻方法](docs/development/replication-guide.md)的相关完整章节、当前调用链与对应 Note                          |
+| 新增组件或基础效果                 | 先检查[效果目录](docs/effects/README.md)、对应实现与已有消费者，按[基础效果复用规则](docs/development/workflow.md#基础效果复用)确认复用或扩展方案    |
+| 修改模块职责或公开接口               | [架构](docs/development/architecture.md)、[API 设计](docs/development/api-design.md)及受影响的使用页                   |
+| 新增、修改或移动普通文档              | [文档维护规则](docs/development/documentation.md)及对应组件/效果页面                                                     |
+| 修改 Demo                   | [Demo 指南](docs/guide/demo.md)、[架构的 Demo 契约](docs/development/architecture.md#demo-契约)及所用公开 API            |
+| 修改签名、CI 或 PR 检查           | [CI 与 PR 检查](docs/development/ci.md)、[验证与评审](docs/development/validation.md)及实际工作流；不得复制本地密钥或密码到 Git、日志或附件 |
+| 修改库打包、版本或上传流程             | [预览版发布](docs/development/publishing.md)、[兼容要求](docs/guide/compatibility.md)及实际发布配置                        |
 
 所有任务先检查工作区及目标文件的当前内容，保留用户已有修改。不能用旧快照、摘要或其他代理结论替代核心文档、原厂关键入口和即将修改的实现。
 
