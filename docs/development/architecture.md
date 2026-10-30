@@ -41,6 +41,6 @@ Material 导航在横屏使用侧栏，COUI 保持底栏。切页和搜索筛选
 
 ## 依据
 
-参数以代码与构建配置为准，模块只读入口见[库目录](../../coui/README.md)。原厂行为、公开平台适配与项目主动特化分别记录；完整使用要求由对应[组件](../components/README.md)和[效果](../effects/README.md)页面持有。
+参数以[库源码](../../coui/src/main/java/com/itos/coui/)与[构建配置](../../coui/build.gradle.kts)为准。原厂行为、公开平台适配与项目主动特化分别记录；完整使用要求由对应[组件](../components/README.md)和[效果](../effects/README.md)页面持有。
 
 历史取舍见[模块边界](../../.agents/notes/implemented/architecture/2026-10-21-coui-module-boundary.md)和[独立工程](../../.agents/notes/implemented/architecture/2026-10-23-standalone-coui-demo.md)。

@@ -30,13 +30,13 @@ Box(
 
 ## 选择正确入口
 
-| 目标 | 入口与行为 |
-| --- | --- |
-| 均匀背景模糊 | drawCouiBackdrop 的 effects / blur，半径使用本地像素 |
-| 顶栏渐进模糊 | CouiTopAppBar；低层 drawCouiGradientBackdrop 使用位置可变卷积 |
-| 菜单快速模糊 | rememberCouiMenuBlur / CouiMenuBlur.draw，由工厂管理中间图层 |
-| 已有覆盖率模糊链 | CouiCoverageBlurEffect |
-| 材质混色 | rememberCouiMaterialEffect，输入为采样颜色合成所需的两种颜色 |
+| 目标       | 入口与行为                                              |
+|----------|----------------------------------------------------|
+| 均匀背景模糊   | drawCouiBackdrop 的 effects / blur，半径使用本地像素         |
+| 顶栏渐进模糊   | CouiTopAppBar；低层 drawCouiGradientBackdrop 使用位置可变卷积 |
+| 菜单快速模糊   | rememberCouiMenuBlur / CouiMenuBlur.draw，由工厂管理中间图层 |
+| 已有覆盖率模糊链 | CouiCoverageBlurEffect                             |
+| 材质混色     | rememberCouiMaterialEffect，输入为采样颜色合成所需的两种颜色        |
 
 顶栏的渐进 Gaussian、菜单 Fast Kawase 和均匀模糊是不同算法。菜单工厂在旧平台返回 null，由菜单自己的兼容路径处理；不能将它当作同等 Fast Kawase 结果。
 

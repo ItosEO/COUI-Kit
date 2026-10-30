@@ -193,7 +193,7 @@ Java 入口、参数与 native 模糊片段分别有证据；这不表示所有�
   → coui：COUI 控件、固定预设、效果、采样、几何、动效和输入
 ```
 
-公共 Defaults 由各组件族持有；主题取色、HCT、应用偏好和日志留在宿主。不要因为文件导入 COUI 就将它迁入库，也不要新增只转发参数的包装层。当前代码入口和完整边界见[公共模块说明](../../coui/README.md)及[分层决策](../../.agents/notes/implemented/architecture/2026-10-21-coui-module-boundary.md)。
+公共 Defaults 由各组件族持有；主题取色、HCT、应用偏好和日志留在宿主。不要因为文件导入 COUI 就将它迁入库，也不要新增只转发参数的包装层。当前代码入口和完整边界见[架构](architecture.md)及[分层决策](../../.agents/notes/implemented/architecture/2026-10-21-coui-module-boundary.md)。
 
 ### 4.3 为一条绘制链核对这些输入
 
