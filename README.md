@@ -66,6 +66,7 @@ dependencies {
 - [兼容要求](docs/guide/compatibility.md)
 - [外观与预设](docs/guide/appearance.md)
 - [GitHub Packages 开发快照](docs/guide/github-packages.md)
+- [更新记录与版本映射](CHANGELOG.md)
 
 ## 反馈与贡献
 
