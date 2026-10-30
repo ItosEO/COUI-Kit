@@ -37,6 +37,8 @@ PR 自动执行 Note、库与 Demo Lint、Demo debug/release 构建及库本地 
 
 需要避免签名参数进入本地 configuration cache 时，加 `--no-configuration-cache`。失败须查看实际 Lint 或构建错误，不建立吞掉失败的路径。远端上传与发行渠道按[发布指南](publishing.md)区分，不把本地 Maven 产物当作已发布版本。
 
+自动化测试建设建议见[测试建设评估](testing-plan.md)。本次未添加测试源码或更改 CI 检查范围。
+
 ## 开发诊断
 
 [CouiRenderDiagnostics](../../coui/src/main/java/com/itos/coui/diagnostic/CouiRenderDiagnostics.kt) 与 renderDiagnosticProbe 在主线程按需启停。诊断结果用于定位录制、缓存或绘制成本，不成为业务状态，不默认启用截图或逐帧日志。

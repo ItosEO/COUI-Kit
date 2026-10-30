@@ -68,6 +68,7 @@ dependencies {
 - [外观与预设](docs/guide/appearance.md)
 - [更新记录](CHANGELOG.md)
 - [GitHub Packages 开发快照](docs/guide/github-packages.md)
+- [更新记录与版本映射](CHANGELOG.md)
 
 ## 反馈与贡献
 
