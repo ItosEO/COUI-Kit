@@ -35,7 +35,9 @@ PR 自动执行 Note、库与 Demo Lint、Demo debug/release 构建及库本地 
 ./gradlew :coui:lintDebug :demo:lintRelease :demo:assembleDebug :demo:assembleRelease :coui:publishAllPublicationsToLocalRepository
 ~~~
 
-需要避免签名参数进入本地 configuration cache 时，加 `--no-configuration-cache`。失败须查看实际 Lint 或构建错误，不建立吞掉失败的路径。远端库上传只由手动发布入口执行，现阶段不配置 JitPack 或 Maven Central。
+需要避免签名参数进入本地 configuration cache 时，加 `--no-configuration-cache`。失败须查看实际 Lint 或构建错误，不建立吞掉失败的路径。现有远端库自动上传仅由 GitHub Packages 的手动快照工作流执行。仓库没有 Maven Central 或 JitPack 自动发布工作流；Maven Central 已发行版本与快照的区分见[发布渠道](publishing.md)。
+
+自动化测试的分层、首批用例和设备矩阵见[测试建设评估](testing-plan.md)。该提案尚未添加测试源码或更改 CI 检查范围。
 
 ## 开发诊断
 
