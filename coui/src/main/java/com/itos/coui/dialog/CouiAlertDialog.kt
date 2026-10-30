@@ -1,5 +1,7 @@
 package com.itos.coui.dialog
 
+import com.itos.coui.theme.CouiTheme
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -49,13 +51,13 @@ fun CouiAlertDialog(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
     confirmAction: CouiDialogAction,
-    dark: Boolean,
+    dark: Boolean = CouiTheme.isDark,
     title: String? = null,
     message: String? = null,
     dismissAction: CouiDialogAction? = null,
     neutralAction: CouiDialogAction? = null,
     placement: CouiDialogPlacement = CouiDialogPlacement.Bottom,
-    colors: CouiDialogColors = CouiDialogDefaults.colors(dark),
+    colors: CouiDialogColors = CouiDialogDefaults.themeColors(dark),
     shape: Shape = CouiDialogDefaults.shape,
     cornerRadius: Dp = CouiDialogDefaults.cornerRadius,
     material: CouiDialogMaterial? = null,

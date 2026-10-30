@@ -12,9 +12,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.minimumInteractiveComponentSize
+import com.itos.coui.theme.LocalCouiContentColor as LocalContentColor
+import com.itos.coui.theme.ProvideCouiTextStyle as ProvideTextStyle
+import androidx.compose.ui.layout.layout
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -39,6 +39,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import kotlin.math.roundToInt
 import com.itos.coui.effect.CouiFloatingRenderer
 import com.itos.coui.effect.CouiFloatingSurface
 import com.itos.coui.effect.SpotlightPreset
@@ -58,7 +59,7 @@ fun CouiTopAppBarButton(
     enabled: Boolean = true,
     text: Boolean = false,
     renderer: CouiFloatingRenderer = remember { CouiFloatingRenderer.standalone() },
-    style: CouiToolbarStyle,
+    style: CouiToolbarStyle = CouiTopAppBarButtonDefaults.style(),
     content: @Composable RowScope.() -> Unit,
 ) {
     val backdrop = checkNotNull(LocalCouiToolbarBackdrop.current) { "顶栏按钮必须位于 CouiTopAppBar 内" }
@@ -81,7 +82,15 @@ fun CouiTopAppBarButton(
     val contentColor = style.contentColor
     Box(
         modifier
-            .minimumInteractiveComponentSize()
+            .layout { measurable, constraints ->
+                val placeable = measurable.measure(constraints)
+                val width = maxOf(placeable.width, 48.dp.roundToPx())
+                val height = maxOf(placeable.height, 48.dp.roundToPx())
+                layout(width, height) {
+                    placeable.place(((width - placeable.width) / 2f).roundToInt(),
+                        ((height - placeable.height) / 2f).roundToInt())
+                }
+            }
             .then(if (text) Modifier.widthIn(min = 60.dp).height(40.dp) else Modifier.size(40.dp))
             .onSizeChanged { boundsSize = it }
             .drawWithCache {

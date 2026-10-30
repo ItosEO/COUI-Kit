@@ -1,5 +1,3 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
-
 package com.itos.coui.topappbar
 
 import android.graphics.RenderEffect
@@ -18,12 +16,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.Text
+import androidx.compose.ui.res.painterResource
+import com.itos.coui.theme.CouiIcon as Icon
+import com.itos.coui.theme.LocalCouiContentColor as LocalContentColor
+import com.itos.coui.theme.ProvideCouiTextStyle as ProvideTextStyle
+import com.itos.coui.theme.CouiText as Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -98,7 +95,7 @@ import kotlin.math.roundToInt
 fun CouiTopAppBarSearch(
     modifier: Modifier = Modifier,
     state: CouiTopAppBarSearchState,
-    style: CouiToolbarStyle,
+    style: CouiToolbarStyle = CouiTopAppBarButtonDefaults.style(search = true),
     query: String,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
@@ -169,7 +166,7 @@ fun CouiTopAppBarSearch(
                                     Layout(content = {
                                             Row(verticalAlignment = Alignment.CenterVertically) {
                                                 Box(Modifier.padding(start = 2.dp).size(36.dp), contentAlignment = Alignment.Center) {
-                                                    Icon(Icons.Outlined.Search, null, Modifier.size(24.dp))
+                                                    Icon(modifier = Modifier.size(24.dp), painter = painterResource(com.itos.coui.R.drawable.coui_search), contentDescription = null)
                                                 }
                                                 Box(Modifier.weight(1f).graphicsLayer { alpha = progress.coerceIn(0f, 1f) }) {
                                                     BasicTextField(
@@ -188,7 +185,7 @@ fun CouiTopAppBarSearch(
                                                         decorationBox = { input ->
                                                             Box(contentAlignment = Alignment.CenterStart) {
                                                                 if (query.isEmpty()) Text(
-                                                                    placeholder,
+                                                                    text = placeholder,
                                                                     color = LocalContentColor.current.copy(alpha = 0.6f),
                                                                     fontSize = 15.sp,
                                                                     maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis,
@@ -252,7 +249,7 @@ fun CouiTopAppBarSearch(
 fun CouiTopAppBarSearchButton(
     modifier: Modifier = Modifier,
     state: CouiTopAppBarSearchState,
-    style: CouiToolbarStyle,
+    style: CouiToolbarStyle = CouiTopAppBarButtonDefaults.style(search = true),
     onClick: () -> Unit,
     contentDescription: String,
     enabled: Boolean = true,
@@ -286,7 +283,7 @@ fun CouiTopAppBarSearchButton(
                         capsule = false, interactive = enabled, deform = enabled,
                         onClick = { center -> state.sourceCenter = center; open() },
                     ) {
-                        Icon(Icons.Outlined.Search, contentDescription, Modifier.size(24.dp),
+                        Icon(modifier = Modifier.size(24.dp), painter = painterResource(com.itos.coui.R.drawable.coui_search), contentDescription = contentDescription,
                             tint = LocalContentColor.current.copy(alpha = if (enabled) 1f else 0.38f))
                     }
                 }

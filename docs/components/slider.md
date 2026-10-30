@@ -2,6 +2,21 @@
 
 使用 `CouiSlider` 调节音量、亮度等数值。滑条支持连续调节，也可以设置固定的档位。
 
+## 最小调用
+
+页面提供当前值和更新回调：
+
+~~~kotlin
+import com.itos.coui.slider.CouiSlider
+
+CouiSlider(
+    value = value,
+    onValueChange = onValueChange,
+)
+~~~
+
+省略 `colors` 时，滑条按最终的 `dark`、`enabled` 和 COUI 强调色生成配色；`shape` 默认使用胶囊形。外观主题规则见[外观与预设](../guide/appearance.md)。
+
 ## 显示一个滑条
 
 下面的滑条接收页面的当前值，并在拖动时通过 `onValueChange` 更新：
@@ -34,7 +49,7 @@ fun VolumeSlider(
 }
 ~~~
 
-页面需要在 `onValueChange` 中更新 `value`。需要保存到设置或发送给服务时，可以在调整结束后处理，见下文的 `onValueChangeFinished`。
+页面需要在 `onValueChange` 中更新 `value`。此例显式传入强调色、深浅色和形状；省略 `colors` 时会按最终的 `dark` 与 `enabled` 生成配色。需要保存到设置或发送给服务时，可以在调整结束后处理，见下文的 `onValueChangeFinished`。
 
 ## 分段选择
 
@@ -61,11 +76,11 @@ CouiSlider(
 
 `onValueChangeFinished` 在一次调整结束时触发，适合保存或提交。拖动过程中通过 `onValueChange` 更新显示；键盘方向键、Home 和 End 也支持调整。
 
-禁用滑条时，同时把 `enabled = false` 传给组件和 `CouiSliderDefaults.colors`。前者关闭交互，后者提供禁用配色。
+禁用滑条时传入 `enabled = false` 即可关闭交互；省略 `colors` 时，组件会生成禁用配色。若要传入自定义 `colors`，可用相同的 `enabled` 值调用 `CouiSliderDefaults.colors`。
 
 ## 轨道配色
 
-`CouiSliderDefaults.colors(primary = accent, dark = dark)` 根据强调色和深浅色生成配色。轨道的 `shape` 由页面提供。
+显式配色可用 `CouiSliderDefaults.colors(primary = accent, dark = dark, enabled = enabled)` 创建。轨道形状可按页面需要覆盖默认胶囊形。
 
 ## 参数校验
 

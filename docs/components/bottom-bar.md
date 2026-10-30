@@ -2,6 +2,43 @@
 
 `CouiBottomBar` 用于在页面底部切换导航项，两侧还可以放独立的操作按钮。
 
+## 最小调用
+
+底栏需要 API 34、背景源、导航项、选中索引和选择回调。`items`、`selectedIndex` 与 `onSelection` 由宿主提供：
+
+~~~kotlin
+import androidx.annotation.RequiresApi
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import com.itos.coui.backdrop.CouiBackdrop
+import com.itos.coui.effect.CouiFloatingRenderer
+import com.itos.coui.navigation.CouiBottomBar
+import com.itos.coui.navigation.CouiNavigationItem
+
+@RequiresApi(34)
+@Composable
+fun NavigationBar(
+    modifier: Modifier = Modifier,
+    backdrop: CouiBackdrop,
+    items: List<CouiNavigationItem>,
+    selectedIndex: Int,
+    onSelection: (Int) -> Unit,
+) {
+    val renderer = remember { CouiFloatingRenderer() }
+    CouiBottomBar(
+        modifier = modifier,
+        backdrop = backdrop,
+        renderer = renderer,
+        items = items,
+        selectedIndex = selectedIndex,
+        onSelection = onSelection,
+    )
+}
+~~~
+
+通用主题规则见[外观与预设](../guide/appearance.md)。
+
 ## 显示一个底栏
 
 底栏需要 API 34，以及一个覆盖页面内容的背景源。下面显示三个导航项和两个操作按钮；背景源的创建方式见[快速开始](../guide/getting-started.md#浮动组件的背景源)。
@@ -77,7 +114,7 @@ fun PageBottomBar(
 }
 ~~~
 
-示例保存选中的索引，并通过 `onSelection` 通知页面切换。项目已有导航状态时，可以将索引作为参数传入 `PageBottomBar`，再传给 `CouiBottomBar`。`items` 不能为空，选中索引必须属于列表。每项可以分别设置普通图标和选中图标；示例使用相同图标。Material 图标需要由应用声明相应依赖。
+示例保存选中的索引，并通过 `onSelection` 通知页面切换。项目已有导航状态时，可以将索引作为参数传入 `PageBottomBar`，再传给 `CouiBottomBar`。`items` 不能为空，选中索引必须属于列表。每项可以分别设置普通图标和选中图标；示例使用相同图标。示例中的 Material 图标需要由应用声明图标依赖。
 
 将底栏放在背景源节点之外，例如放在页面 `Box` 的底部。
 
@@ -85,13 +122,15 @@ fun PageBottomBar(
 
 ## 左右附件
 
-`leftVisible` 和 `rightVisible` 分别控制两侧按钮的显示，点击后调用对应的 `onLeftClick` 或 `onRightClick`。
+左右附件默认隐藏。将 `leftVisible` 或 `rightVisible` 设为 `true` 时，必须提供该侧的图标、无障碍描述和点击回调。需要保留附件退场动画内容时，隐藏期间仍传入对应附件参数，只切换可见状态。
 
-`rightContainerColor` 是右侧按钮的底色。页面同时使用独立 FAB 时，可以传入相同颜色，让两个按钮保持一致。
+`rightContainerColor` 是右侧按钮的底色；默认的 `Color.Unspecified` 会解析为 COUI 主题强调色。页面同时使用独立 FAB 时，可以显式传入相同颜色，让两个按钮保持一致。
+
+右侧附件图标按设计固定为白色，包括底色自动取主题强调色的情况；它不读取 `onAccent`。选择底色时应与白色图标搭配。
 
 ## 配色和形状
 
-`themeTint` 可以传页面表面色，`lightColor` 用于高光。`circleShape` 和 `capsuleShape` 分别控制两侧按钮和中间导航栏的形状。
+`themeTint` 默认使用与 `dark` 匹配的 `CouiTheme` `materialTint`，其默认值为透明；原生宿主或没有匹配主题时也为透明。显式传入颜色时会按该颜色染色。`lightColor` 用于高光；`circleShape` 和 `capsuleShape` 分别控制两侧按钮和中间导航栏的形状。
 
 底栏使用三主体 renderer：`CouiFloatingRenderer()`。每个底栏需要独立实例，不能使用 `standalone()`。
 

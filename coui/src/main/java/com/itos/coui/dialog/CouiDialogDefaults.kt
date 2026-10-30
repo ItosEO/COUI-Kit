@@ -2,12 +2,14 @@ package com.itos.coui.dialog
 
 import android.os.Build
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.itos.coui.shape.CouiShape
 import com.itos.coui.effect.CouiMaterialBlendMode
+import com.itos.coui.theme.CouiTheme
 
 /** 普通警告窗口的位置；大屏策略由宿主决定，不探测厂商私有设备特征。 */
 enum class CouiDialogPlacement { Bottom, Center }
@@ -94,6 +96,13 @@ object CouiDialogDefaults {
         destructive = if (dark) Color(0xFFFF6C61) else Color(0xFFDB382C),
         dimAmount = if (dark) 0.6f else 0.2f,
     )
+
+    @Composable
+    fun themeColors(dark: Boolean = CouiTheme.isDark): CouiDialogColors {
+        val theme = CouiTheme.colorSchemeFor(dark)
+        return colors(dark).copy(surface = theme.surface, title = theme.onSurface,
+            message = theme.onSurfaceVariant, action = theme.onSurface)
+    }
 
     /**
      * 原厂 blur 分支的材质叠色。mix/blend 取自 coui_dialog_list_mix_blur_* 与

@@ -1,5 +1,7 @@
 package com.itos.coui.chip
 
+import com.itos.coui.theme.CouiTheme
+
 import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.PorterDuff
@@ -110,7 +112,7 @@ fun CouiChipTabRow(
     selectedKey: Any?,
     onSelectedKeyChange: (Any) -> Unit,
     backdrop: CouiBackdrop,
-    dark: Boolean,
+    dark: Boolean = CouiTheme.isDark,
     enabled: Boolean = true,
     leadingAction: (@Composable () -> Unit)? = null,
     leadingActionVisible: Boolean = true,

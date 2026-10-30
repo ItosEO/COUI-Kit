@@ -1,5 +1,7 @@
 package com.itos.coui.chip
 
+import com.itos.coui.theme.CouiTheme
+
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -12,8 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.Text
+import com.itos.coui.theme.LocalCouiContentColor as LocalContentColor
+import com.itos.coui.theme.CouiText as Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -71,7 +73,7 @@ fun CouiChipTab(
     onClick: () -> Unit,
     label: String,
     backdrop: CouiBackdrop,
-    dark: Boolean,
+    dark: Boolean = CouiTheme.isDark,
     enabled: Boolean = true,
     icon: (@Composable () -> Unit)? = null,
     contentColor: Color = CouiChipTabDefaults.contentColor(dark, enabled),
@@ -92,7 +94,7 @@ fun CouiChipTab(
         renderer = renderer,
     ) {
         if (icon != null) Box(Modifier.size(16.dp), contentAlignment = Alignment.Center) { icon() }
-        Text(label, Modifier.widthIn(max = 200.dp), style = textStyle, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(modifier = Modifier.widthIn(max = 200.dp), text = label, style = textStyle, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
@@ -104,7 +106,7 @@ fun CouiChipTabButton(
     onClick: () -> Unit,
     contentDescription: String,
     backdrop: CouiBackdrop,
-    dark: Boolean,
+    dark: Boolean = CouiTheme.isDark,
     enabled: Boolean = true,
     contentColor: Color = CouiChipTabDefaults.contentColor(dark, enabled),
     contourGlowEnabled: Boolean = LocalCouiContourGlowEnabled.current,

@@ -35,7 +35,7 @@ PR 自动执行 Note、库与 Demo Lint、Demo debug/release 构建及库本地 
 ./gradlew :coui:lintDebug :demo:lintRelease :demo:assembleDebug :demo:assembleRelease :coui:publishAllPublicationsToLocalRepository
 ~~~
 
-需要避免签名参数进入本地 configuration cache 时，加 `--no-configuration-cache`。失败须查看实际 Lint 或构建错误，不建立吞掉失败的路径。远端库上传只由手动发布入口执行，现阶段不配置 JitPack 或 Maven Central。
+需要避免签名参数进入本地 configuration cache 时，加 `--no-configuration-cache`。失败须查看实际 Lint 或构建错误，不建立吞掉失败的路径。远端上传与发行渠道按[发布指南](publishing.md)区分，不把本地 Maven 产物当作已发布版本。
 
 ## 开发诊断
 

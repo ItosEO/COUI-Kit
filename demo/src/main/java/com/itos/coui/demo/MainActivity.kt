@@ -19,14 +19,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             val systemDark = isSystemInDarkTheme()
             var dark by rememberSaveable { mutableStateOf(systemDark) }
+            var materialTheme by rememberSaveable { mutableStateOf(true) }
             SideEffect {
                 WindowCompat.getInsetsController(window, window.decorView).apply {
                     isAppearanceLightStatusBars = !dark
                     isAppearanceLightNavigationBars = !dark
                 }
             }
-            DemoTheme(dark = dark) {
-                DemoApp(dark = dark, onToggleTheme = { dark = !dark })
+            DemoTheme(dark = dark, materialTheme = materialTheme) {
+                DemoApp(dark = dark, onToggleTheme = { dark = !dark }, materialTheme = materialTheme,
+                    onMaterialThemeChange = { materialTheme = it })
             }
         }
     }

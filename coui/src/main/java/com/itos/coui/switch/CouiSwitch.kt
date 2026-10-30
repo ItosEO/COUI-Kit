@@ -54,6 +54,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.LiveRegionMode
 import com.itos.coui.input.isCouiTouchCancelled
+import com.itos.coui.theme.CouiTheme
 
 @Immutable
 data class CouiSwitchColors(val checkedTrack: Color, val uncheckedTrack: Color, val thumb: Color,
@@ -92,8 +93,8 @@ fun CouiSwitch(
     modifier: Modifier = Modifier,
     checked: Boolean,
     onCheckedChange: ((Boolean) -> Unit)?,
-    dark: Boolean,
-    colors: CouiSwitchColors,
+    dark: Boolean = CouiTheme.isDark,
+    colors: CouiSwitchColors = CouiSwitchDefaults.colors(CouiTheme.colorSchemeFor(dark).accent, dark),
     enabled: Boolean = true,
     interactionSource: MutableInteractionSource? = null,
     onDragCheckedChange: ((Boolean) -> Unit)? = onCheckedChange,

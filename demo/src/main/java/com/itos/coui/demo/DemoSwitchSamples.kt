@@ -20,6 +20,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.itos.coui.switch.CouiSwitch
 import com.itos.coui.switch.CouiSwitchDefaults
+import com.itos.coui.theme.CouiTheme
 import kotlinx.coroutines.delay
 
 @Composable
@@ -38,9 +39,9 @@ internal fun SwitchSample(dark: Boolean) {
         }
     }
     val loadingDescription = stringResource(R.string.switch_sample_loading_description)
-    val colors = CouiSwitchDefaults.colors(MaterialTheme.colorScheme.primary, dark)
+    val colors = CouiSwitchDefaults.colors(CouiTheme.colorSchemeFor(dark).accent, dark)
     SwitchExampleRow(title = stringResource(R.string.switch_sample_toggle), summary = stringResource(R.string.switch_sample_toggle_summary)) { label ->
-        CouiSwitch(Modifier.semantics { contentDescription = label }, checked, { checked = it }, dark, colors)
+        CouiSwitch(Modifier.semantics { contentDescription = label }, checked, { checked = it })
     }
     SwitchExampleRow(title = stringResource(R.string.switch_sample_description), summary = stringResource(R.string.switch_sample_description_summary)) { label ->
         CouiSwitch(Modifier.semantics { contentDescription = label }, described, { described = it }, dark, colors)

@@ -2,6 +2,7 @@ package com.itos.coui.demo
 
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
+import com.itos.coui.theme.CouiTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -53,7 +54,7 @@ internal fun DialogSample(dark: Boolean) {
             confirmAction = CouiDialogAction(stringResource(R.string.dialog_confirm), { confirmed = true; close() },
                 enabled = example != "disabled",
                 style = if (example == "primary") CouiDialogActionStyle.Primary else CouiDialogActionStyle.Secondary,
-                colors = if (example == "primary") CouiDialogDefaults.primaryActionColors(MaterialTheme.colorScheme.primary) else null),
+                colors = if (example == "primary") CouiDialogDefaults.primaryActionColors(CouiTheme.colorSchemeFor(dark).accent) else null),
             dismissAction = CouiDialogAction(stringResource(R.string.dialog_cancel), close),
             neutralAction = if (example == "three")
                 CouiDialogAction(stringResource(R.string.dialog_reset), { confirmed = false; close() }) else null,

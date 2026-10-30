@@ -94,7 +94,8 @@ private class DemoRenderers {
 }
 
 @Composable
-internal fun DemoApp(dark: Boolean, onToggleTheme: () -> Unit) {
+internal fun DemoApp(dark: Boolean, onToggleTheme: () -> Unit, materialTheme: Boolean,
+    onMaterialThemeChange: (Boolean) -> Unit) {
     var page by rememberSaveable { mutableIntStateOf(0) }
     var contour by rememberSaveable { mutableStateOf(true) }
     var leftAccessory by rememberSaveable { mutableStateOf(true) }
@@ -159,7 +160,8 @@ internal fun DemoApp(dark: Boolean, onToggleTheme: () -> Unit) {
                                 leftAccessory = leftAccessory, onLeftAccessoryChange = { leftAccessory = it },
                                 rightAccessory = rightAccessory, onRightAccessoryChange = { rightAccessory = it },
                                 toolbarEnabled = toolbarEnabled, onToolbarEnabledChange = { toolbarEnabled = it },
-                                preset = preset, onPresetChange = { preset = it })
+                                preset = preset, onPresetChange = { preset = it }, materialTheme = materialTheme,
+                                onMaterialThemeChange = onMaterialThemeChange)
                         }
                     }
                 }
@@ -193,7 +195,7 @@ internal fun DemoApp(dark: Boolean, onToggleTheme: () -> Unit) {
                         rightIcon = Icons.Default.Palette, rightDescription = stringResource(R.string.open_presets),
                         leftVisible = leftAccessory, rightVisible = rightAccessory,
                         onLeftClick = onToggleTheme, onRightClick = { selectPage(2) }, rightContainerColor = color,
-                        dark = dark, lightColor = Color.White, themeTint = MaterialTheme.colorScheme.surface,
+                        dark = dark, lightColor = Color.White,
                         circleShape = DemoShapes.couiCircle, capsuleShape = DemoShapes.couiCapsule, onSelection = selectPage,
                     )
                 } else {
@@ -249,12 +251,14 @@ private fun DemoToolbar(renderers: DemoRenderers, dark: Boolean, contour: Boolea
         CouiTopAppBarButtonGroup {
             CouiTopAppBarSearchAction(state = state) {
                 CouiTopAppBarButton(onClick = onReset, enabled = actionsEnabled, text = true, renderer = renderers.text, style = style) {
-                    Text(stringResource(R.string.reset))
+                    Text(stringResource(R.string.reset), color = com.itos.coui.theme.LocalCouiContentColor.current,
+                        style = com.itos.coui.theme.LocalCouiTextStyle.current)
                 }
             }
             CouiTopAppBarSearchAction(state = state, visibleWhileSearching = true) {
                 CouiTopAppBarButton(onClick = onToggleTheme, enabled = actionsEnabled, text = false, renderer = renderers.theme, style = style) {
-                    Icon(Icons.Default.DarkMode, stringResource(R.string.toggle_theme))
+                    Icon(Icons.Default.DarkMode, stringResource(R.string.toggle_theme),
+                        tint = com.itos.coui.theme.LocalCouiContentColor.current)
                 }
             }
             CouiTopAppBarSearchButton(state = state, style = searchStyle,

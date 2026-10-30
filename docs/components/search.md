@@ -30,6 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import com.itos.coui.backdrop.CouiBackdrop
+import com.itos.coui.theme.LocalCouiContentColor
+import com.itos.coui.theme.LocalCouiTextStyle
 import com.itos.coui.topappbar.CouiToolbarStyle
 import com.itos.coui.topappbar.CouiTopAppBar
 import com.itos.coui.topappbar.CouiTopAppBarButtonGroup
@@ -85,7 +87,8 @@ fun SearchToolbar(
                     }
                 },
             ) {
-                Text(title)
+                Text(title, style = LocalCouiTextStyle.current,
+                    color = LocalCouiContentColor.current)
             }
             CouiTopAppBarButtonGroup {
                 CouiTopAppBarSearchButton(
@@ -116,18 +119,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
+import com.itos.coui.theme.LocalCouiContentColor
 import com.itos.coui.topappbar.CouiTopAppBarButton
 import com.itos.coui.topappbar.CouiTopAppBarSearchAction
 
 CouiTopAppBarButtonGroup {
     CouiTopAppBarSearchAction(state = state) {
         CouiTopAppBarButton(onClick = onReset, style = style) {
-            Icon(Icons.Default.Refresh, contentDescription = resetLabel)
+            Icon(Icons.Default.Refresh, contentDescription = resetLabel,
+                tint = LocalCouiContentColor.current)
         }
     }
     CouiTopAppBarSearchAction(state = state, visibleWhileSearching = true) {
         CouiTopAppBarButton(onClick = onSettings, style = style) {
-            Icon(Icons.Default.Settings, contentDescription = settingsLabel)
+            Icon(Icons.Default.Settings, contentDescription = settingsLabel,
+                tint = LocalCouiContentColor.current)
         }
     }
     CouiTopAppBarSearchButton(

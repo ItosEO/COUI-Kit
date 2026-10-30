@@ -1,13 +1,34 @@
 package com.itos.coui.topappbar
 
 import android.graphics.BlendMode
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import com.itos.coui.effect.CouiFloatingMaterial
 import com.itos.coui.effect.CouiFloatingShadow
+import com.itos.coui.effect.LocalCouiContourGlowEnabled
+import com.itos.coui.shape.CouiShape
+import com.itos.coui.shape.CouiCapsuleShape
+import com.itos.coui.theme.CouiTheme
+import androidx.compose.ui.unit.dp
 
 /** 沿用 ToolbarMaterialEffectDelegate 的光效几何及底栏混色方案, 略增强底色权重以改善可读性, 普通投影适当减弱。 */
 object CouiTopAppBarButtonDefaults {
+    val circleShape = CouiShape(999.dp, cornerWeight = 2f)
+
+    @Composable
+    fun style(dark: Boolean = CouiTheme.isDark, search: Boolean = false): CouiToolbarStyle {
+        val density = LocalDensity.current.density
+        val contour = LocalCouiContourGlowEnabled.current
+        val colors = CouiTheme.colorSchemeFor(dark)
+        return CouiToolbarStyle(dark, circleShape, CouiCapsuleShape,
+            material = { capsule -> material(dark, capsule, search) },
+            shadow = { capsule -> shadow(dark, capsule, density, contour, search) },
+            contentColor = colors.onSurface, textStyle = CouiTheme.typography.body,
+            cursorColor = colors.accent, contourGlowEnabled = contour)
+    }
+
     fun material(dark: Boolean, capsule: Boolean, search: Boolean = false): CouiFloatingMaterial = CouiFloatingMaterial(
         firstColor = Color(if (dark) 0x80666666 else 0xA3666666),
         firstBlendMode = if (dark) BlendMode.OVERLAY else BlendMode.COLOR_DODGE,

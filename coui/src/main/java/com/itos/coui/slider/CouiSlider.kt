@@ -45,6 +45,8 @@ import com.itos.coui.effect.SpotlightPreset
 import com.itos.coui.effect.rememberCouiSpotlight
 import com.itos.coui.input.isCouiTouchCancelled
 import com.itos.coui.motion.CouiTouchMotion
+import com.itos.coui.shape.CouiCapsuleShape
+import com.itos.coui.theme.CouiTheme
 import kotlin.math.abs
 
 /**
@@ -56,15 +58,16 @@ fun CouiSlider(
     modifier: Modifier = Modifier,
     value: Float,
     onValueChange: (Float) -> Unit,
-    colors: CouiSliderColors,
-    dark: Boolean,
-    shape: Shape,
+    colors: CouiSliderColors? = null,
+    dark: Boolean = CouiTheme.isDark,
+    shape: Shape = CouiCapsuleShape,
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
     steps: Int = 0,
     showTickMarks: Boolean = false,
     enabled: Boolean = true,
     onValueChangeFinished: () -> Unit = {},
 ) {
+    val resolvedColors = colors ?: CouiSliderDefaults.colors(CouiTheme.colorSchemeFor(dark).accent, dark, enabled)
     require(steps >= 0 && steps < Int.MAX_VALUE)
     require(value.isFinite() && valueRange.start.isFinite() && valueRange.endInclusive.isFinite())
     require(valueRange.endInclusive >= valueRange.start && (valueRange.endInclusive - valueRange.start).isFinite())
@@ -215,7 +218,7 @@ fun CouiSlider(
                 .then(spotlightInput),
         ) {
             val canvas = drawContext.canvas.nativeCanvas
-            renderer.draw(canvas, size.height, motion, colors, interactive, rtl, if (showTickMarks) steps + 1 else 0)
+            renderer.draw(canvas, size.height, motion, resolvedColors, interactive, rtl, if (showTickMarks) steps + 1 else 0)
             if (drawSpotlight != null) {
                 val checkpoint = canvas.save()
                 renderer.clipTrack(canvas)

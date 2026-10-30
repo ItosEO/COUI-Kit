@@ -35,7 +35,7 @@ dependencies {
 
 ## 配置页面
 
-COUI 不读取 `MaterialTheme`。组件需要的深浅色、强调色、文字样式和 Shape 由页面提供；常用配色和效果可以从各组件的 `Defaults` 获取。
+当前源码的组件可以直接使用 COUI 原生默认值，也可以由可选 `CouiTheme` 或显式参数配置。核心不读取 `MaterialTheme`；宿主适配方法见[外观与预设](appearance.md)。新主题与默认参数尚未包含在上方的 alpha2 坐标中，当前请按下文的源码模块方式接入；后续发行以 CHANGELOG 和对应产物为准。
 
 平台要求按能力分：普通控件跟随库的最低系统；渐进模糊、轮廓和融合要 API 33；底栏、FAB、顶栏按钮/搜索、ChipTab 和普通阴影要 API 34。调用 API 34 的组件前先判断版本，完整表格见[兼容要求](compatibility.md#效果门槛)。
 
@@ -51,25 +51,17 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import com.itos.coui.shape.CouiCapsuleShape
 import com.itos.coui.slider.CouiSlider
-import com.itos.coui.slider.CouiSliderDefaults
 
 @Composable
 fun SliderExample(
     modifier: Modifier = Modifier,
-    dark: Boolean,
-    accent: Color,
 ) {
     var value by rememberSaveable { mutableFloatStateOf(0.4f) }
     CouiSlider(
         modifier = modifier.fillMaxWidth(),
         value = value,
         onValueChange = { value = it },
-        colors = CouiSliderDefaults.colors(primary = accent, dark = dark),
-        dark = dark,
-        shape = CouiCapsuleShape,
     )
 }
 ~~~
@@ -86,7 +78,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Text
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -111,13 +103,13 @@ fun PageContent(
             modifier = Modifier.align(Alignment.TopCenter).fillMaxWidth(),
             backdrop = backdrop,
         ) {
-            Text(title)
+            BasicText(title)
         }
     }
 }
 ~~~
 
-背景源只挂一个节点，节点应覆盖不透明的页面内容。顶栏不会自动为内容留出空间，实际页面需要按顶栏高度设置顶部间距。示例中的 `Text` 来自 Material3，项目需要声明该依赖。
+背景源只挂一个节点，节点应覆盖不透明的页面内容。顶栏不会自动为内容留出空间，实际页面需要按顶栏高度设置顶部间距。示例文字使用 Foundation；深色页面按页面配色传入文字 Style。
 
 菜单的背景源使用 `ProvideCouiMenuBackdrop`；材质弹窗的用法见[弹窗](../components/dialog.md#使用背景材质)。背景源、renderer 和失败处理的细节见[背景采样](../effects/backdrop.md)。
 

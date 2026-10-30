@@ -24,8 +24,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import com.itos.coui.theme.CouiIcon as Icon
+import com.itos.coui.theme.CouiText as Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -44,6 +44,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.layer.GraphicsLayer
@@ -92,6 +93,9 @@ import com.itos.coui.motion.couiPressMotion
 import com.itos.coui.motion.couiTouchMotion
 import com.itos.coui.motion.rememberCouiPressMotion
 import com.itos.coui.motion.rememberCouiTouchMotion
+import com.itos.coui.theme.CouiTheme
+import com.itos.coui.topappbar.CouiTopAppBarButtonDefaults
+import com.itos.coui.shape.CouiCapsuleShape
 
 data class CouiNavigationItem(val title: String, val icon: ImageVector, val selectedIcon: ImageVector)
 
@@ -104,29 +108,35 @@ fun CouiBottomBar(
     renderer: CouiFloatingRenderer,
     items: List<CouiNavigationItem>,
     selectedIndex: Int,
-    leftIcon: ImageVector,
-    leftDescription: String,
-    rightIcon: ImageVector,
-    rightDescription: String,
-    leftVisible: Boolean,
-    rightVisible: Boolean,
-    onLeftClick: () -> Unit,
-    onRightClick: () -> Unit,
-    rightContainerColor: Color,
-    dark: Boolean,
-    lightColor: Color,
-    themeTint: Color,
-    circleShape: Shape,
-    capsuleShape: Shape,
+    leftIcon: ImageVector? = null,
+    leftDescription: String? = null,
+    rightIcon: ImageVector? = null,
+    rightDescription: String? = null,
+    leftVisible: Boolean = false,
+    rightVisible: Boolean = false,
+    onLeftClick: (() -> Unit)? = null,
+    onRightClick: (() -> Unit)? = null,
+    rightContainerColor: Color = Color.Unspecified,
+    dark: Boolean = CouiTheme.isDark,
+    lightColor: Color = Color.White,
+    themeTint: Color = CouiTheme.materialTintFor(dark),
+    circleShape: Shape = CouiTopAppBarButtonDefaults.circleShape,
+    capsuleShape: Shape = CouiCapsuleShape,
     onSelection: (Int) -> Unit,
 ) {
     require(items.isNotEmpty() && selectedIndex in items.indices)
+    require(!leftVisible || (leftIcon != null && onLeftClick != null && leftDescription != null)) {
+        "显示左附件时必须提供图标、描述和点击回调"
+    }
+    require(!rightVisible || (rightIcon != null && onRightClick != null && rightDescription != null)) {
+        "显示右附件时必须提供图标、描述和点击回调"
+    }
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
     val leftExpansion = remember(density, layoutDirection) { CouiFabExpansion(leftVisible) }
     val rightExpansion = remember(density, layoutDirection) { CouiFabExpansion(rightVisible) }
-    val leftInteractive = leftExpansion.interactive
-    val rightInteractive = rightExpansion.interactive
+    val leftInteractive = leftExpansion.interactive && leftIcon != null && onLeftClick != null
+    val rightInteractive = rightExpansion.interactive && rightIcon != null && onRightClick != null
     DisposableEffect(leftExpansion, rightExpansion) {
         onDispose {
             leftExpansion.dispose()
@@ -146,7 +156,7 @@ fun CouiBottomBar(
         )
     }
     val foreground = if (dark) Color.White else Color.Black
-    val coloredFab = rightContainerColor
+    val coloredFab = if (rightContainerColor.isSpecified) rightContainerColor else CouiTheme.colorSchemeFor(dark).accent
     val materials = remember(material, coloredFab, dark, density) {
         val extension = with(density) { 4.dp.roundToPx() }
         listOf(material.copy(index = 2, extension = extension), material.copy(index = 1, extension = extension),
@@ -257,10 +267,10 @@ fun CouiBottomBar(
                     onBounds = { node -> rowCoordinates?.let { leftBounds = it.localBoundingBoxOf(node, false) } },
                 ) {
                     val interactionSource = remember { MutableInteractionSource() }
-                    Icon(leftIcon, if (leftInteractive) leftDescription else null, Modifier.fillMaxSize()
+                    if (leftIcon != null) Icon(imageVector = leftIcon, contentDescription = if (leftInteractive) leftDescription else null, modifier = Modifier.fillMaxSize()
                         .then(if (leftInteractive) Modifier.clickable(
                             interactionSource = interactionSource, indication = null, role = Role.Button,
-                            onClick = onLeftClick,
+                            onClick = checkNotNull(onLeftClick),
                         ) else Modifier).padding(16.dp), tint = foreground)
                 }
                 FloatingNode(
@@ -352,9 +362,10 @@ fun CouiBottomBar(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Top,
                                 ) {
-                                    Icon(if (isSelected) item.selectedIcon else item.icon, null, Modifier.size(24.dp), tint = foreground)
+                                    Icon(modifier = Modifier.size(24.dp), imageVector = if (isSelected) item.selectedIcon else item.icon,
+                                        contentDescription = null, tint = foreground)
                                     Spacer(Modifier.height(2.dp))
-                                    Text(item.title, color = foreground.copy(alpha = if (isSelected) 230f / 255f else 184f / 255f), fontSize = 10.sp,
+                                    Text(text = item.title, color = foreground.copy(alpha = if (isSelected) 230f / 255f else 184f / 255f), fontSize = 10.sp,
                                         lineHeight = 12.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 }
                             }
@@ -371,10 +382,10 @@ fun CouiBottomBar(
                     onBounds = { node -> rowCoordinates?.let { rightBounds = it.localBoundingBoxOf(node, false) } },
                 ) {
                     val interactionSource = remember { MutableInteractionSource() }
-                    Icon(rightIcon, if (rightInteractive) rightDescription else null, Modifier.fillMaxSize()
+                    if (rightIcon != null) Icon(imageVector = rightIcon, contentDescription = if (rightInteractive) rightDescription else null, modifier = Modifier.fillMaxSize()
                         .then(if (rightInteractive) Modifier.couiFabFeedback(dark, interactionSource).clickable(
                             interactionSource = interactionSource, indication = null, role = Role.Button,
-                            onClick = onRightClick,
+                            onClick = checkNotNull(onRightClick),
                         ) else Modifier).padding(16.dp), tint = Color.White)
                 }
             }

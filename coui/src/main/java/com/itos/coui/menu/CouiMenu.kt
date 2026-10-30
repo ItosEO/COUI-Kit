@@ -31,10 +31,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MenuAnchorPosition
-import androidx.compose.material3.MenuDefaults
-import androidx.compose.material3.Text
+import com.itos.coui.theme.CouiIcon as Icon
+import com.itos.coui.theme.CouiText as Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -73,18 +71,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.PlatformTextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.window.SecureFlagPolicy
@@ -444,14 +437,7 @@ private fun CouiMenuHeader(modifier: Modifier = Modifier, text: String, textAlig
                 end = horizontalPadding,
                 bottom = CouiMenuItemContentVerticalPadding,
             ),
-        style = LocalCouiMenuStyle.current.headerTextStyle.copy(
-            fontFamily = FontFamily.SansSerif,
-            fontWeight = FontWeight.Medium,
-            fontSize = 12.sp,
-            lineHeight = TextUnit.Unspecified,
-            letterSpacing = 0.sp,
-            platformStyle = PlatformTextStyle(includeFontPadding = true),
-        ),
+        style = LocalCouiMenuStyle.current.headerTextStyle,
         color = Color(if (dark) 0x8AFFFFFF else 0x8A000000),
         textAlign = textAlign,
         maxLines = 2,
@@ -493,10 +479,8 @@ internal fun CouiMenuPopup(
     if (!expanded && !motion.visible) return
     val shadow = rememberCouiMenuShadow(shape, motion, touchMotion, transitionProgress)
 
-    val materialPositionProvider = MenuDefaults.rememberDropdownMenuPopupPositionProvider(
-        dropdownMenuAnchorPosition = MenuAnchorPosition.Below,
-        offset = offset,
-    )
+    val density = LocalDensity.current
+    val materialPositionProvider = remember(offset, density) { CouiMenuPositionProvider(offset, density) }
     val touchOffsetY = with(LocalDensity.current) { offset.y.roundToPx() }
     val positionProvider = remember(materialPositionProvider, motion, anchor, touchOffsetY) {
         CouiMenuMotionPositionProvider(
@@ -775,7 +759,7 @@ private fun CouiMenuDivider() {
     )
 }
 
-/** 主题和形状由宿主显式提供; 菜单独立管理窗口、输入和退场资源。 */
+/** 默认使用当前 COUI 主题；显式 style 优先。菜单独立管理窗口、输入和退场资源。 */
 @Composable
 fun <T> CouiMenu(
     modifier: Modifier = Modifier,
@@ -783,7 +767,7 @@ fun <T> CouiMenu(
     onDismissRequest: () -> Unit,
     items: List<CouiMenuItem<T>>,
     onItemClick: (CouiMenuItem<T>) -> Unit,
-    style: CouiMenuStyle,
+    style: CouiMenuStyle = CouiMenuDefaults.style(),
     offset: DpOffset = DpOffset.Zero,
     properties: PopupProperties = PopupProperties(focusable = true),
     anchor: CouiMenuAnchor? = null,

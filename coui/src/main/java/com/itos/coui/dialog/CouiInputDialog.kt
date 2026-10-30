@@ -1,5 +1,7 @@
 package com.itos.coui.dialog
 
+import com.itos.coui.theme.CouiTheme
+
 import android.view.WindowManager
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
@@ -69,8 +71,8 @@ fun CouiInputDialog(
     onValueChange: (TextFieldValue) -> Unit,
     onDismissRequest: () -> Unit,
     confirmAction: CouiDialogAction,
-    dark: Boolean,
-    accent: Color,
+    dark: Boolean = CouiTheme.isDark,
+    accent: Color = CouiTheme.colorSchemeFor(dark).accent,
     clearContentDescription: String,
     title: String? = null,
     message: String? = null,
@@ -79,7 +81,7 @@ fun CouiInputDialog(
     counterIsError: Boolean = false,
     dismissAction: CouiDialogAction? = null,
     placement: CouiDialogPlacement = CouiDialogPlacement.Bottom,
-    colors: CouiDialogColors = CouiDialogDefaults.colors(dark),
+    colors: CouiDialogColors = CouiDialogDefaults.themeColors(dark),
     material: CouiDialogMaterial? = null,
     backdrop: CouiBackdrop? = null,
     autoFocus: Boolean = true,
@@ -103,8 +105,8 @@ fun CouiInputDialog(
     state: TextFieldState,
     onDismissRequest: () -> Unit,
     confirmAction: CouiDialogAction,
-    dark: Boolean,
-    accent: Color,
+    dark: Boolean = CouiTheme.isDark,
+    accent: Color = CouiTheme.colorSchemeFor(dark).accent,
     clearContentDescription: String,
     title: String? = null,
     message: String? = null,
@@ -113,7 +115,7 @@ fun CouiInputDialog(
     counterIsError: Boolean = false,
     dismissAction: CouiDialogAction? = null,
     placement: CouiDialogPlacement = CouiDialogPlacement.Bottom,
-    colors: CouiDialogColors = CouiDialogDefaults.colors(dark),
+    colors: CouiDialogColors = CouiDialogDefaults.themeColors(dark),
     material: CouiDialogMaterial? = null,
     backdrop: CouiBackdrop? = null,
     autoFocus: Boolean = true,

@@ -2,6 +2,23 @@
 
 `CouiAlertDialog` 用于显示确认、提示等弹窗，可以放在屏幕底部或居中显示。需要单行输入时，可以使用 `CouiInputDialog`。
 
+## 最小调用
+
+页面提供显隐状态、操作文案和回调；`confirmAction` 是宿主用文案和业务回调构造的 `CouiDialogAction`：
+
+~~~kotlin
+import com.itos.coui.dialog.CouiAlertDialog
+
+if (visible) {
+    CouiAlertDialog(
+        onDismissRequest = onDismiss,
+        confirmAction = confirmAction,
+    )
+}
+~~~
+
+`dark` 和 `colors` 默认读取可选的 `CouiTheme`；省略主题时使用 COUI 预设与系统深浅色。通用主题规则见[外观与预设](../guide/appearance.md)。
+
 ## 显示一个简单确认弹窗
 
 下面的弹窗包含标题、正文、确认和取消按钮：
@@ -38,7 +55,7 @@ fun ConfirmDialog(
 }
 ~~~
 
-`visible` 为 `true` 时显示弹窗。点击按钮会调用对应的回调；需要关闭弹窗时，在回调中将页面的 `visible` 设为 `false`。返回键和点击外部通过 `onDismissRequest` 请求关闭。
+`visible` 为 `true` 时显示弹窗。点击按钮会调用对应的回调；需要关闭弹窗时，在回调中将页面的 `visible` 设为 `false`。返回键和点击外部通过 `onDismissRequest` 请求关闭。此例显式提供 `dark`；省略时使用默认值。
 
 标题和正文可以传 `null`，对应区域不会显示。两个短按钮横排；单个按钮、三个按钮或文案放不下时自动竖排。
 
@@ -167,7 +184,7 @@ if (visible) {
 }
 ~~~
 
-`visible`、文案和回调沿用前面的确认弹窗示例。在不支持材质的系统上传入 `null`，会显示不透明表面；传入材质但缺少支持或背景源时会报错。页面已经使用 `ProvideCouiMenuBackdrop` 时，也可以省略 `backdrop`，沿用当前 Provider 的源。
+`visible`、文案和回调沿用前面的确认弹窗示例。`material` 非空时要求 API 33 及以上，并且必须有有效的 `backdrop`，也可以沿用当前 Provider 提供的背景源；缺少系统支持或背景源时会报错。需要在不支持材质的系统显示不透明表面时，传入 `material = null`。页面已经使用 `ProvideCouiMenuBackdrop` 时，可以省略 `backdrop`，沿用当前 Provider 的源。
 
 背景模糊采样自页面，窗口遮罩由系统绘制。
 
@@ -186,7 +203,7 @@ CouiAlertDialog(
 )
 ~~~
 
-弹窗配色可以从 `CouiDialogDefaults.colors(dark)` 获取，再根据页面需要调整。主操作配色可以使用 `CouiDialogDefaults.primaryActionColors(accent)`。
+默认 `colors` 使用 `CouiDialogDefaults.themeColors(dark)`。显式自定义时可从该入口复制调整；主操作配色可以使用 `CouiDialogDefaults.primaryActionColors(accent)`。
 
 修改圆角时，请同时调整 `shape` 和 `cornerRadius`，让面板、操作区和外层裁剪保持一致。
 

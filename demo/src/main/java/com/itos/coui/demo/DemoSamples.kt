@@ -36,7 +36,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.itos.coui.checkbox.CouiCheckbox
-import com.itos.coui.checkbox.CouiCheckboxDefaults
 import com.itos.coui.floatingactionbutton.CouiFabColor
 import com.itos.coui.floatingactionbutton.CouiFabDefaults
 import com.itos.coui.menu.CouiMenu
@@ -45,6 +44,7 @@ import com.itos.coui.menu.couiMenuAnchor
 import com.itos.coui.menu.rememberCouiMenuAnchor
 import com.itos.coui.slider.CouiSlider
 import com.itos.coui.slider.CouiSliderDefaults
+import com.itos.coui.theme.CouiTheme
 import kotlin.math.roundToInt
 
 @Composable
@@ -69,10 +69,7 @@ private fun DemoCheckboxRow(label: String, checked: Boolean, onCheckedChange: (B
         onValueChange = onCheckedChange).padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(label, Modifier.weight(1f), color = if (enabled) MaterialTheme.colorScheme.onSurface
             else MaterialTheme.colorScheme.onSurfaceVariant)
-        CouiCheckbox(modifier = Modifier.size(24.dp), checked = checked, enabled = enabled,
-            shape = DemoShapes.checkbox, borderShape = DemoShapes.checkboxBorder,
-            colors = CouiCheckboxDefaults.colors(if (dark) MaterialTheme.colorScheme.inversePrimary
-                else MaterialTheme.colorScheme.primary, dark))
+        CouiCheckbox(modifier = Modifier.size(24.dp), checked = checked, enabled = enabled)
     }
 }
 
@@ -88,17 +85,16 @@ internal fun ControlsDemo(dark: Boolean, query: String) {
         DemoSwitchRow(stringResource(R.string.enable_controls), enabled, { enabled = it })
         Text(stringResource(R.string.continuous_value, (value * 100).roundToInt()))
         CouiSlider(modifier = Modifier.fillMaxWidth().demoLabel(R.string.continuous_slider), value = value,
-            onValueChange = { value = it }, enabled = enabled, dark = dark,
-            colors = CouiSliderDefaults.colors(MaterialTheme.colorScheme.primary, dark, enabled), shape = DemoShapes.capsule)
+            onValueChange = { value = it }, enabled = enabled)
         Text(stringResource(R.string.section_value, section.roundToInt()))
         CouiSlider(modifier = Modifier.fillMaxWidth().demoLabel(R.string.section_slider), value = section,
             onValueChange = { section = it }, enabled = enabled, dark = dark,
-            colors = CouiSliderDefaults.colors(MaterialTheme.colorScheme.primary, dark, enabled), shape = DemoShapes.capsule,
+            colors = CouiSliderDefaults.colors(CouiTheme.colorSchemeFor(dark).accent, dark, enabled), shape = DemoShapes.capsule,
             valueRange = 0f..4f, steps = 3, showTickMarks = true)
         Text(stringResource(R.string.implicit_step_value, implicitStep.roundToInt()))
         CouiSlider(modifier = Modifier.fillMaxWidth().demoLabel(R.string.implicit_slider), value = implicitStep,
             onValueChange = { implicitStep = it }, enabled = enabled, dark = dark,
-            colors = CouiSliderDefaults.colors(MaterialTheme.colorScheme.primary, dark, enabled), shape = DemoShapes.capsule,
+            colors = CouiSliderDefaults.colors(CouiTheme.colorSchemeFor(dark).accent, dark, enabled), shape = DemoShapes.capsule,
             valueRange = 0f..10f, steps = 9, showTickMarks = false)
     }
     DemoSection(R.string.checkbox_title, query) {
@@ -171,8 +167,9 @@ internal fun PresetsDemo(dark: Boolean, query: String, contour: Boolean, onConto
     leftAccessory: Boolean, onLeftAccessoryChange: (Boolean) -> Unit,
     rightAccessory: Boolean, onRightAccessoryChange: (Boolean) -> Unit,
     toolbarEnabled: Boolean, onToolbarEnabledChange: (Boolean) -> Unit, preset: CouiFabColor,
-    onPresetChange: (CouiFabColor) -> Unit) {
+    onPresetChange: (CouiFabColor) -> Unit, materialTheme: Boolean, onMaterialThemeChange: (Boolean) -> Unit) {
     DemoSection(R.string.presets_title, query) {
+        DemoSwitchRow(stringResource(R.string.material_theme_toggle), materialTheme, onMaterialThemeChange)
         Column(Modifier.selectableGroup()) { CouiFabColor.entries.forEach { option ->
             val label = stringResource(when (option) {
                 CouiFabColor.Notes -> R.string.preset_notes

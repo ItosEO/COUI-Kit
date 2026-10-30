@@ -2,6 +2,23 @@
 
 `CouiMenu` 可以显示普通菜单项、勾选项和一级子菜单。菜单的展开状态和选择结果由页面保存。
 
+## 最小调用
+
+页面提供展开状态、菜单项和回调：
+
+~~~kotlin
+import com.itos.coui.menu.CouiMenu
+
+CouiMenu(
+    expanded = expanded,
+    onDismissRequest = onDismissRequest,
+    items = items,
+    onItemClick = onItemClick,
+)
+~~~
+
+需要采样页面背景时，把菜单调用放在[背景材质 Provider](#使用背景材质)的 `ProvideCouiMenuBackdrop` 内容中；默认样式不会创建背景源。样式默认使用 `CouiMenuDefaults.style()`，显式传入的样式仍优先。未设置页面染色时，默认 `themeTint` 为透明，不叠加页面色相。通用主题规则见[外观与预设](../guide/appearance.md)。
+
 ## 显示一个菜单
 
 下面的按钮会打开菜单。选择项目后调用 `onSelect`，然后关闭菜单：
@@ -17,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.itos.coui.menu.CouiMenu
+import com.itos.coui.menu.CouiMenuDefaults
 import com.itos.coui.menu.CouiMenuItem
 import com.itos.coui.menu.CouiMenuStyle
 import com.itos.coui.menu.couiMenuAnchor
@@ -25,7 +43,7 @@ import com.itos.coui.menu.rememberCouiMenuAnchor
 @Composable
 fun MenuButton(
     modifier: Modifier = Modifier,
-    style: CouiMenuStyle,
+    style: CouiMenuStyle = CouiMenuDefaults.style(),
     label: String,
     items: List<CouiMenuItem<Int>>,
     onSelect: (Int) -> Unit,
@@ -54,7 +72,7 @@ fun MenuButton(
 }
 ~~~
 
-`anchor` 记录按钮上的触点，菜单根据触点和窗口可见范围定位。通过键盘或无障碍服务打开时，没有触点，菜单使用默认锚点。`style` 的创建方式见[菜单样式](#菜单样式)。
+`anchor` 记录按钮上的触点，菜单根据触点和窗口可见范围定位。通过键盘或无障碍服务打开时，没有触点，菜单使用默认锚点。示例中的 Material3 `Button` 和 `Text` 需要由应用声明 Material3 依赖；最小调用不需要该依赖。自定义 `style` 的创建方式见[菜单样式](#菜单样式)。
 
 `expanded` 控制菜单显隐。点击菜单项时调用 `onItemClick`；点击外部或按返回键时调用 `onDismissRequest`。需要在选中后关闭菜单时，在 `onItemClick` 中将 `expanded` 设为 `false`，如上例所示。
 
@@ -165,6 +183,8 @@ fun rememberMenuStyle(
 
 API 33 以下的菜单模糊效果与较新系统不同，见[兼容要求](../guide/compatibility.md)。
 
-`headerText` 用于显示提示文案，不参与选择。`themeTint` 设为透明时不叠加页面色。
+`headerText` 用于显示提示文案，不参与选择。`themeTint` 透明时关闭采样材质上的页面色相叠加；显式样式可以提供非透明色。
+
+标题字体默认来自 `CouiTheme.typography.label`。修改主题的 `label` 或显式传入 `CouiMenuStyle.headerTextStyle` 可以调整字体、字号、字重和行距；绘制时不再覆盖这些设置。标题颜色、对齐和最多两行的规则仍由菜单控制。
 
 源码见 [CouiMenu / CouiMenuItem](../../coui/src/main/java/com/itos/coui/menu/CouiMenu.kt)、[样式](../../coui/src/main/java/com/itos/coui/menu/CouiMenuStyle.kt)、[触点锚点](../../coui/src/main/java/com/itos/coui/menu/CouiMenuAnchor.kt)，选中、勾选、子菜单和限高示例见 [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)。

@@ -86,7 +86,10 @@ tasks.withType<Jar>().configureEach {
     from(rootProject.files("LICENSE", "NOTICE", "TRADEMARKS.md")) {
         into("META-INF/coui")
     }
-    from(layout.projectDirectory.file("src/main/resources/META-INF/coui-skia-LICENSE")) {
+    from(rootProject.files(
+        layout.projectDirectory.file("src/main/resources/META-INF/coui-skia-LICENSE"),
+        layout.projectDirectory.file("src/main/resources/META-INF/coui-androidx-LICENSE"),
+    )) {
         into("META-INF/coui")
     }
 }
@@ -98,6 +101,5 @@ dependencies {
     api(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.dynamicanimation)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.core.ktx)
 }

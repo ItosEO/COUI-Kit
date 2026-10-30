@@ -2,7 +2,6 @@ package com.itos.coui.demo
 
 import android.os.SystemClock
 import android.widget.Toast
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -58,7 +57,7 @@ internal fun RenameDeviceDialogSample(
         }
     }
     CouiInputDialog(state = draft, inputTransformation = transformation,
-        onDismissRequest = onDismissRequest, dark = dark, accent = MaterialTheme.colorScheme.primary,
+        onDismissRequest = onDismissRequest, dark = dark,
         title = stringResource(R.string.dialog_device_name_title),
         message = stringResource(R.string.dialog_device_name_message),
         clearContentDescription = stringResource(R.string.dialog_input_clear),

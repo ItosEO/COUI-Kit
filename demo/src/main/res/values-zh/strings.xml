@@ -70,4 +70,5 @@
     <string name="record_open_actions">展开记录操作</string>
     <string name="record_close_actions">收起记录操作</string>
     <string name="record_restore">恢复示例记录</string>
+    <string name="material_theme_toggle">使用 Material 主题配色</string>
 </resources>

@@ -2,6 +2,21 @@
 
 `CouiSwitch` 用于开启或关闭一个选项，支持点击、拖动和加载状态。
 
+## 最小调用
+
+页面持有当前值并在回调中更新：
+
+~~~kotlin
+import com.itos.coui.switch.CouiSwitch
+
+CouiSwitch(
+    checked = checked,
+    onCheckedChange = onCheckedChange,
+)
+~~~
+
+省略外观参数时，深浅色和强调色由可选的 `CouiTheme` 提供；未设置时跟随系统深浅色和 COUI 预设。通用规则见[外观与预设](../guide/appearance.md)。
+
 ## 显示一个开关
 
 在 Compose 页面中创建一个开关，点击后更新 `checked`：
@@ -28,7 +43,7 @@ CouiSwitch(
 )
 ~~~
 
-`dark` 和 `accent` 由页面提供。示例用文字说明开关的用途，实际应用可以使用字符串资源。开关处理点击、键盘和 Switch 语义；传入回调时，触摸区域会扩到 48dp。
+此例显式传入页面的深浅色和强调色。示例用文字说明开关的用途，实际应用可以使用字符串资源。开关处理点击、键盘和 Switch 语义；传入回调时，触摸区域会扩到 48dp。
 
 禁用只停止手势和点击，已经开始的切换仍会走完。
 

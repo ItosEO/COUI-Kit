@@ -23,6 +23,11 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import com.itos.coui.theme.CouiTheme
+import com.itos.coui.topappbar.CouiTopAppBarButtonDefaults
+import com.itos.coui.theme.LocalCouiContentColor
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -48,10 +53,11 @@ fun CouiFab(
     backdrop: CouiBackdrop,
     renderer: CouiFloatingRenderer,
     onClick: () -> Unit,
-    dark: Boolean,
-    shape: Shape,
-    material: CouiFloatingMaterial,
-    shadow: CouiFloatingShadow,
+    dark: Boolean = CouiTheme.isDark,
+    shape: Shape = CouiTopAppBarButtonDefaults.circleShape,
+    material: CouiFloatingMaterial = CouiFabDefaults.material(CouiTheme.colorSchemeFor(dark).accent, dark),
+    shadow: CouiFloatingShadow = CouiFabDefaults.shadow(material.firstColor,
+        LocalDensity.current.density, LocalCouiContourGlowEnabled.current),
     content: @Composable () -> Unit,
 ) {
     val contour = LocalCouiContourGlowEnabled.current
@@ -90,7 +96,7 @@ fun CouiFab(
                 .clickable(interactionSource = interactionSource, indication = null, role = Role.Button, onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {
-            content()
+            CompositionLocalProvider(LocalCouiContentColor provides CouiTheme.colorSchemeFor(dark).onAccent) { content() }
         }
     }
 }

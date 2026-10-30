@@ -70,4 +70,5 @@
     <string name="record_open_actions">Show record actions</string>
     <string name="record_close_actions">Close record actions</string>
     <string name="record_restore">Restore sample records</string>
+    <string name="material_theme_toggle">Material theme colors</string>
 </resources>

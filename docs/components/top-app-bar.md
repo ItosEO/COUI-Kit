@@ -2,6 +2,39 @@
 
 `CouiTopAppBar` 在页面顶部显示渐进模糊背景。你可以在其中放置标题、操作按钮和搜索框。
 
+## 最小调用
+
+顶栏按钮需要 API 34 和页面背景源。宿主提供按钮内容与操作：
+
+~~~kotlin
+import androidx.annotation.RequiresApi
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.itos.coui.backdrop.CouiBackdrop
+import com.itos.coui.topappbar.CouiTopAppBar
+import com.itos.coui.topappbar.CouiTopAppBarButton
+import com.itos.coui.topappbar.CouiTopAppBarButtonGroup
+
+@RequiresApi(34)
+@Composable
+fun ToolbarAction(
+    modifier: Modifier = Modifier,
+    backdrop: CouiBackdrop,
+    onAction: () -> Unit,
+    actionContent: @Composable () -> Unit,
+) {
+    CouiTopAppBar(modifier = modifier, backdrop = backdrop) {
+        CouiTopAppBarButtonGroup {
+            CouiTopAppBarButton(onClick = onAction) {
+                actionContent()
+            }
+        }
+    }
+}
+~~~
+
+`CouiTopAppBarButton` 默认使用 `CouiTopAppBarButtonDefaults.style()`；`CouiTopAppBarSearchButton` 和 `CouiTopAppBarSearch` 默认使用 `CouiTopAppBarButtonDefaults.style(search = true)`。显式传入 `style` 时覆盖默认值。通用主题规则见[外观与预设](../guide/appearance.md)。
+
 ## 显示一个简单顶栏
 
 下面的顶栏显示标题和一个文字按钮。按钮需要 API 34；请先按[快速开始](../guide/getting-started.md#浮动组件的背景源)创建背景源，再把顶栏放在源节点之外。
@@ -19,6 +52,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.itos.coui.backdrop.CouiBackdrop
+import com.itos.coui.theme.LocalCouiContentColor
+import com.itos.coui.theme.LocalCouiTextStyle
 import com.itos.coui.topappbar.CouiToolbarStyle
 import com.itos.coui.topappbar.CouiTopAppBar
 import com.itos.coui.topappbar.CouiTopAppBarButton
@@ -43,7 +78,8 @@ fun PageToolbar(
             Text(title, Modifier.weight(1f), style = style.textStyle, color = style.contentColor)
             CouiTopAppBarButtonGroup {
                 CouiTopAppBarButton(onClick = onAction, text = true, style = style) {
-                    Text(actionLabel)
+                    Text(actionLabel, style = LocalCouiTextStyle.current,
+                        color = LocalCouiContentColor.current)
                 }
             }
         }
@@ -51,7 +87,7 @@ fun PageToolbar(
 }
 ~~~
 
-顶栏叠在页面内容上。请按实际顶栏高度设置内容的顶部间距，避免内容被遮挡。`style` 可以按下一节创建。示例中的 `Text` 来自 Material3，项目需要声明该依赖。
+顶栏叠在页面内容上。请按实际顶栏高度设置内容的顶部间距，避免内容被遮挡。此例显式使用 `style`；按钮和搜索组件也可以省略它以使用默认样式。示例中的 Material3 `Text` 显式读取 COUI 的内容色和文字样式，项目需要声明 Material3 依赖。
 
 ## 配置顶栏样式
 
@@ -108,17 +144,21 @@ fun rememberToolbarStyle(
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
+import com.itos.coui.theme.LocalCouiContentColor
+import com.itos.coui.theme.LocalCouiTextStyle
 
 CouiTopAppBarButton(onClick = onSettings, style = style) {
-    Icon(Icons.Default.Settings, contentDescription = settingsLabel)
+    Icon(Icons.Default.Settings, contentDescription = settingsLabel,
+        tint = LocalCouiContentColor.current)
 }
 
 CouiTopAppBarButton(onClick = onReset, text = true, enabled = canReset, style = style) {
-    Text(resetLabel)
+    Text(resetLabel, style = LocalCouiTextStyle.current,
+        color = LocalCouiContentColor.current)
 }
 ~~~
 
-`enabled = false` 会禁用按钮，但不会隐藏它。Material `Icon` 默认跟随按钮提供的内容色；显式设置 `tint` 时使用传入的颜色。示例中的 Material 图标需要由应用声明相应依赖。
+`enabled = false` 会禁用按钮，但不会隐藏它。Material3 `Icon` 和 `Text` 不读取 COUI 的 CompositionLocal，因此示例显式传入 COUI 内容色和文字样式。Material 图标、`Icon` 和 `Text` 需要由应用声明相应依赖。
 
 ## 显示和隐藏操作
 
@@ -130,7 +170,8 @@ import com.itos.coui.topappbar.CouiTopAppBarActionVisibility
 CouiTopAppBarButtonGroup {
     CouiTopAppBarActionVisibility(visible = actionsVisible) {
         CouiTopAppBarButton(onClick = onSettings, style = style) {
-            Icon(Icons.Default.Settings, contentDescription = settingsLabel)
+            Icon(Icons.Default.Settings, contentDescription = settingsLabel,
+                tint = LocalCouiContentColor.current)
         }
     }
 }
@@ -138,7 +179,7 @@ CouiTopAppBarButtonGroup {
 
 ## 搜索
 
-搜索按钮和输入框必须放在同一个顶栏里，并共享一个 `CouiTopAppBarSearchState`。展开、关闭、返回键和常驻动作见[顶栏搜索](search.md)。
+搜索按钮和输入框必须放在同一个顶栏里，并共享一个 `CouiTopAppBarSearchState`。默认搜索样式由 `CouiTopAppBarButtonDefaults.style(search = true)` 提供；需要覆盖时显式传入 `style`。展开、关闭、返回键和常驻动作见[顶栏搜索](search.md)。
 
 ## 版本和 inset
 

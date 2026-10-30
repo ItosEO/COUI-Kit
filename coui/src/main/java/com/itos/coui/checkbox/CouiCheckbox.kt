@@ -1,5 +1,7 @@
 package com.itos.coui.checkbox
 
+import com.itos.coui.theme.CouiTheme
+
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.LinearEasing
@@ -46,9 +48,9 @@ fun CouiCheckbox(
     modifier: Modifier = Modifier,
     checked: Boolean,
     enabled: Boolean = true,
-    shape: Shape,
-    borderShape: Shape,
-    colors: CouiCheckboxColors,
+    shape: Shape = CouiCheckboxDefaults.shape,
+    borderShape: Shape = CouiCheckboxDefaults.borderShape,
+    colors: CouiCheckboxColors = CouiCheckboxDefaults.colors(CouiTheme.colorScheme.accent, CouiTheme.isDark),
 ) {
     val checkedPath = remember {
         PathParser().parsePathString(
