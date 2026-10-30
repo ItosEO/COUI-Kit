@@ -1,105 +1,87 @@
-# COUI-Kit 高层 API 分层设计（提案，未实现）
+# COUI-Kit 组件默认参数优化（设计提案，未实现）
 
-本文是 2026-10-30 的设计评估，不表示下述接口已经进入发行版。具体签名必须经原型编译、现有调用点扫描与设备验收后确定。
+本文依据 2026-10-30 的仓库接口制定。**不另建高层组件 API，也不设计 L1/L2 双层组件、便捷重载、强制 CouiTheme 或 CouiBackdropHost。** 目标是在**现有同名组件和原有参数列表**中，为有明确默认语义的配置项增加 Kotlin 默认值，让调用者可以省略这些参数；需要完全自定义时，仍按现有接口逐项传入。
 
 ## 目标与不变量
 
-- 常见控件的首次使用减少样式样板代码；优先让开关、滑条和弹窗只需要受控状态与回调。
-- **保留所有现有公开入口**：高级颜色、Shape、Shader、Renderer、运动与采样能力不删除、不降级。
-- **底层 Effect 继续可独立使用**：不强制通过统一组件、主题、页面容器或内部单例调用。
-- 不读取厂商私有 API，不把 MaterialTheme 强制引入库；宿主决定业务状态、导航、错误展示和样式。
-- 不为减少参数而隐藏跨窗口采样、Shader 平台门槛、renderer 生命周期或失败条件。
+1. 保留 `CouiSwitch`、`CouiSlider`、`CouiCheckbox`、`CouiMenu`、`CouiBottomBar`、`CouiFab` 等现有组件入口；不创建 `SimpleCouiXxx` 或另一套高级组件接口。
+2. **宿主业务输入和事件回调保留必填**，例如 `checked`、`value`、`items`、`onValueChange`、`onDismissRequest`。只把具有明确通用预设或安全空态的选项变为可省略。
+3. `colors`、`shape`、`dark`、`textStyle`、`style` 等外观参数优先采用所属 `Defaults` 的默认配置；宿主显式传参始终优先。
+4. 保留现有底层 **Effect / Engine** 接口、Renderer、Backdrop、Shader、Shadow 与 Motion，允许宿主完全绕开组件直接使用，不依赖主题或包装器。
+5. 不添加全局隐式状态，不强制读取 `MaterialTheme`，也不将没有足够信息的背景采样/Shader 资源参数假装为安全默认值。
+6. 修改默认值不是改变现有组件绘制后端；不让简单调用与定制调用走两套算法。
 
-当前代码分别位于 [组件目录](../components/README.md)、[效果目录](../effects/README.md)、[架构](architecture.md)和 [API 约定](api-design.md)。
+现有接口参考：[组件目录](../components/README.md)、[效果目录](../effects/README.md)、[API 约定](api-design.md)和[架构](architecture.md)。
 
-## 外部参考与取舍
+## 对照 MIUIX 与 DialogX 后的取舍
 
-- [Compose MIUIX](https://github.com/compose-miuix-ui/miuix)：`MiuixTheme` 提供颜色、字体和 CompositionLocal；基础 `Switch` 使用少量必填参数、可覆盖的 Defaults。可借鉴**主题提供与组件默认值**，不要求迁移到 KMP，也不照搬完整主题控制器。
-- [DialogX](https://github.com/kongzue/DialogX)：按对话框用途提供容易调用的入口，样式可扩展。可借鉴**常用任务的便捷入口**；其 View/全局对话框调用模式不适合直接套到 Compose 的受控状态与生命周期。
-- COUI-Kit：重点能力在背景采样、材质混合、光影、G2 Shape 和复杂动效；底层能力和原有独立调用路径应当成为架构的一部分，而非由便捷包装替代。
+- [Compose MIUIX](https://github.com/compose-miuix-ui/miuix) 的 `Switch(checked, onCheckedChange, modifier = ..., colors = ..., enabled = ...)` 体现了在单个组件函数中放置明确默认值的思路。COUI-Kit 可以借鉴此点，**不必引入 MiuixTheme 式完整主题系统**。
+- [DialogX](https://github.com/kongzue/DialogX) 将常用配置设为可省略，使用者可继续深度定制；借鉴简化配置的原则，而不是复制其 View/全局窗口 API。
+- COUI 的优势是独立 Effect 与复杂动效，不能为了参数数量好看就隐去渲染前置条件。
 
-## 三层公共 API
+## 期望的调用方式
 
-| 层级 | 面向场景 | 典型入口 | 必须保留的边界 |
-| --- | --- | --- | --- |
-| L1 便捷组件 | 日常表单、设置与页面 | 简化重载的 `CouiSwitch`、`CouiSlider`、`CouiAlertDialog` 等 | 受控状态与语义默认正确；可局部覆写外观 |
-| L2 高级组件 | 复杂布局、定制外观与交互 | 现有 `CouiSwitch(... dark, colors ...)`、`CouiBottomBar(... renderer, backdrop ...)` 等 | 原参数、预设、组件语义及回调契约不变 |
-| L3 Effect / Engine | 自定义 Canvas、Shader、采样和动画 | `CouiFloatingRenderer`、`CouiBackdrop`、`couiShadow`、`rememberCouiSpotlight` 等 | 不要求调用任何 L1/L2 或全局主题 |
-
-L1 必须组合已有 L2 和 L3 后端，而非复制绘制与物理实现；L2/L3 不能反向依赖 L1。现阶段无需拆成多个 Gradle 模块，先保证**逻辑层次**清楚。
-
-## 可选外观上下文
-
-建议提供 `CouiAppearance`（深浅色、颜色令牌、Shape、Typography）以及 `CouiTheme(appearance, content)`；通过 CompositionLocal 将常用 Defaults 传给便捷入口。
-
-- 调用者可以显式传 `appearance` 覆盖当前上下文；优先级为**组件显式参数 ＞ CouiTheme 上下文 ＞ 库内明确标注的默认预设**。
-- 不要求宿主把应用主题改成 COUI，也不自动读取 `MaterialTheme`；宿主可以自行写一层 M3 / 动态色适配器。
-- 未放置 `CouiTheme` 仍允许使用现有 L2/L3。L1 的无主题默认色需单独定义、核对并记录，不假称原厂完整主题；不应因为缺失 Provider 崩溃。
-- 动画强度、光影和使用者偏好与基本颜色区分；不添加会悄悄改变 Shader 语义的全局开关。高层可暴露可选的外观策略，但不改变底层工厂默认值。
-
-以下是**拟议调用方式，不是当前可编译 API**：
+以下代码是**改造后的目标写法，当前 main 不保证可以编译**。
 
 ~~~kotlin
-CouiTheme(appearance = hostAppearance) {
-    CouiSwitch(
-        checked = checked,
-        onCheckedChange = { checked = it },
-    )
-    CouiSlider(
-        value = progress,
-        onValueChange = { progress = it },
-    )
-}
-
-// 需要逐项控制时，仍使用原有高级入口：
+// 最常用的调用：业务状态与回调仍由宿主持有
 CouiSwitch(
-    modifier = Modifier,
     checked = checked,
-    onCheckedChange = onCheckedChange,
+    onCheckedChange = { checked = it },
+)
+CouiSlider(
+    value = value,
+    onValueChange = { value = it },
+)
+
+// 同一个组件函数，按需覆盖原有参数
+CouiSlider(
+    value = value,
+    onValueChange = onValueChange,
     dark = dark,
     colors = customColors,
-    onDragCheckedChange = onDragCheckedChange,
+    shape = customShape,
+    steps = 4,
+    showTickMarks = true,
 )
 ~~~
 
-## 组件优先级与建议签名
+不要求调用者首先包裹 `CouiTheme { ... }`。基础场景可用库内真实定义的 COUI 预设；宿主要使用动态主题色时仍可直接传自定义 Colors。
 
-| 顺序 | 组件 | 便捷层改进 | 当前高级能力 |
+## 各组件参数建议
+
+| 组件（现有函数） | 继续必填 | 首批评估增加默认值 | 不可直接省略的原因或注意事项 |
 | --- | --- | --- | --- |
-| 1 | Switch | `checked`、`onCheckedChange` 为必填；`enabled`、`loading` 选填；外观从可选主题读取 | 保留拖动回调、InteractionSource、触觉和颜色 |
-| 2 | Slider | `value`、`onValueChange` 为必填；范围、步进、完成回调直接沿用 | 保留精确 Shape、颜色、深浅色、点位控制 |
-| 3 | Checkbox | 新增带点击、语义和建议触摸区的便捷重载 | **保留纯绘制的现有 CouiCheckbox**，整行交互继续由宿主拥有 |
-| 4 | AlertDialog/InputDialog | 常用标题、正文、确认/取消预设；不接管可见性及输入草稿 | 保留任意内容、三按钮、Material、窗口属性和 TextFieldState |
-| 5 | Menu / TopAppBarButton | Style 从上下文取默认；减少重复颜色、形状和文本样式 | 保留泛型 item、子菜单、Popup 属性和 Renderer |
-| 6 | FAB / BottomBar / ChipTab | 提供可选的 renderer 装配、外观预设和附件模型 | 保留 Backdrop/Renderer 显式控制，不隐藏 GPU 失败 |
+| `CouiSwitch` | `checked`、`onCheckedChange`（允许原有 `null` 表示外层接管） | `dark`、`colors` | 默认 `colors` 依赖深浅色和默认强调色，须确认配色来源；已有 `enabled`、`loading` 等默认值保留 |
+| `CouiSlider` | `value`、`onValueChange` | `dark`、`colors`、`shape` | 当前 `colors` **位于** `dark` 前面；需避免显式覆盖 `dark` 后颜色仍按系统模式生成 |
+| `CouiCheckbox` | `checked` | `shape`、`borderShape`、`colors` | 继续只是纯绘制组件；不擅自附加点击/无障碍 owner，宿主整行 `toggleable` 保持不变 |
+| `CouiAlertDialog` / `CouiInputDialog` | 关闭/确认回调、受控输入值等真实业务参数 | `dark`，其余继续使用现有默认值 | `confirmAction` 不应自动伪造；材质背景源和窗口策略必须符合原契约 |
+| `CouiMenu` | `expanded`、`items`、关闭与点击回调 | `style`（需要明确无主题预设来源） | 不能用空 Style 规避必需颜色、Shape；Popup 错误与输入行为不变 |
+| `CouiTopAppBarButton` | `onClick`、内容 | `style`（从真实 Defaults 构建） | 内部 Renderer 的现有默认实现与错误行为保持 |
+| `CouiFab` / `CouiBottomBar` / `CouiChipTabRow` | 状态/回调及必要渲染资源 | 稳定的颜色、Shape、可选外观配置；部分附件选项需单独评估 | `Backdrop` 是明确的采样来源，`Renderer` 有平台及资源生命周期约束，不为省参数就隐藏或传入虚构资源 |
 
-**Checkbox 的语义陷阱**：纯绘制版本用于外层整行 `toggleable` 的场景；带交互版本仅用于自身拥有点击的场景。不得在同一层级重复增加 Toggleable 语义。
+表格不是逐项修改许可。实施前必须检查每个参数的真实消费者、默认值是否能在不访问宿主私有状态的情况下正确确定，以及旧调用如何继续工作。
 
-**BottomBar 的前置条件**：现有三个主体、左右附件及 renderer 路径有明确装配约束。先做可选附件的数据模型和生命周期测试，不能简单用虚构图标填补现有必填参数，也不能把独立 FAB 当作已有绑定协议。
+## Kotlin 默认参数的实际规则
 
-## Backdrop 与 Renderer 的便捷装配
+- **优先**使用 `shape: Shape = CouiCapsuleShape`、`enabled: Boolean = true` 一类保持原参数类型不变的默认值。省略参数与显式传入同一个默认值应有相同结果。
+- **不等于全改 `? = null`**：`null` 应当有明确独立语义（如“由组件按当前 dark 计算配置”），而不是泛用占位符。优先使用非空默认值，避免额外判空、配置歧义和兼容风险。
+- **依赖顺序必须验证**：如 `CouiSlider(colors, dark, shape, ...)`，Kotlin 的默认表达式不能引用后面才声明的 `dark`。不能为了默认值随意调换公开参数顺序，或让颜色默认值与显式 `dark` 不一致。必要时可在内部延迟求默认颜色；涉及 `colors` 的 nullable 改造须单独审核兼容性。
+- **预设来源要明确**：库目前没有统一的全局强调色/主题。需要决定一个有来源的库内默认强调色及深浅色策略。默认跟随系统深浅色不等于自动跟随宿主强制主题。不要在设计中引用不存在的 `CouiDefaults.defaultAccent` 或宣称已经支持 M3 动态配色。
+- 为 Compose 函数新增默认参数，仍需检查旧二进制调用、默认参数桥接、Kotlin 命名参数、`@Composable` 编译器签名以及跨版本消费。只看到普通 JVM 参数类型不变不足以证明所有调用完全兼容。
+- **不要删除高级配置能力**：原参数的类型与行为尽量保留，现有 `Defaults` 工厂、Effect 调用和自定义 Shader/Renderer 路径必须继续可用。
 
-可以研究 `CouiBackdropHost`（名称暂定），将**背景源节点**与**浮动消费者节点**放进不同插槽。源节点仍只挂一个 `couiBackdrop(backdrop)`，覆盖不透明内容；消费者使用同一个 `backdrop`，但必须在该源节点之外。
+## Backdrop / Renderer 特别边界
 
-- 不允许源节点采样自身或将已绘制浮动层再次作为源。
-- Dialog 跨 Window 时继续显式处理采样坐标及已有窗口策略。
-- renderer 工厂在 API 34 及以上才调用；Shader 编译失败要暴露给宿主，宿主决定降级 UI。不能假报已成功创建 renderer。
-- 显式传入 `CouiBackdrop`、`CouiFloatingRenderer` 的所有旧入口保持可用，L3 效果仍能单独挂载。
+`CouiBackdrop` 需要显式采样源，消费者必须位于源之外。调用方可能有多层背景、跨 Window Dialog、不同 Renderer 生命周期或 Shader 失败处理。
 
-## 源码与二进制兼容策略
+因此**本轮不新增 `CouiBackdropHost`，也不把必需的 `Backdrop`/`Renderer` 一律设为 `null`**。先简化没有资源归属歧义的外观参数；以后若能证明组件可以安全持有独立 Renderer，再独立评审该参数的默认创建与释放。公开底层 Effect 的权限不因组件参数默认化而减少。
 
-1. **优先增加重载与 Defaults，不修改现有高级函数的参数顺序、类型和默认值。** 尤其不能直接将现有 CouiCheckbox 改成自动管理点击。
-2. 检查 Kotlin 命名参数、Java/JVM 签名、Compose 编译后签名与重载选择。避免 `null`、隐式默认参数造成重载歧义；必要时采用独立便捷名称，而不是强求同名。
-3. 新增的外观数据类优先使用 `@Immutable`、稳定值对象或受控 `State`；避免把 renderer、GraphicsLayer、Motion 生命周期塞到颜色模型中。
-4. 不从外部 Compose 依赖或主项目偏好中读取隐含设置。单个参数不应同时表示像素和 dp，也不能悄悄更改底层失败行为。
-5. 新入口的文档、示例、KDoc、迁移说明与测试同一个 PR 交付。原入口必须有编译与运行回归检查。
+## 实施优先级与验收
 
-## 交付顺序与验收门槛
+1. **A：Switch / Slider / Checkbox 的外观参数默认化**。先确定默认色与暗色策略，核对原有参数顺序、调用点与新的省略调用；尽量只改签名及内部默认参数解析，不写重复绘制逻辑。
+2. **B：Dialog、Menu、TopAppBarButton 的默认配置**。保留业务回调和 Window/Popup 输入语义；不让默认配置隐藏材料/键盘/跨窗口的错误。
+3. **C：FAB、BottomBar、ChipTab 的更多外观选项**。关注多主体和可选附件，不急于省略 Renderer/Backdrop。
+4. 每阶段同时验证：原有显式全参数调用、只写必需参数调用、部分参数覆盖、系统深浅色和宿主强制深浅色、语义/交互、设备与 R8 消费者构建，以及底层 Effect 单独使用。
 
-- **A：外观上下文 + Switch/Slider 便捷重载**。无材质或复杂窗口生命周期，最适合验证 API 模式。
-- **B：Checkbox 交互版 + Dialog/Menu 默认 Style**。重点检查语义、键盘、对话框状态 owner 和重载歧义。
-- **C：BackdropHost + FAB/BottomBar/ChipTab 简化层**。先完成真实 API 34 设备与 renderer 失败测试，再决定公开签名。
-
-每阶段验收：旧高级调用源码编译、独立 Effect 接口无变化、独立 Maven 消费者构建、对应状态/无障碍测试和至少一轮真机交互。仅凭 Demo 截图或 Lint 通过不能判定完成。
-
-**暂不实施**：模块拆分、KMP、统一重写组件、移植完整厂商主题控制器、统一隐藏渲染失败。
+**暂不实施**：新组件层级、便捷包装重载、`CouiTheme`/`CouiAppearance`、`CouiBackdropHost`、模块拆分、KMP、全面性能重构。本提案只涉及设计，不表示以上接口变更已经完成。
