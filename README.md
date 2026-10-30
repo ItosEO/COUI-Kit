@@ -2,40 +2,30 @@
 
 面向 Android Jetpack Compose 的 COUI 组件与视觉效果库，使用公开 Android / Compose API 实现。
 
-COUI-Kit 基于 ColorOS 17 最新的「凝光视效」做还原，包含背景渐进模糊、材质混色、轮廓与跟手光，以及控件按压、拖动时的跟手运动；库把这些拆成可复用的组件和效果。
+COUI-Kit 参考 ColorOS 17 的「凝光视效」，提供渐进模糊、材质混色、轮廓光和跟手动效。
 
-目前提供顶栏与搜索、底栏、FAB、菜单、滑条、复选框、开关、ChipTab 和弹窗，以及可独立使用的阴影、模糊、材质混色、光效与融合算法。所有实现只依赖 Android、Compose 和 AndroidX，不读应用主题，也不依赖 OEM SDK、私有 SO 或运行时反射。
+你可以使用顶栏、底栏、菜单、滑条、开关、弹窗等组件，也可以单独使用阴影、模糊、光效和融合效果。库不依赖厂商 SDK 或私有 SO。
 
 ## 开始使用
 
-源码模块和 GitHub Packages 预览版二选一，不要同时依赖。完整步骤见[快速开始](docs/guide/getting-started.md)。
-
-源码模块：
+在模块的 `build.gradle.kts` 中添加依赖：
 
 ```kotlin
-// settings.gradle.kts
-include(":coui")
-
-// 消费者模块
-android {
-    buildFeatures { compose = true }
-}
-
 dependencies {
-    implementation(project(":coui"))
+    implementation("io.github.itoseo:coui:0.0.1-alpha2")
 }
 ```
 
-预览版坐标和认证见 [GitHub Packages 接入](docs/guide/github-packages.md)。当前没有 Maven Central 发行，可用坐标以手动发布工作流的成功摘要为准。
+当前版本为早期预览版，API 可能发生不兼容的变化。[快速开始](docs/guide/getting-started.md)介绍仓库配置、环境要求和第一个组件，也提供源码模块与 GitHub Packages 快照的接入方式。
 
-平台要求按能力分：普通控件跟随库的最低系统；渐进模糊、轮廓和融合要 API 33；底栏、FAB、顶栏按钮/搜索、ChipTab 要 API 34。完整门槛见[兼容要求](docs/guide/compatibility.md#效果门槛)。
+组件和效果的平台要求不同，使用前请查看[兼容要求](docs/guide/compatibility.md#效果门槛)。
 
 ## 文档
 
 | 你要做什么 | 从这里开始 |
 | --- | --- |
 | 将 COUI 用到自己的 App | [快速开始](docs/guide/getting-started.md) |
-| 下载库预览版 | [GitHub Packages 接入](docs/guide/github-packages.md) |
+| 下载开发快照 | [GitHub Packages 接入](docs/guide/github-packages.md) |
 | 查找组件及示例 | [组件目录](docs/components/README.md) |
 | 单独使用绘制效果或算法 | [效果目录](docs/effects/README.md) |
 | 确认环境和平台要求 | [兼容要求](docs/guide/compatibility.md) |

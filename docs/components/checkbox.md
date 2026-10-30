@@ -1,10 +1,10 @@
 # ☑️复选框
 
-CouiCheckbox 只画勾选、取消和禁用状态，不创建点击和无障碍语义。点击交给整行或外层容器。
+`CouiCheckbox` 显示勾选状态。它只负责绘制，需要由外层添加点击和无障碍语义。
 
 ## 显示一个整行复选框
 
-使用以下代码让整行都能切换：
+给整行添加 `toggleable`，点击文字或复选框都可以切换：
 
 ~~~kotlin
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -59,13 +59,13 @@ fun CheckboxRow(
 }
 ~~~
 
-`checked` 和 `enabled` 要同时传给行和绘制组件。子控件不要再加 `clickable`，否则点复选框时整行回调不触发。
+在 `onCheckedChange` 中更新页面的 `checked`，并将 `checked` 和 `enabled` 同时传给行和复选框。不要再给复选框添加单独的点击处理，以免与整行争用点击。
 
-`indication = null` 关掉整行涟漪，但保留 `toggleable` 的点击和 Checkbox 语义。
+`indication = null` 关掉整行涟漪，但保留 `toggleable` 的点击和 Checkbox 语义。示例中的 `Text` 来自 Material3，项目需要声明该依赖。
 
 ## 只放一个复选框
 
-没有整行文案时，用 48dp 的 Box 包住复选框，给它一个点击节点和可访问说明：
+没有整行文案时，可以用 48dp 的 `Box` 包住复选框，并提供无障碍描述。下面的片段使用上一节的参数和导入：
 
 ~~~kotlin
 import androidx.compose.foundation.layout.Box
@@ -96,16 +96,14 @@ Box(
 }
 ~~~
 
-`CouiCheckbox` 不持有业务状态，也不会自己取反。`checked` 从页面来，`onValueChange` 只把请求传回去。
-
 ## 颜色和形状
 
-`CouiCheckboxDefaults.colors(checked = accent, dark = dark)` 提供选中、未选中、禁用和勾线颜色，`accent` 通常传当前主题色。`shape` 是内部填充块的轮廓，`borderShape` 是外框，两者可以不一样。
+`CouiCheckboxDefaults.colors(checked = accent, dark = dark)` 根据强调色和深浅色生成配色。`shape` 控制内部填充块，`borderShape` 控制外框。
 
-切换中再次反向时，勾线会从新方向的时间线重新播放，不会从当前帧倒放。禁用时直接画目标状态，重新启用不补播动画。
+切换中反向时，动画会按新方向重新播放。禁用时直接显示目标状态；重新启用后不会补播切换动画。
 
 ## 尺寸和语义
 
-复选框以 24dp 为基准等比缩放，外层尺寸和留白由页面布局决定。给它传自己的 Shape 时，半径会按实际尺寸收敛。
+复选框以 24dp 为基准等比缩放，外层尺寸和留白由页面决定。
 
-整行可点击时只保留一个点击 owner，避免无障碍读出一组重复操作。源码见 [CouiCheckbox](../../coui/src/main/java/com/itos/coui/checkbox/CouiCheckbox.kt)、[Defaults](../../coui/src/main/java/com/itos/coui/checkbox/CouiCheckboxDefaults.kt)，完整禁用态见 [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)。
+示例见 [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)，公开参数见 [CouiCheckbox](../../coui/src/main/java/com/itos/coui/checkbox/CouiCheckbox.kt) 和 [Defaults](../../coui/src/main/java/com/itos/coui/checkbox/CouiCheckboxDefaults.kt)。

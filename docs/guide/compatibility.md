@@ -1,6 +1,6 @@
 # 消费者兼容要求
 
-接入源码模块或 GitHub Packages 预览版时，先对齐本工程开发基线，再检查所用效果的 Android 门槛。独立消费者与发行产物的验证范围见本页末尾。
+接入 COUI 时，先检查编译环境，再确认所用组件和效果的 Android 版本要求。
 
 ## Android 与工具链
 
@@ -13,7 +13,7 @@
 | Kotlin 与 Compose 编译器 | 源码接入先对齐 [版本目录](../../gradle/libs.versions.toml) 的开发基线，并配套 Compose 编译插件。更低 Kotlin 版本的元数据消费与 Compose 编译兼容尚未确认，不声明最低版本。                                                     |
 | 本工程工具链               | [Wrapper](../../gradle/wrapper/gradle-wrapper.properties)、[Gradle JVM](../../gradle/gradle-daemon-jvm.properties) 和版本目录是开发基线。使用 AGP 内置 Kotlin；消费者不必仅因本工程配置而照搬全部 Demo 插件。 |
 
-`minCompileSdk` 与 AGP 下限已核对本地缓存中对应版本的 Compose UI、Foundation 和 Material3 AAR 的 `META-INF/com/android/build/gradle/aar-metadata.properties`。生成 AAR 时会带出库自身要求；实际发行 AAR 尚未完成验证。库的 `minSdk` 仍由 manifest 合并表达，不使用 overrideLibrary 强行绕过。
+Maven Central 的 `0.0.1-alpha2` AAR 要求 `compileSdk` 不低于 37、AGP 不低于 9.1.0。其他版本以对应 AAR 元数据为准。库的 `minSdk` 由 manifest 合并表达，不要使用 `overrideLibrary` 绕过。
 
 ## 依赖对齐
 

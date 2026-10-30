@@ -1,16 +1,15 @@
 # 🔍顶栏搜索
 
-CouiTopAppBarSearch 把顶栏里的搜索按钮展开成输入框，按钮和输入框共用同一份转场状态。查询、展开状态和返回处理放在页面里。
+`CouiTopAppBarSearch` 可以将顶栏中的搜索按钮展开为输入框。页面负责保存查询内容和控制搜索的展开、关闭。
 
 ## 显示一个可展开的搜索
 
-使用以下代码显示一个搜索顶栏：
+下面的搜索框支持输入、提交、关闭和返回键。搜索按钮与输入框需要放在同一个顶栏中，并使用同一份状态。此组件要求 API 34。
 
 ~~~kotlin
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -52,7 +51,6 @@ fun SearchToolbar(
     query: String,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
-    actions: @Composable RowScope.() -> Unit = {},
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     var focusPending by remember { mutableStateOf(false) }
@@ -90,7 +88,6 @@ fun SearchToolbar(
                 Text(title)
             }
             CouiTopAppBarButtonGroup {
-                actions()
                 CouiTopAppBarSearchButton(
                     state = state,
                     style = style,
@@ -106,15 +103,13 @@ fun SearchToolbar(
 }
 ~~~
 
-请注意，搜索按钮和输入框必须放在同一个 CouiTopAppBar 里，并共用同一个 `state`。把 `state` 提到页面层，不要在两处各建一个。
+`query` 和 `onQueryChange` 由页面提供。点击搜索按钮时设置 `expanded = true`，关闭时将其设为 `false`；是否清空查询内容也由页面决定。
 
-`expanded` 是搜索唯一的展开目标。关闭时同时清掉 `focusPending`、收起键盘；返回键只在展开时拦截。`onFocused` 在焦点请求发出后调用，记得把 `focusPending` 设回 `false`，否则每次重组都会重复请求。
-
-组件不保存查询值。关闭时要不要清空查询，由页面决定。
+示例在展开时设置 `focusPending`，并在 `onFocused` 中清除请求。关闭时同时清除该状态并收起键盘。返回键只在搜索展开时拦截。
 
 ## 添加常驻动作
 
-右侧动作可以这样放：
+将前面示例中的 `CouiTopAppBarButtonGroup` 替换为下面的内容，可以控制右侧动作在搜索展开时的显示方式。动作回调和描述文案由页面提供：
 
 ~~~kotlin
 import androidx.compose.material.icons.Icons
@@ -147,23 +142,23 @@ CouiTopAppBarButtonGroup {
 }
 ~~~
 
-默认动作在搜索展开时原位淡出；`visibleWhileSearching = true` 的动作会移到新位置并保持可用。`CouiTopAppBarSearchAction` 和 `CouiTopAppBarButton` 在同一个包里。
+默认动作会在搜索展开时淡出。设置 `visibleWhileSearching = true` 后，动作会移到新位置并保持可用。
 
 ## 搜索框样式
 
-搜索框用 `searchStyle`，通常和顶栏按钮共用一套构造。在 `rememberToolbarStyle` 里把材质和阴影换成：
+搜索框使用 `searchStyle`。可以在[顶栏样式](top-app-bar.md#配置顶栏样式)的基础上，将材质和阴影的 `search` 设为 `true`：
 
 ~~~kotlin
 material = { capsule -> CouiTopAppBarButtonDefaults.material(dark, capsule, search = true) },
 shadow = { capsule -> CouiTopAppBarButtonDefaults.shadow(dark, capsule, density, contour, search = true) },
 ~~~
 
-`dark`、`density`、`contour` 就是 `rememberToolbarStyle` 里的同名变量，完整构造见[顶栏与按钮](top-app-bar.md#配置顶栏样式)。`CouiTopAppBarSearch` 的 `visible` 控制整组显隐，不会改变展开目标；设为 `false` 时搜索框也不接受输入。只想隐藏顶栏时别顺手把 `expanded` 设成 `false`。
+`dark`、`density` 和 `contour` 来自顶栏样式示例。`CouiTopAppBarSearch` 的 `visible` 控制搜索区域显隐，不会改变 `expanded`；隐藏时搜索框不接受输入。
 
 ## 版本和键盘
 
-搜索入口要求 API 34。`BackHandler` 来自 Activity Compose，`IconButton` 来自 Material3，页面需要自己声明这两个依赖。
+`BackHandler` 来自 Activity Compose，`IconButton` 来自 Material3，页面需要声明相应依赖。
 
-部分 ROM 上请求焦点后键盘仍可能不弹，用户点一下输入框就能输入。
+部分设备在请求焦点后可能不会自动弹出键盘，可以手动点击输入框。
 
 搜索框会占满可用宽度，放在 Row 里用 `Modifier.weight(1f)`，再按页面需要调 `endPadding`。源码见[搜索与动作](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarSearch.kt)、[状态工厂](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarSearchState.kt)，页面示例见 [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)。

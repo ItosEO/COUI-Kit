@@ -1,34 +1,40 @@
 # 🔘开关
 
-CouiSwitch 是受控的二值开关，带弹簧拖动和吸附，也能在同一组件里显示加载状态。
+`CouiSwitch` 用于开启或关闭一个选项，支持点击、拖动和加载状态。
 
 ## 显示一个开关
 
-使用以下代码显示一个独立开关：
+在 Compose 页面中创建一个开关，点击后更新 `checked`：
 
 ~~~kotlin
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import com.itos.coui.switch.CouiSwitch
 import com.itos.coui.switch.CouiSwitchDefaults
 
+var checked by rememberSaveable { mutableStateOf(false) }
+
 CouiSwitch(
-    modifier = Modifier.semantics { contentDescription = label },
+    modifier = Modifier.semantics { contentDescription = "消息通知" },
     checked = checked,
-    onCheckedChange = onCheckedChange,
+    onCheckedChange = { checked = it },
     dark = dark,
     colors = CouiSwitchDefaults.colors(accent, dark),
 )
 ~~~
 
-点击只请求一个新的 `checked`，真正改不改由页面决定。开关自己处理点击、键盘和 Switch 语义；视觉尺寸固定为 44×24dp，传入 `onCheckedChange` 时触摸区域会扩到 48dp。
+`dark` 和 `accent` 由页面提供。示例用文字说明开关的用途，实际应用可以使用字符串资源。开关处理点击、键盘和 Switch 语义；传入回调时，触摸区域会扩到 48dp。
 
 禁用只停止手势和点击，已经开始的切换仍会走完。
 
 ## 整行点击
 
-需要整行切换时，让外层持有唯一的点击 owner，子开关只负责绘制：
+需要点击整行切换时，给行添加 `toggleable`，并将开关的 `onCheckedChange` 设为 `null`：
 
 ~~~kotlin
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -80,11 +86,11 @@ fun SwitchRow(
 }
 ~~~
 
-外层和子开关共用同一个 `MutableInteractionSource`，按压和焦点反馈才会同步。如果还想在滑块区域拖动，把同一个业务回调传给 `onDragCheckedChange`；传 `null` 就只保留整行点击。
+行和开关共用 `MutableInteractionSource`，使按压和焦点反馈保持一致。示例将同一个回调传给 `onDragCheckedChange`，因此也可以拖动滑块；传 `null` 则只保留整行点击。示例中的 `Text` 来自 Material3，项目需要声明该依赖。
 
 ## 显示加载状态
 
-加载是同一个 CouiSwitch 的状态，不是另一个控件。请求开始时把 `loading` 设为 `true`，先保留原 `checked`；成功时提交新值并清除加载，失败或取消时只清除加载。
+需要等待异步操作时，可以在开关上显示加载状态。请求开始时设置 `loading = true`，并保留原来的 `checked`；成功后更新 `checked` 并结束加载，失败或取消时结束加载即可。下面的 `requestChange`、`label` 和 `loadingLabel` 由页面提供。
 
 ~~~kotlin
 CouiSwitch(
@@ -99,32 +105,26 @@ CouiSwitch(
 )
 ~~~
 
-等待期间组件会禁止重复输入，`loadingDescription` 通过状态说明和 live region 读出来。示例同时关掉拖动，避免等待中又被拖走。
-
-滑块缩小、加载图放大并旋转；停止时恢复滑块并立即关闭加载图。加载图是随库打包的 PNG。
+加载期间不能重复操作。`loadingDescription` 用于向无障碍服务说明当前状态。示例通过 `onDragCheckedChange = null` 关闭拖动；如果也需要拖动，可以将请求回调传给它。
 
 ## 拖动和取消
 
-按住后开始拖动，按压反馈会保留到松手或真正取消；点击识别不会提前结束它。
-
-超过拖动阈值后，开关拥有本次拖动，抬手按最近锚点、速度与位移门控吸附，结束时只提交一次业务变化。RTL 会反转几何位置，`checked` 的逻辑含义不变；动画中反向会保留已有位置和速度。
-
-CANCEL、父容器接管、禁用和移除都会终止手势，不提交新值，并回到 `checked` 的状态。
+松手后，开关会根据位置和速度吸附，并在状态改变时回调一次。手势被取消、父容器接管或组件禁用时，不提交新值，开关回到当前的 `checked` 状态。RTL 布局会反转位置，不改变 `checked` 的含义。
 
 ## 配色、焦点和触觉
 
-配色从 `CouiSwitchDefaults.colors(accent, dark)` 取。轨道和拉伸后的滑块使用项目 `CouiCapsuleShape`，这是保留的平滑几何。
+配色可以从 `CouiSwitchDefaults.colors(accent, dark)` 获取。
 
-键盘焦点沿轨道外侧显示独立描边，颜色是 `CouiSwitchColors.focusOutline`，可以 `copy` 覆盖。这个描边复用现有状态弹簧，不属于材质轮廓光。
+键盘焦点描边的颜色是 `CouiSwitchColors.focusOutline`，可以通过 `copy` 修改。
 
-触觉走系统设置，`hapticFeedbackEnabled = false` 可以关掉。程序赋值、取消和禁用不会额外振动。
+触觉反馈遵循系统设置；传入 `hapticFeedbackEnabled = false` 可以关闭。
 
 ## 版本和验收
 
-开关沿库最低平台运行。快速反向、RTL、字体缩放和 TalkBack 仍要真机确认。
+开关支持库的最低系统版本。
 
 ## Demo 示例
 
-进入 Demo 的“组件”页，找到“开关”分组，或直接搜索分组标题。分组里有普通点击/拖动、加载状态、禁用未选中和禁用已选中；后两项只是状态示例，不是独立控件。
+Demo 的“组件 → 开关”分组包含点击、拖动、加载和禁用示例。
 
 Demo 示例见 [DemoSwitchSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSwitchSamples.kt)，库入口和配色见 [CouiSwitch / CouiSwitchDefaults](../../coui/src/main/java/com/itos/coui/switch/CouiSwitch.kt)。

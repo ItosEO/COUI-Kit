@@ -1,10 +1,10 @@
 # 🎚️滑动选择条
 
-CouiSlider 用来调节音量、亮度、强度这类连续值，也支持可见分段和隐藏点位的逻辑步进。
+使用 `CouiSlider` 调节音量、亮度等数值。滑条支持连续调节，也可以设置固定的档位。
 
 ## 显示一个滑条
 
-使用以下代码显示一个连续滑条：
+下面的滑条接收页面的当前值，并在拖动时通过 `onValueChange` 更新：
 
 ~~~kotlin
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,11 +34,11 @@ fun VolumeSlider(
 }
 ~~~
 
-值是受控的，拖动时组件只回调 `onValueChange`，保存和上报由页面自己做。`Modifier.fillMaxWidth()` 让轨道占满可用宽度，组件本身有最小尺寸，不会自动撑满父级。
+页面需要在 `onValueChange` 中更新 `value`。需要保存到设置或发送给服务时，可以在调整结束后处理，见下文的 `onValueChangeFinished`。
 
 ## 分段选择
 
-`steps` 是内部等分点数，两个端点也算可选值。`showTickMarks` 只决定要不要画点位和按点位吸附，关掉它不会取消逻辑步进。
+设置 `valueRange` 和 `steps` 可以限制可选档位。例如，在前面的页面中提供一个无参数的 `saveValue` 回调，并在 0 到 4 之间选择整数：
 
 ~~~kotlin
 CouiSlider(
@@ -55,20 +55,20 @@ CouiSlider(
 )
 ~~~
 
-上面会有 0、1、2、3、4 五个可选值。想要隐藏点位但仍按 5 档步进，把 `showTickMarks` 设为 `false` 即可。
+`steps` 表示两个端点之间的等分点数。这里的可选值是 0、1、2、3、4；把 `showTickMarks` 设为 `false` 可以隐藏点位，同时保留五个档位。
 
 ## 结束回调与禁用
 
-`onValueChangeFinished` 在一次调整结束时触发，适合保存或提交；拖动过程中只走 `onValueChange`。键盘方向键、Home 和 End 也会改值，并走同一组回调。
+`onValueChangeFinished` 在一次调整结束时触发，适合保存或提交。拖动过程中通过 `onValueChange` 更新显示；键盘方向键、Home 和 End 也支持调整。
 
-`enabled = false` 会关闭触摸、焦点和语义操作。配色不会自动变灰，需要把 `enabled = false` 也传给 `CouiSliderDefaults.colors`，让轨道、滑块和点位使用禁用配色。
+禁用滑条时，同时把 `enabled = false` 传给组件和 `CouiSliderDefaults.colors`。前者关闭交互，后者提供禁用配色。
 
 ## 轨道配色
 
-配色从 `CouiSliderDefaults.colors(primary = accent, dark = dark)` 取，轨道 Shape 由页面选择。分段和轨道外观由页面自己适配，不是库强制主题。
+`CouiSliderDefaults.colors(primary = accent, dark = dark)` 根据强调色和深浅色生成配色。轨道的 `shape` 由页面提供。
 
 ## 参数校验
 
-`value`、范围端点和步进必须是有限值，范围不能反向，`steps` 不能是负数或 `Int.MAX_VALUE`。传错会直接抛异常。
+`value` 和范围端点必须是有限值，范围不能反向；`steps` 不能是负数或 `Int.MAX_VALUE`。参数不符合要求时会抛出异常。
 
-滑条不采样背景，不需要 `CouiBackdrop`。如果页面用了浮动材质，滑条作为普通内容放在源子树里即可。源码见 [CouiSlider](../../coui/src/main/java/com/itos/coui/slider/CouiSlider.kt)、[Defaults](../../coui/src/main/java/com/itos/coui/slider/CouiSliderDefaults.kt)，连续、分段和禁用示例见 [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)。
+滑条不需要背景源。更多示例见 [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)，公开参数见 [CouiSlider](../../coui/src/main/java/com/itos/coui/slider/CouiSlider.kt) 和 [Defaults](../../coui/src/main/java/com/itos/coui/slider/CouiSliderDefaults.kt)。

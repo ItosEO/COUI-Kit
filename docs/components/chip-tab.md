@@ -1,15 +1,19 @@
 # 🏷️ChipTab 分类栏
 
-CouiChipTabRow 是横向滚动的受控单选分类栏，也可以在分类组外放一个独立动作。分类数据和选中值由页面传入，选中露出、惯性和回弹由组件处理。
+`CouiChipTabRow` 用于横向排列单选分类。分类较多时可以左右滚动，也可以在分类栏前放一个独立按钮。
 
 ## 显示一个分类栏
 
-使用以下代码显示一个受控分类栏：
+下面创建三个分类，并在点击时更新选中项。分类栏需要 API 34，以及一个覆盖页面内容的背景源。
 
 ~~~kotlin
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.chip.CouiChipTabItem
@@ -21,28 +25,32 @@ fun Categories(
     modifier: Modifier = Modifier,
     backdrop: CouiBackdrop,
     dark: Boolean,
-    items: List<CouiChipTabItem>,
-    selectedKey: Any?,
-    onSelectedKeyChange: (Any) -> Unit,
 ) {
+    val items = listOf(
+        CouiChipTabItem("all", "全部"),
+        CouiChipTabItem("photos", "照片"),
+        CouiChipTabItem("files", "文件"),
+    )
+    var selectedKey by remember { mutableStateOf<Any?>("all") }
+
     CouiChipTabRow(
         modifier = modifier.fillMaxWidth(),
         items = items,
         selectedKey = selectedKey,
-        onSelectedKeyChange = onSelectedKeyChange,
+        onSelectedKeyChange = { selectedKey = it },
         backdrop = backdrop,
         dark = dark,
     )
 }
 ~~~
 
-`CouiChipTabItem` 的 `key` 在同一栏里必须唯一，重排和重组时也要保持稳定。非空列表的 `selectedKey` 必须属于列表；空列表传 `null`。重复点击不会取消选择，点击、键盘焦点和选中值变化都会把对应项目完整露出来。
+`backdrop` 和 `dark` 由页面提供。示例在组件内保存 `selectedKey`；需要用分类筛选内容时，可以将状态提到页面中。每个分类的 `key` 必须唯一，并在重排时保持稳定。非空列表的 `selectedKey` 必须属于列表；空列表传 `null`。重复点击不会取消选择。
 
-分类栏要求 API 34，`backdrop` 要是真正的不透明兄弟节点，不能采样分类栏自己。
+背景源应覆盖不透明的页面内容，分类栏放在源节点之外。创建方法见[快速开始](../guide/getting-started.md#浮动组件的背景源)。
 
 ## 添加独立动作
 
-`leadingAction` 放在单选组外，`leadingActionVisible` 控制它的动画显隐。需要在分类栏外放动作时：
+使用 `leadingAction` 可以在分类组前添加按钮。例如，将上一节的 `CouiChipTabRow` 替换为下面的代码，点击按钮打开分类管理：
 
 ~~~kotlin
 import androidx.compose.material.icons.Icons
@@ -51,9 +59,10 @@ import androidx.compose.material3.Icon
 import com.itos.coui.chip.CouiChipTabButton
 
 CouiChipTabRow(
+    modifier = modifier.fillMaxWidth(),
     items = items,
     selectedKey = selectedKey,
-    onSelectedKeyChange = onSelectedKeyChange,
+    onSelectedKeyChange = { selectedKey = it },
     backdrop = backdrop,
     dark = dark,
     leadingAction = {
@@ -70,18 +79,18 @@ CouiChipTabRow(
 )
 ~~~
 
-动作有退出过渡时，保留 `leadingAction` 的内容，只切换 `leadingActionVisible`，这样宽度、透明度和留白会一起收放。`CouiChipTabButton` 在同一个包里。按钮通过 `LocalContentColor` 提供内容色，示例里的 Material `Icon` 会跟随该颜色；显式传了 `tint` 或使用不读取它的图片时，颜色由页面处理。
+`onOpenCategories`、`categoriesLabel` 和 `categoriesVisible` 由页面提供。需要退出动画时，保留 `leadingAction` 的内容，只切换 `leadingActionVisible`。Material `Icon` 默认跟随按钮提供的内容色；显式设置 `tint` 时使用传入的颜色。应用需要声明示例使用的 Material3 和图标依赖。
 
 ## 文字、间距和动画
 
-默认文字样式和内容色从 `CouiChipTabDefaults` 取，也可以自己传 `textStyle` 和 `contentColor`。`itemSpacing` 默认是 0，按页面需要加间距；`animationLevel` 的 1 最明显，4 最弱。
+可以通过 `textStyle` 和 `contentColor` 修改文字样式与颜色。`itemSpacing` 控制分类间距；`animationLevel` 从 1 到 4，1 的动画最明显，4 最弱。
 
 每个分类项和独立图标按钮各自持有单主体 renderer。显式传 `renderers` 时，数量要和 `items` 一致，实例不能重复。
 
 ## 尺寸和 renderer
 
-文字超宽会省略。横向裁剪同时限制点击范围，纵向会保留阴影空间。
+文字超宽时会省略，分类项会在点击、获得焦点或选中后滚动到可见区域。
 
-renderer 创建可能失败，需要自己兜底。要自定义错误 UI 时，在调用前创建并检查结果。
+需要自定义错误界面时，可以在调用前创建 renderer 并处理创建失败。
 
 源码见 [CouiChipTabRow / CouiChipTabItem](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabRow.kt)、[CouiChipTab / CouiChipTabButton](../../coui/src/main/java/com/itos/coui/chip/CouiChipTab.kt)、[Defaults](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabDefaults.kt)，分类菜单、图标动作和纯色背景见 [DemoChipSamples](../../demo/src/main/java/com/itos/coui/demo/DemoChipSamples.kt)。

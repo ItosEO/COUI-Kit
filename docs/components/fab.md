@@ -1,10 +1,10 @@
 # ➕FAB
 
-CouiFab 是独立浮动操作按钮，使用单主体材质和投影，不依赖底栏。适合新建、编辑这类页面级动作。
+`CouiFab` 适合放置新建、编辑等页面操作，可以单独使用，也可以与底栏一起使用。
 
 ## 显示一个 FAB
 
-使用以下代码显示一个固定配色的 FAB：
+FAB 需要 API 34 和页面背景源。下面使用内置配色创建一个按钮：
 
 ~~~kotlin
 import androidx.annotation.RequiresApi
@@ -49,18 +49,19 @@ fun PresetFab(
 }
 ~~~
 
-固定配色有 `Notes`、`Phone`、`InfraredRemote`、`Recorder` 四种，深浅色下的具体颜色由 `CouiFabDefaults.containerColor` 决定。
+`preset` 可以选择 `Notes`、`Phone`、`InfraredRemote` 或 `Recorder`。按钮内容通过 `content` 传入，点击时调用 `onClick`。
 
-FAB 不处理页面位置和安全区。放到 Box 的右下角，再按页面需要加边距；父级要为投影留出绘制空间，不要沿 FAB 边界裁剪。
+位置和安全区由页面控制。例如，可以将 FAB 放在 `Box` 右下角并添加边距。父容器需要为投影留出空间。
 
 ## 使用自定义底色
 
-想用页面主题色或业务色，自己算一个最终颜色，然后同时传给材质和阴影：
+需要使用自己的颜色时，将同一个颜色传给材质和阴影：
 
 ~~~kotlin
 import androidx.compose.ui.graphics.Color
 
 val color = Color(0xFF0080FF)
+val renderer = remember { CouiFloatingRenderer.standalone() }
 val density = LocalDensity.current.density
 val contour = LocalCouiContourGlowEnabled.current
 
@@ -76,18 +77,18 @@ CouiFab(
 )
 ~~~
 
-不要在材质和阴影里分别重新取色，两边颜色不一致时投影、高光和内容会看起来不是同一个按钮。
+这段代码使用上一节的导入；`backdrop`、`onClick` 和 `content` 由页面提供。
 
 ## 图标和轮廓光
 
-图标不会重新着色；深色底上要自己传 `tint`。`CouiShape` 的半径会按最短边收敛，用很大的半径就能得到圆形；也可以换成自己的 Shape。
+FAB 不会修改图标颜色，使用图标时请根据底色设置 `tint`。示例使用 `CouiShape` 创建圆形，也可以传入自己的 Shape。
 
-轮廓光通过 `LocalCouiContourGlowEnabled` 控制。关闭时 `CouiFabDefaults.shadow` 会改用普通有色投影。
+轮廓光由 `LocalCouiContourGlowEnabled` 控制；关闭后，`CouiFabDefaults.shadow` 使用普通有色投影。
 
 ## 版本和绘制空间
 
-FAB 要求 API 34。每个 FAB 单独持有一个 `CouiFloatingRenderer.standalone()`，不要和顶栏按钮、底栏或其他 FAB 共用。
+每个 FAB 使用独立的 `CouiFloatingRenderer.standalone()`，不要与其他绘制节点共用。
 
-`backdrop` 必须覆盖不透明页面内容，FAB 放在源子树外。透明页面或只采样局部背景时，材质会缺底。
+`backdrop` 应覆盖不透明的页面内容，FAB 放在源节点之外。背景源的创建方式见[背景采样](../effects/backdrop.md)。
 
 源码见 [CouiFab](../../coui/src/main/java/com/itos/coui/floatingactionbutton/CouiFab.kt)、[配色](../../coui/src/main/java/com/itos/coui/floatingactionbutton/CouiFabColor.kt)、[Defaults](../../coui/src/main/java/com/itos/coui/floatingactionbutton/CouiFabDefaults.kt)，完整页面见 [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)。

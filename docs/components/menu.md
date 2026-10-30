@@ -1,10 +1,10 @@
 # 📋菜单
 
-CouiMenu 是带选中、勾选、分隔和一级子菜单的弹出菜单。展开状态和选择结果放在页面状态层，菜单自己负责弹出、点击和关闭动画。
+`CouiMenu` 可以显示普通菜单项、勾选项和一级子菜单。菜单的展开状态和选择结果由页面保存。
 
 ## 显示一个菜单
 
-使用以下代码显示一个由按钮打开的菜单：
+下面的按钮会打开菜单。选择项目后调用 `onSelect`，然后关闭菜单：
 
 ~~~kotlin
 import androidx.compose.foundation.layout.Box
@@ -54,13 +54,13 @@ fun MenuButton(
 }
 ~~~
 
-菜单默认贴着按钮下方弹出。`anchor` 记录最后一次触点，菜单会按这个位置和当前窗口可见范围重新定位；键盘或无障碍触发没有触点，就沿用默认锚点。
+`anchor` 记录按钮上的触点，菜单根据触点和窗口可见范围定位。通过键盘或无障碍服务打开时，没有触点，菜单使用默认锚点。`style` 的创建方式见[菜单样式](#菜单样式)。
 
-`expanded` 是唯一开关。点击菜单项、点击外部或返回键触发 `onDismissRequest`，不会自动替你提交选择。
+`expanded` 控制菜单显隐。点击菜单项时调用 `onItemClick`；点击外部或按返回键时调用 `onDismissRequest`。需要在选中后关闭菜单时，在 `onItemClick` 中将 `expanded` 设为 `false`，如上例所示。
 
 ## 添加勾选和子菜单
 
-`CouiMenuItem` 的常用字段：
+每个 `CouiMenuItem` 对应一个选项：
 
 | 字段 | 作用 |
 | --- | --- |
@@ -88,11 +88,11 @@ val items = listOf(
 )
 ~~~
 
-父项有 `children` 时只负责展开，值由子项提交。子菜单只能有一级，再嵌套会被拒绝。勾选项是否切换由页面决定，菜单只把点击回调出去。
+示例中的 `selected` 和 `pinned` 是页面状态。点击勾选项后，需要在 `onItemClick` 中更新 `pinned`。有 `children` 的父项只负责展开，子项才会提交值；子菜单只支持一级。
 
 ## 使用背景材质
 
-不提供背景源时，菜单用 `CouiMenuStyle.colors.container` 画不透明表面。要让菜单采样页面背景，用 `ProvideCouiMenuBackdrop` 包住页面内容。这里假设当前页面函数已有 `background: Color` 和 `pageContent`，`style`、`label`、`items`、`onSelect` 沿用上一节：
+不提供背景源时，菜单使用 `CouiMenuStyle.colors.container` 作为不透明底色。需要采样页面背景时，用 `ProvideCouiMenuBackdrop` 包住页面，并将返回的 Modifier 加到背景内容上：
 
 ~~~kotlin
 import androidx.compose.foundation.background
@@ -112,11 +112,11 @@ ProvideCouiMenuBackdrop { source ->
 }
 ~~~
 
-菜单本身在采样子树外。弹窗、页面自画的遮罩和菜单自身都不要录进源里。`style.themeTint` 控制材质叠加的页面色相，通常传当前页面表面的颜色。
+这里的 `background` 和 `pageContent` 由页面提供，`MenuButton` 沿用前面的示例。菜单放在背景源之外；弹窗和页面遮罩也不要录入背景源。`style.themeTint` 可以传页面表面色。
 
 ## 菜单样式
 
-`CouiMenuStyle` 描述表面、菜单项、复选框和文字。库不读 MaterialTheme，需要页面自己组一份：
+`CouiMenuStyle` 设置菜单的颜色、形状和文字。下面根据页面颜色创建一份样式：
 
 ~~~kotlin
 import androidx.compose.runtime.Composable
@@ -159,12 +159,12 @@ fun rememberMenuStyle(
 }
 ~~~
 
-`radius` 要和 `shape` 的半径一致。菜单没有默认高度上限；长菜单要给 `CouiMenu` 传 `Modifier.heightIn(max = …)`，它才会在这个高度内滚动。子菜单会按窗口高度收住。
+`radius` 要和 `shape` 的半径一致。菜单没有默认高度上限；长菜单可以在 `CouiMenu` 的 `modifier` 中传入 `Modifier.heightIn(max = 320.dp)`，让它在限定高度内滚动。子菜单会按窗口高度限制。
 
 ## 兼容性和滚动
 
-API 33 以下菜单的模糊和 33 以上不完全一致，具体限制见[兼容要求](../guide/compatibility.md)。
+API 33 以下的菜单模糊效果与较新系统不同，见[兼容要求](../guide/compatibility.md)。
 
-光效是 COUI 加的；`themeTint` 设成透明就不叠加页面色。`headerText` 是提示文案，不参与选择。长菜单给了 `heightIn` 后会在内部滚动，外面不要再套滚动容器。
+`headerText` 用于显示提示文案，不参与选择。`themeTint` 设为透明时不叠加页面色。
 
 源码见 [CouiMenu / CouiMenuItem](../../coui/src/main/java/com/itos/coui/menu/CouiMenu.kt)、[样式](../../coui/src/main/java/com/itos/coui/menu/CouiMenuStyle.kt)、[触点锚点](../../coui/src/main/java/com/itos/coui/menu/CouiMenuAnchor.kt)，选中、勾选、子菜单和限高示例见 [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)。

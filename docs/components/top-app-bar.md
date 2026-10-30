@@ -1,19 +1,14 @@
 # 🧭顶栏与按钮
 
-CouiTopAppBar 负责页面顶部的渐进模糊、标题和操作区。按钮、按钮组和搜索都从顶栏拿同一份材质与转场上下文，所以它们必须放在顶栏内部。
+`CouiTopAppBar` 在页面顶部显示渐进模糊背景。你可以在其中放置标题、操作按钮和搜索框。
 
 ## 显示一个简单顶栏
 
-使用以下代码显示一个带标题和文字按钮的顶栏：
+下面的顶栏显示标题和一个文字按钮。按钮需要 API 34；请先按[快速开始](../guide/getting-started.md#浮动组件的背景源)创建背景源，再把顶栏放在源节点之外。
 
 ~~~kotlin
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -22,11 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import com.itos.coui.backdrop.couiBackdrop
-import com.itos.coui.backdrop.rememberCouiBackdrop
+import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.topappbar.CouiToolbarStyle
 import com.itos.coui.topappbar.CouiTopAppBar
 import com.itos.coui.topappbar.CouiTopAppBarButton
@@ -34,34 +26,24 @@ import com.itos.coui.topappbar.CouiTopAppBarButtonGroup
 
 @RequiresApi(34)
 @Composable
-fun PageWithToolbar(
+fun PageToolbar(
     modifier: Modifier = Modifier,
+    backdrop: CouiBackdrop,
     style: CouiToolbarStyle,
     title: String,
     actionLabel: String,
     onAction: () -> Unit,
-    background: Color,
-    pageContent: @Composable ColumnScope.() -> Unit,
 ) {
-    val backdrop = rememberCouiBackdrop()
-    Box(modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize().couiBackdrop(backdrop).background(background)) {
-            pageContent()
-        }
-        CouiTopAppBar(
-            modifier = Modifier.align(Alignment.TopCenter).fillMaxWidth(),
-            backdrop = backdrop,
+    CouiTopAppBar(modifier = modifier.fillMaxWidth(), backdrop = backdrop) {
+        Row(
+            modifier = Modifier.fillMaxWidth().statusBarsPadding()
+                .heightIn(min = 64.dp).padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().statusBarsPadding()
-                    .heightIn(min = 64.dp).padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(title, Modifier.weight(1f), style = style.textStyle, color = style.contentColor)
-                CouiTopAppBarButtonGroup {
-                    CouiTopAppBarButton(onClick = onAction, text = true, style = style) {
-                        Text(actionLabel)
-                    }
+            Text(title, Modifier.weight(1f), style = style.textStyle, color = style.contentColor)
+            CouiTopAppBarButtonGroup {
+                CouiTopAppBarButton(onClick = onAction, text = true, style = style) {
+                    Text(actionLabel)
                 }
             }
         }
@@ -69,11 +51,11 @@ fun PageWithToolbar(
 }
 ~~~
 
-请注意，顶栏是叠在内容上的，不会自动给内容让位。`pageContent` 的顶部间距要按顶栏实际高度自己加，否则第一项会被遮住。`style` 可以用下一节的 `rememberToolbarStyle` 生成。
+顶栏叠在页面内容上。请按实际顶栏高度设置内容的顶部间距，避免内容被遮挡。`style` 可以按下一节创建。示例中的 `Text` 来自 Material3，项目需要声明该依赖。
 
 ## 配置顶栏样式
 
-`CouiToolbarStyle` 描述按钮材质、轮廓、文字和光标。库不读 MaterialTheme，下面用页面当前的深浅色和轮廓开关生成一份：
+顶栏按钮使用 `CouiToolbarStyle` 设置材质、文字和光标。下面根据页面的颜色创建一份样式：
 
 ~~~kotlin
 import androidx.compose.foundation.shape.CircleShape
@@ -114,11 +96,13 @@ fun rememberToolbarStyle(
 }
 ~~~
 
-`material` 和 `shadow` 要使用同一个轮廓状态，否则按钮的投影和描边会对不上。`circleShape` 用于方形按钮，`capsuleShape` 用于文字按钮和搜索框。搜索外观可以把两个默认工厂的 `search` 参数设为 `true`。
+`circleShape` 用于图标按钮，`capsuleShape` 用于文字按钮和搜索框。搜索框的材质配置见[顶栏搜索](search.md#搜索框样式)。
+
+示例让 `contourGlowEnabled` 与阴影工厂使用同一个轮廓状态，修改时请保持一致。
 
 ## 添加操作按钮
 
-`text = true` 显示文字胶囊，默认是 40dp 方形图标按钮。例如：
+默认按钮适合放图标；设置 `text = true` 可以显示文字按钮：
 
 ~~~kotlin
 import androidx.compose.material.icons.Icons
@@ -134,11 +118,11 @@ CouiTopAppBarButton(onClick = onReset, text = true, enabled = canReset, style = 
 }
 ~~~
 
-按钮自己处理按压形变、点触光和键盘语义，外面不用再包一层 `clickable`。`enabled = false` 只改变交互和内容透明度，不会让按钮消失。组件通过 `LocalContentColor` 提供内容色，默认的 Material `Icon` 会跟随该颜色；显式传了 `tint` 或使用不读取它的图片时，颜色由页面处理。Material 图标依赖需要自己声明。
+`enabled = false` 会禁用按钮，但不会隐藏它。Material `Icon` 默认跟随按钮提供的内容色；显式设置 `tint` 时使用传入的颜色。示例中的 Material 图标需要由应用声明相应依赖。
 
 ## 显示和隐藏操作
 
-按钮组包住整个操作槽位。需要显隐过渡时，把按钮包进 `CouiTopAppBarActionVisibility`：
+将操作放进 `CouiTopAppBarButtonGroup`。需要显隐动画时，再用 `CouiTopAppBarActionVisibility` 包住按钮：
 
 ~~~kotlin
 import com.itos.coui.topappbar.CouiTopAppBarActionVisibility
@@ -158,10 +142,10 @@ CouiTopAppBarButtonGroup {
 
 ## 版本和 inset
 
-按钮和搜索要求 API 34；按钮组本身没有版本注解，但只能在顶栏里用。顶栏容器不要求 API 34。
+顶栏容器支持库的最低系统版本，顶栏按钮和搜索需要 API 34。按钮组和搜索组件放在 `CouiTopAppBar` 内使用。
 
-每个按钮默认在调用点创建一个独立的 `CouiFloatingRenderer.standalone()`。需要捕获创建失败时，先创建好再显式传 `renderer`。
+每个按钮默认创建独立的 renderer。需要处理创建失败时，可以先创建 `CouiFloatingRenderer.standalone()`，再通过 `renderer` 传入。
 
-顶栏背景会向下延伸，但不会增加布局高度或触摸范围。顶栏不自己消费状态栏 inset；在顶栏内容或页面根节点加一次 `statusBarsPadding()` 就够了。
+顶栏不消费状态栏 inset，可在顶栏内容或页面根节点添加一次 `statusBarsPadding()`。渐进模糊背景会向下延伸，但不会增加布局高度或触摸范围。
 
 源码见 [CouiTopAppBar](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBar.kt)、[按钮](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButton.kt)、[按钮组与显隐](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButtonGroup.kt)、[按钮预设](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButtonDefaults.kt)，完整页面见 [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)。
