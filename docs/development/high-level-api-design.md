@@ -1,87 +1,111 @@
-# COUI-Kit 组件默认参数优化（设计提案，未实现）
+# COUI-Kit 独立主题与组件默认参数设计（提案，未实现）
 
-本文依据 2026-10-30 的仓库接口制定。**不另建高层组件 API，也不设计 L1/L2 双层组件、便捷重载、强制 CouiTheme 或 CouiBackdropHost。** 目标是在**现有同名组件和原有参数列表**中，为有明确默认语义的配置项增加 Kotlin 默认值，让调用者可以省略这些参数；需要完全自定义时，仍按现有接口逐项传入。
+本文依据 2026-10-30 的 `main` 源码、用户提出的“COUI 核心不依赖 Material 3，但可以选择接入 Material Theme”要求制定。文中的 API 均是设计示意，尚未实现或完成消费者编译。
 
-## 目标与不变量
+## 一、设计目标和边界
 
-1. 保留 `CouiSwitch`、`CouiSlider`、`CouiCheckbox`、`CouiMenu`、`CouiBottomBar`、`CouiFab` 等现有组件入口；不创建 `SimpleCouiXxx` 或另一套高级组件接口。
-2. **宿主业务输入和事件回调保留必填**，例如 `checked`、`value`、`items`、`onValueChange`、`onDismissRequest`。只把具有明确通用预设或安全空态的选项变为可省略。
-3. `colors`、`shape`、`dark`、`textStyle`、`style` 等外观参数优先采用所属 `Defaults` 的默认配置；宿主显式传参始终优先。
-4. 保留现有底层 **Effect / Engine** 接口、Renderer、Backdrop、Shader、Shadow 与 Motion，允许宿主完全绕开组件直接使用，不依赖主题或包装器。
-5. 不添加全局隐式状态，不强制读取 `MaterialTheme`，也不将没有足够信息的背景采样/Shader 资源参数假装为安全默认值。
-6. 修改默认值不是改变现有组件绘制后端；不让简单调用与定制调用走两套算法。
+1. **`:coui` 是独立 Compose UI 库**：核心不直接或传递依赖 `androidx.compose.material3` 或 `androidx.compose.material` 组件，使用 Compose Runtime / UI / Foundation / Animation 和必要的 AndroidX 底层依赖。
+2. **库内自有 COUI 配色与外观预设**，不使用 MaterialTheme 时组件照常工作；系统深浅色是默认模式来源，不代表 Android 12 动态取色。
+3. **可选原生 `CouiTheme`** 只提供颜色、字体和 Shape 的上下文，不另建“简化组件”和“高级组件”两套 API。完全不要求调用者必须包裹 Theme。
+4. **可选 Material 3 桥接由核心模块以外承载**；仅宿主决定是否启用。不能用 `compileOnly(material3)`、反射或在核心中引用 Material 3 类型伪装为无依赖。
+5. 现有 `CouiSwitch`、`CouiSlider`、`CouiMenu`、`CouiBottomBar`、`CouiFab` 等名称、受控状态和高级自定义参数继续提供。支持省略有安全默认值的外观参数。
+6. 原有 Backdrop、Renderer、Shader、Shadow、Motion 等 Effect/Engine 可以直接独立使用，不必经过主题或组件。资源、窗口和失败前置条件不隐藏。
+7. **在迁移源码前维持现有绘制/交互效果**。不能把“使用 BasicText 替代 Material3 Text”与“视觉/行为已等价”混为一谈。
 
-现有接口参考：[组件目录](../components/README.md)、[效果目录](../effects/README.md)、[API 约定](api-design.md)和[架构](architecture.md)。
+## 二、建议逻辑结构（不是大规模模块拆分）
 
-## 对照 MIUIX 与 DialogX 后的取舍
+~~~text
+宿主（可使用 Material 3，也可以不用）
+   ├── 可选的 COUI 主题适配
+   │      └── coui-material3（薄桥接模块，可后续独立发行）
+   └── coui（唯一必需库）
+         ├── CouiTheme / CouiColorScheme / CouiPresets（库内）
+         ├── 原有全部 Coui 组件（同名、同一绘制实现）
+         └── 原有 Effect / Backdrop / Renderer / Motion（仍独立）
+~~~
 
-- [Compose MIUIX](https://github.com/compose-miuix-ui/miuix) 的 `Switch(checked, onCheckedChange, modifier = ..., colors = ..., enabled = ...)` 体现了在单个组件函数中放置明确默认值的思路。COUI-Kit 可以借鉴此点，**不必引入 MiuixTheme 式完整主题系统**。
-- [DialogX](https://github.com/kongzue/DialogX) 将常用配置设为可省略，使用者可继续深度定制；借鉴简化配置的原则，而不是复制其 View/全局窗口 API。
-- COUI 的优势是独立 Effect 与复杂动效，不能为了参数数量好看就隐去渲染前置条件。
+`coui-material3` 只是一个小的按需依赖，不表示现在就需要拆出所有组件或 Effect 模块。首轮可把 M3 配色映射原型留在 `demo` 中验证；规则稳定后再创建可发布的桥接模块。
 
-## 期望的调用方式
+### 原生 COUI 色彩令牌
 
-以下代码是**改造后的目标写法，当前 main 不保证可以编译**。
+建议使用最小的 `CouiColorScheme`：`accent`、`onAccent`、`surface`、`container`、`onSurface`、`onSurfaceVariant`、`outlineVariant` 等真实消费者需要的颜色；不照抄 M3 的全部角色。`CouiPresets.Light` 与 `CouiPresets.Dark` 来自核验过的 COUI 预设，区分“库默认配色”和“原厂原值”，不随意冒用原厂名称。
+
+文字与 Shape 可用各组件现有 Defaults 作为初始默认。暂不强制所有窗口、Dialog 文本改用全局 Typography；当前 `CouiDialogText` 本身就有独立的原厂排版策略。
+
+### 无 Theme、COUI Theme、Material 3 三种模式
 
 ~~~kotlin
-// 最常用的调用：业务状态与回调仍由宿主持有
-CouiSwitch(
-    checked = checked,
-    onCheckedChange = { checked = it },
-)
-CouiSlider(
-    value = value,
-    onValueChange = { value = it },
-)
+// 仅示意：直接使用库内的 COUI 预设
+CouiSwitch(checked = checked, onCheckedChange = onCheckedChange)
 
-// 同一个组件函数，按需覆盖原有参数
-CouiSlider(
-    value = value,
-    onValueChange = onValueChange,
-    dark = dark,
-    colors = customColors,
-    shape = customShape,
-    steps = 4,
-    showTickMarks = true,
+// 仅示意：可选的 COUI 原生主题
+CouiTheme(darkTheme = dark, colorScheme = customCouiColors) {
+    CouiSlider(value = progress, onValueChange = onProgressChange)
+}
+
+// 仅示意：可选 Material 3 适配模块；COUI 核心不读取 MaterialTheme
+MaterialTheme(colorScheme = appColors) {
+    CouiMaterial3Theme(darkTheme = dark) {
+        CouiSwitch(checked = checked, onCheckedChange = onCheckedChange)
+    }
+}
+~~~
+
+Material 3 适配模块只读取宿主当前的 `MaterialTheme.colorScheme`，转换为 COUI 的颜色令牌；若宿主自己启用动态色，COUI 才随之跟随。适配层不创建第二套组件，不强制用户更换应用主题，也不在核心内调用 `dynamicLightColorScheme` / `dynamicDarkColorScheme`。
+
+## 三、默认值和颜色决策优先级
+
+**显式组件参数 ＞ 当前有效的 COUI 主题令牌 ＞ COUI 自身 Light/Dark 预设**。
+
+- `dark` 未传：有 COUI Theme 时使用提供者的 `darkTheme`；否则使用 `isSystemInDarkTheme()` 的结果，避免读取 Material 3。
+- `colors` 未传：根据最终生效的深浅色和主题令牌生成对应组件的预设。一个组件显式指定 `dark = true`，但外层是浅色主题时，不能继续套用浅色主题的表面/前景；优先找同模式配色，缺失则回退到 COUI 对应模式的预设。
+- 显式传入 `colors`：完整尊重调用者，不因主题切换悄悄覆写。显式覆盖 `shape` / `style` 同理。
+- `Backdrop` / `Renderer` 属于资源所有权和平台前置条件，不能与颜色参数采用相同的无条件默认策略。
+- 宿主强制深浅色与系统深浅色不同，应以宿主显式的 `darkTheme` 或组件 `dark` 为准，不通过 `Color.luminance()` 猜测整个主题模式。
+
+### Kotlin 签名限制
+
+`CouiSwitch` 的 `dark` 在 `colors` 前面，可评估：
+
+~~~kotlin
+// 仅示意，需先完成 CouiTheme.isDark 和 Defaults 的实现
+dark: Boolean = CouiTheme.isDark,
+colors: CouiSwitchColors = CouiSwitchDefaults.colors(
+    accent = CouiTheme.colorSchemeFor(dark).accent,
+    dark = dark
 )
 ~~~
 
-不要求调用者首先包裹 `CouiTheme { ... }`。基础场景可用库内真实定义的 COUI 预设；宿主要使用动态主题色时仍可直接传自定义 Colors。
+**`CouiSlider` 当前却是 `colors` 在 `dark` 前面**，默认表达式不能引用后面的 `dark`。不应为此直接调换原公开参数顺序。可评估让 `colors: CouiSliderColors? = null` 明确代表“自动根据最终 dark 生成”，并在函数内部解析 `colors ?: CouiSliderDefaults.colors(...)`。这种 nullable 仅针对需要跨参数解析的配置，不能盲目把所有参数改成 null；要核对 Kotlin 元数据、Compose 默认参数桥接、已发布版本的二进制兼容及调用点。
 
-## 各组件参数建议
+## 四、迁出 Material 3 的真实代码范围
 
-| 组件（现有函数） | 继续必填 | 首批评估增加默认值 | 不可直接省略的原因或注意事项 |
+当前 `coui/build.gradle.kts` 存在 `implementation(libs.androidx.compose.material3)` 和 `implementation(libs.androidx.compose.material.icons.extended)`。下面五个源码文件直接引用了 Material 3：
+
+| 代码 | 目前 M3 依赖内容 | 拟议改法 | 重点验收 |
 | --- | --- | --- | --- |
-| `CouiSwitch` | `checked`、`onCheckedChange`（允许原有 `null` 表示外层接管） | `dark`、`colors` | 默认 `colors` 依赖深浅色和默认强调色，须确认配色来源；已有 `enabled`、`loading` 等默认值保留 |
-| `CouiSlider` | `value`、`onValueChange` | `dark`、`colors`、`shape` | 当前 `colors` **位于** `dark` 前面；需避免显式覆盖 `dark` 后颜色仍按系统模式生成 |
-| `CouiCheckbox` | `checked` | `shape`、`borderShape`、`colors` | 继续只是纯绘制组件；不擅自附加点击/无障碍 owner，宿主整行 `toggleable` 保持不变 |
-| `CouiAlertDialog` / `CouiInputDialog` | 关闭/确认回调、受控输入值等真实业务参数 | `dark`，其余继续使用现有默认值 | `confirmAction` 不应自动伪造；材质背景源和窗口策略必须符合原契约 |
-| `CouiMenu` | `expanded`、`items`、关闭与点击回调 | `style`（需要明确无主题预设来源） | 不能用空 Style 规避必需颜色、Shape；Popup 错误与输入行为不变 |
-| `CouiTopAppBarButton` | `onClick`、内容 | `style`（从真实 Defaults 构建） | 内部 Renderer 的现有默认实现与错误行为保持 |
-| `CouiFab` / `CouiBottomBar` / `CouiChipTabRow` | 状态/回调及必要渲染资源 | 稳定的颜色、Shape、可选外观配置；部分附件选项需单独评估 | `Backdrop` 是明确的采样来源，`Renderer` 有平台及资源生命周期约束，不为省参数就隐藏或传入虚构资源 |
+| `menu/CouiMenu.kt` | `Text`、`Icon`、`MenuDefaults.rememberDropdownMenuPopupPositionProvider`、`MenuAnchorPosition` | 文本改为 Foundation `BasicText`，图标改为 Foundation `Image`/Painter；菜单定位使用自己的 `PopupPositionProvider` | 锚点、RTL、屏幕边缘、IME、全窗口 Popup、子菜单 |
+| `navigation/CouiBottomBar.kt` | `Text`、`Icon` | `BasicText` 和矢量 `Image`，显式颜色与语义 | 图标 tint、字体度量、焦点和布局 |
+| `chip/CouiChipTab.kt` | `Text`、`LocalContentColor` | `BasicText`、独立的 `LocalCouiContentColor` | 自定义 icon slot 颜色传递、RTL |
+| `topappbar/CouiTopAppBarButton.kt` | `LocalContentColor`、`ProvideTextStyle`、`minimumInteractiveComponentSize` | 库内独立内容颜色/文字 Style 上下文；通过 Foundation/UI 实现等价触摸目标 | 40dp 外观、48dp 命中/布局、disabled 内容、外部 slot |
+| `topappbar/CouiTopAppBarSearch.kt` | `Text`、`Icon`、`LocalContentColor`、`ProvideTextStyle`，搜索图标 `Icons.Outlined.Search` | `BasicText`、矢量 `Image`、库内内容上下文；搜索图标改为可再分发的内置矢量 | 交互中段、placeholder、焦点和图标位置 |
 
-表格不是逐项修改许可。实施前必须检查每个参数的真实消费者、默认值是否能在不访问宿主私有状态的情况下正确确定，以及旧调用如何继续工作。
+`CouiDialogText.kt` 已使用 Foundation 的 `BasicText`，可作为排版处理参考，但不能直接复用其专用字体逻辑。
 
-## Kotlin 默认参数的实际规则
+**不能简单换掉 Material3 LocalContentColor / ProvideTextStyle 然后认为无行为变化**：外部在 Slot 中放 `Material3 Icon/Text` 的用户，过去依赖 M3 `CompositionLocal` 继承颜色和文字样式。核心独立以后应暴露 `LocalCouiContentColor` 或明确的样式令牌；使用者在 Slot 中主动读取或显式传 tint，M3 适配层再提供可选桥接。必须检查 Demo 和已有宿主的内容着色回归。
 
-- **优先**使用 `shape: Shape = CouiCapsuleShape`、`enabled: Boolean = true` 一类保持原参数类型不变的默认值。省略参数与显式传入同一个默认值应有相同结果。
-- **不等于全改 `? = null`**：`null` 应当有明确独立语义（如“由组件按当前 dark 计算配置”），而不是泛用占位符。优先使用非空默认值，避免额外判空、配置歧义和兼容风险。
-- **依赖顺序必须验证**：如 `CouiSlider(colors, dark, shape, ...)`，Kotlin 的默认表达式不能引用后面才声明的 `dark`。不能为了默认值随意调换公开参数顺序，或让颜色默认值与显式 `dark` 不一致。必要时可在内部延迟求默认颜色；涉及 `colors` 的 nullable 改造须单独审核兼容性。
-- **预设来源要明确**：库目前没有统一的全局强调色/主题。需要决定一个有来源的库内默认强调色及深浅色策略。默认跟随系统深浅色不等于自动跟随宿主强制主题。不要在设计中引用不存在的 `CouiDefaults.defaultAccent` 或宣称已经支持 M3 动态配色。
-- 为 Compose 函数新增默认参数，仍需检查旧二进制调用、默认参数桥接、Kotlin 命名参数、`@Composable` 编译器签名以及跨版本消费。只看到普通 JVM 参数类型不变不足以证明所有调用完全兼容。
-- **不要删除高级配置能力**：原参数的类型与行为尽量保留，现有 `Defaults` 工厂、Effect 调用和自定义 Shader/Renderer 路径必须继续可用。
+`MenuDefaults` 的定位器不是纯装饰：当前 `CouiMenuMotionPositionProvider` 接受通用 `PopupPositionProvider`，可以替换委托实现，但需要真实设备回归，禁止仅凭构建成功断言等价。M3 的 `minimumInteractiveComponentSize` 也不能直接等同 `sizeIn(48.dp)`，须核查实际布局尺寸和可触摸区域。
 
-## Backdrop / Renderer 特别边界
+源码替换完成、通过测试后，才删除核心 `build.gradle.kts` 中的 M3 与 Extended Icons 依赖。Demo 仍可保留 Material 3，作为桥接示例和独立依赖边界验证者。
 
-`CouiBackdrop` 需要显式采样源，消费者必须位于源之外。调用方可能有多层背景、跨 Window Dialog、不同 Renderer 生命周期或 Shader 失败处理。
+## 五、实施和验收顺序
 
-因此**本轮不新增 `CouiBackdropHost`，也不把必需的 `Backdrop`/`Renderer` 一律设为 `null`**。先简化没有资源归属歧义的外观参数；以后若能证明组件可以安全持有独立 Renderer，再独立评审该参数的默认创建与释放。公开底层 Effect 的权限不因组件参数默认化而减少。
+1. **P0：清理核心 M3 使用点**：先实现保真的文本/图标、弹出菜单位置、内容局部样式和触摸目标，验证后移除依赖。核实当前与新版本的菜单、文字、图标、手势没有行为回退。
+2. **P1：COUI 原生预设和最小颜色令牌**：库外没有 M3 时，Switch/Slider/Checkbox 可以只传业务状态；建立并验证深浅色默认值，不复制 M3 完整主题系统。
+3. **P1：可选 COUI 主题和 Component Defaults**：为真实有需求的组件补默认参数；不添加新同名高级/便捷重载；保留全参数自定义与独立 Effect。
+4. **P1：Material 3 薄桥接**：先在 Demo 验证从 `MaterialTheme` 到 COUI Tokens 的映射，确认混用文本及动态色后，按需发行 `coui-material3`。
+5. **P2：测试与发布**：在无 Material 3 的独立消费者工程中验证 `:coui` 的 Release RuntimeClasspath 不含 M3/Material；在有 M3 的消费者验证可选桥接。还要覆盖显式 `dark` 覆盖、重组、配置切换、组合槽、R8、菜单 RTL/IME、Shader 资源失败和已有高自定义 Effect。
 
-## 实施优先级与验收
+不在本设计任务实施 Gradle 模块拆分、组件重写、KMP 或 GPU 性能优化。实现仍须独立 PR、设备与消费者验证。
 
-1. **A：Switch / Slider / Checkbox 的外观参数默认化**。先确定默认色与暗色策略，核对原有参数顺序、调用点与新的省略调用；尽量只改签名及内部默认参数解析，不写重复绘制逻辑。
-2. **B：Dialog、Menu、TopAppBarButton 的默认配置**。保留业务回调和 Window/Popup 输入语义；不让默认配置隐藏材料/键盘/跨窗口的错误。
-3. **C：FAB、BottomBar、ChipTab 的更多外观选项**。关注多主体和可选附件，不急于省略 Renderer/Backdrop。
-4. 每阶段同时验证：原有显式全参数调用、只写必需参数调用、部分参数覆盖、系统深浅色和宿主强制深浅色、语义/交互、设备与 R8 消费者构建，以及底层 Effect 单独使用。
-
-**暂不实施**：新组件层级、便捷包装重载、`CouiTheme`/`CouiAppearance`、`CouiBackdropHost`、模块拆分、KMP、全面性能重构。本提案只涉及设计，不表示以上接口变更已经完成。
+参考：[Android 自定义 Compose 设计系统](https://developer.android.com/develop/ui/compose/designsystems/custom)、[Compose 主题结构](https://developer.android.com/develop/ui/compose/designsystems/anatomy)、[Compose Text](https://developer.android.com/develop/ui/compose/text)。
