@@ -23,6 +23,9 @@ data class CouiColorScheme(
     val onSurfaceVariant: Color,
     val outlineVariant: Color,
     val accentOnSurface: Color = accent,
+    val menuSurface: Color = container,
+    val checkboxAccent: Color = accent,
+    val menuCheckboxAccent: Color = accentOnSurface,
 )
 
 /** Theme.COUI 的蓝色强调色与中性表面；不读取壁纸动态色。 */
@@ -33,7 +36,7 @@ object CouiPresets {
         Color(0xE6FFFFFF), Color(0x8AFFFFFF), Color(0x33FFFFFF), Color(0xFF5C9DFF))
 }
 
-/** 普通内容的字体预设；Dialog 保留自己的系统字体与行距策略。 */
+/** 普通内容预设及可选字体族；Dialog 保留字号与行距，M3 仅适配字体族，native 保留系统字体。 */
 @Immutable
 data class CouiTypography(
     val body: TextStyle = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 16.sp, fontWeight = FontWeight.Normal,
@@ -43,41 +46,56 @@ data class CouiTypography(
         platformStyle = PlatformTextStyle(includeFontPadding = true)),
     val menuItem: TextStyle = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 15.sp, fontWeight = FontWeight.Normal,
         platformStyle = PlatformTextStyle(includeFontPadding = true)),
+    val chipLabelFontFamily: FontFamily? = null,
+    val dialogTitleFontFamily: FontFamily? = null,
+    val dialogMessageFontFamily: FontFamily? = null,
+    val dialogButtonFontFamily: FontFamily? = null,
+    val dialogInputFontFamily: FontFamily? = null,
+    val dialogCounterFontFamily: FontFamily? = null,
 )
 
 private data class CouiThemeValues(val dark: Boolean, val colors: CouiColorScheme,
     val typography: CouiTypography, val materialTint: Color)
 
 private val LocalCouiTheme = staticCompositionLocalOf<CouiThemeValues?> { null }
+/** 宿主已知的主题模式；嵌套 MaterialTheme 改变模式时也应在同一作用域提供。 */
+val LocalCouiDarkTheme = staticCompositionLocalOf<Boolean?> { null }
 val LocalCouiContentColor = staticCompositionLocalOf { Color(0xE6000000) }
 val LocalCouiTextStyle = staticCompositionLocalOf { CouiTypography().body }
 
 object CouiTheme {
     val isDark: Boolean
-        @Composable get() = LocalCouiTheme.current?.dark ?: isSystemInDarkTheme()
+        @Composable get() = LocalCouiDarkTheme.current ?: isSystemInDarkTheme()
     val colorScheme: CouiColorScheme
         @Composable get() = colorSchemeFor(isDark)
     val typography: CouiTypography
-        @Composable get() = LocalCouiTheme.current?.typography ?: CouiTypography()
+        @Composable get() = LocalCouiTheme.current?.typography ?: Coui.defaultStyle.themeDefaults(isDark).typography
 
     /** 组件覆盖深浅色时，不复用另一模式的宿主色板。 */
     @Composable
-    fun colorSchemeFor(dark: Boolean): CouiColorScheme =
-        LocalCouiTheme.current?.takeIf { it.dark == dark }?.colors ?: if (dark) CouiPresets.Dark else CouiPresets.Light
+    fun colorSchemeFor(dark: Boolean): CouiColorScheme {
+        val local = LocalCouiTheme.current
+        if (local != null) return if (local.dark == dark) local.colors else if (dark) CouiPresets.Dark else CouiPresets.Light
+        return if (dark == isDark) Coui.defaultStyle.themeDefaults(dark).colorScheme
+            else if (dark) CouiPresets.Dark else CouiPresets.Light
+    }
 
     /** 透明表示不做额外页面色相染色；显式材质配置始终由调用方负责。 */
     @Composable
-    fun materialTintFor(dark: Boolean): Color =
-        LocalCouiTheme.current?.takeIf { it.dark == dark }?.materialTint ?: Color.Transparent
+    fun materialTintFor(dark: Boolean): Color {
+        val local = LocalCouiTheme.current
+        if (local != null) return if (local.dark == dark) local.materialTint else Color.Transparent
+        return if (dark == isDark) Coui.defaultStyle.themeDefaults(dark).materialTint else Color.Transparent
+    }
 }
 
 /**
  * 可选外观上下文。materialTint 默认为透明；Material 宿主可显式传入页面表面色启用项目染色。
- * 不提供主题时，组件按系统深浅色使用原生预设。业务状态及资源生命周期仍由原接口管理。
+ * 不提供主题时使用初始化策略，未初始化则使用原生预设。业务状态及资源生命周期仍由原接口管理。
  */
 @Composable
 fun CouiTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = CouiTheme.isDark,
     colorScheme: CouiColorScheme = if (darkTheme) CouiPresets.Dark else CouiPresets.Light,
     typography: CouiTypography = CouiTypography(),
     materialTint: Color = Color.Transparent,
@@ -85,13 +103,11 @@ fun CouiTheme(
 ) {
     CompositionLocalProvider(
         LocalCouiTheme provides CouiThemeValues(darkTheme, colorScheme, typography, materialTint),
-        LocalCouiContentColor provides colorScheme.onSurface,
-        LocalCouiTextStyle provides typography.body,
-        content = content,
-    )
+        LocalCouiDarkTheme provides darkTheme,
+    ) { ProvideCouiContent(colorScheme.onSurface, typography.body, mergeTextStyle = false, content = content) }
 }
 
 @Composable
 internal fun ProvideCouiTextStyle(style: TextStyle, content: @Composable () -> Unit) {
-    CompositionLocalProvider(LocalCouiTextStyle provides LocalCouiTextStyle.current.merge(style), content = content)
+    ProvideCouiContent(textStyle = style, content = content)
 }

@@ -17,7 +17,7 @@ CouiMenu(
 )
 ~~~
 
-需要采样页面背景时，把菜单调用放在[背景材质 Provider](#使用背景材质)的 `ProvideCouiMenuBackdrop` 内容中；默认样式不会创建背景源。样式默认使用 `CouiMenuDefaults.style()`，显式传入的样式仍优先。未设置页面染色时，默认 `themeTint` 为透明，不叠加页面色相。通用主题规则见[外观与预设](../guide/appearance.md)。
+需要采样页面背景时，把菜单调用放在[背景材质 Provider](#使用背景材质)的 `ProvideCouiMenuBackdrop` 内容中；默认样式不会创建背景源。样式默认使用 `CouiMenuDefaults.style()`，显式传入的样式仍优先。原生默认 `themeTint` 透明；M3 适配取 host surface，显式透明可关闭。通用主题规则见[外观与预设](../guide/appearance.md)。
 
 ## 显示一个菜单
 
@@ -178,6 +178,8 @@ fun rememberMenuStyle(
 ~~~
 
 `radius` 要和 `shape` 的半径一致。菜单没有默认高度上限；长菜单可以在 `CouiMenu` 的 `modifier` 中传入 `Modifier.heightIn(max = 320.dp)`，让它在限定高度内滚动。子菜单会按窗口高度限制。
+
+新样式建议在末尾传 `dark = dark`。默认工厂已填实际模式，主菜单与子菜单的文字、材质、阴影和反馈共同使用它。旧完整 Style 未填模式时保留原 surface 亮度判定；自动 M3 默认值不会猜色板模式。M3 模糊补底取 surface，无 Backdrop 的容器取 surfaceBright；selected 取 primary，checkbox 深色取 inversePrimary。
 
 ## 兼容性和滚动
 

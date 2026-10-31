@@ -20,7 +20,6 @@ import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -47,7 +46,7 @@ internal fun couiMenuMaterial(
     parentTouchMotion: CouiTouchMotion? = null,
 ): CouiMenuMaterial {
     val surface = LocalCouiMenuStyle.current.colors.surface
-    val dark = surface.luminance() < 0.5f
+    val dark = LocalCouiMenuStyle.current.isDark
     // 固定使用 COUI RoundFrameLayout 的普通材质模式 4, 不按 HDR 状态切换。
     val mix = if (dark) Color(0x99262626) else Color(0x99CDCDCD)
     val blend = if (dark) Color(0x99262626) else Color(0xBFEEEEEE)

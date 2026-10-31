@@ -12,11 +12,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import com.itos.coui.theme.LocalCouiContentColor as LocalContentColor
-import com.itos.coui.theme.ProvideCouiTextStyle as ProvideTextStyle
-import androidx.compose.ui.layout.layout
+import com.itos.coui.theme.Coui
+import com.itos.coui.theme.ProvideCouiContent
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,7 +37,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import kotlin.math.roundToInt
 import com.itos.coui.effect.CouiFloatingRenderer
 import com.itos.coui.effect.CouiFloatingSurface
 import com.itos.coui.effect.SpotlightPreset
@@ -82,15 +79,7 @@ fun CouiTopAppBarButton(
     val contentColor = style.contentColor
     Box(
         modifier
-            .layout { measurable, constraints ->
-                val placeable = measurable.measure(constraints)
-                val width = maxOf(placeable.width, 48.dp.roundToPx())
-                val height = maxOf(placeable.height, 48.dp.roundToPx())
-                layout(width, height) {
-                    placeable.place(((width - placeable.width) / 2f).roundToInt(),
-                        ((height - placeable.height) / 2f).roundToInt())
-                }
-            }
+            .then(Coui.defaultStyle.minimumInteractiveComponentSize())
             .then(if (text) Modifier.widthIn(min = 60.dp).height(40.dp) else Modifier.size(40.dp))
             .onSizeChanged { boundsSize = it }
             .drawWithCache {
@@ -155,11 +144,10 @@ fun CouiTopAppBarButton(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            CompositionLocalProvider(
-                LocalContentColor provides if (enabled) contentColor else contentColor.copy(alpha = contentColor.alpha * 0.38f),
-            ) {
-                ProvideTextStyle(style.textStyle) { content() }
-            }
+            ProvideCouiContent(
+                color = if (enabled) contentColor else contentColor.copy(alpha = contentColor.alpha * 0.38f),
+                textStyle = style.textStyle,
+            ) { content() }
         }
     }
 }

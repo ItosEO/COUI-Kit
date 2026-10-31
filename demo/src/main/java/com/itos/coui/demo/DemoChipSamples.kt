@@ -31,7 +31,6 @@ import com.itos.coui.menu.CouiMenu
 import com.itos.coui.menu.CouiMenuItem
 import com.itos.coui.menu.couiMenuAnchor
 import com.itos.coui.menu.rememberCouiMenuAnchor
-import com.itos.coui.theme.LocalCouiContentColor
 
 @Composable
 internal fun ChipTabSample(dark: Boolean) {
@@ -72,7 +71,7 @@ private fun ChipTabMaterialSample(dark: Boolean) {
         CouiChipTabRow(
             modifier = Modifier.fillMaxWidth(),
             items = labels.mapIndexed { index, label ->
-                CouiChipTabItem(index, label, icon = { Icon(Icons.Default.Tune, null, tint = LocalCouiContentColor.current) })
+                CouiChipTabItem(index, label, icon = { Icon(Icons.Default.Tune, null) })
             },
             selectedKey = selected, onSelectedKeyChange = { selected = it as Int }, backdrop = backdrop, dark = dark,
             enabled = enabled, itemSpacing = 8.dp, renderers = renderers,
@@ -84,7 +83,7 @@ private fun ChipTabMaterialSample(dark: Boolean) {
                             onClick = { anchor.open { categoriesOpen = true } },
                             contentDescription = stringResource(R.string.chip_categories), backdrop = backdrop,
                             dark = dark, enabled = enabled && showIconButton, renderer = buttonRenderer) {
-                            Icon(Icons.Default.Tune, null, tint = LocalCouiContentColor.current)
+                            Icon(Icons.Default.Tune, null)
                         }
                         CouiMenu(expanded = categoriesOpen, onDismissRequest = { categoriesOpen = false },
                             anchor = anchor, style = demoMenuStyle(dark), headerText = stringResource(R.string.chip_categories),

@@ -17,7 +17,7 @@ CouiChipTabRow(
 )
 ~~~
 
-`dark` 默认跟随可选的 `CouiTheme`，没有主题时跟随系统。通用主题规则见[外观与预设](../guide/appearance.md)。
+`dark` 默认跟随 `LocalCouiDarkTheme` 或系统；局部 `CouiTheme` 会提供自身模式。通用主题规则见[外观与预设](../guide/appearance.md)。
 
 ## 显示一个分类栏
 
@@ -72,7 +72,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Icon
 import com.itos.coui.chip.CouiChipTabButton
-import com.itos.coui.theme.LocalCouiContentColor
 
 CouiChipTabRow(
     modifier = modifier.fillMaxWidth(),
@@ -86,19 +85,20 @@ CouiChipTabRow(
             contentDescription = categoriesLabel,
             backdrop = backdrop,
         ) {
-            Icon(Icons.Default.Menu, contentDescription = null,
-                tint = LocalCouiContentColor.current)
+            Icon(Icons.Default.Menu, contentDescription = null)
         }
     },
     leadingActionVisible = categoriesVisible,
 )
 ~~~
 
-`onOpenCategories`、`categoriesLabel` 和 `categoriesVisible` 由页面提供。需要退出动画时，保留 `leadingAction` 的内容，只切换 `leadingActionVisible`。M3 `Icon` 不读取 COUI 内容色，因此示例显式使用 `LocalCouiContentColor.current`。应用需要声明示例使用的 Material3 和图标依赖。
+`onOpenCategories`、`categoriesLabel` 和 `categoriesVisible` 由页面提供。需要退出动画时，保留 `leadingAction` 的内容，只切换 `leadingActionVisible`。示例假定已接入可选 M3 适配，ChipSurface 自动同步最终内容色，M3 `Icon` 可直接继承；leadingAction 本身只转发内容。应用需要声明示例使用的 Material3 和图标依赖。
 
 ## 文字、间距和动画
 
 可以通过 `textStyle` 和 `contentColor` 修改文字样式与颜色。`itemSpacing` 控制分类间距；`animationLevel` 从 1 到 4，1 的动画最明显，4 最弱。
+
+M3 自动模式仅从 labelLarge 接入字体族，保留 Chip 的原字号、字重和排版。显式 textStyle 仍完整生效，图标显式 tint 优先。
 
 每个分类项和独立图标按钮各自持有单主体 renderer。显式传 `renderers` 时，数量要和 `items` 一致，实例不能重复。
 

@@ -15,7 +15,6 @@ import androidx.compose.ui.geometry.isFinite
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.shadow.Shadow
@@ -46,7 +45,7 @@ internal fun rememberCouiMenuShadow(
     clipTop: Float = 0f,
     clipHeight: Float = Float.POSITIVE_INFINITY,
 ): CouiMenuShadow {
-    val dark = LocalCouiMenuStyle.current.colors.surface.luminance() < 0.5f
+    val dark = LocalCouiMenuStyle.current.isDark
     val child = parentTouchMotion != null
     if (Build.VERSION.SDK_INT < 34) {
         // shortcut: 旧平台保留局部 Compose 投影; 公开 Mesh 可用后才承接原厂 LV4。

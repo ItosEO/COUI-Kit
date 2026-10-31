@@ -94,6 +94,7 @@ import com.itos.coui.motion.couiTouchMotion
 import com.itos.coui.motion.rememberCouiPressMotion
 import com.itos.coui.motion.rememberCouiTouchMotion
 import com.itos.coui.theme.CouiTheme
+import com.itos.coui.theme.ProvideCouiContent
 import com.itos.coui.topappbar.CouiTopAppBarButtonDefaults
 import com.itos.coui.shape.CouiCapsuleShape
 
@@ -365,8 +366,10 @@ fun CouiBottomBar(
                                     Icon(modifier = Modifier.size(24.dp), imageVector = if (isSelected) item.selectedIcon else item.icon,
                                         contentDescription = null, tint = foreground)
                                     Spacer(Modifier.height(2.dp))
-                                    Text(text = item.title, color = foreground.copy(alpha = if (isSelected) 230f / 255f else 184f / 255f), fontSize = 10.sp,
-                                        lineHeight = 12.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    ProvideCouiContent {
+                                        Text(text = item.title, color = foreground.copy(alpha = if (isSelected) 230f / 255f else 184f / 255f), fontSize = 10.sp,
+                                            lineHeight = 12.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    }
                                 }
                             }
                         }

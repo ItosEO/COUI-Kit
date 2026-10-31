@@ -130,7 +130,9 @@ fun PageBottomBar(
 
 ## 配色和形状
 
-`themeTint` 默认使用与 `dark` 匹配的 `CouiTheme` `materialTint`，其默认值为透明；原生宿主或没有匹配主题时也为透明。显式传入颜色时会按该颜色染色。`lightColor` 用于高光；`circleShape` 和 `capsuleShape` 分别控制两侧按钮和中间导航栏的形状。
+`themeTint` 默认读取匹配模式的主题策略：原生为透明，M3 适配为宿主 surface，仅进入已有页面色相层。显式透明关闭染色；异模式自动回退也为透明。显式传入其他颜色时按该颜色染色。`lightColor` 用于高光；`circleShape` 和 `capsuleShape` 分别控制两侧按钮和中间导航栏的形状。
+
+M3 适配下，自有文字继承宿主 ambient 字体属性，同时保留底栏自己的字号、行高与字重。附件图标仍遵守各自配色契约。
 
 底栏使用三主体 renderer：`CouiFloatingRenderer()`。每个底栏需要独立实例，不能使用 `standalone()`。
 

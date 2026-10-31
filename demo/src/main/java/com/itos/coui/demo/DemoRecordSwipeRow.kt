@@ -61,7 +61,7 @@ private val RecordSwipeActionSpacing = 2.dp
 private val RecordDeleteActionSize = 44.dp
 private val RecordDeleteCommitStretch = 54.dp
 
-/** Demo 侧滑装配沿用 Metric 的手势与位移链路, 不进入 COUI 库。 */
+/** 侧滑手势与位移由 Demo 装配，不进入 COUI 库。 */
 @RequiresApi(33)
 @Composable
 internal fun DemoRecordSwipeRow(

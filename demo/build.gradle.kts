@@ -71,6 +71,7 @@ android {
 
 dependencies {
     implementation(project(":coui"))
+    implementation(project(":coui-material3"))
     implementation(libs.capsule)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

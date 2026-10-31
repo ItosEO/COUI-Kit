@@ -14,10 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
-import com.itos.coui.theme.LocalCouiContentColor as LocalContentColor
+import com.itos.coui.theme.ProvideCouiContent
 import com.itos.coui.theme.CouiText as Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -77,7 +76,7 @@ fun CouiChipTab(
     enabled: Boolean = true,
     icon: (@Composable () -> Unit)? = null,
     contentColor: Color = CouiChipTabDefaults.contentColor(dark, enabled),
-    textStyle: TextStyle = CouiChipTabDefaults.textStyle,
+    textStyle: TextStyle = CouiChipTabDefaults.themeTextStyle(),
     contourGlowEnabled: Boolean = LocalCouiContourGlowEnabled.current,
     renderer: CouiFloatingRenderer = remember { CouiFloatingRenderer.standalone() },
 ) {
@@ -90,6 +89,7 @@ fun CouiChipTab(
         enabled = enabled,
         iconOnly = false,
         contentColor = contentColor,
+        textStyle = textStyle,
         contour = contourGlowEnabled,
         renderer = renderer,
     ) {
@@ -140,6 +140,7 @@ private fun ChipSurface(
     enabled: Boolean,
     iconOnly: Boolean,
     contentColor: Color,
+    textStyle: TextStyle? = null,
     contour: Boolean,
     renderer: CouiFloatingRenderer,
     content: @Composable RowScope.() -> Unit,
@@ -215,7 +216,7 @@ private fun ChipSurface(
             horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            CompositionLocalProvider(LocalContentColor provides contentColor) { content() }
+            ProvideCouiContent(color = contentColor, textStyle = textStyle) { content() }
         }
     }
 }

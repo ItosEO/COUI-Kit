@@ -28,7 +28,7 @@ fun PageFab(
 }
 ~~~
 
-省略颜色时，底色取 COUI 强调色，阴影颜色从 `material.firstColor` 取得。默认强调色本身可以有颜色，但这不表示启用了 Material 页面染色；FAB 不叠加菜单式 `themeTint`。通用主题规则见[外观与预设](../guide/appearance.md)；强调色生成策略（包括 HCT）由宿主负责。
+省略 material 时，底色取 COUI 强调色，内容色取 `onAccent`；省略 shadow 时，阴影颜色从最终 `material.firstColor` 取得。显式 material 保留宿主 ambient 内容色，子内容的显式颜色继续优先。默认强调色本身可以有颜色，但这不表示启用了 Material 页面染色；FAB 不叠加菜单式 `themeTint`。通用主题规则见[外观与预设](../guide/appearance.md)；强调色生成策略（包括 HCT）由宿主负责。
 
 ## 使用显式配色预设
 
@@ -109,7 +109,7 @@ CouiFab(
 
 ## 图标和轮廓光
 
-FAB 不会修改图标颜色，使用图标时请根据底色设置 `tint`。示例使用 `CouiShape` 创建圆形，也可以传入自己的 Shape。
+启用 M3 适配后，省略材质的 FAB 会向 M3 图标提供主题 `onAccent`。显式材质保持 ambient 内容色；预设或自定义底色可显式设置 `tint`。示例使用 `CouiShape` 创建圆形，也可以传入自己的 Shape。
 
 `CouiFabColor` 和 `CouiFabDefaults` 保留显式的有色预设。使用自定义颜色时，请让材质与阴影共用同一最终颜色。
 

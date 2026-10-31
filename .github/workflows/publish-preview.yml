@@ -54,54 +54,19 @@ jobs:
           commit=$(git rev-parse --short=12 HEAD)
           echo "name=${base%-SNAPSHOT}-$commit-SNAPSHOT" >> "$GITHUB_OUTPUT"
           echo "group=$(sed -n 's/^GROUP=//p' gradle.properties)" >> "$GITHUB_OUTPUT"
-          echo "artifact=$(sed -n 's/^POM_ARTIFACT_ID=//p' gradle.properties)" >> "$GITHUB_OUTPUT"
       - name: 构建本地 Maven 产物
         env:
           PACKAGE_VERSION: ${{ steps.version.outputs.name }}
         run: |
           set -euo pipefail
-          ./gradlew :coui:publishAllPublicationsToLocalRepository \
+          ./gradlew :coui:publishAllPublicationsToLocalRepository :coui-material3:publishAllPublicationsToLocalRepository \
             "-PVERSION_NAME=$PACKAGE_VERSION" --no-configuration-cache --stacktrace \
             2>&1 | tee "$RUNNER_TEMP/coui-publish-build.log"
       - name: 检查发行文件与传递依赖
         env:
           PACKAGE_GROUP: ${{ steps.version.outputs.group }}
-          PACKAGE_ARTIFACT: ${{ steps.version.outputs.artifact }}
           PACKAGE_VERSION: ${{ steps.version.outputs.name }}
-        run: |
-          node <<'NODE'
-          const assert = require('node:assert/strict');
-          const fs = require('node:fs');
-          const path = require('node:path');
-          const { execFileSync } = require('node:child_process');
-          const { PACKAGE_GROUP: group, PACKAGE_ARTIFACT: artifact, PACKAGE_VERSION: version } = process.env;
-          const dir = path.join('coui/build/repository', group.replaceAll('.', '/'), artifact, version);
-          const modules = fs.readdirSync(dir).filter(name => name.endsWith('.module'));
-          assert.equal(modules.length, 1, '应只生成一个库 publication');
-          const stem = modules[0].slice(0, -'.module'.length);
-          const file = suffix => path.join(dir, stem + suffix);
-          for (const suffix of ['.aar', '.pom', '.module', '-sources.jar', '-javadoc.jar']) {
-            assert(fs.statSync(file(suffix)).size > 0, `缺少有效发行文件: ${suffix}`);
-          }
-          const metadata = JSON.parse(fs.readFileSync(file('.module'), 'utf8'));
-          assert.equal(metadata.component.group, group);
-          assert.equal(metadata.component.module, artifact);
-          assert.equal(metadata.component.version, version);
-          const dependencies = metadata.variants.flatMap(variant => variant.dependencies ?? []);
-          assert(dependencies.some(dep => dep.group === 'androidx.compose' && dep.module === 'compose-bom-alpha'), '缺少 Compose BOM');
-          assert(dependencies.some(dep => dep.group === 'androidx.dynamicanimation' && dep.module === 'dynamicanimation' && dep.version?.strictly), '丢失动画严格版本约束');
-          assert(!dependencies.some(dep => dep.module === 'demo' || dep.module === 'capsule'), '发行依赖包含 Demo 装配');
-          const entries = suffix => execFileSync('unzip', ['-Z1', file(suffix)], { encoding: 'utf8' }).split('\n');
-          assert(entries('.aar').includes('classes.jar'), 'AAR 缺少 classes.jar');
-          assert(entries('-sources.jar').some(name => name.endsWith('/CouiSlider.kt')), '源码包缺少库源码');
-          assert(entries('-javadoc.jar').includes('index.html'), 'API 文档包没有生成 HTML');
-          for (const suffix of ['-sources.jar', '-javadoc.jar']) {
-            for (const notice of ['LICENSE', 'NOTICE', 'TRADEMARKS.md', 'coui-skia-LICENSE']) {
-              assert(entries(suffix).includes(`META-INF/coui/${notice}`), `${suffix} 缺少声明: ${notice}`);
-            }
-          }
-          console.log(`发行产物检查通过: ${group}:${artifact}:${version}`);
-          NODE
+        run: node .github/scripts/verify-maven-artifacts.cjs
       - name: 上传到 GitHub Packages
         env:
           PACKAGE_VERSION: ${{ steps.version.outputs.name }}
@@ -109,35 +74,37 @@ jobs:
           ORG_GRADLE_PROJECT_GitHubPackagesPassword: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          ./gradlew :coui:publishAllPublicationsToGitHubPackagesRepository \
+          ./gradlew :coui:publishAllPublicationsToGitHubPackagesRepository :coui-material3:publishAllPublicationsToGitHubPackagesRepository \
             "-PVERSION_NAME=$PACKAGE_VERSION" --no-configuration-cache --stacktrace \
             2>&1 | tee "$RUNNER_TEMP/coui-publish-upload.log"
       - name: 确认远端版本可读取
         env:
           PACKAGE_GROUP: ${{ steps.version.outputs.group }}
-          PACKAGE_ARTIFACT: ${{ steps.version.outputs.artifact }}
           PACKAGE_VERSION: ${{ steps.version.outputs.name }}
           PACKAGE_USER: ${{ github.actor }}
           PACKAGE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           group_path=${PACKAGE_GROUP//./\/}
-          curl --fail --silent --show-error --retry 3 \
-            --user "$PACKAGE_USER:$PACKAGE_TOKEN" \
-            "https://maven.pkg.github.com/itoseo/COUI-Kit/$group_path/$PACKAGE_ARTIFACT/$PACKAGE_VERSION/maven-metadata.xml" \
-            --output "$RUNNER_TEMP/coui-published-metadata.xml"
-          grep -Fq "<version>$PACKAGE_VERSION</version>" "$RUNNER_TEMP/coui-published-metadata.xml"
+          for artifact in coui coui-material3; do
+            metadata="$RUNNER_TEMP/$artifact-published-metadata.xml"
+            curl --fail --silent --show-error --retry 3 \
+              --user "$PACKAGE_USER:$PACKAGE_TOKEN" \
+              "https://maven.pkg.github.com/itoseo/COUI-Kit/$group_path/$artifact/$PACKAGE_VERSION/maven-metadata.xml" \
+              --output "$metadata"
+            grep -Fq "<version>$PACKAGE_VERSION</version>" "$metadata"
+          done
       - name: 输出接入坐标
         env:
           PACKAGE_GROUP: ${{ steps.version.outputs.group }}
-          PACKAGE_ARTIFACT: ${{ steps.version.outputs.artifact }}
           PACKAGE_VERSION: ${{ steps.version.outputs.name }}
         run: |
           {
             echo '## COUI 预览版已发布'
             echo
             echo '```kotlin'
-            echo "implementation(\"$PACKAGE_GROUP:$PACKAGE_ARTIFACT:$PACKAGE_VERSION\")"
+            echo "implementation(\"$PACKAGE_GROUP:coui:$PACKAGE_VERSION\")"
+            echo "implementation(\"$PACKAGE_GROUP:coui-material3:$PACKAGE_VERSION\")"
             echo '```'
             echo
             echo "源码提交: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$GITHUB_SHA"
@@ -155,4 +122,5 @@ jobs:
             ${{ runner.temp }}/coui-publish-build.log
             ${{ runner.temp }}/coui-publish-upload.log
             coui/build/reports/**
+            coui-material3/build/reports/**
           retention-days: 14

@@ -1,12 +1,12 @@
 # 外观与预设
 
-直接调用 COUI 组件时，可以省略有预设的外观参数。组件默认跟随系统深浅色，使用库内的中性表面、文字与蓝色强调色。也可以用可选的 `CouiTheme` 统一配置外观，或继续逐个传入颜色、Style 和 Shape。
+组件可省略有默认值的外观参数，也可显式传入颜色、Style、Shape、材质和阴影。未初始化时使用原生 COUI 预设；可选 `coui-material3` 模块让默认值跟随宿主的 Material 3 主题。
 
-本文介绍当前源码中的主题与默认参数；发行版本的区别见[兼容要求](compatibility.md#原生主题与默认参数迁移)。
+本文对应当前源码。新模块与主题接口尚未包含在 Maven Central 的 alpha2 中，版本区别见[兼容要求](compatibility.md#原生主题与默认参数迁移)。Backdrop、Renderer、平台条件、资源释放和业务状态仍按各组件接口管理。
 
 ## 不配置主题
 
-在 Compose 内容中，`checked` 与 `onCheckedChange` 由宿主持有，开关不需要额外的主题装配：
+在 Compose 中直接使用原生默认值，`checked` 和回调由宿主持有：
 
 ~~~kotlin
 import com.itos.coui.switch.CouiSwitch
@@ -14,11 +14,15 @@ import com.itos.coui.switch.CouiSwitch
 CouiSwitch(checked = checked, onCheckedChange = onCheckedChange)
 ~~~
 
-底层 Effect 同样不要求 Theme。Backdrop、Renderer、所属窗口和平台条件仍按各自的接口提供。
+底层 Effect 不要求主题。原生主题使用中性表面、文字与 Theme.COUI 的蓝色强调色，不读取动态色。
 
-## 统一 COUI 配色
+## 接入 Material 3
 
-在宿主的 Compose 内容中，使用原生预设或复制其中的色彩角色：
+依赖、启动初始化和深浅模式配置见 [README：接入 Material 3](../../README.md#接入-material-3)。下文说明接入后的局部覆盖、字体、染色和内容作用域。
+
+## 局部原生或自定义外观
+
+`CouiTheme` 建立局部原生或自定义外观，退出后恢复外层策略。它同时提供自身模式。在全局使用 M3 适配时，局部主题仍桥接 M3 内容插槽。
 
 ~~~kotlin
 import androidx.compose.ui.graphics.Color
@@ -26,103 +30,54 @@ import com.itos.coui.theme.CouiPresets
 import com.itos.coui.theme.CouiTheme
 
 val colors = (if (dark) CouiPresets.Dark else CouiPresets.Light)
-    .copy(accent = Color(0xFF0080FF), accentOnSurface = Color(0xFF0080FF))
+    .copy(accent = Color(0xFF0080FF))
 CouiTheme(darkTheme = dark, colorScheme = colors) {
     content()
 }
 ~~~
 
-`dark` 和 `content` 由宿主提供。`CouiColorScheme` 区分控件强调色、表面内容和弹出表面上的强调色。原生深色预设中，这两种强调色对应不同原厂角色。`CouiTypography` 提供普通内容、标签与菜单项样式；菜单项采用 `DefaultAdapter.setTitle` 使用的 `couiTextBodyL` 角色，不能与旧名 `couiTextAppearanceBodyL` 混为同一字号。Dialog 保留自己的系统字体、行距与字体缩放策略。
+显式组件配置始终优先。存在局部 `CouiTheme` 时，模式匹配则使用它；不匹配则直接使用该模式的 native 预设与透明 tint，不再尝试全局策略。没有局部 `CouiTheme` 时，模式匹配则使用初始化策略，不匹配则回退到对应 native 预设与透明 tint。不会套用另一模式的宿主色板。完整显式 Style、颜色、Shape、材质和阴影由调用方负责匹配。
 
-颜色解析顺序为：显式组件参数 → 与最终深浅色匹配的 COUI Theme → 对应模式的原生预设。组件省略 `dark` 时先跟随 COUI Theme，没有 Theme 时跟随系统。如果组件显式指定了另一模式，则不复用外层的异模式色板或页面染色。显式传入的颜色与完整 Style 由调用方负责匹配，库不会再次覆盖。
+`CouiTypography` 管普通内容、标签、菜单项及可选字体族。Shape 仍由各组件 Defaults 提供，适配器不把 COUI 几何改成 M3。
 
-Shape 继续由各组件 Defaults 提供，也可通过现有参数或 Style 覆盖；主题不强制统一 Dialog、菜单和浮动表面的几何。
+## Material 颜色与字体角色
 
-## 接入 Material 3
+| COUI 用途 | M3 来源 |
+| --- | --- |
+| 强调色 / 强调色上的内容 | `primary` / `onPrimary` |
+| 菜单 selected | `primary` |
+| 普通与菜单 checkbox | 浅色 `primary`，深色 `inversePrimary` |
+| 表面、文字、次要文字、分隔线 | `surface`、`onSurface`、`onSurfaceVariant`、`outlineVariant` |
+| 菜单模糊补底 / 无 Backdrop 的容器 | `surface` / `surfaceBright` |
+| 普通内容与菜单项 / 标签 | `bodyLarge` / `labelLarge` |
 
-Material 3 适配由宿主完成，核心不依赖 Material 3 或 Material Icons。下面的函数可以放入已使用 M3 的宿主模块；它不创建动态色，宿主原先启用动态色时，映射结果才随之变化：
-
-~~~kotlin
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import com.itos.coui.theme.CouiColorScheme
-import com.itos.coui.theme.CouiTheme
-import com.itos.coui.theme.CouiTypography
-
-@Composable
-fun CouiMaterial3Theme(dark: Boolean, content: @Composable () -> Unit) {
-    val colors = MaterialTheme.colorScheme
-    CouiTheme(
-        darkTheme = dark,
-        colorScheme = CouiColorScheme(
-            accent = colors.primary, onAccent = colors.onPrimary,
-            surface = colors.surface, container = colors.surfaceBright,
-            onSurface = colors.onSurface, onSurfaceVariant = colors.onSurfaceVariant,
-            outlineVariant = colors.outlineVariant,
-        ),
-        typography = CouiTypography(
-            body = MaterialTheme.typography.bodyLarge,
-            label = MaterialTheme.typography.labelLarge,
-            menuItem = MaterialTheme.typography.bodyLarge,
-        ),
-        materialTint = colors.surface,
-        content = content,
-    )
-}
-~~~
-
-在宿主的 `MaterialTheme` 内调用此函数，并显式传入宿主的深浅色状态。当前提供 Demo 与宿主示例，尚无单独发行的 `coui-material3` 模块。
+Chip 保留原来的字号、字重与排版，只从 `labelLarge` 取字体族。Dialog 保留自己的字号、字重、行距和 fontScale 算法，仅从 `titleLarge`、`bodyMedium`、`labelLarge`、`bodyLarge`、`labelSmall` 分别取得标题、正文、按钮、输入与计数字体族。测量和绘制使用同一解析结果，并订阅异步字体变化。原生路径继续使用原系统字体策略。
 
 ## 菜单、底栏与 FAB 的染色
 
-原生 COUI 使用中性色材质，默认 `materialTint` 为透明。仅在外层放置 `MaterialTheme` 不会自动启用染色。上述适配示例显式提供页面表面色后，默认菜单 Style 和底栏会启用已有的额外页面色相染色；它保留材质亮度，不参与文字、图标或模糊采样。此效果是项目特化，不是原厂 COUI 默认材质。关闭额外染色后，背景采样仍会自然包含页面本身的色彩。
+原生默认 `materialTint` 透明，不增加页面色相层。M3 策略默认将宿主 `surface` 送入菜单与底栏已有的色相层；它保留材质亮度，不参与前景混色。这是项目适配。关闭色相层后，背景采样仍会自然包含页面颜色。
 
-FAB 与右侧附件另有语义底色。省略颜色时使用当前 COUI 强调色；原生为原厂蓝色，Material 适配后取宿主强调色。显式选择 `Notes`、`Phone` 等有色预设，或传入自定义材质时，保留调用方的选择。FAB 不自动叠加菜单的页面色相层。宿主已有的 HCT 取色仍由宿主执行，并将同一最终底色交给材质和投影。默认 FAB 投影从 `material.firstColor` 取色，避免两条链分别取色。
+关闭染色时，菜单使用 `CouiMenuDefaults.style().copy(themeTint = Color.Transparent)`，底栏显式传 `themeTint = Color.Transparent`。自定义局部 `CouiTheme` 也可提供自己的 `materialTint`；透明表示关闭。显式材质始终优先。
 
-只需关闭页面色相染色时，在适配函数中省略 `materialTint` 或传入 `Color.Transparent`。这不会关闭强调色，也不会取消原厂有色 FAB 预设。显式的 `CouiMenuStyle.themeTint`、`CouiBottomBar.themeTint` 和底层材质参数仍优先。
+默认 FAB 材质取强调色，阴影取最终 `material.firstColor`，不额外叠加页面 tint。省略材质时，内容色使用 `onAccent`；显式材质保留宿主 ambient 内容色。子图标的显式 tint 始终优先。有色预设和宿主 HCT 取色保留，见 [FAB](../components/fab.md)。底栏右附件图标按设计固定白色，包括自动底色路径，不能改为 `onAccent`。
 
-## M3 内容插槽迁移
+## 内容插槽与最小交互尺寸
 
-独立核心不再提供 M3 的 `LocalContentColor` 与 `LocalTextStyle`。在 COUI 按钮或 Chip 的插槽中使用 M3 `Icon/Text` 时，显式读取 COUI 内容上下文：
+启用 M3 策略后，顶栏按钮、搜索表面、Chip 和 FAB 在最终颜色与样式的位置同步 COUI 与 M3 内容 Local。插槽中的普通 M3 `Text`、`Icon` 可直接继承；宿主无需逐个传入 COUI Local。组件部分 TextStyle 按 M3 `ProvideTextStyle` 顺序与宿主 ambient 合并；`CouiTheme` 的完整基线则替换外层样式。禁用 alpha 在组件边界应用一次。子 Text 的显式颜色/样式、Icon tint 和内层 Local 保持优先。
 
-~~~kotlin
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import com.itos.coui.theme.LocalCouiContentColor
-import com.itos.coui.theme.LocalCouiTextStyle
+仅转发的顶栏 title、buttonGroup、Chip leadingAction 和 Dialog 自定义正文不会被强设新样式。BottomBar 自有文字继承宿主 ambient 字体属性，同时保留自己的字号、行高与字重。内部 `CouiText`、`CouiIcon`、`ProvideCouiTextStyle` 不作为公共组件。
 
-// 在 COUI 内容插槽中，icon、label 与 description 由宿主提供。
-Icon(icon, description, tint = LocalCouiContentColor.current)
-Text(label, color = LocalCouiContentColor.current, style = LocalCouiTextStyle.current)
-~~~
+顶栏按钮的 M3 路径使用真正的 `minimumInteractiveComponentSize()`，遵守宿主尺寸 Local 与 alignment lines；原生策略保留原最小布局占位规则。搜索按钮继续使用原固定容器。
 
-这会保留组件提供的禁用颜色与文字样式。宿主显式指定图标色或文字样式时，可以继续使用自己的值。根部 Material 主题映射不能代替每个插槽的内容上下文接线。
+未启用适配器而在纯 native 核心插槽中使用 M3 内容时，仍需自行桥接其内容 Local；更常见的做法是接入可选模块。
 
-## 选择预设
+## Shape 与效果开关
 
-| 场景      | 公开入口                                         |
-|---------|----------------------------------------------|
-| 滑条      | CouiSliderDefaults.colors                    |
-| 复选框     | CouiCheckboxDefaults.colors                  |
-| 顶栏按钮与搜索 | CouiTopAppBarButtonDefaults、CouiToolbarStyle |
-| FAB     | CouiFabColor、CouiFabDefaults                 |
-| ChipTab | CouiChipTabDefaults                          |
-| 普通阴影    | CouiShadowDefaults                           |
-| 融合跟随    | CouiSwipeRevealDefaults                      |
+[CouiShape](../../coui/src/main/java/com/itos/coui/shape/CouiShape.kt)和[CouiCapsuleShape](../../coui/src/main/java/com/itos/coui/shape/CouiCapsuleShape.kt)可被宿主 Shape 替换。材质距离场、内容 Path 和投影 Outline 有各自的几何要求，不能因圆角同名就互换。
 
-固定参数直接引用所属 Defaults。宿主覆盖的主题色与 Shape 是外观装配，不称为原厂默认。顶栏强度、搜索收起行为和菜单组合光效含已有项目适配，具体用法见各组件页。
+顶栏使用 `CouiToolbarStyle`，菜单使用 `CouiMenuStyle`。菜单默认工厂填入实际 `dark`；手写旧完整 Style 未填模式时才保留原 surface 亮度判定。新自动主题不走猜色路径。
 
-FAB 的最终底色同时用于 material 与 shadow；分别再次取色会造成材质和阴影不一致，示例见 [FAB](../components/fab.md)。
-
-## Shape 与样式对象
-
-[CouiShape](../../coui/src/main/java/com/itos/coui/shape/CouiShape.kt)接受半径与角权重，[CouiCapsuleShape](../../coui/src/main/java/com/itos/coui/shape/CouiCapsuleShape.kt)提供胶囊。宿主可传入自己的 Shape；材质距离场、内容 Path 和投影 Outline 各有几何要求，不能认为同名圆角在所有绘制链中相同。
-
-顶栏使用 [CouiToolbarStyle](../../coui/src/main/java/com/itos/coui/topappbar/CouiToolbarStyle.kt)描述文字、光效、形状、材质和阴影。菜单使用 [CouiMenuStyle](../../coui/src/main/java/com/itos/coui/menu/CouiMenuStyle.kt)描述表面、项目、复选框及文字样式。它们只描述外观，不读取 App 偏好或持有业务状态。
-
-## 控制轮廓光
-
-在 Compose 内容中，用同一个宿主状态控制对应组件的轮廓和内晕：
+轮廓与内晕通过 `LocalCouiContourGlowEnabled` 控制。显式构造 Style 时，应与对应阴影工厂使用同一值：
 
 ~~~kotlin
 import androidx.compose.runtime.CompositionLocalProvider
@@ -133,4 +88,4 @@ CompositionLocalProvider(LocalCouiContourGlowEnabled provides contourEnabled) {
 }
 ~~~
 
-contourEnabled 是宿主 Boolean，content 是要展示的 Compose 内容。显式构造 CouiToolbarStyle 时，它的 contourGlowEnabled 也使用同一值。普通阴影、模糊、材质和跟手光分别由各自入口控制。
+普通阴影、模糊、材质和跟手光仍由各自入口控制。固定预设直接引用所属 Defaults，不在宿主复制算法参数。

@@ -41,7 +41,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -634,7 +633,7 @@ internal fun <T> CouiMenuWithSubMenu(
                                 .heightIn(max = with(density) { (windowSize.height - 48.dp.roundToPx()).coerceAtLeast(0).toDp() })
                                 .width(IntrinsicSize.Max)
                                 .then(couiMenuScrollBar(child.scrollBar, expanded, state.open,
-                                    dark = LocalCouiMenuStyle.current.colors.surface.luminance() < 0.5f,
+                                    dark = LocalCouiMenuStyle.current.isDark,
                                     contentPadding = CouiMenuContentVerticalPadding))
                                 .verticalScroll(childScroll, enabled = state.open)
                                 .semantics { isTraversalGroup = true },

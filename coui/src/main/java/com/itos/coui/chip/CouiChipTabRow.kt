@@ -120,7 +120,7 @@ fun CouiChipTabRow(
     animationLevel: Int = 1,
     contentColor: Color = CouiChipTabDefaults.contentColor(dark, enabled),
     disabledContentColor: Color = CouiChipTabDefaults.contentColor(dark, false),
-    textStyle: TextStyle = CouiChipTabDefaults.textStyle,
+    textStyle: TextStyle = CouiChipTabDefaults.themeTextStyle(),
     contourGlowEnabled: Boolean = LocalCouiContourGlowEnabled.current,
     renderers: List<CouiFloatingRenderer> = remember(items.map { it.key }) { items.map { CouiFloatingRenderer.standalone() } },
 ) {

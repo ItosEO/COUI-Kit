@@ -4,7 +4,7 @@
 
 - 文件使用 UTF-8，无 BOM。标识符、格式和声明顺序沿用所在组件族；库 KDoc、解释性注释、开发文档及提交说明使用简体中文。
 - 默认声明为 internal 或 private，仅为真实外部用法公开 API。组件的 Modifier 为第一个参数，默认值为 Modifier。
-- 无状态预设使用 object，归属对应组件族的 Defaults。组件可使用原生 CouiTheme 默认值，宿主可显式覆盖 Shape、Style 和颜色；业务回调从宿主传入，不在库内读取应用偏好或 MaterialTheme。
+- 无状态预设使用 object，归属对应组件族的 Defaults。组件可使用原生 CouiTheme 默认值，宿主可显式覆盖 Shape、Style 和颜色；业务回调从宿主传入，核心不读取应用偏好或 MaterialTheme。可选 coui-material3 仅按[外观契约](../guide/appearance.md)在消费处读取 MaterialTheme。
 - 值、选择和展开目标采用受控状态与回调。宿主拥有业务状态，组件维护局部交互，避免并行维护同一事实。
 - 列表身份使用稳定且唯一的 key。绘制范围与命中范围分别确认，渐隐和裁剪不能代替输入限制。
 - 整行承担交互时，子控件不重复添加点击；保留禁用、键盘、焦点、TalkBack 和正确的选择语义。

@@ -32,12 +32,14 @@ PR 自动执行 Note、库与 Demo Lint、Demo debug/release 构建及库本地 
 本地需要执行同一检查时，先获得当前任务授权，再运行：
 
 ~~~sh
-./gradlew :coui:lintDebug :demo:lintRelease :demo:assembleDebug :demo:assembleRelease :coui:publishAllPublicationsToLocalRepository
+./gradlew :coui:lintDebug :coui-material3:lintDebug :demo:lintRelease :demo:assembleDebug :demo:assembleRelease \
+  :coui:publishAllPublicationsToLocalRepository :coui-material3:publishAllPublicationsToLocalRepository
+node .github/scripts/verify-maven-artifacts.cjs
 ~~~
 
 需要避免签名参数进入本地 configuration cache 时，加 `--no-configuration-cache`。失败须查看实际 Lint 或构建错误，不建立吞掉失败的路径。远端上传与发行渠道按[发布指南](publishing.md)区分，不把本地 Maven 产物当作已发布版本。
 
-自动化测试建设建议见[测试建设评估](testing-plan.md)。本次未添加测试源码或更改 CI 检查范围。
+自动化测试建设建议见[测试建设评估](testing-plan.md)。两模块共用真实发行文件断言，不增加镜像主题实现或 Compose 替身来证明运行行为。
 
 ## 开发诊断
 

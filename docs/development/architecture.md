@@ -4,11 +4,13 @@
 
 ~~~text
 宿主 App / demo
-  └─ coui
-      └─ Android / Compose / AndroidX
+  ├─ coui-material3（可选）→ coui + Material 3
+  └─ coui → Android / Compose / AndroidX
 ~~~
 
-coui 持有通用 COUI 组件、原生主题与固定预设、效果、背景采样、几何、输入与动效。宿主提供受控状态、导航、错误展示和业务回调，并可覆盖配色、字体、Shape 与 Style。是否使用 COUI 的应用偏好、动态取色及 Material 适配属于宿主；核心不读取应用设置或 MaterialTheme。
+coui 持有通用 COUI 组件、原生主题与固定预设、效果、背景采样、几何、输入与动效。宿主提供受控状态、导航、错误展示和业务回调，并可覆盖配色、字体、Shape 与 Style。应用偏好与动态色创建仍归宿主；核心不读取应用设置或 MaterialTheme。
+
+可选 coui-material3 只承担宿主 M3 默认值解析、内容 Local 桥接与 M3 最小交互尺寸。Application 通过 Coui.initialize 固定策略；适配器在组件消费处读取 MaterialTheme，不缓存根色板、不持有 Context、不接管业务状态。核心的 CouiStyle 只使用核心和基础 Compose 类型。局部 CouiTheme 提供 native/custom 外观，同时保留已选适配器的插槽桥接。模式与覆盖顺序见[外观指南](../guide/appearance.md)。
 
 demo 只消费公开 API，负责页面、主题和示例交互；示例不读取或删除真实记录。不能为演示公开内部状态，也不能让库引用 demo、外部业务模块、宿主日志框架或第三方 Backdrop。
 

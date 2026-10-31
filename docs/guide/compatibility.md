@@ -21,15 +21,15 @@ Maven Central 的 `0.0.1-alpha2` AAR 要求 `compileSdk` 不低于 37、AGP 不�
 
 DynamicAnimation 保持版本目录中的 **strictly** 约束。持续重定向、取消和 pending 目标等行为是当前运动实现的一部分。宿主若要求不兼容的严格版本，应暴露冲突并评审整条运动链；不能直接放宽锁定，也不能以“已解析”为由声称动画等价。
 
-当前源码的核心不依赖 Material3 或 Material Icons；Demo 与宿主的 M3 适配独立声明这些依赖。宿主自己调用 Material3、Activity 或其他 API 时，应直接声明相应依赖。`capsule` 只属于 Demo 的 G2 装配，不是 COUI 的公共或运行依赖。库不依赖外部业务工程、Hilt、宿主日志框架、第三方 Backdrop 或厂商 SDK。
+当前源码的核心不依赖 Material3 或 Material Icons；可选 `coui-material3` 公开依赖同版本核心与 M3。适配模块首次发行后，两模块始终同版本、同步发布；宿主升级时使用同一版本，无需匹配另一套适配库版本号。宿主自己调用 Material3、Activity 或其他 API 时，应直接声明相应依赖。`capsule` 只属于 Demo 的 G2 装配，不是 COUI 的公共或运行依赖。库不依赖外部业务工程、Hilt、宿主日志框架、第三方 Backdrop 或厂商 SDK。
 
 ### 原生主题与默认参数迁移
 
-`CouiTheme` 与组件默认值属于当前源码，尚未发布到 `0.0.1-alpha2`。该发行版仍需要原有的显式装配，不能直接套用当前源码的省略参数示例；开发阶段使用源码模块或明确包含本改动的快照。
+`CouiTheme`、初始化接口、组件默认值与 `coui-material3` 属于当前源码，两模块的这组改动尚未发行，不包含在 `0.0.1-alpha2`。该发行版仍需要原有显式装配，不能直接套用省略参数或初始化示例；开发阶段使用源码模块或明确包含本改动的同版本快照。
 
-组件名称与原参数顺序保留。`CouiSlider.colors` 的 null 表示按最终 dark、enabled 自动生成；BottomBar 的 `rightContainerColor` 使用非空 `Color.Unspecified` 表示自动取色，避免 nullable Color 装箱。原有显式颜色、Style、Shape 与资源入口保留。默认参数、Kotlin 元数据与 Compose 消费兼容仍需重新编译调用模块验证，不声明二进制 ABI 稳定。
+组件名称与原参数相对顺序保留。`CouiSlider.colors` 的 null 表示按最终 dark、enabled 自动生成；FAB 的 nullable material/shadow 默认值在组件内部解析，显式非空调用继续成立。BottomBar 的 `rightContainerColor` 保留非空 `Color.Unspecified`。`CouiMenuStyle` 末尾增加 nullable dark，旧完整构造不必补参数，缺省时保留原 surface 亮度判定。原有显式颜色、Style、Shape 与资源入口保留。消费者必须重新编译；默认参数、Kotlin 元数据与 Compose 消费兼容仍待实际构建验证，不声明二进制 ABI 稳定。
 
-核心独立后，M3 `Icon/Text` 插槽不再自动继承 M3 的内容 Local；按[插槽迁移](appearance.md#m3-内容插槽迁移)显式传入 COUI 内容颜色与文字样式。顶栏按钮保留固定最小布局占位，不再读取 M3 的最小尺寸 Local。菜单普通锚点仍按原 AndroidX Below 候选顺序与安全区定位；触点窗口避让继续由原有 COUI motion provider 处理。
+M3 宿主使用可选模块并初始化后，组件自动桥接内容 Local；无需复制色板映射或逐插槽接线，见[内容作用域](appearance.md#内容插槽与最小交互尺寸)。模式来自显式组件配置、`LocalCouiDarkTheme` 或系统，不从任意 M3 色板推断。顶栏按钮的 M3 路径使用真实最小交互尺寸 Modifier；SearchButton 原固定容器保持不变，不受该尺寸 Local 控制。菜单普通锚点仍按原 AndroidX Below 候选顺序与安全区定位；触点窗口避让继续由原有 COUI motion provider 处理。
 
 ### 运动接口迁移
 

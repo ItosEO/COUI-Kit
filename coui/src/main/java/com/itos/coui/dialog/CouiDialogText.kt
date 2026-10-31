@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.PlatformTextStyle
@@ -26,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
+import com.itos.coui.theme.CouiTheme
 
 /** 普通弹窗内部排版角色，不建立独立的公共 Typography 组件。 */
 internal enum class DialogTextKind(internal val size: Float, internal val family: String, internal val weight: Int) {
@@ -36,7 +38,7 @@ internal enum class DialogTextKind(internal val size: Float, internal val family
     Counter(10f, "sans-serif", 400),
 }
 
-/** 系统资源决定排版，组件与语义由 Compose 承载，不继承宿主 M3 Typography。 */
+/** 保留原生字号与行距算法；可选主题仅提供对应角色的字体族。 */
 @Composable
 internal fun DialogText(modifier: Modifier = Modifier, text: String, kind: DialogTextKind, color: Color,
     onLineCount: (Int) -> Unit = {}, textAlign: TextAlign? = null) {
@@ -57,8 +59,19 @@ internal fun DialogText(modifier: Modifier = Modifier, text: String, kind: Dialo
 internal fun rememberDialogTextStyle(kind: DialogTextKind): TextStyle {
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
-    return remember(kind, configuration, density) {
-        val typeface = Typeface.create(Typeface.create(kind.family, Typeface.NORMAL), kind.weight, false)
+    val typography = CouiTheme.typography
+    val family = when (kind) {
+        DialogTextKind.Title -> typography.dialogTitleFontFamily
+        DialogTextKind.Message -> typography.dialogMessageFontFamily
+        DialogTextKind.Button -> typography.dialogButtonFontFamily
+        DialogTextKind.Input -> typography.dialogInputFontFamily
+        DialogTextKind.Counter -> typography.dialogCounterFontFamily
+    }
+    val typeface = if (family != null) {
+        // 订阅异步字体结果，使操作布局测量与实际文字绘制同时更新。
+        LocalFontFamilyResolver.current.resolve(family, FontWeight(kind.weight), fontSynthesis = FontSynthesis.None).value as Typeface
+    } else remember(kind) { Typeface.create(Typeface.create(kind.family, Typeface.NORMAL), kind.weight, false) }
+    return remember(kind, configuration, density, typeface) {
         val pixels = couiTextSize(kind, configuration) { with(density) { it.sp.toPx() } }
         val metrics = Paint().apply { this.typeface = typeface; textSize = pixels }.fontMetricsInt
         val base = metrics.descent - metrics.ascent

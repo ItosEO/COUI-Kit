@@ -17,7 +17,7 @@ if (visible) {
 }
 ~~~
 
-`dark` 和 `colors` 默认读取可选的 `CouiTheme`；省略主题时使用 COUI 预设与系统深浅色。通用主题规则见[外观与预设](../guide/appearance.md)。
+`dark` 和 `colors` 默认读取局部 `CouiTheme` 或初始化策略；未初始化时使用原生预设，模式来自 Local 或系统。M3 自动模式只接入对应文字角色的字体族，保留原字号、字重、行距和 fontScale；测量与绘制共同响应异步字体加载。自定义正文不被强设新样式。通用规则见[外观与预设](../guide/appearance.md)。
 
 ## 显示一个简单确认弹窗
 

@@ -12,6 +12,8 @@ Status: implemented
 
 手动工作流先生成无凭据的本地 Maven 文件仓库，核对 AAR、源码、文档、许可与 Gradle 依赖元数据，再上传并读取远端版本元数据。Compose BOM 与 DynamicAnimation 严格约束由 `.module` 检查，不能以 POM 或 AAR 存在代替。PR 增加同一个本地发行目标，及早暴露打包与 Dokka 配置问题，不增加单测或远端上传。
 
+[可选 M3 模块](../architecture/2026-10-31-optional-material3-style.md)与核心同版本，单独 artifactId 由模块配置持有。两个模块均生成本地 Maven 目标，PR 与发布共用 `.github/scripts/verify-maven-artifacts.cjs`，同时核对核心无 M3、适配器依赖同版本核心与 M3。上传与远端确认覆盖两个 artifact；渠道和凭据规则不变。
+
 上传使用本仓库 GITHUB_TOKEN，只在上传和远端读取步骤传入；不接 GPG、Central Token 或 Demo 密钥，不缓存带凭据的配置。发布任务保留正在执行的上传。读取凭据由消费者自行配置，私有 Maven 包沿用仓库访问边界。
 
 源码与文档归档从根声明及既有 Skia 许可生成随包声明，不维护另一份许可副本。使用说明归普通指南，维护者操作归开发指南，AGENTS 只维护任务入口与权限边界。

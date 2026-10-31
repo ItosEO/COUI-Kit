@@ -18,8 +18,9 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.res.painterResource
 import com.itos.coui.theme.CouiIcon as Icon
+import com.itos.coui.theme.ProvideCouiContent
 import com.itos.coui.theme.LocalCouiContentColor as LocalContentColor
-import com.itos.coui.theme.ProvideCouiTextStyle as ProvideTextStyle
+import com.itos.coui.theme.LocalCouiTextStyle
 import com.itos.coui.theme.CouiText as Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -158,6 +159,7 @@ fun CouiTopAppBarSearch(
                                     modifier = Modifier,
                                     renderer = renderer,
                                     capsule = state.motion.expanded,
+                                    enabled = enabled,
                                     interactive = enabled && visible && state.motion.expanded,
                                     deform = enabled && visible && state.motion.expanded && !state.motion.running,
                                     contentRenderEffect = blur,
@@ -176,8 +178,8 @@ fun CouiTopAppBarSearch(
                                                             .semantics { contentDescription = placeholder },
                                                         enabled = enabled && visible && state.motion.expanded,
                                                         singleLine = true,
-                                                        textStyle = LocalCouiToolbarStyle.current.textStyle.copy(
-                                                            color = LocalContentColor.current.copy(alpha = if (enabled) 1f else 0.38f), fontSize = 15.sp,
+                                                        textStyle = LocalCouiTextStyle.current.copy(
+                                                            color = LocalContentColor.current, fontSize = 15.sp,
                                                         ),
                                                         cursorBrush = SolidColor(LocalCouiToolbarStyle.current.cursorColor),
                                                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -186,7 +188,7 @@ fun CouiTopAppBarSearch(
                                                             Box(contentAlignment = Alignment.CenterStart) {
                                                                 if (query.isEmpty()) Text(
                                                                     text = placeholder,
-                                                                    color = LocalContentColor.current.copy(alpha = 0.6f),
+                                                                    color = LocalContentColor.current.copy(alpha = LocalContentColor.current.alpha * 0.6f),
                                                                     fontSize = 15.sp,
                                                                     maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis,
                                                                 )
@@ -280,11 +282,10 @@ fun CouiTopAppBarSearchButton(
                 } else {
                     SearchSurface(
                         modifier = Modifier.size(40.dp), renderer = checkNotNull(state.renderer),
-                        capsule = false, interactive = enabled, deform = enabled,
+                        capsule = false, enabled = enabled, interactive = enabled, deform = enabled,
                         onClick = { center -> state.sourceCenter = center; open() },
                     ) {
-                        Icon(modifier = Modifier.size(24.dp), painter = painterResource(com.itos.coui.R.drawable.coui_search), contentDescription = contentDescription,
-                            tint = LocalContentColor.current.copy(alpha = if (enabled) 1f else 0.38f))
+                        Icon(modifier = Modifier.size(24.dp), painter = painterResource(com.itos.coui.R.drawable.coui_search), contentDescription = contentDescription)
                     }
                 }
 
@@ -353,6 +354,7 @@ private fun SearchSurface(
     modifier: Modifier,
     renderer: CouiFloatingRenderer,
     capsule: Boolean,
+    enabled: Boolean,
     interactive: Boolean,
     deform: Boolean,
     onClick: ((Offset) -> Unit)? = null,
@@ -375,7 +377,8 @@ private fun SearchSurface(
     val press = rememberCouiPressMotion()
     val (lightInput, drawLight) = rememberCouiSpotlight(interactive, SpotlightPreset.OpaqueMedium2, dark)
     val interactions = remember { MutableInteractionSource() }
-    CompositionLocalProvider(LocalContentColor provides style.contentColor) {
+    ProvideCouiContent(color = style.contentColor.copy(alpha = style.contentColor.alpha * if (enabled) 1f else 0.38f),
+        textStyle = style.textStyle) {
         Box(
             modifier.onGloballyPositioned { coordinates = it }.onSizeChanged { boundsSize = it }
                 .drawWithCache {
@@ -415,7 +418,7 @@ private fun SearchSurface(
                         },
                     ) else Modifier),
                 contentAlignment = Alignment.Center,
-            ) { ProvideTextStyle(LocalCouiToolbarStyle.current.textStyle) { content() } }
+            ) { content() }
         }
     }
 }

@@ -251,14 +251,12 @@ private fun DemoToolbar(renderers: DemoRenderers, dark: Boolean, contour: Boolea
         CouiTopAppBarButtonGroup {
             CouiTopAppBarSearchAction(state = state) {
                 CouiTopAppBarButton(onClick = onReset, enabled = actionsEnabled, text = true, renderer = renderers.text, style = style) {
-                    Text(stringResource(R.string.reset), color = com.itos.coui.theme.LocalCouiContentColor.current,
-                        style = com.itos.coui.theme.LocalCouiTextStyle.current)
+                    Text(stringResource(R.string.reset))
                 }
             }
             CouiTopAppBarSearchAction(state = state, visibleWhileSearching = true) {
-                CouiTopAppBarButton(onClick = onToggleTheme, enabled = actionsEnabled, text = false, renderer = renderers.theme, style = style) {
-                    Icon(Icons.Default.DarkMode, stringResource(R.string.toggle_theme),
-                        tint = com.itos.coui.theme.LocalCouiContentColor.current)
+                CouiTopAppBarButton(onClick = onToggleTheme, enabled = actionsEnabled, text = false, renderer = renderers.theme) {
+                    Icon(Icons.Default.DarkMode, stringResource(R.string.toggle_theme))
                 }
             }
             CouiTopAppBarSearchButton(state = state, style = searchStyle,

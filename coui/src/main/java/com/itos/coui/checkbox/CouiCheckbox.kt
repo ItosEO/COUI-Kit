@@ -50,7 +50,7 @@ fun CouiCheckbox(
     enabled: Boolean = true,
     shape: Shape = CouiCheckboxDefaults.shape,
     borderShape: Shape = CouiCheckboxDefaults.borderShape,
-    colors: CouiCheckboxColors = CouiCheckboxDefaults.colors(CouiTheme.colorScheme.accent, CouiTheme.isDark),
+    colors: CouiCheckboxColors = CouiCheckboxDefaults.colors(CouiTheme.colorScheme.checkboxAccent, CouiTheme.isDark),
 ) {
     val checkedPath = remember {
         PathParser().parsePathString(

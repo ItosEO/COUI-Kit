@@ -4,14 +4,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.itos.coui.shape.CouiCapsuleShape
 import com.itos.coui.shape.CouiShape
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.itos.coui.theme.CouiTheme
-import com.itos.coui.theme.CouiColorScheme
-import com.itos.coui.theme.CouiTypography
+import com.itos.coui.theme.LocalCouiDarkTheme
 
 internal object DemoShapes {
     val card = ContinuousRoundedRectangle(24.dp)
@@ -30,21 +34,14 @@ internal object DemoShapes {
 internal fun DemoTheme(dark: Boolean, materialTheme: Boolean = true, content: @Composable () -> Unit) {
     val context = LocalContext.current
     val colors = if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-    // 沿用 Metric 的页面表面层级, 示例卡片独立使用 surfaceBright。
+    val currentContent by rememberUpdatedState(content)
+    // 切换局部外观时移动同一内容树，保留页面状态与 renderer 的生命周期。
+    val scopedContent = remember { movableContentOf { currentContent() } }
+    // 页面使用 surfaceContainer，示例卡片独立使用 surfaceBright。
     MaterialTheme(colorScheme = colors.copy(surface = colors.surfaceContainer, background = colors.surfaceContainer)) {
-        if (materialTheme) CouiMaterial3Theme(dark, content)
-        else CouiTheme(darkTheme = dark, content = content)
+        CompositionLocalProvider(LocalCouiDarkTheme provides dark) {
+            if (materialTheme) scopedContent()
+            else CouiTheme(darkTheme = dark, content = scopedContent)
+        }
     }
-}
-
-/** Material 适配在宿主侧；核心既不读取 M3，也不自行创建动态色。 */
-@Composable
-internal fun CouiMaterial3Theme(dark: Boolean, content: @Composable () -> Unit) {
-    val colors = MaterialTheme.colorScheme
-    CouiTheme(darkTheme = dark,
-        colorScheme = CouiColorScheme(colors.primary, colors.onPrimary, colors.surface, colors.surfaceBright,
-            colors.onSurface, colors.onSurfaceVariant, colors.outlineVariant),
-        typography = CouiTypography(MaterialTheme.typography.bodyLarge, MaterialTheme.typography.labelLarge,
-            MaterialTheme.typography.bodyLarge),
-        materialTint = colors.surface, content = content)
 }

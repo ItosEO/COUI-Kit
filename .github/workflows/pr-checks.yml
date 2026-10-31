@@ -33,6 +33,10 @@ jobs:
         with:
           cache-provider: basic
           cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - name: 配置 Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
       - name: 配置 Android SDK
         uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
         with:
@@ -44,9 +48,11 @@ jobs:
       - name: 执行 Lint、Demo 构建与库发行构建
         run: |
           set -euo pipefail
-          ./gradlew :coui:lintDebug :demo:lintRelease :demo:assembleDebug :demo:assembleRelease \
-            :coui:publishAllPublicationsToLocalRepository \
+          ./gradlew :coui:lintDebug :coui-material3:lintDebug :demo:lintRelease :demo:assembleDebug :demo:assembleRelease \
+            :coui:publishAllPublicationsToLocalRepository :coui-material3:publishAllPublicationsToLocalRepository \
             --stacktrace 2>&1 | tee "$RUNNER_TEMP/coui-pr-build.log"
+      - name: 检查两个库的发行文件与依赖
+        run: node .github/scripts/verify-maven-artifacts.cjs
       - name: 上传失败诊断
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

@@ -52,8 +52,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.itos.coui.backdrop.CouiBackdrop
-import com.itos.coui.theme.LocalCouiContentColor
-import com.itos.coui.theme.LocalCouiTextStyle
 import com.itos.coui.topappbar.CouiToolbarStyle
 import com.itos.coui.topappbar.CouiTopAppBar
 import com.itos.coui.topappbar.CouiTopAppBarButton
@@ -78,8 +76,7 @@ fun PageToolbar(
             Text(title, Modifier.weight(1f), style = style.textStyle, color = style.contentColor)
             CouiTopAppBarButtonGroup {
                 CouiTopAppBarButton(onClick = onAction, text = true, style = style) {
-                    Text(actionLabel, style = LocalCouiTextStyle.current,
-                        color = LocalCouiContentColor.current)
+                    Text(actionLabel)
                 }
             }
         }
@@ -87,7 +84,7 @@ fun PageToolbar(
 }
 ~~~
 
-顶栏叠在页面内容上。请按实际顶栏高度设置内容的顶部间距，避免内容被遮挡。此例显式使用 `style`；按钮和搜索组件也可以省略它以使用默认样式。示例中的 Material3 `Text` 显式读取 COUI 的内容色和文字样式，项目需要声明 Material3 依赖。
+顶栏叠在页面内容上。请按实际顶栏高度设置内容的顶部间距，避免内容被遮挡。此例显式使用 `style`；按钮和搜索组件也可以省略它以使用默认样式。示例假定宿主已接入可选 M3 适配，Material3 `Text` 自动继承组件内容色与文字样式，项目仍需声明 Material3 依赖。
 
 ## 配置顶栏样式
 
@@ -144,21 +141,17 @@ fun rememberToolbarStyle(
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
-import com.itos.coui.theme.LocalCouiContentColor
-import com.itos.coui.theme.LocalCouiTextStyle
 
 CouiTopAppBarButton(onClick = onSettings, style = style) {
-    Icon(Icons.Default.Settings, contentDescription = settingsLabel,
-        tint = LocalCouiContentColor.current)
+    Icon(Icons.Default.Settings, contentDescription = settingsLabel)
 }
 
 CouiTopAppBarButton(onClick = onReset, text = true, enabled = canReset, style = style) {
-    Text(resetLabel, style = LocalCouiTextStyle.current,
-        color = LocalCouiContentColor.current)
+    Text(resetLabel)
 }
 ~~~
 
-`enabled = false` 会禁用按钮，但不会隐藏它。Material3 `Icon` 和 `Text` 不读取 COUI 的 CompositionLocal，因此示例显式传入 COUI 内容色和文字样式。Material 图标、`Icon` 和 `Text` 需要由应用声明相应依赖。
+`enabled = false` 会禁用按钮，但不会隐藏它。可选 M3 适配会在最终内容作用域同步 Local，禁用 alpha 只计算一次；子内容显式颜色或内层 Local 继续优先。未接入适配的纯 native 核心需自行桥接 M3 插槽，见[外观指南](../guide/appearance.md#内容插槽与最小交互尺寸)。Material 图标、`Icon` 和 `Text` 需要由应用声明相应依赖。
 
 ## 显示和隐藏操作
 
@@ -170,8 +163,7 @@ import com.itos.coui.topappbar.CouiTopAppBarActionVisibility
 CouiTopAppBarButtonGroup {
     CouiTopAppBarActionVisibility(visible = actionsVisible) {
         CouiTopAppBarButton(onClick = onSettings, style = style) {
-            Icon(Icons.Default.Settings, contentDescription = settingsLabel,
-                tint = LocalCouiContentColor.current)
+            Icon(Icons.Default.Settings, contentDescription = settingsLabel)
         }
     }
 }
@@ -186,6 +178,8 @@ CouiTopAppBarButtonGroup {
 顶栏容器支持库的最低系统版本，顶栏按钮和搜索需要 API 34。按钮组和搜索组件放在 `CouiTopAppBar` 内使用。
 
 每个按钮默认创建独立的 renderer。需要处理创建失败时，可以先创建 `CouiFloatingRenderer.standalone()`，再通过 `renderer` 传入。
+
+`CouiTopAppBarButton` 的 M3 策略在原 Modifier 位置使用真正的 `minimumInteractiveComponentSize()`，遵守宿主尺寸 Local 和 alignment lines，不再叠加固定占位。原生策略保留原规则；SearchButton 的固定容器不变。仅转发的 title 与 buttonGroup 不建立新的文字样式作用域。
 
 顶栏不消费状态栏 inset，可在顶栏内容或页面根节点添加一次 `statusBarsPadding()`。渐进模糊背景会向下延伸，但不会增加布局高度或触摸范围。
 

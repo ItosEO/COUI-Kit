@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | Maven Central | 公开发行的预览版/正式版 | [包页面](https://central.sonatype.com/artifact/io.github.itoseo/coui)与 [README](../../README.md)；README 当前示例版本为 `0.0.1-alpha2`。以实际远端解析和发行元数据为准 |
 | GitHub Packages | 手动发布当前提交的开发快照 | 仓库 [publish-preview.yml](../../.github/workflows/publish-preview.yml) 生成带短 SHA 的 `-SNAPSHOT`，接入需认证 |
-| 本地文件仓库 | CI/开发检查 AAR、POM、Module Metadata、源码包及 Dokka | `coui/build/repository`；不上传远端，不视为真实发行 |
+| 本地文件仓库 | CI/开发检查 AAR、POM、Module Metadata、源码包及 Dokka | 两模块各自的 `build/repository`；不上传远端，不视为真实发行 |
 
 使用者优先选择 Maven Central 已验证的版本；需要针对具体 Commit 协作调试时才使用 GitHub Packages 快照。不同渠道不可在同一模块重复引入。
 
@@ -27,11 +27,13 @@
 
 ## 版本与产物
 
-库坐标和开发基础版本由根目录 [gradle.properties](../../gradle.properties) 的 GROUP、POM_ARTIFACT_ID 和 VERSION_NAME 持有。当前 `VERSION_NAME=0.1.0-SNAPSHOT`，仅用于开发快照的基础版本；它**不是** Maven Central 上一个已验证的 `0.1.0` 发布。工作流在基础版本中加入当前提交的短 SHA；进入下一轮开发时更新基础版本。库版本不读取 Demo versionCode 或显示版本名。
+从适配模块首次发行起，`coui` 与 `coui-material3` 始终同版本、同步发布，正式版、预览版和开发快照均遵守此规则。即使某个模块没有代码变化，也随另一模块发布对应版本。适配模块依赖同版本核心；只有两个坐标均可下载，才视为该版本发布完成。
 
-[库构建配置](../../coui/build.gradle.kts)只发布 release 变体，包含 AAR、源码包、Dokka HTML 文档包、POM 和 Gradle Module Metadata。源码与文档归档附带根许可、来源与名称声明以及既有 Skia 许可；AAR 保留库已有的 Skia 资源。不发布 Demo、不提前混淆库，也不上传 Demo 密钥。
+库 group、核心 artifactId 和共享版本由根目录 [gradle.properties](../../gradle.properties) 的 GROUP、POM_ARTIFACT_ID 和 VERSION_NAME 持有。可选模块在[自身配置](../../coui-material3/build.gradle.kts)显式指定 `coui-material3`，不继承核心的 artifactId。当前 VERSION_NAME 仅用于开发快照的基础版本，不代表已验证的 Central 发行。工作流加入当前提交的短 SHA；库版本不读取 Demo versionCode 或显示版本名。
 
-工作流先发布到构建目录中的 Maven 文件仓库，检查坐标、非空产物、源码与 HTML、许可声明，以及 `.module` 中的 Compose BOM 和 DynamicAnimation 严格版本约束，再上传 GitHub Packages。POM 不具备完整表达 Gradle 严格约束的能力，不能用 POM 存在代替 `.module` 检查。
+[核心配置](../../coui/build.gradle.kts)与[可选模块配置](../../coui-material3/build.gradle.kts)均只发布 release 变体，包含 AAR、源码包、Dokka HTML 文档包、POM 和 Gradle Module Metadata。两个模块的源码与文档归档附带根许可、来源与名称声明；核心继续附带既有 Skia/AndroidX 声明与 AAR 资源。不发布 Demo、不提前混淆库，也不上传 Demo 密钥。
+
+工作流先生成两模块的本地 Maven 文件仓库，调用与 PR 相同的[真实产物检查](../../.github/scripts/verify-maven-artifacts.cjs)。脚本检查独立坐标、非空产物、源码与 HTML、许可、两模块 Compose BOM 的元数据与 POM 导入、核心动画严格约束，以及核心无 M3、适配器依赖同版本核心与 M3。全部通过后再上传两个 artifact，并分别确认远端元数据可读。POM 不具备完整表达 Gradle 严格约束的能力，不能用 POM 存在代替 `.module` 检查。当前接线尚需真实 Actions 运行验证，不据此声称两模块已发布。
 
 同一分支的发布串行执行，不取消正在上传的任务。重新运行相同提交仍是 SNAPSHOT 发布；SHA 只能标识源码，不把 SNAPSHOT 当作不可变发行版本。
 
@@ -56,12 +58,13 @@ Maven Central 的现有发布记录不能由 `publish-preview.yml` 推断。当�
 获得当前任务的本地构建授权后，可在根目录仅生成文件仓库，不需要任何上传凭据：
 
 ```sh
-./gradlew :coui:publishAllPublicationsToLocalRepository --no-configuration-cache
+./gradlew :coui:publishAllPublicationsToLocalRepository :coui-material3:publishAllPublicationsToLocalRepository --no-configuration-cache
+node .github/scripts/verify-maven-artifacts.cjs
 ```
 
 本地 Maven 目标用于检查发行结构，不会切换 Demo 或外部宿主的依赖。PR Android 检查也会生成这个目标，验证库打包和文档生成；不执行远端上传或单测。
 
-上传任务为 `:coui:publishAllPublicationsToGitHubPackagesRepository`。Gradle 按仓库名读取 GitHubPackagesUsername 和 GitHubPackagesPassword；手动本地上传须另有当前任务授权。工作流通过同名 ORG_GRADLE_PROJECT 环境属性提供它们。
+上传任务分别为 `:coui:publishAllPublicationsToGitHubPackagesRepository` 与 `:coui-material3:publishAllPublicationsToGitHubPackagesRepository`。Gradle 按仓库名读取 GitHubPackagesUsername 和 GitHubPackagesPassword；手动本地上传须另有当前任务授权。工作流通过同名 ORG_GRADLE_PROJECT 环境属性提供它们。
 
 ## 失败处理
 

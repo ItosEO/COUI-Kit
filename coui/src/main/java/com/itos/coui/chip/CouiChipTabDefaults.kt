@@ -2,6 +2,7 @@ package com.itos.coui.chip
 
 import android.animation.ArgbEvaluator
 import android.graphics.BlendMode
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.PlatformTextStyle
@@ -12,6 +13,7 @@ import androidx.compose.ui.unit.sp
 import com.itos.coui.effect.CouiFloatingMaterial
 import com.itos.coui.effect.CouiFloatingShadow
 import com.itos.coui.topappbar.CouiTopAppBarButtonDefaults
+import com.itos.coui.theme.CouiTheme
 
 /** COUIChipTab 的 TYPE_DEFAULT 材质及库内按钮阴影；模糊半径使用像素，其余尺寸按 dp 换算。 */
 object CouiChipTabDefaults {
@@ -26,6 +28,9 @@ object CouiChipTabDefaults {
         fontSize = 14.sp,
         platformStyle = PlatformTextStyle(includeFontPadding = false),
     )
+
+    @Composable
+    internal fun themeTextStyle(): TextStyle = textStyle.copy(fontFamily = CouiTheme.typography.chipLabelFontFamily ?: textStyle.fontFamily)
 
     fun material(dark: Boolean, checkedFraction: Float): CouiFloatingMaterial {
         require(checkedFraction.isFinite()) { "选中进度必须为有限值" }

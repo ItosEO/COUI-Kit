@@ -30,6 +30,7 @@
 ## 代码与模块边界
 
 - coui 只持有通用 COUI 组件、效果、采样、几何、输入、动画及预设，依赖 Android、Compose 和 AndroidX；不得引用 demo、外部宿主模块、应用主题、业务状态、日志框架或第三方 Backdrop。
+- coui-material3 是可选适配模块，只依赖 coui 与 M3；它在消费处读 MaterialTheme，不把 M3 类型、根色板缓存或运行时全局主题状态带入核心。初始化与局部覆盖契约见[外观指南](docs/guide/appearance.md)。
 - demo 只消费公开 API，主题、页面、受控状态、错误提示和示例交互由 Demo 装配。不为示例公开内部状态，包和目录保持一致。
 - 公开入口默认收窄为 internal 或 private，具体规则由[API 设计](docs/development/api-design.md)持有。Modifier 为组件第一个参数并默认 Modifier；保留受控状态、单一业务提交 owner、无障碍与取消收尾。
 - 固定参数归所属 Defaults；每个独立绘制节点持有自己的可变 renderer。完整实现习惯由[代码规范](docs/development/coding-style.md)持有。

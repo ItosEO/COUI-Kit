@@ -26,8 +26,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import com.itos.coui.theme.CouiTheme
 import com.itos.coui.topappbar.CouiTopAppBarButtonDefaults
-import com.itos.coui.theme.LocalCouiContentColor
-import androidx.compose.runtime.CompositionLocalProvider
+import com.itos.coui.theme.ProvideCouiContent
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -55,12 +54,14 @@ fun CouiFab(
     onClick: () -> Unit,
     dark: Boolean = CouiTheme.isDark,
     shape: Shape = CouiTopAppBarButtonDefaults.circleShape,
-    material: CouiFloatingMaterial = CouiFabDefaults.material(CouiTheme.colorSchemeFor(dark).accent, dark),
-    shadow: CouiFloatingShadow = CouiFabDefaults.shadow(material.firstColor,
-        LocalDensity.current.density, LocalCouiContourGlowEnabled.current),
+    material: CouiFloatingMaterial? = null,
+    shadow: CouiFloatingShadow? = null,
     content: @Composable () -> Unit,
 ) {
     val contour = LocalCouiContourGlowEnabled.current
+    val colors = CouiTheme.colorSchemeFor(dark)
+    val resolvedMaterial = material ?: CouiFabDefaults.material(colors.accent, dark)
+    val resolvedShadow = shadow ?: CouiFabDefaults.shadow(resolvedMaterial.firstColor, LocalDensity.current.density, contour)
     val contentLayer = rememberGraphicsLayer()
     val motion = rememberCouiTouchMotion(true)
     val press = rememberCouiPressMotion()
@@ -73,7 +74,7 @@ fun CouiFab(
     var boundsSize by remember { mutableStateOf(IntSize.Zero) }
     Box(
         modifier.size(56.dp).onSizeChanged { boundsSize = it }
-            .couiFloatingSurface(backdrop, renderer, material, shadow, shape,
+            .couiFloatingSurface(backdrop, renderer, resolvedMaterial, resolvedShadow, shape,
                 contentLayer, contour) {
                 CouiFloatingSurface(
                     Rect(Offset(motion.translationX.value, motion.translationY.value),
@@ -96,7 +97,8 @@ fun CouiFab(
                 .clickable(interactionSource = interactionSource, indication = null, role = Role.Button, onClick = onClick),
             contentAlignment = Alignment.Center,
         ) {
-            CompositionLocalProvider(LocalCouiContentColor provides CouiTheme.colorSchemeFor(dark).onAccent) { content() }
+            ProvideCouiContent(color = if (material == null) colors.onAccent else androidx.compose.ui.graphics.Color.Unspecified,
+                content = content)
         }
     }
 }

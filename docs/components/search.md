@@ -30,8 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import com.itos.coui.backdrop.CouiBackdrop
-import com.itos.coui.theme.LocalCouiContentColor
-import com.itos.coui.theme.LocalCouiTextStyle
 import com.itos.coui.topappbar.CouiToolbarStyle
 import com.itos.coui.topappbar.CouiTopAppBar
 import com.itos.coui.topappbar.CouiTopAppBarButtonGroup
@@ -87,8 +85,7 @@ fun SearchToolbar(
                     }
                 },
             ) {
-                Text(title, style = LocalCouiTextStyle.current,
-                    color = LocalCouiContentColor.current)
+                Text(title)
             }
             CouiTopAppBarButtonGroup {
                 CouiTopAppBarSearchButton(
@@ -119,21 +116,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
-import com.itos.coui.theme.LocalCouiContentColor
 import com.itos.coui.topappbar.CouiTopAppBarButton
 import com.itos.coui.topappbar.CouiTopAppBarSearchAction
 
 CouiTopAppBarButtonGroup {
     CouiTopAppBarSearchAction(state = state) {
         CouiTopAppBarButton(onClick = onReset, style = style) {
-            Icon(Icons.Default.Refresh, contentDescription = resetLabel,
-                tint = LocalCouiContentColor.current)
+            Icon(Icons.Default.Refresh, contentDescription = resetLabel)
         }
     }
     CouiTopAppBarSearchAction(state = state, visibleWhileSearching = true) {
         CouiTopAppBarButton(onClick = onSettings, style = style) {
-            Icon(Icons.Default.Settings, contentDescription = settingsLabel,
-                tint = LocalCouiContentColor.current)
+            Icon(Icons.Default.Settings, contentDescription = settingsLabel)
         }
     }
     CouiTopAppBarSearchButton(
@@ -149,6 +143,8 @@ CouiTopAppBarButtonGroup {
 ~~~
 
 默认动作会在搜索展开时淡出。设置 `visibleWhileSearching = true` 后，动作会移到新位置并保持可用。
+
+示例假定已在 Application 接入可选 M3 适配。搜索表面和顶栏按钮自动同步 M3 内容 Local，部分文字样式与宿主 ambient 合并；显式子样式保持优先。收起时只转发的 title 仍使用宿主样式。SearchButton 保留原固定布局容器，不受 M3 最小交互尺寸 Local 控制。
 
 ## 搜索框样式
 

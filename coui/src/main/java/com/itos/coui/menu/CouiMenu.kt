@@ -55,7 +55,6 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -425,7 +424,7 @@ internal fun <T> CouiMenuList(
 
 @Composable
 private fun CouiMenuHeader(modifier: Modifier = Modifier, text: String, textAlign: TextAlign) {
-    val dark = LocalCouiMenuStyle.current.colors.surface.luminance() < 0.5f
+    val dark = LocalCouiMenuStyle.current.isDark
     val horizontalPadding = CouiMenuItemStateHorizontalInset + CouiMenuItemContentHorizontalPadding
     Text(
         text = text,
@@ -552,7 +551,7 @@ internal fun CouiMenuPopup(
                         .then(modifier)
                         .width(IntrinsicSize.Max)
                         .then(couiMenuScrollBar(scrollBar, expanded, scrollEnabled,
-                            dark = LocalCouiMenuStyle.current.colors.surface.luminance() < 0.5f,
+                            dark = LocalCouiMenuStyle.current.isDark,
                             contentPadding = CouiMenuContentVerticalPadding))
                         .verticalScroll(scrollState, enabled = scrollEnabled)
                         .semantics { isTraversalGroup = true },
@@ -582,7 +581,7 @@ private fun CouiMenuPressedIndicator(
     if (itemTop == null) {
         return
     }
-    val dark = LocalCouiMenuStyle.current.colors.surface.luminance() < 0.5f
+    val dark = LocalCouiMenuStyle.current.isDark
     // COUITouchRecyclerView 的共享遮罩以 hover 色作为按压终色。
     val maskColor = if (dark) 0x26FFFFFF else 0x14000000
     val evaluator = remember { ArgbEvaluator() }
@@ -670,7 +669,7 @@ private fun <T> CouiMenuRow(
             }
         )
         .then(couiMenuItemMask(clickInteractionSource, item.enabled && onClick != null, sharedMaskVisible,
-            dark = LocalCouiMenuStyle.current.colors.surface.luminance() < 0.5f))
+            dark = LocalCouiMenuStyle.current.isDark))
         .then(
             if (item.checked != null) {
                 Modifier.toggleable(
