@@ -1,8 +1,8 @@
 package com.itos.coui.demo
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import com.itos.coui.menu.rememberCouiWindowBackdrop
 import com.itos.coui.picker.*
@@ -11,7 +11,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import java.util.Locale
 
 @Composable
 internal fun PickerSamples(page: String, dark: Boolean) {
@@ -23,10 +22,11 @@ internal fun PickerSamples(page: String, dark: Boolean) {
     var is24Hour by rememberSaveable { mutableStateOf(true) }
     val title = stringResource(DemoComponentGroups.flatten().first { it.page == page }.title)
     val backdrop = rememberCouiWindowBackdrop()
+    val locale = LocalConfiguration.current.locales[0]
     val value = if (page == "datepicker" || page == "calendar") LocalDate.ofEpochDay(date).format(
-        DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)) else if (page == "timepicker")
-        LocalTime.ofSecondOfDay(seconds.toLong()).format(DateTimeFormatter.ofPattern(if (is24Hour) "HH:mm" else "hh:mm a"))
-        else String.format(Locale.getDefault(), "%02d:%02d:%02d", seconds / 3600, seconds / 60 % 60, seconds % 60)
+        DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)) else if (page == "timepicker")
+        LocalTime.ofSecondOfDay(seconds.toLong()).format(DateTimeFormatter.ofPattern(if (is24Hour) "HH:mm" else "hh:mm a", locale))
+        else String.format(locale, "%02d:%02d:%02d", seconds / 3600, seconds / 60 % 60, seconds % 60)
     CouiSettingsGroup(title = stringResource(R.string.picker_inline)) {
         PickerBody(page, seconds, { seconds = it }, date, { date = it }, dark, is24Hour)
     }
