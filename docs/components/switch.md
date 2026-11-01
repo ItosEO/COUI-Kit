@@ -142,4 +142,4 @@ CouiSwitch(
 
 Demo 的“组件 → 开关”分组包含点击、拖动、加载和禁用示例。
 
-Demo 示例见 [DemoSwitchSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSwitchSamples.kt)，库入口和配色见 [CouiSwitch / CouiSwitchDefaults](../../coui/src/main/java/com/itos/coui/switch/CouiSwitch.kt)。
+Demo 示例见 [DemoSwitchSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsSamples.kt)，库入口和配色见 [CouiSwitch / CouiSwitchDefaults](../../coui/src/main/java/com/itos/coui/switch/CouiSwitch.kt)。

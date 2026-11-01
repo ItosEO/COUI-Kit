@@ -10,7 +10,7 @@
 | --- | --- |
 | 时间、AM/PM、倒计时、日期顺序与范围 | [DemoWheelPresets](../../demo/src/main/java/com/itos/coui/demo/DemoWheelPresets.kt) |
 | 标题、项目材质、确认/取消与任意选择器内容 | [DemoPickerDialog](../../demo/src/main/java/com/itos/coui/demo/DemoPickerDialog.kt) |
-| 页面与弹窗共用内容、草稿及确认提交 | [PickerPrSample](../../demo/src/main/java/com/itos/coui/demo/DemoPickerPrSample.kt) |
+| 页面与弹窗共用内容、草稿及确认提交 | [DemoPickerSamples](../../demo/src/main/java/com/itos/coui/demo/DemoPickerSamples.kt) |
 
 以上均为 internal 装配；宿主按需参考和调整，不导入 Demo。此前的 CouiTimePicker、CouiCountdownPicker、CouiDatePicker、CouiPickerDialog 与示例数据类型已移出库，不保留重复公共别名。
 
@@ -48,7 +48,7 @@ CouiWheelPicker 提供受控整数、range、formatter、语义 label、循环�
 
 原厂目标为 Clock 17.6.94 的 COUINumberPicker、COUITimeLimitPicker、OplusTimePickerCustomClock、COUIDatePicker，以及 Calendar 17.3.70 的 COUICalendarPicker、COUICalendarDayPickerView、COUIDateMonthView、COUICalendarPickerDelegate 和实际布局；关键绘制与 smali 交叉核对。没有使用 AndroidView、平台 TimePicker 或 M3 Picker 替代。月历分页与无障碍由公开 Compose 承载，未移植 OEM 私有协议、农历、超大字/迷你/分屏专用排布或闹钟业务；源码与 Release 检查不等于动态验收。
 
-[滚轮 API](../../coui/src/main/java/com/itos/coui/picker/CouiWheelPicker.kt)、[时间/日期装配](../../demo/src/main/java/com/itos/coui/demo/DemoWheelPresets.kt)、[月历](../../coui/src/main/java/com/itos/coui/picker/CouiCalendarPicker.kt)、[弹窗装配](../../demo/src/main/java/com/itos/coui/demo/DemoPickerDialog.kt)、[完整 Demo](../../demo/src/main/java/com/itos/coui/demo/DemoPickerPrSample.kt)。
+[滚轮 API](../../coui/src/main/java/com/itos/coui/picker/CouiWheelPicker.kt)、[时间/日期装配](../../demo/src/main/java/com/itos/coui/demo/DemoWheelPresets.kt)、[月历](../../coui/src/main/java/com/itos/coui/picker/CouiCalendarPicker.kt)、[弹窗装配](../../demo/src/main/java/com/itos/coui/demo/DemoPickerDialog.kt)、[完整 Demo](../../demo/src/main/java/com/itos/coui/demo/DemoPickerSamples.kt)。
 
 ## 选择带与日期参数
 
@@ -57,6 +57,4 @@ CouiWheelPicker 提供受控整数、range、formatter、语义 label、循环�
 
 月历使用 Calendar 原版的周日起始、头部/网格规格和三列日期滚轮；今天的文字和描边使用强调色。value、日期范围和 today 始终由调用者传入，没有写死某年某月；Demo 的初始值来自设备当前日期。
 
-## 主题与显式覆盖
-
-`dark` 默认读取 `CouiTheme.isDark`；滚轮的 `colors` 与月历的 `colors`、`accent` 在消费位置解析，跟随可选 M3 策略和局部 `CouiTheme`。显式传值优先。展开的日期滚轮、网格、选中日期文字和分隔线共用最终色板，禁用透明度只应用一次。倒三角保持朝下，不作旋转；展开区仍保留淡入淡出与延迟。
+配色默认在消费处读取 CouiTheme，显式参数优先；倒三角保持朝下，不作旋转。

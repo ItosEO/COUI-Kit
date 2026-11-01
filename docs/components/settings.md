@@ -33,11 +33,11 @@ CouiPreferenceLayout(
 
 | 装配 | 示例源码 |
 | --- | --- |
-| 信息、跳转、开关、复选、单选行 | DemoPreferenceRows（完整 Demo 在后续重构批次提供） |
-| Popup、滑条、输入、步进 | DemoPreferenceControls（完整 Demo 在后续重构批次提供） |
-| 进度操作行 | DemoProgressPreference（完整 Demo 在后续重构批次提供） |
-| 紧凑顶栏、返回、滚动与安全区 | DemoSettingsPage（完整 Demo 在后续重构批次提供） |
-| 右上角三点菜单 | DemoMenuPresets（完整 Demo 在后续重构批次提供） |
+| 信息、跳转、开关、复选、单选行 | [DemoPreferenceRows](../../demo/src/main/java/com/itos/coui/demo/DemoPreferenceRows.kt) |
+| Popup、滑条、输入、步进 | [DemoPreferenceControls](../../demo/src/main/java/com/itos/coui/demo/DemoPreferenceControls.kt) |
+| 进度操作行 | [DemoProgressPreference](../../demo/src/main/java/com/itos/coui/demo/DemoProgressPreference.kt) |
+| 紧凑顶栏、返回、滚动与安全区 | [DemoSettingsPage](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsPage.kt) |
+| 右上角三点菜单 | [DemoMenuPresets](../../demo/src/main/java/com/itos/coui/demo/DemoMenuPresets.kt) |
 
 示例供宿主参考、复制并按自身业务调整，不从 Demo 导入私有函数，也不依赖 Demo 的主题作用域。选择范围、加载任务、导航和确认提交均属于宿主。库内公共固定参数继续由各组件 Defaults 持有。
 
@@ -53,6 +53,4 @@ topBar、bottomBar 和 floatingActionButton 收到正文源，不包含它们自
 
 [公开布局与 Defaults](../../coui/src/main/java/com/itos/coui/settings/CouiSettings.kt)、[Scaffold](../../coui/src/main/java/com/itos/coui/settings/CouiSettingsScaffold.kt)。
 
-## 主题与显式配色
-
-默认值在消费处读取 `CouiTheme`，跟随原生或可选 M3 策略；显式颜色优先。设置容器使用 `CouiSettingsDefaults.themeColors`，常驻搜索使用 `CouiSearchBarDefaults.colors`，可通过返回值的 `copy` 覆盖各颜色角色。
+默认容器使用 CouiSettingsDefaults.themeColors，显式 colors 优先。

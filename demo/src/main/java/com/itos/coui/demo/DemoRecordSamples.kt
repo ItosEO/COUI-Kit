@@ -12,14 +12,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.itos.coui.text.CouiTextKind
+import com.itos.coui.text.rememberCouiTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -37,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.itos.coui.effect.CouiMetaballRenderer
 
 @Composable
-internal fun RecordSwipeSamples() {
+internal fun RecordSwipeSamples(dark: Boolean) {
     var records by rememberSaveable { mutableStateOf(arrayListOf(1, 2, 3)) }
     var openId by rememberSaveable { mutableIntStateOf(0) }
     if (Build.VERSION.SDK_INT < 33) {
@@ -57,9 +54,8 @@ internal fun RecordSwipeSamples() {
         }
     }
     if (records.isEmpty()) {
-        TextButton(onClick = { records = arrayListOf(1, 2, 3); openId = 0 }) {
-            Text(stringResource(R.string.record_restore))
-        }
+        DemoPreference(title = stringResource(R.string.record_restore),
+            onClick = { records = arrayListOf(1, 2, 3); openId = 0 })
     }
 }
 
@@ -91,19 +87,19 @@ private fun RecordSample(id: Int, isOpen: Boolean, onOpenChange: (Boolean) -> Un
                 onClickLabel = label,
                 onClick = requestDelete,
             ), contentAlignment = Alignment.Center) {
-                Icon(if (confirmation || committed) Icons.Default.Check else Icons.Default.Delete,
+                Icon(if (confirmation || committed) DemoIcons.Check else DemoIcons.Delete,
                     contentDescription = label, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.error)
             }
         },
     ) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Default.Timeline, contentDescription = null, modifier = Modifier.size(28.dp),
-                tint = MaterialTheme.colorScheme.primary)
+            Icon(DemoIcons.Record, contentDescription = null, modifier = Modifier.size(28.dp),
+                tint = com.itos.coui.theme.CouiTheme.colorScheme.accent)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text(stringResource(R.string.record_title, id), style = MaterialTheme.typography.titleSmall,
+                Text(stringResource(R.string.record_title, id), style = rememberCouiTextStyle(CouiTextKind.PreferenceTitle),
                     maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(stringResource(R.string.record_detail, id, id * 12), style = MaterialTheme.typography.bodySmall,
+                Text(stringResource(R.string.record_detail, id, id * 12), style = rememberCouiTextStyle(CouiTextKind.PreferenceSummary),
                     color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }

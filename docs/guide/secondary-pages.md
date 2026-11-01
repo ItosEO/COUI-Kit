@@ -32,7 +32,7 @@ values/themes.xml：
 startActivity(Intent(this, DetailActivity::class.java))
 ```
 
-Activity 的 setContent 中组合 CouiSettingsScaffold、CouiTopAppBar、CouiSettingsGroup 和实际控件。完整工作示例见 DemoSettingsPage（完整 Demo 在后续重构批次提供）；它是 Demo 的 internal 装配，不属于库 API。宿主可以参考这份装配，自行选择标题、返回、actions、滚动容器和反馈。
+Activity 的 setContent 中组合 CouiSettingsScaffold、CouiTopAppBar、CouiSettingsGroup 和实际控件。完整工作示例见 [DemoSettingsPage](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsPage.kt)；它是 Demo 的 internal 装配，不属于库 API。宿主可以参考这份装配，自行选择标题、返回、actions、滚动容器和反馈。
 
 Activity 根级不需要 BackHandler：系统返回与预测性返回继续由 Activity 处理。只有页面内正在编辑、搜索、存在未保存变更等业务状态需要拦截时，再局部安装处理器；关闭该状态后释放拦截，让 Activity 返回恢复。弹窗自己的返回由弹窗处理。
 
@@ -70,7 +70,7 @@ CouiSettingsScaffold(dark = dark, colors = colors, topBar = { backdrop ->
 
 此片段需要 foundation.layout 的 Box / height / fillMaxSize / fillMaxWidth / statusBarsPadding / consumeWindowInsets，foundation.lazy 的 LazyColumn / items，BasicText、TextStyle、Alignment、Modifier、dp，以及 coui.settings 和 coui.topappbar 对应公开入口的导入。低层容器先测量顶栏，再向内容传入 PaddingValues；首帧即可获得顶栏尺寸。顶栏负责自己的顶部 inset，容器处理横向安全区和祖先已消费的 inset，底部留白通过 PaddingValues 交给内容。自定义 contentWindowInsets 只影响容器负责的内容安全区，不代替顶栏自身的顶部处理。
 
-需要浮动导航的页面可传 bottomBar 与 floatingActionButton slot，二者都收到内容 CouiBackdrop。bottomBar 拥有自己的底部系统 inset；容器把底栏完整测量高度写入内容 padding。没有底栏时改用底部安全区。FAB 放在底栏上方的逻辑末端，由 slot 自己加末端/底部间距；内容如需避让 FAB，另外追加滚动尾部留白。每个绘制节点仍独立持有 renderer。原三页 Demo 的 DemoApp（完整 Demo 在后续重构批次提供）展示了这些 slot 与 CouiBottomBar / CouiFab 的组合。
+需要浮动导航的页面可传 bottomBar 与 floatingActionButton slot，二者都收到内容 CouiBackdrop。bottomBar 拥有自己的底部系统 inset；容器把底栏完整测量高度写入内容 padding。没有底栏时改用底部安全区。FAB 放在底栏上方的逻辑末端，由 slot 自己加末端/底部间距；内容如需避让 FAB，另外追加滚动尾部留白。每个绘制节点仍独立持有 renderer。原三页 Demo 的 [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)展示了这些 slot 与 CouiBottomBar / CouiFab 的组合。
 
 采样仅覆盖页面内容，顶栏、底栏、FAB 与 Popup / Dialog 不进入同一源。弹窗位于容器内容作用域时可直接使用 rememberCouiWindowBackdrop；不要另录含压暗遮罩的根树。参见[设置组件](../components/settings.md)、[弹窗](../components/dialog.md)与[采样契约](../effects/backdrop.md)。
 
@@ -95,10 +95,10 @@ CouiSettingsScaffold(dark = dark, colors = colors, topBar = { backdrop ->
 
 Miuix 示例中的 [CrossActivityTransition](https://github.com/compose-miuix-ui/miuix/blob/bb7bde3109605b4c98065b53030ba429c39baea9/example/shared/src/commonMain/kotlin/navigation/CrossActivityTransition.kt)是 Compose 内部转场。本项目要求当前 ROM 的默认 Activity 动画，所以 Demo 用真实 Activity 启动/结束。若宿主选择单 Activity 导航，仍可复用 COUI 页面容器，但需要自己决定 Compose 转场，不能称为调用 ROM 的窗口转场。
 
-实际可运行的宿主装配见 MainActivity（完整 Demo 在后续重构批次提供）、二级 Activity（完整 Demo 在后续重构批次提供）与页面内容（完整 Demo 在后续重构批次提供）。
+实际可运行的宿主装配见 [MainActivity](../../demo/src/main/java/com/itos/coui/demo/MainActivity.kt)、[二级 Activity](../../demo/src/main/java/com/itos/coui/demo/DemoSecondaryActivity.kt)与[页面内容](../../demo/src/main/java/com/itos/coui/demo/DemoSecondaryPage.kt)。
 
 ## 回弹和更多菜单
 
 内容使用 [couiVerticalScroll](../effects/overscroll.md)，空页/短页仍占满内容视口，标题与 dock 不随越界位移移动。每个容器独立 remember 其 effect；null 表示关闭该能力。
 
-三点菜单由宿主在顶栏动作槽组合 CouiTopAppBarButton、完整按钮锚点及唯一的 CouiMenu；列表菜单组合行布局与触点锚点。完整示例分别在 DemoMenuPresets（完整 Demo 在后续重构批次提供） 和 DemoPreferenceControls（完整 Demo 在后续重构批次提供）。库没有三点菜单或 Popup 行的独立包装入口。
+三点菜单由宿主在顶栏动作槽组合 CouiTopAppBarButton、完整按钮锚点及唯一的 CouiMenu；列表菜单组合行布局与触点锚点。完整示例分别在 [DemoMenuPresets](../../demo/src/main/java/com/itos/coui/demo/DemoMenuPresets.kt) 和 [DemoPreferenceControls](../../demo/src/main/java/com/itos/coui/demo/DemoPreferenceControls.kt)。库没有三点菜单或 Popup 行的独立包装入口。

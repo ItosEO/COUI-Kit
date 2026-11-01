@@ -2,6 +2,7 @@ package com.itos.coui.demo
 
 import android.os.SystemClock
 import android.widget.Toast
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextRange
 import com.itos.coui.dialog.CouiDialogAction
 import com.itos.coui.dialog.CouiDialogDefaults
+import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.dialog.CouiInputDialog
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.collect
@@ -32,6 +34,7 @@ internal fun RenameDeviceDialogSample(
     material: Boolean,
     onDismissRequest: () -> Unit,
     onSave: (String) -> Unit,
+    backdrop: CouiBackdrop? = null,
 ) {
     val draft = rememberTextFieldState(initialText = initialName, initialSelection = TextRange(initialName.length))
     var edited by rememberSaveable { mutableStateOf(false) }
@@ -57,7 +60,7 @@ internal fun RenameDeviceDialogSample(
         }
     }
     CouiInputDialog(state = draft, inputTransformation = transformation,
-        onDismissRequest = onDismissRequest, dark = dark,
+        onDismissRequest = onDismissRequest, dark = dark, accent = com.itos.coui.theme.CouiTheme.colorScheme.accent,
         title = stringResource(R.string.dialog_device_name_title),
         message = stringResource(R.string.dialog_device_name_message),
         clearContentDescription = stringResource(R.string.dialog_input_clear),
@@ -65,7 +68,7 @@ internal fun RenameDeviceDialogSample(
         counterIsError = count >= DEVICE_NAME_MAX_BYTES,
         confirmAction = CouiDialogAction(stringResource(R.string.dialog_input_save), { if (canSave) onSave(name) }, enabled = canSave),
         dismissAction = CouiDialogAction(stringResource(R.string.dialog_cancel), onDismissRequest),
-        material = if (material) CouiDialogDefaults.material(dark) else null)
+        material = if (material) CouiDialogDefaults.material(dark) else null, backdrop = backdrop)
 }
 
 private const val DEVICE_NAME_MAX_BYTES = 32

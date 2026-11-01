@@ -21,7 +21,7 @@ COUI-Kit 参考 ColorOS 17 的「凝光视效」，提供背景模糊、材质�
 
 ## Demo
 
-可以运行仓库中的 `demo` 模块，体验组件和效果，并切换深浅色与外观预设。运行方法和 CI 构建下载方式见 [Demo 指南](docs/guide/demo.md)。
+可以运行仓库中的 `demo` 模块，体验组件和效果，并切换深浅色与外观预设。组件与效果采用设置式目录，进入独立二级页面；[选择器](docs/components/pickers.md)、[二级页接入](docs/guide/secondary-pages.md)与[系统图标](docs/components/icons.md)分别说明公开用法。运行方法和 CI 构建下载方式见 [Demo 指南](docs/guide/demo.md)。
 
 ## 开始使用
 

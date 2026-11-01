@@ -46,3 +46,5 @@ coui/RESOURCE_SOURCES.md。该图像不适用本项目的 MPL-2.0 声明；原�
 上游的权利继续适用，本项目不额外授予该第三方资源的权利。
 
 常驻搜索图标 SearchField（Settings 的 coui_search_view_icon_normal）与 Close（ic_close）来自用户提供的 ColorOS 17 系统矢量，原厂及 Android 上游权利保留；未检出附带的独立许可，不改标为 MPL-2.0。图标只保留几何，颜色由消费者提供。
+
+系统矢量图标子集来自用户提供的 ColorOS 系统材料；具体来源、调用链、原始哈希与转换范围见 [coui/ICON_SOURCES.md](coui/ICON_SOURCES.md)。这些第三方资源保留原权利，不适用本项目 MPL-2.0 自有源码许可。

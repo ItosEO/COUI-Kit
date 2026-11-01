@@ -10,7 +10,9 @@ Demo 的 release 启用 R8 代码压缩、优化、混淆及资源裁剪，使�
 
 ## 本地签名
 
-首次配置时，将根目录 [signing.properties.example](../../signing.properties.example) 复制为 signing.properties，填写已有 Demo 密钥。KEYSTORE_FILE 相对于仓库根目录，也可填写绝对路径。四个字段必须完整，debug 与 release 使用同一配置；未配置文件和环境字段时，AGP 自动使用或创建本机默认 debug keystore。
+> 本地已同步上游的可选签名与 Git 提交数版本策略。未配置签名字段时继续使用现有 AGP 测试证书；密钥与密码不写入文档或 Git。
+
+首次配置时，将根目录 [signing.properties.example](https://github.com/ItosEO/COUI-Kit/blob/5c1a63ed5a6d22d25571b0482f32eefe940f4583/signing.properties.example) 复制为 signing.properties，填写已有 Demo 密钥。KEYSTORE_FILE 相对于仓库根目录，也可填写绝对路径。四个字段必须完整，debug 与 release 使用同一配置；未配置文件和环境字段时，AGP 自动使用或创建本机默认 debug keystore。
 
 没有现成密钥时，可以使用 JDK 的 keytool 创建独立测试密钥，再将实际密码填入配置：
 
@@ -25,32 +27,31 @@ CI 可通过 KEYSTORE_FILE、KEYSTORE_PASSWORD、KEYSTORE_ALIAS、KEYSTORE_ALIAS
 
 ## 展示与操作
 
-Demo 包含三个页面：
+启动保留组件、效果、预设三页及 dock、左右附件。首页独立 FAB 和点击次数统计已移除，FAB 本身在组件详情继续展示。dock 的组件与效果项使用 ColorOS 图标的普通/实心状态对，预设以主题色表达选择，切页不重建其反馈节点。组件页采用设置式图标与文字分组目录，点击进入具体组件的完整 Activity；效果页同样逐项进入，不将所有样例铺在首页。
 
-| 页面 | 示例                                                                                                  |
-|----|-----------------------------------------------------------------------------------------------------|
-| 组件 | 连续滑条、可见分段、隐式步进与禁用态；复选框各状态；开关的点击/拖动、加载状态示例和禁用状态；带图标、选中项、独立勾选、分隔线、禁用项及子菜单的菜单；长菜单与滚动条；ChipTab 的单选、分类菜单、可选图标按钮与纯色背景、禁用态及横向滚动 |
-| 效果 | 胶囊阴影及便捷 / 底层入口；双主体融合、内容遮罩和跟随回弹；背景采样与模糊；材质混色                                                         |
-| 预设 | 全部 FAB 固定配色、轮廓光、左右附件独立收放及顶栏按钮禁用态                                                                    |
+首页标题采用 Settings 实际大标题和滚动缩放/淡出，常驻搜索随 AppBar 折叠后停靠顶部。点击搜索后输入背景收窄并分裂出取消胶囊；查询只筛选可导航目录。取消/返回关闭搜索，清空仅删除查询，不关闭输入；打开搜索结果保留来源行和查询，返回时恢复搜索；没有麦克风及其占位，也没有原顶栏重置、主题和搜索图标按钮。主题仍可通过原 dock 附件和预设页切换。
 
-组件页还展示底部和居中弹窗、操作按钮、输入预设及背景材质，详见[弹窗示例](../components/dialog.md#demo-中的样式与示例)。
+- 独立组件页面覆盖开关、滑条、复选、菜单、弹窗、顶栏、搜索、底栏和 FAB。每页使用正常二级标题、浮动返回按钮及对应完整交互；不再进入另一份三页 gallery。
+- 弹窗保留底部、居中、长文、三操作、禁用确认、主题色确认和打开时切换主题的例子，并增加“输入型弹窗：重命名设备”，可对照真实选区粘贴过滤、计数、清除和取消草稿。项目材质及平滑形状修复保留。
+- 设置页包含主题、显示预览、依赖开关、单选子页、隐私与还原确认。主题及轮廓选项在 Activity 之间共享，滚动与局部输入各自恢复。
+- 预设页保留原 dock 附件、轮廓与 FAB 配色，不保留已经移除的首页顶栏按钮开关。底栏布局保留，配色作用于右侧附件；首页不再额外悬浮加号。
 
-顶栏演示渐进模糊、图标按钮、文字按钮和搜索，搜索时同时展示退场动作与常驻动作的布局。搜索仅匹配当前页的分组标题。底栏切换示例页；独立 FAB 与右侧附件打开外观预设页；顶栏“重置”恢复默认 FAB 配色。深浅色通过顶栏或左侧附件切换。全部数值滑条使用 CouiSlider，切页和筛选保留受控值。融合示例使用三条独立的示例记录，展示侧滑、跟随回弹、内容遮罩、删除确认和离场动画；删除只改变 Demo 内存状态，清空后可恢复。侧滑装配只在 Demo，库继续提供算法。滑条占满分组的可用宽度；长菜单限制高度并保留四组三项。
+Demo 沿用主线 DemoApplication 的 `Coui.initialize(CouiMaterial3Style())`。默认值在组件消费处解析；预设页通过局部 `CouiTheme` 切换原生外观，M3 插槽颜色由适配器桥接，显式颜色继续优先。
 
-Demo 页面使用系统动态色。Application 启动时选择 `CouiMaterial3Style`，组件在消费处读取宿主 M3。预设页的“使用 Material 主题配色”默认开启；关闭后通过局部 `CouiTheme` 使用原生预设并停止额外染色，页面本身仍由 Demo 的 M3 主题管理。切换移动同一内容树，不重置页面状态或 renderer。所选有色 FAB 预设保持不变，便于分别比较。顶栏保留完整自定义 Style 与省略 style 的两种调用，插槽直接使用普通 M3 Text/Icon。M3 导航在竖屏使用底栏、横屏使用侧栏；COUI 使用底栏。
+首页只使用彩色图标目录和分组卡片，不增加分类小标题；详情都有用途介绍，按控件类型使用对应系统式行列与说明。菜单页集中展示上下箭头 Popup 行；开关页包含模拟等待的加载状态；滑条轨道在独立槽位居中。时间、倒计时、日期与月历分别提供页面组件和标准弹窗。模糊页采用设置式图示、说明、调节的顺序。
 
-不支持相应效果的平台会显示版本要求；浮动渲染器创建失败会显示失败信息。
+视觉与行为核对 Settings 首页和普通二级页的实际消费者；Miuix 仅保留宿主职责参考。原生标题、搜索与列表的参数和状态分别追踪，不用固定小标题或便签式搜索替代。本地未进行设备像素、动态输入或性能验收。
+
+本轮按最新主线整理，保留主题、构建、发行和 CI 配置。Sheet 与独立普通按钮不在本次展示范围。构建成功不等于 GPU、像素、触摸或性能验收。
 
 ## 源码导航
 
-- [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)：页面、采样源、顶栏、搜索、底栏和 FAB。
-- [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)：滑条、复选框与菜单。
-- [DemoDialogSamples](../../demo/src/main/java/com/itos/coui/demo/DemoDialogSamples.kt)：弹窗、材质开关与宿主受控回调。
-- [DemoDialogInputSample](../../demo/src/main/java/com/itos/coui/demo/DemoDialogInputSample.kt)：输入型预设、重命名草稿与宿主校验策略。
-- [DemoChipSamples](../../demo/src/main/java/com/itos/coui/demo/DemoChipSamples.kt)：ChipTab 与分类菜单。
-- [DemoSwitchSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSwitchSamples.kt)：普通开关、加载状态示例和禁用状态，位置及装配见[开关说明](../components/switch.md#demo-示例)。
-- [DemoVisualEffects](../../demo/src/main/java/com/itos/coui/demo/DemoVisualEffects.kt)：采样模糊与材质混色。
-- [DemoShadowSamples](../../demo/src/main/java/com/itos/coui/demo/DemoShadowSamples.kt)：便捷和底层阴影。
-- [DemoRecordSamples](../../demo/src/main/java/com/itos/coui/demo/DemoRecordSamples.kt)：侧滑驱动融合、确认和示例删除。
+[DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)持有顶级导航与 dock，[目录](../../demo/src/main/java/com/itos/coui/demo/DemoCatalog.kt)登记实际导航项，[具体样例](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)装配对应控件。[二级 Activity](../../demo/src/main/java/com/itos/coui/demo/DemoSecondaryActivity.kt)负责平台导航，[二级页面](../../demo/src/main/java/com/itos/coui/demo/DemoSecondaryPage.kt)消费公开组件。[弹窗示例](../../demo/src/main/java/com/itos/coui/demo/DemoDialogSamples.kt)包含主题切换复查入口。库使用者可直接参照[二级页接入](secondary-pages.md)。
 
-重命名示例用 TextFieldState 和 InputTransformation 保存真实编辑范围：整段粘贴包含禁用字符时，将本次插入部分置空；长度超限只保留配额内的插入内容。过滤和计数仍归 Demo，清除与取消不提交名称。
+宿主接入从[组件](../components/README.md)与[效果](../effects/README.md)开始。
+
+分类栏使用独立演示，不嵌入首页。菜单页集中展示同一个菜单的右上角入口与列表项两种预设；原菜单示例采用设置行排布。效果页按系统说明/设置行排布。顶栏、底栏、搜索和 FAB 的展示区域占满平滑圆角卡片。页面及短内容的边界反馈使用 COUI 回弹。
+
+效果目录与上游保持四类：平滑胶囊阴影、记录侧滑融合、背景模糊与材质。轮廓、跟手光、形状、运动及反馈不再单独占 Demo 入口，库能力和组件内反馈保留。分类栏示意区提供投影留白后才裁圆角，不把阴影裁在单行高度内。
+
+选择器四页只展示纯 Compose 控件及标准弹窗。月历保留一张页面组件，原有选值、日期范围、三列日期编辑和翻页继续使用同一实现。

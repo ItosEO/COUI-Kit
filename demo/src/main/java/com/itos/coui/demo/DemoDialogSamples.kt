@@ -1,65 +1,73 @@
 package com.itos.coui.demo
 
-import androidx.compose.material3.FilledTonalButton
+import android.os.Build
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
-import com.itos.coui.theme.CouiTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.window.DialogProperties
 import com.itos.coui.dialog.CouiAlertDialog
 import com.itos.coui.dialog.CouiDialogAction
-import com.itos.coui.dialog.CouiDialogActionStyle
 import com.itos.coui.dialog.CouiDialogDefaults
 import com.itos.coui.dialog.CouiDialogPlacement
+import com.itos.coui.dialog.CouiDialogActionStyle
+import com.itos.coui.switch.CouiSwitch
+import com.itos.coui.switch.CouiSwitchDefaults
+import com.itos.coui.menu.rememberCouiWindowBackdrop
+import com.itos.coui.settings.*
 
 @Composable
-internal fun DialogSample(dark: Boolean) {
+internal fun DialogSample(dark: Boolean, onToggleTheme: (() -> Unit)? = null) {
     var opened by rememberSaveable { mutableStateOf<String?>(null) }
-    var confirmed by rememberSaveable { mutableStateOf(false) }
-    var material by rememberSaveable { mutableStateOf(true) }
-    val initialName = stringResource(R.string.dialog_device_name_initial)
-    var deviceName by rememberSaveable { mutableStateOf(initialName) }
-    val materialSupported = CouiDialogDefaults.isMaterialSupported()
-    if (materialSupported) DemoSwitchRow(stringResource(R.string.dialog_material), material, { material = it })
-    else Text(stringResource(R.string.dialog_material_unavailable), color = MaterialTheme.colorScheme.onSurfaceVariant)
-    val examples = listOf(
-        "bottom" to R.string.dialog_bottom, "center" to R.string.dialog_center,
-        "long" to R.string.dialog_long, "three" to R.string.dialog_three,
-        "disabled" to R.string.dialog_disabled, "primary" to R.string.dialog_primary,
-        "input" to R.string.dialog_input,
-    )
-    examples.forEach { (key, label) ->
-        FilledTonalButton(onClick = { opened = key }, shape = DemoShapes.capsule) {
-            Text(stringResource(label))
+    var result by rememberSaveable { mutableStateOf(false) }
+    var material by rememberSaveable { mutableStateOf(Build.VERSION.SDK_INT >= 33) }
+    val initialDeviceName = stringResource(R.string.dialog_device_name_initial)
+    var deviceName by rememberSaveable { mutableStateOf(initialDeviceName) }
+    val windowBackdrop = rememberCouiWindowBackdrop()
+    val supported = Build.VERSION.SDK_INT >= 33 && windowBackdrop != null
+    val variants = listOf("primary" to R.string.dialog_primary, "bottom" to R.string.dialog_bottom, "center" to R.string.dialog_center,
+        "long" to R.string.dialog_long, "three" to R.string.dialog_three, "disabled" to R.string.dialog_disabled,
+        "input" to R.string.dialog_input) +
+        if (onToggleTheme != null) listOf("theme" to R.string.dialog_theme_live) else emptyList()
+    if (supported) CouiSettingsGroup {
+        DemoSwitchPreference(title = stringResource(R.string.dialog_material), checked = material, onCheckedChange = { material = it })
+    } else CouiSettingsFooter(text = stringResource(R.string.requires_api_33))
+    CouiSettingsGroup {
+        variants.forEachIndexed { index, (key, label) ->
+            DemoPreference(title = stringResource(label), onClick = { opened = key })
+            if (index < variants.lastIndex) CouiSettingsDivider()
         }
     }
-    Text(stringResource(if (confirmed) R.string.dialog_applied else R.string.dialog_not_applied))
-    Text(stringResource(R.string.dialog_device_name_value, deviceName))
-    val example = opened
-    if (example == "input") {
-        RenameDeviceDialogSample(dark = dark, initialName = deviceName,
-            material = material && materialSupported, onDismissRequest = { opened = null },
-            onSave = { deviceName = it; opened = null })
-    } else if (example != null) {
-        val close = { opened = null }
-        val title = stringResource(R.string.dialog_sample_title)
-        val message = stringResource(R.string.dialog_sample_message)
-        CouiAlertDialog(onDismissRequest = close, dark = dark, title = title,
-            message = if (example == "long") List(12) { message }.joinToString("\n\n") else message,
-            confirmAction = CouiDialogAction(stringResource(R.string.dialog_confirm), { confirmed = true; close() },
-                enabled = example != "disabled",
-                style = if (example == "primary") CouiDialogActionStyle.Primary else CouiDialogActionStyle.Secondary,
-                colors = if (example == "primary") CouiDialogDefaults.primaryActionColors(CouiTheme.colorSchemeFor(dark).accent) else null),
-            dismissAction = CouiDialogAction(stringResource(R.string.dialog_cancel), close),
-            neutralAction = if (example == "three")
-                CouiDialogAction(stringResource(R.string.dialog_reset), { confirmed = false; close() }) else null,
-            placement = if (example == "center") CouiDialogPlacement.Center else CouiDialogPlacement.Bottom,
-            properties = DialogProperties(usePlatformDefaultWidth = false, windowTitle = title),
-            material = if (material && materialSupported) CouiDialogDefaults.material(dark) else null)
+    CouiSettingsFooter(text = stringResource(if (result) R.string.dialog_applied else R.string.dialog_not_applied))
+    CouiSettingsFooter(text = stringResource(R.string.dialog_device_name_value, deviceName))
+    if (opened != null) {
+        val variant = opened
+        val dismiss = { opened = null }
+        val regularMessage = stringResource(R.string.dialog_sample_message)
+        if (variant == "input") RenameDeviceDialogSample(dark = dark, initialName = deviceName,
+            material = material && supported, backdrop = windowBackdrop, onDismissRequest = dismiss,
+            onSave = { deviceName = it; result = true; opened = null })
+        else CouiAlertDialog(onDismissRequest = dismiss, dark = dark,
+            title = stringResource(R.string.dialog_sample_title),
+            message = if (variant == "long") List(12) { regularMessage }.joinToString("\n\n") else regularMessage,
+            confirmAction = CouiDialogAction(stringResource(R.string.dialog_confirm), { result = true; opened = null }, variant != "disabled",
+                style = if (variant == "primary") CouiDialogActionStyle.Primary else CouiDialogActionStyle.Secondary,
+                colors = if (variant == "primary") CouiDialogDefaults.primaryActionColors(com.itos.coui.theme.CouiTheme.colorScheme.accent) else null),
+            dismissAction = CouiDialogAction(stringResource(R.string.dialog_cancel), dismiss),
+            neutralAction = when {
+                variant == "theme" && onToggleTheme != null -> CouiDialogAction(stringResource(R.string.toggle_theme), onToggleTheme)
+                variant == "three" -> CouiDialogAction(stringResource(R.string.dialog_reset), { result = false; opened = null })
+                else -> null
+            },
+            placement = if (variant == "center") CouiDialogPlacement.Center else CouiDialogPlacement.Bottom,
+            material = if (material && supported) CouiDialogDefaults.material(dark) else null,
+            backdrop = windowBackdrop)
     }
 }

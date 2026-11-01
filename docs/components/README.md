@@ -22,3 +22,5 @@
 - [设置页布局](settings.md)
 - [常驻搜索](search-bar.md)
 - [折叠顶栏](collapsing-app-bar.md)
+
+- [系统功能图标](icons.md)：可追溯调用者的矢量子集。
