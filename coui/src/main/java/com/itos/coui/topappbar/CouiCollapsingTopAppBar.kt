@@ -43,7 +43,7 @@ fun CouiCollapsingTopAppBar(
     val topInset = WindowInsets.statusBars.getTop(density)
     val titleStyle = rememberCouiTextStyle(CouiTextKind.HomeTitle)
     val descent = remember(titleStyle, density) { Paint().apply {
-        typeface = Typeface.create(Typeface.create("sans-serif-semibold", 0), 700, false)
+        typeface = Typeface.create(Typeface.create("sans-serif-semibold", Typeface.NORMAL), 700, false)
         textSize = with(density) { titleStyle.fontSize.toPx() }
     }.fontMetrics.descent }
     val titleHeight = with(density) { CouiCollapsingAppBarDefaults.titleHeight.roundToPx().toFloat() }
