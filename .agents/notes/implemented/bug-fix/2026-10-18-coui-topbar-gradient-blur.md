@@ -28,6 +28,8 @@ CouiTopAppBar 在相应平台通过 CouiGradientBlur 移植位置可变 Gaussian
 
 ## Consequences
 
+透明中心的工作省略与固定第二遍指令复用见[绘制工作省略](../simplification/2026-11-01-render-work-elision.md)；本篇的核、完整采样范围和既有视觉适配保持。
+
 移除粗网格放大来源，保留原尺寸卷积的采样成本。高 density 的强度适配会扩大卷积核和外沿，不能以图层减少宣称更快。
 
 原工程曾用生产与原片段离线 Skia 对照核、边界、顺序和锚点，并检查曲线与方差；这是历史证据，不是本仓库的 Android GPU 验收。本次迁入不改 Shader。当前公开承载的分配、精度、噪声时间行为及既有强度适配仍不能表述为原厂逐像素等价。

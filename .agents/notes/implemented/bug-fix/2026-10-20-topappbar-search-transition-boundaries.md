@@ -33,6 +33,8 @@ CouiTopAppBar 建立局部 SharedTransitionScope。完整槽位通过 CouiTopApp
 
 ## Consequences
 
+前景 caustic 在原阈值内省略透明绘制，依据见[绘制工作省略](../simplification/2026-11-01-render-work-elision.md)；本篇的前景编码、兄弟合成与搜索输入边界保持。
+
 保留原位输入与布局，同时承担局部录制和 LookaheadScope 成本。透明 SDR 前景编码不能扩展为 HDR/透明窗口等价保证，减少 patch 覆盖也不能证明 GPU 更快。
 
 原工程曾执行坐标反例、合成数值及 PSI 检查，未以它们证明真实 Android 动画、焦点或 GPU 效果。本轮只整理核心决定与当前路径；设备对照仍独立记录，不把历史模型作为当前真机验收。

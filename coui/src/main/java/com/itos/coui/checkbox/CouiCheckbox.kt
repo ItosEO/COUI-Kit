@@ -6,7 +6,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -75,62 +76,70 @@ fun CouiCheckbox(
             timeline.snapTo(1f)
         }
     }
-    Canvas(modifier.size(24.dp)) {
+    Spacer(modifier.size(24.dp).drawWithCache {
         val unit = size.minDimension / 24f
-        val fillColor = if (enabled) colors.checked else colors.disabledChecked
-        val borderColor = if (enabled) colors.unchecked else colors.disabledUnchecked
-        val checkColor = if (enabled) colors.checkmark else colors.disabledCheckmark
-        val transitioning = enabled && previousEnabled && (animated || previousChecked != checked)
-        val time = if (!transitioning) 1f else if (previousChecked != checked) 0f else timeline.value
-        val returning = time >= 0.5f
-        val phase = (if (returning) time * 2f - 1f else time * 2f).coerceIn(0f, 1f)
-        val groupPulse = if (!transitioning) 1f else if (returning) {
-            1.08f - 0.08f * CheckboxEasing.transform(phase)
-        } else {
-            1f + 0.08f * CheckboxEasing.transform(phase)
+        val borderOutline = borderShape.createOutline(Size(16.4f * unit, 16.4f * unit), layoutDirection, this)
+        val fillOutline = shape.createOutline(Size(18f * unit, 18f * unit), layoutDirection, this)
+        val borderStroke = Stroke(1.3f * unit)
+        val activeBorderStroke = Stroke(1.6f * unit)
+        val checkStroke = Stroke(width = 1.3f * unit, cap = StrokeCap.Butt, join = StrokeJoin.Round)
+        val check = Path().apply {
+            moveTo((12f - 14.12f / 3f) * unit, (12f - 0.236f / 3f) * unit)
+            lineTo((12f - 3.44f / 3f) * unit, (12f + 10.454f / 3f) * unit)
+            lineTo((12f + 16.97f / 3f) * unit, (12f - 10.146f / 3f) * unit)
         }
-        val checkPulse = if (transitioning && checked && returning) {
-            1.08f - 0.08f * CheckmarkReturnEasing.transform(phase)
-        } else groupPulse
-        val fill = if (checked) CheckboxEasing.transform((time * 2f).coerceIn(0f, 1f))
-            else 1f - CheckboxEasing.transform((time * 2f - 1f).coerceIn(0f, 1f))
-        val checkProgress = if (checked) CheckboxEasing.transform(time) else 1f - CheckboxEasing.transform(time)
-        scale(groupPulse) {
-            translate(3.8f * unit, 3.799f * unit) {
-                drawOutline(
-                    outline = borderShape.createOutline(Size(16.4f * unit, 16.4f * unit), layoutDirection, this),
-                    color = borderColor,
-                    style = Stroke((if (transitioning && checked) 1.6f else 1.3f) * unit),
-                )
-            }
-            translate(3f * unit, 3f * unit) {
-                drawOutline(
-                    outline = shape.createOutline(Size(18f * unit, 18f * unit), layoutDirection, this),
-                    color = fillColor,
-                    alpha = fill,
-                )
-            }
-        }
-        scale(checkPulse) {
-            val check = Path().apply {
-                moveTo((12f - 14.12f / 3f) * unit, (12f - 0.236f / 3f) * unit)
-                lineTo((12f - 3.44f / 3f) * unit, (12f + 10.454f / 3f) * unit)
-                lineTo((12f + 16.97f / 3f) * unit, (12f - 10.146f / 3f) * unit)
-            }
-            val measure = PathMeasure().apply { setPath(check, false) }
-            val segment = Path()
-            measure.getSegment(0f, measure.length * checkProgress, segment)
-            if (checked && !transitioning) {
-                scale(unit, unit, pivot = Offset.Zero) {
-                    drawPath(checkedPath, color = checkColor)
-                }
+        val measure = PathMeasure().apply { setPath(check, false) }
+        val segment = Path()
+        onDrawBehind {
+            val fillColor = if (enabled) colors.checked else colors.disabledChecked
+            val borderColor = if (enabled) colors.unchecked else colors.disabledUnchecked
+            val checkColor = if (enabled) colors.checkmark else colors.disabledCheckmark
+            val transitioning = enabled && previousEnabled && (animated || previousChecked != checked)
+            val time = if (!transitioning) 1f else if (previousChecked != checked) 0f else timeline.value
+            val returning = time >= 0.5f
+            val phase = (if (returning) time * 2f - 1f else time * 2f).coerceIn(0f, 1f)
+            val groupPulse = if (!transitioning) 1f else if (returning) {
+                1.08f - 0.08f * CheckboxEasing.transform(phase)
             } else {
-                drawPath(
-                    path = segment,
-                    color = checkColor,
-                    style = Stroke(width = 1.3f * unit, cap = StrokeCap.Butt, join = StrokeJoin.Round),
-                )
+                1f + 0.08f * CheckboxEasing.transform(phase)
+            }
+            val checkPulse = if (transitioning && checked && returning) {
+                1.08f - 0.08f * CheckmarkReturnEasing.transform(phase)
+            } else groupPulse
+            val fill = if (checked) CheckboxEasing.transform((time * 2f).coerceIn(0f, 1f))
+                else 1f - CheckboxEasing.transform((time * 2f - 1f).coerceIn(0f, 1f))
+            val checkProgress = if (checked) CheckboxEasing.transform(time) else 1f - CheckboxEasing.transform(time)
+            scale(groupPulse) {
+                translate(3.8f * unit, 3.799f * unit) {
+                    drawOutline(
+                        outline = borderOutline,
+                        color = borderColor,
+                        style = if (transitioning && checked) activeBorderStroke else borderStroke,
+                    )
+                }
+                translate(3f * unit, 3f * unit) {
+                    drawOutline(
+                        outline = fillOutline,
+                        color = fillColor,
+                        alpha = fill,
+                    )
+                }
+            }
+            scale(checkPulse) {
+                if (checked && !transitioning) {
+                    scale(unit, unit, pivot = Offset.Zero) {
+                        drawPath(checkedPath, color = checkColor)
+                    }
+                } else {
+                    segment.reset()
+                    measure.getSegment(0f, measure.length * checkProgress, segment)
+                    drawPath(
+                        path = segment,
+                        color = checkColor,
+                        style = checkStroke,
+                    )
+                }
             }
         }
-    }
+    })
 }

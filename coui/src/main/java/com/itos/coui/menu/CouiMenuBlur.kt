@@ -16,7 +16,9 @@ import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import com.itos.coui.backdrop.CouiBackdrop
 import kotlin.math.ceil
 
@@ -48,6 +50,9 @@ class CouiMenuBlur internal constructor(
     private val downsampleShader = RuntimeShader(MenuDownsampleShader)
     private val blurShaders = List(9) { RuntimeShader(MenuKawaseShader) }
     private var firstSize = IntSize.Zero
+    private var recordedBlurSize = IntSize.Zero
+    private var recordedDensity: Density? = null
+    private var recordedLayoutDirection: LayoutDirection? = null
 
     init {
         layers.forEach {
@@ -90,17 +95,32 @@ class CouiMenuBlur internal constructor(
                 backdrop.draw(this, coordinates)
             }
         }
-        for (index in 1..9) {
-            layers[index].record(scope, scope.layoutDirection, blurSize) {
-                drawLayer(layers[index - 1])
-            }
-        }
+        recordBlurPasses(scope, blurSize)
         scope.withTransform({
             // native 使用输入区域与实际中间图尺寸的比值, 不是固定乘八。
             scale(menuSize.width / blurSize.width, menuSize.height / blurSize.height, Offset.Zero)
         }) {
             drawLayer(layers[9])
         }
+    }
+
+    private fun recordBlurPasses(scope: DrawScope, size: IntSize) {
+        val density = recordedDensity
+        if (recordedBlurSize == size && density != null && density.density == scope.density &&
+            density.fontScale == scope.fontScale && recordedLayoutDirection == scope.layoutDirection
+        ) return
+        // 固定指令只引用前驱层; RenderNode 继续跟踪动态内容, GraphicsLayer 负责恢复被回收的指令。
+        // 保存 Density 值, 不让恢复回调持有不断重定向的 DrawScope。
+        val recordingDensity = Density(scope.density, scope.fontScale)
+        for (index in 1..9) {
+            val previous = layers[index - 1]
+            layers[index].record(recordingDensity, scope.layoutDirection, size) {
+                drawLayer(previous)
+            }
+        }
+        recordedBlurSize = size
+        recordedDensity = recordingDensity
+        recordedLayoutDirection = scope.layoutDirection
     }
 
     private fun updateEffects(captureSize: IntSize, blurSize: IntSize) {

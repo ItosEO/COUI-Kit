@@ -600,7 +600,7 @@ private fun CouiMenuPressedIndicator(
 
     Box(
         modifier = Modifier
-            .offset(y = offsetY)
+            .offset { IntOffset(0, offsetY.roundToPx()) }
             .padding(horizontal = CouiMenuItemStateHorizontalInset)
             .fillMaxWidth()
             .height(CouiMenuItemHeight)

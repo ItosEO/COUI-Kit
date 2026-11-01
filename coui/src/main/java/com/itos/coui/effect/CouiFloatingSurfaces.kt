@@ -260,7 +260,10 @@ private fun Modifier.floatingSurfaces(
                 val group = indices.filter { nodes[it].visible }
                 group.forEach { index ->
                     commands.add(shadowLayers[index])
-                    if (contourGlowEnabled) {
+                    // 前景模式下, 原 Shader 在此阈值内严格输出透明, 无需录制背景或创建光晕图层。
+                    // 完整 destination 模式仍需回填, 不能套用这一短路。
+                    if (contourGlowEnabled && (!foregroundComposition ||
+                            shadows[index].causticColor.alpha * nodes[index].alpha > 0.001f)) {
                         val node = nodes[index]
                         val shadow = shadows[index]
                         val optical = Rect(shadow.layout.left, shadow.layout.top,

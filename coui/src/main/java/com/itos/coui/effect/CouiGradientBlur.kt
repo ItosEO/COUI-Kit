@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.backdrop.drawCouiBackdrop
 import kotlin.math.ceil
@@ -74,6 +75,8 @@ private class CouiGradientRenderer(
     }
     private var lastSize = IntSize.Zero
     private var lastHeight = Float.NaN
+    private var recordedSize = IntSize.Zero
+    private var recordedLayoutDirection: LayoutDirection? = null
 
     var height: Float = 0f
 
@@ -96,7 +99,13 @@ private class CouiGradientRenderer(
             translate(padding, padding) { drawBackdrop() }
         }
         // 独立图层落实两次栅格化, 不让第二遍在 Shader 内嵌套执行第一遍卷积。
-        passes[1].record(density, scope.layoutDirection, paddedSize) { drawLayer(passes[0]) }
+        // 第二遍指令只引用第一遍; 子层更新仍会传播, 不需要因背景滚动而重录。
+        if (recordedSize != paddedSize || recordedLayoutDirection != scope.layoutDirection) {
+            val horizontal = passes[0]
+            passes[1].record(density, scope.layoutDirection, paddedSize) { drawLayer(horizontal) }
+            recordedSize = paddedSize
+            recordedLayoutDirection = scope.layoutDirection
+        }
         scope.translate(-padding, -padding) { drawLayer(passes[1]) }
     }
 
@@ -149,6 +158,8 @@ private fun gradientGaussianShader(kernelRadius: Int): String = """
         float ratio = smoothstep(0.0, 1.0, 1.0 - position);
         int radius = int(float(in_blurRadius) * ratio);
         if (radius <= 1) return c;
+        // 卷积结果恢复中心 alpha 后恒为零; 保留清晰端直通, 不截断低但非零的覆盖率。
+        if (c.a == 0.0) return half4(0.0);
         float2 offset = float2(0.0);
         float sumWeight = 0.0;
         half4 finalColor = half4(0.0);

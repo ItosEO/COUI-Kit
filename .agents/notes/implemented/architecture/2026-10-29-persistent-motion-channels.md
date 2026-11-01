@@ -30,6 +30,7 @@ Status: implemented
 
 ## Existing-note audit
 
+- [绘制工作省略](../simplification/2026-11-01-render-work-elision.md)：部分重叠，复选框缓存静态几何、菜单预选位移在 placement 读取；本篇的时钟、方向重启、弹簧与取消语义保持。
 - [公开 API 收口](2026-10-23-public-api-boundary.md)、[滑条](../feature/2026-10-21-coui-slider.md)、[开关反馈](../bug-fix/2026-10-28-switch-review-feedback.md)：部分重叠，互链。本篇补轴写入口收窄、完整重置与进度承载，不取代公共绘制、惯性边界、G2、触摸 pressed owner 和焦点外描边。
 - [ChipTab 中断](../bug-fix/2026-10-24-chip-scroll-interruption.md)与[弹窗](../feature/2026-10-24-coui-alert-dialog.md)：沿用各自父级接管与业务提交规则，仅迁移共享 Press 工厂和缩放合成。
 - Demo 展示、分类栏装配与其他命中记录仍持有各自布局、绘制和物理决定；没有同范围 proposed/rejected 或完全吸收项需要删除、归档。
