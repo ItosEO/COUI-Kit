@@ -32,12 +32,14 @@ fun Modifier.drawCouiGradientBackdrop(
     backdrop: CouiBackdrop,
     fadeHeightPx: Float,
     referenceBlurRadiusPx: Float,
+    gradientSpeed: Float? = null,
 ): Modifier {
+    require(gradientSpeed == null || gradientSpeed.isFinite() && gradientSpeed > 0f)
     val horizontal = rememberGraphicsLayer()
     val vertical = rememberGraphicsLayer()
     val density = LocalDensity.current
-    val renderer = remember(fadeHeightPx, referenceBlurRadiusPx, density, horizontal, vertical) {
-        CouiGradientRenderer(fadeHeightPx, referenceBlurRadiusPx, density, listOf(horizontal, vertical))
+    val renderer = remember(fadeHeightPx, referenceBlurRadiusPx, gradientSpeed, density, horizontal, vertical) {
+        CouiGradientRenderer(fadeHeightPx, referenceBlurRadiusPx, gradientSpeed, density, listOf(horizontal, vertical))
     }
     return drawCouiBackdrop(
         backdrop = backdrop,
@@ -57,6 +59,7 @@ fun Modifier.drawCouiGradientBackdrop(
 private class CouiGradientRenderer(
     private val fadeHeightPx: Float,
     referenceBlurRadiusPx: Float,
+    private val gradientSpeed: Float?,
     private val density: Density,
     private val passes: List<GraphicsLayer>,
 ) {
@@ -65,7 +68,7 @@ private class CouiGradientRenderer(
         (referenceBlurRadiusPx * SigmaScale + 0.5f) * 3f / BlurOffsetPx,
     ).toInt()
     private val shaders = List(2) { index ->
-        RuntimeShader(gradientGaussianShader(kernelRadius)).apply {
+        RuntimeShader(gradientGaussianShader(kernelRadius, gradientSpeed)).apply {
             setFloatUniform(
                 "in_blurOffset",
                 if (index == 0) BlurOffsetPx else 0f,
@@ -113,8 +116,9 @@ private class CouiGradientRenderer(
         if (lastSize == size && lastHeight == height) return
         shaders.forEachIndexed { index, shader ->
             shader.setFloatUniform("inputSize", size.width.toFloat(), size.height.toFloat())
-            shader.setFloatUniform("gradientTop", padding + height - fadeHeightPx)
-            shader.setFloatUniform("gradientHeight", fadeHeightPx)
+            val gradientHeight = if (gradientSpeed == null) fadeHeightPx else height
+            shader.setFloatUniform("gradientTop", padding + height - gradientHeight)
+            shader.setFloatUniform("gradientHeight", gradientHeight)
             // RenderEffect 保存 uniform 快照; 仅几何改变时更新, 普通滚动复用。
             passes[index].renderEffect = RenderEffect.createRuntimeShaderEffect(shader, "child")
                 .asComposeRenderEffect()
@@ -126,7 +130,7 @@ private class CouiGradientRenderer(
 
 // libhwui.so: OplusGradientGaussianBlurEffect::make_blur_effect, 保留整数半径、权重和剩余中心权重。
 // shortcut: 噪声种子固定, 不复刻原厂逐次随机的时间变化; 需要动态噪声时再接入渲染时钟。
-private fun gradientGaussianShader(kernelRadius: Int): String = """
+private fun gradientGaussianShader(kernelRadius: Int, gradientSpeed: Float?): String = """
     const int in_blurRadius = $kernelRadius;
     const float PI = 3.1415926;
     uniform shader child;
@@ -154,8 +158,8 @@ private fun gradientGaussianShader(kernelRadius: Int): String = """
     half4 main(float2 coord) {
         half4 c = sampleChild(coord);
         float position = clamp((coord.y - gradientTop) / gradientHeight, 0.0, 1.0);
-        // 清晰端缓慢起步, 两端斜率归零, 避免过早进入高模糊。
-        float ratio = smoothstep(0.0, 1.0, 1.0 - position);
+        // 通用入口保留 smoothstep；显式原厂分支使用 1-pow(1-ratio,speed)。
+        float ratio = ${if (gradientSpeed == null) "smoothstep(0.0, 1.0, 1.0 - position)" else "1.0 - pow(position, ${gradientSpeed})"};
         int radius = int(float(in_blurRadius) * ratio);
         if (radius <= 1) return c;
         // 卷积结果恢复中心 alpha 后恒为零; 保留清晰端直通, 不截断低但非零的覆盖率。

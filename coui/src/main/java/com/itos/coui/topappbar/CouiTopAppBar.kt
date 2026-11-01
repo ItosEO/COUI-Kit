@@ -9,6 +9,7 @@ import android.os.Build
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -16,7 +17,10 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asComposeRenderEffect
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
@@ -52,14 +56,24 @@ private val FadeColors = LongArray(FadeStopCount) { index ->
     android.graphics.Color.pack(0f, 0f, 0f, 1f - smoothProgress, GradientColorSpace)
 }
 
-/** 背景从标题栏顶部开始并向下延伸, 不改变标题栏的布局高度。 */
+/**
+ * 背景从标题栏顶部开始并向下延伸，不改变布局或触摸高度。
+ * gradientSpeed 为 null 时保留项目固定渐隐；正值选择全高原厂幂曲线。
+ * gradientColor 非透明时叠加原厂主题背景渐变，dark 选择对应透明度分支。
+ */
 @Composable
 fun CouiTopAppBar(
     modifier: Modifier = Modifier,
     backdrop: CouiBackdrop,
     fadeHeight: androidx.compose.ui.unit.Dp = CouiTopAppBarDefaults.fadeHeight,
-    referenceBlurRadius: androidx.compose.ui.unit.Dp = CouiTopAppBarDefaults.referenceBlurRadius,
+    referenceBlurRadius: androidx.compose.ui.unit.Dp = with(LocalDensity.current) {
+        CouiTopAppBarDefaults.referenceBlurRadiusPx.toDp()
+    },
     bottomExtension: androidx.compose.ui.unit.Dp = CouiTopAppBarDefaults.bottomExtension,
+    backgroundAlpha: Float = 1f,
+    gradientSpeed: Float? = null,
+    gradientColor: Color = Color.Transparent,
+    dark: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val density = LocalDensity.current.density
@@ -69,6 +83,7 @@ fun CouiTopAppBar(
             backdrop = backdrop,
             fadeHeightPx = fadeHeight.value * density,
             referenceBlurRadiusPx = referenceBlurRadius.value * density,
+            gradientSpeed = gradientSpeed,
         )
     } else {
         val blurEffects = remember(density) {
@@ -80,16 +95,21 @@ fun CouiTopAppBar(
             effects = { progressiveBlur(blurEffects, fadeHeight) },
         )
     }
+    val gradient = remember(gradientColor, dark) {
+        // GradientBackgroundDrawable 从下到上：浅色 0/.7/1，深色 0/.4。
+        fun color(alpha: Float) = gradientColor.copy(alpha = (alpha * 255).toInt() / 255f)
+        if (dark) Brush.verticalGradient(0f to color(.4f), 1f to color(0f))
+        else Brush.verticalGradient(0f to color(1f), .6f to color(.7f), 1f to color(0f))
+    }
     SharedTransitionScope { overlayModifier ->
         Layout(
             modifier = modifier.then(overlayModifier),
             content = {
                 Box(Modifier.couiBackdrop(destination)) {
-                    Spacer(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .then(backgroundModifier),
-                    )
+                    Box(Modifier.matchParentSize().graphicsLayer { alpha = backgroundAlpha.coerceIn(0f, 1f) }) {
+                        Spacer(Modifier.matchParentSize().then(backgroundModifier))
+                        if (gradientColor.alpha > 0f) Spacer(Modifier.matchParentSize().background(gradient))
+                    }
                 }
                 Box {
                     CompositionLocalProvider(

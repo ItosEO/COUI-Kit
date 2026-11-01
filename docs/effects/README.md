@@ -13,3 +13,5 @@
 | [横向双主体融合](metaball.md) | 同色融合背景及 DstIn 内容遮罩 |
 
 运行要求见[兼容要求](../guide/compatibility.md)，Shape 和组件 Defaults 见[外观与预设](../guide/appearance.md)。
+
+- [边界回弹](overscroll.md)：支持空页和短内容的受控滚动反馈。

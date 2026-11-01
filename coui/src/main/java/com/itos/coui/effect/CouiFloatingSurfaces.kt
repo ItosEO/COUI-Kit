@@ -20,13 +20,13 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode as ComposeBlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.addOutline
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.layer.CompositingStrategy
 import androidx.compose.ui.graphics.layer.GraphicsLayer
@@ -82,10 +82,10 @@ data class CouiFloatingShadow(
 
 /** 创建时直接验证原生片段能否编译; 宿主负责报告失败, 不在绘制时吞没错误。 */
 @RequiresApi(34)
-class CouiFloatingRenderer private constructor(internal val standalone: Boolean) {
-    constructor() : this(false)
+class CouiFloatingRenderer private constructor(internal val surfaceCount: Int) {
+    constructor() : this(3)
 
-    internal val surfaceCount = if (standalone) 1 else 3
+    internal val standalone = surfaceCount == 1
     internal val shaders = if (standalone) listOf(RuntimeShader(couiFloatingStandaloneShader()))
         else listOf(RuntimeShader(couiFloatingShader(1)), RuntimeShader(couiFloatingShader(2)))
     internal val causticShaders = List(surfaceCount) { RuntimeShader(CouiCausticShader) }
@@ -95,15 +95,15 @@ class CouiFloatingRenderer private constructor(internal val standalone: Boolean)
     )
 
     companion object {
-        fun standalone(): CouiFloatingRenderer = CouiFloatingRenderer(true)
+        fun standalone(): CouiFloatingRenderer = CouiFloatingRenderer(1)
+        /** 搜索框与取消按钮的真实双主体链；不创建第三个布局或内容节点。 */
+        fun pair(): CouiFloatingRenderer = CouiFloatingRenderer(2)
     }
 }
 
 /**
  * 单主体 BaseShader; 不绑定底栏, 不创建融球资源。
  * foregroundComposition 为 true 时材质和光晕仅输出前景; 共用 backdrop, 源须覆盖不透明 SDR 页面。
- * beforeContent 在材质之后、内容之前直接混合到目标；接收内容的缓存裁剪路径，调用方不得修改。
- * 回调坐标仍为节点本地坐标，变换及裁剪由调用方提供。
  */
 @RequiresApi(34)
 @Composable
@@ -121,7 +121,8 @@ fun Modifier.couiFloatingSurface(
 ): Modifier {
     require(renderer.standalone)
     return floatingSurfaces(backdrop, renderer, listOf(material), listOf(shadow), listOf(shape),
-        listOf(contentLayer), contourGlowEnabled, foregroundComposition, beforeContent) { listOf(surface()) }
+        listOf(contentLayer), contourGlowEnabled, foregroundComposition,
+        beforeContent = beforeContent?.let { draw -> { _, path -> draw(path) } }) { listOf(surface()) }
 }
 
 /** 三主体按宿主子项顺序传入; 菜单使用 index 1, 两侧附件均使用 index 2。 */
@@ -137,10 +138,35 @@ fun Modifier.couiFloatingSurfaces(
     contourGlowEnabled: Boolean,
     surfaces: () -> List<CouiFloatingSurface>,
 ): Modifier {
-    require(!renderer.standalone)
+    require(renderer.surfaceCount == 3)
     require(materials.size == 3 && shadows.size == 3 && shapes.size == 3 && contentLayers.size == 3)
     require(materials.map { it.index }.sorted() == listOf(1, 2, 2))
     return floatingSurfaces(backdrop, renderer, materials, shadows, shapes, contentLayers, contourGlowEnabled, surfaces = surfaces)
+}
+
+/** 双主体的采样、融球和光效；顺序与 material.index 必须分别为 1、2。 */
+@RequiresApi(34)
+@Composable
+fun Modifier.couiFloatingPair(
+    backdrop: CouiBackdrop,
+    renderer: CouiFloatingRenderer,
+    materials: List<CouiFloatingMaterial>,
+    shadows: List<CouiFloatingShadow>,
+    shapes: List<Shape>,
+    contentLayers: List<GraphicsLayer>,
+    contourGlowEnabled: Boolean,
+    beforeContent: (DrawScope.(Int, Path) -> Unit)? = null,
+    drawOrder: List<Int> = listOf(0, 1),
+    foregroundComposition: Boolean = false,
+    surfaces: () -> List<CouiFloatingSurface>,
+): Modifier {
+    require(renderer.surfaceCount == 2)
+    require(materials.size == 2 && shadows.size == 2 && shapes.size == 2 && contentLayers.size == 2)
+    require(materials.map { it.index } == listOf(1, 2))
+    require(drawOrder.sorted() == listOf(0, 1))
+    return floatingSurfaces(backdrop, renderer, materials, shadows, shapes, contentLayers, contourGlowEnabled,
+        foregroundComposition = foregroundComposition,
+        beforeContent = beforeContent, drawOrder = drawOrder, surfaces = surfaces)
 }
 
 @RequiresApi(34)
@@ -154,7 +180,8 @@ private fun Modifier.floatingSurfaces(
     contentLayers: List<GraphicsLayer>,
     contourGlowEnabled: Boolean,
     foregroundComposition: Boolean = false,
-    beforeContent: (DrawScope.(Path) -> Unit)? = null,
+    beforeContent: (DrawScope.(Int, Path) -> Unit)? = null,
+    drawOrder: List<Int> = materials.indices.toList(),
     surfaces: () -> List<CouiFloatingSurface>,
 ): Modifier {
     val recordingDensity = LocalDensity.current
@@ -221,12 +248,9 @@ private fun Modifier.floatingSurfaces(
                     shape.createOutline(outlineSize, layoutDirection, this)
                 }
             }
-            val beforeContentClip = if (beforeContent != null) {
-                when (val outline = outlines.single()) {
-                    is Outline.Generic -> outline.path
-                    else -> Path().apply { addOutline(outline) }
-                }
-            } else null
+            val beforeClips = if (beforeContent != null) outlines.map { outline ->
+                if (outline is Outline.Generic) outline.path else Path().apply { addOutline(outline) }
+            } else emptyList()
             val metrics = DisplayMetrics()
             @Suppress("DEPRECATION")
             checkNotNull(view.display).getRealMetrics(metrics)
@@ -257,7 +281,7 @@ private fun Modifier.floatingSurfaces(
                 contentLayers[index].clip = true
             }
             floatingDrawGroups(shadows.map { it.elevation }).forEach { indices ->
-                val group = indices.filter { nodes[it].visible }
+                val group = indices.filter { nodes[it].visible }.sortedBy { drawOrder.indexOf(it) }
                 group.forEach { index ->
                     commands.add(shadowLayers[index])
                     // 前景模式下, 原 Shader 在此阈值内严格输出透明, 无需录制背景或创建光晕图层。
@@ -304,9 +328,11 @@ private fun Modifier.floatingSurfaces(
                         if (renderer.standalone) {
                             shader.setFloatUniform("u_baseShapeCtxArray", floatingShapeContext(ball[2], ball[3], ball[5], ball[4]))
                         } else {
-                            val balls = floatingBallSlots(index, materials.map { it.index }).map { slot ->
+                            val activeBalls = floatingBallSlots(index, materials.map { it.index }).map { slot ->
                                 if (nodes[slot].visible) nodes[slot].ball(height, origin) else FloatArray(8)
                             }
+                            // Native Shader 的 influence 容量为 3；未注册槽位保持零，不产生绘制/内容节点。
+                            val balls = List(3) { slot -> activeBalls.getOrNull(slot) ?: FloatArray(8) }
                             balls.forEachIndexed { i, linked ->
                                 shader.setFloatUniform("u_ball${i + 1}Array", linked)
                                 shader.setFloatUniform("u_ball${i + 1}ShapeCtxArray", floatingShapeContext(linked[2], linked[3], linked[5], linked[4]))
@@ -372,8 +398,9 @@ private fun Modifier.floatingSurfaces(
                     }
                 }
                 drawCommands.forEach { layer ->
-                    if (beforeContentClip != null && layer === contentLayers[0]) {
-                        beforeContent?.invoke(this, beforeContentClip)
+                    if (beforeContent != null) {
+                        val index = contentLayers.indexOf(layer)
+                        if (index >= 0) beforeContent.invoke(this, index, beforeClips[index])
                     }
                     drawLayer(layer)
                 }

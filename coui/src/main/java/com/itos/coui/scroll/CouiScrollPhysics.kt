@@ -1,4 +1,4 @@
-package com.itos.coui.chip
+package com.itos.coui.scroll
 
 import kotlin.math.abs
 import kotlin.math.cosh
@@ -7,8 +7,9 @@ import kotlin.math.min
 import kotlin.math.sinh
 import kotlin.math.sqrt
 
-/** SpringOverScroller 的水平轴：两遍预测、fling 专用过阻尼插值及 RK4 回弹。长度均为像素。 */
-internal class CouiChipScrollPhysics(private val animationLevel: Int) {
+/** SpringOverScroller 的轴：两遍预测、fling 专用过阻尼插值及 RK4 回弹。长度均为像素。 */
+internal class CouiScrollPhysics(private val animationLevel: Int,
+    private val springBackTensionMultiple: Float = 3.2f, private val scrollView: Boolean = true) {
     private val flingFriction = normalFriction
     init {
         // 原厂先构造 X 轴再构造 Y 轴；首个低等级 X 轴保留初始摩擦，后续轴使用 0.24。
@@ -29,6 +30,7 @@ internal class CouiChipScrollPhysics(private val animationLevel: Int) {
     var running = false
         private set
     val current: Int get() = Math.round(position).toInt()
+    val currentVelocity: Float get() = velocity.toFloat()
 
     fun stop() { running = false; velocity = 0.0; tempPosition = position }
 
@@ -85,6 +87,7 @@ internal class CouiChipScrollPhysics(private val animationLevel: Int) {
         target = from.coerceIn(0, maximum).toDouble()
         // 只有惯性触边先执行 notifyEdgeReached；直接松手回弹保留积分临时位置。
         if (preserveVelocity) tempPosition = target
+        else if (!scrollView) tempPosition = 0.0
         if (initialVelocity != null) velocity = initialVelocity.toDouble()
         else if (!preserveVelocity) velocity = 0.0
         springBack = position != target
@@ -108,7 +111,7 @@ internal class CouiChipScrollPhysics(private val animationLevel: Int) {
             val previous = position
             do {
                 integrate(((12.19f - 8f) * 3f + 25f).toDouble(),
-                    (((3.2f * 16f) - 30f) * 3.62f + 194f).toDouble(), target, step)
+                    (((springBackTensionMultiple * 16f) - 30f) * 3.62f + 194f).toDouble(), target, step)
             } while (abs(previous - position) <= 0.5 && !atRest())
         } else {
             val previous = position
@@ -120,7 +123,7 @@ internal class CouiChipScrollPhysics(private val animationLevel: Int) {
                 running = false
             }
         }
-        check(position.isFinite() && velocity.isFinite()) { "分类栏滚动物理产生非有限值" }
+        check(position.isFinite() && velocity.isFinite()) { "COUI 滚动物理产生非有限值" }
         return running
     }
 

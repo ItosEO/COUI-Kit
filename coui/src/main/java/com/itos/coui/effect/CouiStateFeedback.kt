@@ -3,9 +3,9 @@ package com.itos.coui.effect
 import android.animation.ArgbEvaluator
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
@@ -25,8 +25,17 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import android.view.ViewTreeObserver
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.geometry.toRect
+import androidx.compose.ui.unit.toSize
+import com.itos.coui.input.isCouiTouchCancelled
 
 /** 导航项过滤 state_pressed, COUIMaskRippleDrawable 实际只绘 hover -> focus。 */
 @Composable
@@ -84,6 +93,52 @@ private fun rememberMaskProgress(active: Boolean): State<Float> {
     return effect.progress
 }
 
+/**
+ * 普通按钮或列表的 hover、focus、press 蒙层；不创建点击或业务提交。
+ * list 选择原厂列表的最低按压进度及取消规则，hoverLocked 用于 Popup 展开期间的行悬停。
+ * 宿主将同一 interactionSource 交给唯一的 clickable / toggleable owner，并自行提供外部裁剪。
+ */
+@Composable
+fun Modifier.couiButtonFeedback(dark: Boolean, interactionSource: MutableInteractionSource,
+    enabled: Boolean, pressFeedback: Boolean = true, list: Boolean = false, hoverLocked: Boolean = false): Modifier {
+    val hovered by interactionSource.collectIsHoveredAsState()
+    val focused by interactionSource.collectIsFocusedAsState()
+    val pressed by interactionSource.collectIsPressedAsState()
+    val hover = rememberMaskProgress(enabled && (hovered || hoverLocked))
+    val focus = rememberMaskProgress(enabled && focused)
+    val listPress = if (list) remember { CouiListPressMask() } else null
+    if (listPress != null) {
+        SideEffect { listPress.updateState(enabled, pressed) }
+        val view = LocalView.current
+        DisposableEffect(listPress, view) {
+            val listener = ViewTreeObserver.OnWindowFocusChangeListener { focused -> if (!focused) listPress.release() }
+            view.viewTreeObserver.addOnWindowFocusChangeListener(listener)
+            onDispose { if (view.viewTreeObserver.isAlive) view.viewTreeObserver.removeOnWindowFocusChangeListener(listener); listPress.dispose() }
+        }
+    }
+    val press = if (listPress == null) rememberMaskProgress(enabled && pressed && pressFeedback) else null
+    val observer = if (listPress != null && enabled) Modifier.pointerInput(listPress) {
+        awaitEachGesture {
+            val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+            listPress.touch(true)
+            try {
+                do {
+                    val event = awaitPointerEvent(PointerEventPass.Final)
+                    val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                    val consumedMove = change.pressed && change.isConsumed && change.position != change.previousPosition
+                    if (event.isCouiTouchCancelled() || consumedMove || !size.toSize().toRect().contains(change.position)) break
+                    if (!change.pressed) break
+                } while (true)
+            } finally { listPress.touch(false) }
+        }
+    } else Modifier
+    return hoverable(interactionSource, enabled).then(observer).drawBehind {
+        drawRect(maskColor(hover.value, if (dark) 0x26FFFFFF else 0x14000000))
+        drawRect(maskColor(focus.value, if (dark) 0x331A8CFF else 0x1F0080FF))
+        drawRect(maskColor(listPress?.progress ?: checkNotNull(press).value, if (dark) 0x33FFFFFF else 0x1F000000))
+    }
+}
+
 /** COUISwitch 的 hover/press 蒙层；触摸会话与点击识别取消分别收尾。 */
 @Composable
 internal fun Modifier.couiSwitchFeedback(
@@ -126,25 +181,37 @@ internal fun Modifier.couiSwitchFocusOutline(
     }
 }
 
-/** 普通按钮的状态蒙层；点击由组件唯一的 clickable 提交，材质分支关闭 pressed 蒙层。 */
-@Composable
-internal fun Modifier.couiButtonFeedback(
-    dark: Boolean,
-    interactionSource: MutableInteractionSource,
-    enabled: Boolean,
-    pressFeedback: Boolean,
-): Modifier {
-    val hovered by interactionSource.collectIsHoveredAsState()
-    val focused by interactionSource.collectIsFocusedAsState()
-    val pressed by interactionSource.collectIsPressedAsState()
-    val hover = rememberMaskProgress(enabled && hovered)
-    val focus = rememberMaskProgress(enabled && focused)
-    val press = rememberMaskProgress(enabled && pressed && pressFeedback)
-    return hoverable(interactionSource, enabled).drawBehind {
-        drawRect(maskColor(hover.value, if (dark) 0x26FFFFFF else 0x14000000))
-        drawRect(maskColor(focus.value, if (dark) 0x331A8CFF else 0x1F0080FF))
-        drawRect(maskColor(press.value, if (dark) 0x33FFFFFF else 0x1F000000))
+/** ListSelectedItemLayout 的容器蒙层：DOWN 立即启动，短点按/CANCEL 达到 .7 再退场。 */
+private class CouiListPressMask {
+    private val effect = CouiStateProgress()
+    val progress: Float get() = effect.value
+    private var touched = false
+    private var semanticPressed = false
+    private var awaitingSemanticRelease = false
+    private var enabled = true
+    private var disposed = false
+    fun touch(value: Boolean) { touched = value; awaitingSemanticRelease = !value; update() }
+    fun updateState(active: Boolean, pressed: Boolean) {
+        enabled = active
+        if (!pressed) awaitingSemanticRelease = false
+        semanticPressed = pressed && !awaitingSemanticRelease
+        update()
     }
+    private fun update() {
+        if (disposed) return
+        if (!enabled) { clear(); return }
+        effect.setActive(touched || (semanticPressed && !awaitingSemanticRelease), minimumPress = true)
+    }
+    fun clear() {
+        touched = false; semanticPressed = false; awaitingSemanticRelease = true
+        effect.reset()
+    }
+    // Activity 转场会失焦，但仍在绘制。沿原厂 touch exit 完成最低进度与退场，不能跳到零。
+    fun release() {
+        touched = false; semanticPressed = false; awaitingSemanticRelease = true
+        update()
+    }
+    fun dispose() { disposed = true; clear(); effect.dispose() }
 }
 
 private val MaskEvaluator = ArgbEvaluator()

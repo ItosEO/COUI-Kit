@@ -165,7 +165,7 @@ Java 入口、参数与 native 模糊片段分别有证据；这不表示所有�
 |------------------------------------|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 越界回弹中按下，不达到拖动阈值就抬手；从 DOWN 追到每个提前返回 | DOWN 已停止旧回弹，但阈值等待外的收尾无法恢复它    | 原厂分发及触摸路径在 UP/CANCEL 调用 `springBack`，未进入拖动的 UP 也有处理；当前 [CouiChipTabRow](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabRow.kt) 将阈值等待纳入同一收尾范围                                                     |
 | 按住分类项后横向拖动，让父容器接管；分别检查按压与点触光       | 点触光取消不能代替按压释放；按压还须防止本次手势中重新启动 | `COUIChip.handleActionCancel` 调用 `executeFeedbackAnimator(false)`；当前分类项显式开启公共输入的 `cancelOnConsumedMove`，其他消费者保留原行为                                                                                       |
-| 分别追直接松手、惯性触边和中断，不只比较可见位置与速度        | 将临时积分位置统一重置到边界，会改变不同入口的初始状态   | 原厂 `springBack` 经 `setCurrentValue(..., false)` 保留临时位置；`setAtRest` 同步当前位置；`notifyEdgeReached` 写入边界。当前 [CouiChipScrollPhysics](../../coui/src/main/java/com/itos/coui/chip/CouiChipScrollPhysics.kt) 分别处理 |
+| 分别追直接松手、惯性触边和中断，不只比较可见位置与速度        | 将临时积分位置统一重置到边界，会改变不同入口的初始状态   | 原厂 `springBack` 经 `setCurrentValue(..., false)` 保留临时位置；`setAtRest` 同步当前位置；`notifyEdgeReached` 写入边界。当前 [CouiScrollPhysics](../../coui/src/main/java/com/itos/coui/scroll/CouiScrollPhysics.kt) 分别处理 |
 
 此外还要检查 Compose 承载：滚动后的不可见子项能否命中相邻图标按钮，点击露出与物理回弹能否在同帧竞争。Canvas 渐隐只处理绘制，不能替代输入范围限制。这些是移植装配问题，不能都归为原厂物理算法的差异。
 

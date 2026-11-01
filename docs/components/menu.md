@@ -209,3 +209,5 @@ API 33 以下的菜单模糊效果与较新系统不同，见[兼容要求](../g
 标题字体默认来自 `CouiTheme.typography.label`。修改主题的 `label` 或显式传入 `CouiMenuStyle.headerTextStyle` 可以调整字体、字号、字重和行距；绘制时不再覆盖这些设置。标题颜色、对齐和最多两行的规则仍由菜单控制。
 
 源码见 [CouiMenu / CouiMenuItem](../../coui/src/main/java/com/itos/coui/menu/CouiMenu.kt)、[样式](../../coui/src/main/java/com/itos/coui/menu/CouiMenuStyle.kt)、[触点锚点](../../coui/src/main/java/com/itos/coui/menu/CouiMenuAnchor.kt)，选中、勾选、子菜单和限高示例见 [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)。
+
+顶栏三点入口可用 rememberCouiMenuAnchor(useTouchPosition = false)，保持完整按钮布局锚点；设置行默认捕获触点。两者只观察，不接管点击 owner。

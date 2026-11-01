@@ -41,6 +41,14 @@ internal class CouiStateProgress(initial: Float = 0f) {
         spring.cancel()
     }
 
+    /** 禁用或显式重置清除会话与速度；实例仍可再次进入。 */
+    fun reset() {
+        active = false
+        pendingRelease = false
+        onHidden = null
+        spring.snapTo(0f)
+    }
+
     private fun animate(target: Float) {
         spring.animateTo(target, response = 0.3f, onEnd = {
             // 掉帧可能直接到终点；此时须等旧帧结束再退场，不能留下未消费的 pending。

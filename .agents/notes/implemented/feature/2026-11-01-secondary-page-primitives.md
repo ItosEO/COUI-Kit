@@ -1,0 +1,40 @@
+# Agent Note: 设置式页面、常驻搜索与二级页装配
+
+Status: implemented
+
+## Problem
+
+完整 Demo 需要设置式目录、折叠首页、常驻搜索和普通二级页面。库需要提供可组合的布局、滚动和反馈，同时继续保留最新主线的主题策略、背景隔离与透明绘制优化。
+
+## Decision
+
+库公开 CouiSettingsScaffold、分组、行布局、语义文字、折叠顶栏、常驻搜索和可选回弹。宿主持有查询、展开目标、导航、偏好、业务回调与滚动状态；不公开整页业务包装。Scaffold 分离正文源和窗口源，消费横向安全区，顶栏负责顶部 inset；内容应用并消费测量所得 padding。折叠补偿只改变顶部留白，底部视口保持固定。
+
+常驻搜索复用现有浮动后端，增加真实双主体装配与材质后内容前回调；没有第三个虚构节点或第二套 Shader。宽度、取消、标题和结果分别保持原厂弹簧，反向保留速度。取消释放焦点/IME 并请求关闭；清空只更新查询，IME Search 只执行搜索。输入与展开分别受控，移除不清理宿主全局焦点。
+
+列表反馈保持唯一点击 owner。父滚动接管、离界和 CANCEL 释放会话，窗口失焦继续最低进度及弹簧退场，禁用/销毁才硬重置。短页仍占满内容视口，通过同一个回弹入口接收剩余位移。分类栏和纵向回弹共享 CouiScrollPhysics 内核：分类栏保留原 3.2 张力倍数和 scrollView 临时位置分支，纵向按 RecyclerView 选择 2.15 和非 scrollView 分支；不复制两份 RK4 与惯性计算。普通二级页的 Intent、返回与系统默认 Activity 转场由宿主负责。
+
+默认颜色在消费处读取 CouiTheme 与已初始化的可选 M3 策略；显式 colors 优先，原生 colors 工厂仍可单独使用。沿用最新主线的菜单按需背景隔离、组合期引用所有权和前景透明光晕短路，不整文件回退主题或性能实现。Sheet 与完整 Demo 属于其他范围。
+
+## Evidence
+
+Settings 17.0.0 / versionCode 17000000，APK SHA-256 d97df8a9227520a6f673e5d6f5efbc901b5d9d4c501d12e5d8bf717daae079d5。HomepageImpl、SettingsCollapsingToolbarLayout.OffsetUpdateListener、SettingsSearchBar → COUISearchBar 的 instant-search 分支分别决定标题、搜索和结果动画。COUIPreferenceFragment.onCreateRecyclerView → COUIRecyclerView 决定列表入口；COUIPhysicalAnimationUtil 与 SpringOverScroller 确定越界映射和 RK4 收尾；ListSelectedItemLayout 与 COUIMaskEffectDrawable 确定最低高亮及取消规则。
+
+研究材料只用于核对，不进入源码依赖。公开 Compose 承载输入、焦点和窗口，不承诺 OEM 特权窗口、专用字体、分屏嵌入及 RecyclerView 完整分发协议等价。
+
+## Existing-note audit
+
+- [主题策略](../architecture/2026-10-31-optional-material3-style.md)：沿用消费处解析与显式覆盖；新布局不重新维护根色板。
+- [顶栏与搜索边界](../bug-fix/2026-10-20-topappbar-search-transition-boundaries.md)：不同搜索场景；复用已有固定输入重定位边界，保留便签式顶栏搜索。
+- [模块边界](../architecture/2026-10-21-coui-module-boundary.md)：布局、效果归库，导航、示例和业务归宿主。
+- 本地设置研究与上述决定部分重叠，本篇记录投稿范围；活跃 proposed/rejected 无同范围需要清理的记录。
+
+## Alternatives considered
+
+- 继续平铺 Demo 能立即操作所有样例，但无法表达完整二级页面和目录导航，按用户确认改为可组合页面能力。
+- 用平台 stretch 或 Compose spring 可减少物理代码，但算法与目标 RK4、整数映射及时间规则不同，保留原厂内核。
+- 复制浮动 Shader 可单独控制搜索绘制，却增加同源算法；以双主体参数和内容回调扩展已有后端。
+
+## Consequences
+
+宿主可独立组合设置页面与常驻搜索，也可关闭回弹或传入明确颜色。代价是需要正确消费安全区、保持稳定 renderer 和单一输入 owner；当前不包含具体路由或业务页面。静态检查和构建仅验证其覆盖范围；动画中段、字体、搜索 IME、反向/多指、RTL、键盘、TalkBack、GPU 和性能仍需设备对照。

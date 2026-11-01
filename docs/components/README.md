@@ -18,3 +18,7 @@
 浮动材质需要的公共准备见[背景采样](../effects/backdrop.md)；单独使用算法见[效果目录](../effects/README.md)。
 
 - [选择器](pickers.md)：受控整数滚轮与月历，时间、日期和弹窗由宿主组合。
+
+- [设置页布局](settings.md)
+- [常驻搜索](search-bar.md)
+- [折叠顶栏](collapsing-app-bar.md)

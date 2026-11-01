@@ -184,3 +184,7 @@ CouiTopAppBarButtonGroup {
 顶栏不消费状态栏 inset，可在顶栏内容或页面根节点添加一次 `statusBarsPadding()`。渐进模糊背景会向下延伸，但不会增加布局高度或触摸范围。
 
 源码见 [CouiTopAppBar](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBar.kt)、[按钮](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButton.kt)、[按钮组与显隐](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButtonGroup.kt)、[按钮预设](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButtonDefaults.kt)，完整页面见 [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)。
+
+## 设置式折叠背景
+
+CouiTopAppBar 的 backgroundAlpha 只控制背景，不改变标题和触摸布局。gradientSpeed 留空时保留原固定渐隐，正值选择全高幂曲线；gradientColor 非透明时按 dark 选择对应页面背景渐变。默认模糊半径由原始像素预设换算成 dp，显式 referenceBlurRadius 仍按 dp 解释。新首页可直接组合 [CouiCollapsingTopAppBar](collapsing-app-bar.md)，普通二级页继续使用原顶栏。

@@ -29,6 +29,18 @@ object CouiTopAppBarButtonDefaults {
             cursorColor = colors.accent, contourGlowEnabled = contour)
     }
 
+    /** ToolbarMaterialEffectResolver 的 TOP_BAR 与 CAPSULE_1/CIRCLE_1；不含项目原有加深特化。 */
+    fun systemMaterial(dark: Boolean, capsule: Boolean): CouiFloatingMaterial = CouiFloatingMaterial(
+        firstColor = Color(if (dark) 0xCC262626 else 0x66333333),
+        firstBlendMode = if (dark) BlendMode.SRC_OVER else BlendMode.COLOR_DODGE,
+        secondColor = Color(if (dark) 0xB37F7F7F else 0x99F5F5F5),
+        secondBlendMode = if (dark) BlendMode.OVERLAY else BlendMode.LUMINOSITY,
+        blurRadius = 0f, strokeType = if (capsule) 1 else 2,
+        edgeAlpha = if (dark) .6f else .2f, edgeWidthDp = if (capsule) 2.2f else 1.9f,
+        innerGlowAlpha = if (capsule) { if (dark) .01f else .1f } else { if (dark) .1f else .15f },
+        innerGlowScale = if (capsule && !dark) 1.15f else 1f,
+    )
+
     fun material(dark: Boolean, capsule: Boolean, search: Boolean = false): CouiFloatingMaterial = CouiFloatingMaterial(
         firstColor = Color(if (dark) 0x80666666 else 0xA3666666),
         firstBlendMode = if (dark) BlendMode.OVERLAY else BlendMode.COLOR_DODGE,

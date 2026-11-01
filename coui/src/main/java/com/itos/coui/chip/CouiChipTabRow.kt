@@ -1,5 +1,6 @@
 package com.itos.coui.chip
 
+import com.itos.coui.scroll.CouiScrollPhysics
 import com.itos.coui.theme.CouiTheme
 
 import android.graphics.LinearGradient
@@ -298,7 +299,7 @@ private class ChipRowScroll(animationLevel: Int, initialPosition: Int = 0, priva
     private var animationStartMillis = 0L
     private var screenWidth = 1
     private var disposed = false
-    private val physics = CouiChipScrollPhysics(animationLevel)
+    private val physics = CouiScrollPhysics(animationLevel)
     private val holder = FloatValueHolder()
     private val selection = SpringAnimation(holder).apply {
         spring = SpringForce().apply {

@@ -18,7 +18,7 @@ DOWN 中断越界回弹后，如果本次触摸没有达到拖动阈值，原来
 
 从等待拖动阈值开始，整个手势由同一个 `finally` 收尾。未达到阈值的 UP、CANCEL、父容器接管和协程取消均恢复必要的越界回弹；只有真实拖动的 UP 保留释放速度。协程取消继续向上传播。同一帧点击已启动选中露出时，不再启动竞争的物理回弹。
 
-[CouiChipScrollPhysics](../../../../coui/src/main/java/com/itos/coui/chip/CouiChipScrollPhysics.kt) 在中断时按原厂 `setAtRest` 将临时积分位置同步到当前物理位置。直接 `springBack` 保留该临时位置，只有惯性触边对应的 `notifyEdgeReached` 路径将其重置为边界。不改变现有积分公式、惯性插值或选中露出弹簧。
+[CouiScrollPhysics](../../../../coui/src/main/java/com/itos/coui/scroll/CouiScrollPhysics.kt) 在中断时按原厂 `setAtRest` 将临时积分位置同步到当前物理位置。直接 `springBack` 保留该临时位置，只有惯性触边对应的 `notifyEdgeReached` 路径将其重置为边界。不改变现有积分公式、惯性插值或选中露出弹簧。
 
 新的露出目标从当前显示位置、零初速度启动，继续使用已有 SpringAnimation。反向选择不继承旧目标的速度。点击、键盘焦点和受控选中值变化共用这条路径；完整可见范围仍由[选中项可见性决定](2026-10-24-chip-selection-visibility.md)持有。
 

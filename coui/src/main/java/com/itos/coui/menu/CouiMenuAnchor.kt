@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.IntRect
 
 /** 设置行与其菜单共用的触点锚点, 定位时再转换坐标以跟随滚动和布局变化。 */
 @Stable
-class CouiMenuAnchor internal constructor(private val view: View) {
+class CouiMenuAnchor internal constructor(private val view: View, private val useTouchPosition: Boolean) {
     internal var coordinates: LayoutCoordinates? by mutableStateOf(null, neverEqualPolicy())
     internal var pendingTouchPosition: Offset? = null
     private var clickPosition: Offset? by mutableStateOf(null)
@@ -54,16 +54,16 @@ class CouiMenuAnchor internal constructor(private val view: View) {
 
     /** 从原有 onClick 调用; 键盘和无障碍点击没有触点, 使用菜单原有锚点。 */
     fun open(onOpen: () -> Unit) {
-        clickPosition = pendingTouchPosition
+        clickPosition = if (useTouchPosition) pendingTouchPosition else null
         pendingTouchPosition = null
         onOpen()
     }
 }
 
 @Composable
-fun rememberCouiMenuAnchor(): CouiMenuAnchor {
+fun rememberCouiMenuAnchor(useTouchPosition: Boolean = true): CouiMenuAnchor {
     val view = LocalView.current
-    return remember(view) { CouiMenuAnchor(view) }
+    return remember(view, useTouchPosition) { CouiMenuAnchor(view, useTouchPosition) }
 }
 
 /** 挂在触发行或其容器上, 仅观察触点, 不消费事件或替代 clickable。 */

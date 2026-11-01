@@ -11,6 +11,10 @@ import com.itos.coui.backdrop.rememberCouiBackdrop
 
 internal val LocalCouiMenuBackdrop = staticCompositionLocalOf<CouiBackdrop?> { null }
 
+/** 当前窗口已提供的采样源；不新建源或持有其消费引用，未提供时为 null。 */
+@Composable
+fun rememberCouiWindowBackdrop(): CouiBackdrop? = LocalCouiMenuBackdrop.current
+
 /** 内容修饰符挂到所属窗口的内容根节点; Popup 菜单自身不进入采样树。 */
 @Composable
 fun ProvideCouiMenuBackdrop(content: @Composable (Modifier) -> Unit) {
