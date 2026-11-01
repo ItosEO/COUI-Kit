@@ -128,8 +128,8 @@ fun CouiWheelPicker(
     DisposableEffect(motion) { onDispose { motion.dispose() } }
     val paint = remember(normal, clockTypeface) { Paint(Paint.ANTI_ALIAS_FLAG).apply {
         this.textSize = normal.toFloat(); textAlign = Paint.Align.CENTER
-        typeface = if (clockTypeface) Typeface.create(Typeface.create("sys-sans-en", 0), 500, false)
-            else Typeface.create("sans-serif-medium", 0)
+        typeface = if (clockTypeface) Typeface.create(Typeface.create("sys-sans-en", Typeface.NORMAL), 500, false)
+            else Typeface.create("sans-serif-medium", Typeface.NORMAL)
     } }
     val normalColor = colors.normal
     val focusColor = colors.focus
