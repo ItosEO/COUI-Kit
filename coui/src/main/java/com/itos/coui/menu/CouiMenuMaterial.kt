@@ -98,7 +98,10 @@ internal fun couiMenuMaterial(
                 if (Build.VERSION.SDK_INT >= 33) {
                     edge?.let { backgroundLayer.renderEffect = it.renderEffect(size, density.density) }
                 }
+                // 背景录制不调用 drawContent, 使用独立 Density 避免作用域密度自引用。
                 backgroundLayer.record(
+                    density = density,
+                    layoutDirection = layoutDirection,
                     size = IntSize(size.width.toInt() + blurPadding * 2, size.height.toInt() + blurPadding * 2),
                 ) {
                     if (Build.VERSION.SDK_INT >= 33 && blurredBackdrop != null) {

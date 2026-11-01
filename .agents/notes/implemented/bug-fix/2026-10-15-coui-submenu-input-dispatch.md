@@ -16,11 +16,15 @@ Status: implemented
 
 Fast Kawase 使用变换后的设备像素建立各轮独立网格，原源先按自身尺寸栅格化，不在降采样层重绘矢量。仅背景执行模糊、材质、内晕、描边；透明前景按跟手光 → 内容绘制。光效只观察输入，资源随退场释放。菜单 SDR、组合描边和可选主题染色是已接受适配，不宣称原菜单完整 1:1。
 
+菜单背景通过 `GraphicsLayer.record` 成员入口显式传入 `LocalDensity`。这段录制只画背景，不调用 `drawContent`，无需重定向外层绘制作用域。`DrawScope` 的同名扩展会将外层作用域写回自身的密度来源；嵌套模糊读取 `density` 或 `fontScale` 时会无限递归。不能在已经重定向的回调中读取这些值来补建 Density。单层、一级和子菜单共用 [couiMenuMaterial](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenuMaterial.kt) 修复此边界，模糊算法、前景离屏隔离和调用接口保持原样。
+
 ## Evidence
 
 本篇从原宿主的同名 Note 与菜单契约整理迁入。原厂基准为 PJZ110 相册/录音的 Root、RootListener、RegionBasedLongPressDetector、COUITouchRecyclerView 和 RoundFrameLayout。原厂子 View 可独立收 CANCEL/DOWN，Compose 需要还原会话语义，不能向整个 ComposeView 重投事件。直接按下和父转发会话的范围外光源行为曾对照官方相册取样，该结果不是修改后组件验收。
 
 当前入口见 [CouiMenu](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenu.kt)、[子菜单](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenuSubMenu.kt) 和 [模糊](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenuBlur.kt)。公开宿主只接数据、外观与回调，不读写滚动条、运动帧或坐标状态。
+
+密度自引用核对 `ui-graphics-android:1.13.0-beta02` 的 `DrawScope.record` 与 `CanvasDrawScope` 源码。在 JVM 上直接使用该 AAR 的实际类，将作用域写入自身 `DrawContext.density` 后，读取 `density` 和 `fontScale` 均复现 `StackOverflowError`；改用独立 Density 后两项读取均通过。此检查验证密度代理行为，未执行 Android 图层录制、菜单实绘或设备验收。
 
 ## Alternatives considered
 
