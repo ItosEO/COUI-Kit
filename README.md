@@ -48,11 +48,11 @@ android {
 }
 
 dependencies {
-    implementation("io.github.itoseo:coui:0.0.1-alpha2")
+    implementation("io.github.itoseo:coui:0.0.1-alpha3")
 }
 ```
 
-`0.0.1-alpha2` 的最低运行版本为 Android 12（API 31），编译时需要 `compileSdk` 37 和 AGP 9.1.0 或更高版本。部分组件和效果需要更高的 Android 版本，使用前请查看[兼容要求](docs/guide/compatibility.md#效果门槛)。
+`0.0.1-alpha3` 的最低运行版本为 Android 12（API 31），编译时需要 `compileSdk` 37 和 AGP 9.1.0 或更高版本。部分组件和效果需要更高的 Android 版本，使用前请查看[兼容要求](docs/guide/compatibility.md#效果门槛)。
 
 当前版本为早期预览版，后续版本可能调整 API。
 
@@ -63,16 +63,16 @@ dependencies {
 `coui` 与 `coui-material3` 采用相同版本并同步发布。通过 Maven Central 接入 M3 时，只需添加适配模块：
 
 ```kotlin
-val couiVersion = "<已发布版本>"
+val couiVersion = "0.0.1-alpha3"
 
 dependencies {
     implementation("io.github.itoseo:coui-material3:$couiVersion")
 }
 ```
 
-`<已发布版本>` 是占位符，需替换为同时包含两个模块的实际版本。本分支新增的适配模块尚未发行，不能填写上面的 `0.0.1-alpha2`。适配模块会传递引入同版本核心与 M3；如果同时显式声明 `coui`，也使用该版本。
+适配模块从 `0.0.1-alpha3` 开始发行，会传递引入同版本核心与 M3；如果同时显式声明 `coui`，也使用该版本。
 
-包含适配模块的开发快照发布后，也可通过 [GitHub Packages](docs/guide/github-packages.md) 接入。需要本地修改库时，按[源码模块接入](docs/guide/getting-started.md#源码模块)配置工程；`project(":coui-material3")` 仅用于这种情况。
+协作调试时，也可通过 [GitHub Packages](docs/guide/github-packages.md) 接入已发布的开发快照。需要本地修改库时，按[源码模块接入](docs/guide/getting-started.md#源码模块)配置工程；`project(":coui-material3")` 仅用于这种情况。
 
 在已有 `Application.onCreate()` 中、创建 Compose UI 前初始化一次：
 

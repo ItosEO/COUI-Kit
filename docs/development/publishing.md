@@ -6,7 +6,7 @@
 
 | 渠道 | 用途 | 来源与注意事项 |
 | --- | --- | --- |
-| Maven Central | 公开发行的预览版/正式版 | [包页面](https://central.sonatype.com/artifact/io.github.itoseo/coui)与 [README](../../README.md)；README 当前示例版本为 `0.0.1-alpha2`。以实际远端解析和发行元数据为准 |
+| Maven Central | 公开发行的预览版/正式版 | [核心包](https://central.sonatype.com/artifact/io.github.itoseo/coui)与[适配包](https://central.sonatype.com/artifact/io.github.itoseo/coui-material3)；接入版本见 [README](../../README.md)，以实际远端解析和发行元数据为准 |
 | GitHub Packages | 手动发布当前提交的开发快照 | 仓库 [publish-preview.yml](../../.github/workflows/publish-preview.yml) 生成带短 SHA 的 `-SNAPSHOT`，接入需认证 |
 | 本地文件仓库 | CI/开发检查 AAR、POM、Module Metadata、源码包及 Dokka | 两模块各自的 `build/repository`；不上传远端，不视为真实发行 |
 
@@ -33,13 +33,28 @@
 
 [核心配置](../../coui/build.gradle.kts)与[可选模块配置](../../coui-material3/build.gradle.kts)均只发布 release 变体，包含 AAR、源码包、Dokka HTML 文档包、POM 和 Gradle Module Metadata。两个模块的源码与文档归档附带根许可、来源与名称声明；核心继续附带既有 Skia/AndroidX 声明与 AAR 资源。不发布 Demo、不提前混淆库，也不上传 Demo 密钥。
 
-工作流先生成两模块的本地 Maven 文件仓库，调用与 PR 相同的[真实产物检查](../../.github/scripts/verify-maven-artifacts.cjs)。脚本检查独立坐标、非空产物、源码与 HTML、许可、两模块 Compose BOM 的元数据与 POM 导入、核心动画严格约束，以及核心无 M3、适配器依赖同版本核心与 M3。全部通过后再上传两个 artifact，并分别确认远端元数据可读。POM 不具备完整表达 Gradle 严格约束的能力，不能用 POM 存在代替 `.module` 检查。当前接线尚需真实 Actions 运行验证，不据此声称两模块已发布。
+工作流先生成两模块的本地 Maven 文件仓库，调用与 PR 相同的[真实产物检查](../../.github/scripts/verify-maven-artifacts.cjs)。脚本检查独立坐标、非空产物、源码与 HTML、许可、两模块 Compose BOM 的元数据与 POM 导入、核心动画严格约束，以及核心无 M3、适配器依赖同版本核心与 M3。全部通过后再上传两个 artifact，并分别确认远端元数据可读。POM 不具备完整表达 Gradle 严格约束的能力，不能用 POM 存在代替 `.module` 检查。每次发行仍须确认对应运行结果，不能以历史成功代替当前版本验收。
 
 同一分支的发布串行执行，不取消正在上传的任务。重新运行相同提交仍是 SNAPSHOT 发布；SHA 只能标识源码，不把 SNAPSHOT 当作不可变发行版本。
 
 ## Maven Central 发行与变更记录
 
-Maven Central 的现有发布记录不能由 `publish-preview.yml` 推断。当前仓库未配置 Central 的自动发布工作流；正式发布操作、签名与上传凭据不应在此处被虚构为已完成。后续将 Central 发行流程纳入仓库时，必须另行实现、审核和验证。
+Maven Central 使用 Central Portal 手动上传已签名 bundle，GitHub Packages 仍使用独立快照工作流。Central 发行不需要为消费者配置下载凭据，也不改变普通 PR 的验证和权限。
+
+获得本次发行授权后，在干净的发行源码上执行：
+
+1. 使用已备份并分发公钥的项目 GPG 密钥，按 [Vanniktech 签名配置](https://vanniktech.github.io/gradle-maven-publish-plugin/central/#secrets)在进程环境提供 `ORG_GRADLE_PROJECT_signingInMemoryKey` 与 `ORG_GRADLE_PROJECT_signingInMemoryKeyPassword`。不把私钥、口令写进项目或日志。
+2. 生成两个同版本的签名产物；以下版本必须与待发布 Tag 一致：
+
+   ```sh
+   ./gradlew :coui:publishAllPublicationsToLocalRepository :coui-material3:publishAllPublicationsToLocalRepository \
+     -PVERSION_NAME=0.0.1-alpha3 -PsignAllPublications=true --no-configuration-cache
+   PACKAGE_VERSION=0.0.1-alpha3 node .github/scripts/verify-maven-artifacts.cjs
+   ```
+
+3. 校验两个模块的 AAR、POM、`.module`、sources/javadoc 的 GPG 签名及校验和。将各自 `build/repository` 中的版本目录合并为一个 ZIP，保留 `io/github/itoseo/<artifactId>/<version>/` 层级；只包含这两个模块的目标版本，不包含仓库级 `maven-metadata.xml`、构建日志或密钥。
+4. 在 [Central Deployments](https://central.sonatype.com/publishing/deployments) 上传 ZIP。确认两个坐标都通过校验后提交 Publish；公开版本不可覆盖。
+5. 等待状态成为 `PUBLISHED`，并匿名下载两个坐标的发行文件，与本地产物核对。仅出现 `VALIDATED` 或 `PUBLISHING` 不表示消费者已经可以下载。
 
 建立新版本时，至少完成：
 
@@ -49,7 +64,7 @@ Maven Central 的现有发布记录不能由 `publish-preview.yml` 推断。当�
 4. 在 [CHANGELOG](../../CHANGELOG.md) 记录用户可见能力、API 兼容性、迁移说明与发布日期；同步 README、快速开始和兼容表中的版本号。
 5. 正式版、Alpha 与 SNAPSHOT 分开标识；不把快照重发视为不可变版本。
 
-目前缺少历史发行 Tag 与 Maven 产物的明确映射，因此不反推过去每个 Alpha 版本的源码或发布时间。
+alpha3 起以发行 Tag 记录源码映射；历史版本缺少对应 Tag，不反推过去每个 Alpha 版本的源码或发布时间。
 
 ## 凭据与本地检查入口
 

@@ -13,7 +13,7 @@
 | Kotlin 与 Compose 编译器 | 源码接入先对齐 [版本目录](../../gradle/libs.versions.toml) 的开发基线，并配套 Compose 编译插件。更低 Kotlin 版本的元数据消费与 Compose 编译兼容尚未确认，不声明最低版本。                                                     |
 | 本工程工具链               | [Wrapper](../../gradle/wrapper/gradle-wrapper.properties)、[Gradle JVM](../../gradle/gradle-daemon-jvm.properties) 和版本目录是开发基线。使用 AGP 内置 Kotlin；消费者不必仅因本工程配置而照搬全部 Demo 插件。 |
 
-Maven Central 的 `0.0.1-alpha2` AAR 要求 `compileSdk` 不低于 37、AGP 不低于 9.1.0。其他版本以对应 AAR 元数据为准。库的 `minSdk` 由 manifest 合并表达，不要使用 `overrideLibrary` 绕过。
+Maven Central 的 `0.0.1-alpha3` 两模块 AAR 均要求 `compileSdk` 不低于 37、AGP 不低于 9.1.0。其他版本以对应 AAR 元数据为准。库的 `minSdk` 由 manifest 合并表达，不要使用 `overrideLibrary` 绕过。
 
 ## 依赖对齐
 
@@ -25,7 +25,7 @@ DynamicAnimation 保持版本目录中的 **strictly** 约束。持续重定向�
 
 ### 原生主题与默认参数迁移
 
-`CouiTheme`、初始化接口、组件默认值与 `coui-material3` 属于当前源码，两模块的这组改动尚未发行，不包含在 `0.0.1-alpha2`。该发行版仍需要原有显式装配，不能直接套用省略参数或初始化示例；开发阶段使用源码模块或明确包含本改动的同版本快照。
+`CouiTheme`、初始化接口、组件默认值与 `coui-material3` 从 `0.0.1-alpha3` 开始提供，不包含在 `0.0.1-alpha2`。旧发行版仍需要原有显式装配，不能直接套用省略参数或初始化示例；升级时同时更新核心与适配模块。
 
 组件名称与原参数相对顺序保留。`CouiSlider.colors` 的 null 表示按最终 dark、enabled 自动生成；FAB 的 nullable material/shadow 默认值在组件内部解析，显式非空调用继续成立。BottomBar 的 `rightContainerColor` 保留非空 `Color.Unspecified`。`CouiMenuStyle` 末尾增加 nullable dark，旧完整构造不必补参数，缺省时保留原 surface 亮度判定。原有显式颜色、Style、Shape 与资源入口保留。消费者必须重新编译；默认参数、Kotlin 元数据与 Compose 消费兼容仍待实际构建验证，不声明二进制 ABI 稳定。
 

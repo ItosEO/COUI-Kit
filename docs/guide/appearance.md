@@ -2,7 +2,7 @@
 
 组件可省略有默认值的外观参数，也可显式传入颜色、Style、Shape、材质和阴影。未初始化时使用原生 COUI 预设；可选 `coui-material3` 模块让默认值跟随宿主的 Material 3 主题。
 
-本文对应当前源码。新模块与主题接口尚未包含在 Maven Central 的 alpha2 中，版本区别见[兼容要求](compatibility.md#原生主题与默认参数迁移)。Backdrop、Renderer、平台条件、资源释放和业务状态仍按各组件接口管理。
+本文对应 alpha3 起提供的主题与适配接口，旧版本迁移见[兼容要求](compatibility.md#原生主题与默认参数迁移)。Backdrop、Renderer、平台条件、资源释放和业务状态仍按各组件接口管理。
 
 ## 不配置主题
 

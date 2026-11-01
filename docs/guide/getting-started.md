@@ -25,17 +25,17 @@ android {
 }
 
 dependencies {
-    implementation("io.github.itoseo:coui:0.0.1-alpha2")
+    implementation("io.github.itoseo:coui:0.0.1-alpha3")
 }
 ```
 
-`0.0.1-alpha2` 需要 Android 12（API 31）及以上，编译时需要 `compileSdk` 37 和 AGP 9.1.0 或更高版本。应用仍需配置自己的 Android 与 Compose 插件。组件的具体系统要求见[兼容要求](compatibility.md)。
+`0.0.1-alpha3` 需要 Android 12（API 31）及以上，编译时需要 `compileSdk` 37 和 AGP 9.1.0 或更高版本。应用仍需配置自己的 Android 与 Compose 插件。组件的具体系统要求见[兼容要求](compatibility.md)。
 
 当前版本为早期预览版，API 可能发生不兼容的变化。
 
 ## 配置页面
 
-当前源码的组件可以直接使用 COUI 原生默认值，也可以由局部 `CouiTheme` 或显式参数配置。M3 宿主添加同版本的可选 `coui-material3` 模块，并在 `Application.onCreate` 调用 `Coui.initialize(defaultStyle = CouiMaterial3Style())`，无需根内容包装或手工色板映射；完整初始化与模式配置见 [README：接入 Material 3](../../README.md#接入-material-3)。核心不读取 `MaterialTheme`。新模块、主题与默认参数尚未包含在上方的 alpha2 坐标中，当前请使用源码模块或明确包含改动的快照；后续发行以 CHANGELOG 和对应产物为准。
+组件可以直接使用 COUI 原生默认值，也可以由局部 `CouiTheme` 或显式参数配置。M3 宿主添加同版本的可选 `coui-material3` 模块，并在 `Application.onCreate` 调用 `Coui.initialize(defaultStyle = CouiMaterial3Style())`，无需根内容包装或手工色板映射；完整初始化与模式配置见 [README：接入 Material 3](../../README.md#接入-material-3)。核心不读取 `MaterialTheme`。新模块、主题与默认参数从 alpha3 开始提供；旧版本升级需重新编译消费者，见[迁移说明](compatibility.md#原生主题与默认参数迁移)。
 
 平台要求按能力分：普通控件跟随库的最低系统；渐进模糊、轮廓和融合要 API 33；底栏、FAB、顶栏按钮/搜索、ChipTab 和普通阴影要 API 34。调用 API 34 的组件前先判断版本，完整表格见[兼容要求](compatibility.md#效果门槛)。
 
