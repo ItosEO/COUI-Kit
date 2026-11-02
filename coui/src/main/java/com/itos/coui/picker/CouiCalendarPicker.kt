@@ -260,11 +260,12 @@ fun CouiCalendarPicker(
                     Modifier.size(16.dp),
                     contentAlignment = Alignment.Center,
                 ) {
+                    // 原厂 COUIRotateView 默认 rotateType=0：按状态切换两套矢量图标。
                     Icon(
                         modifier = Modifier.size(16.dp),
-                        imageVector = CalendarExpand,
+                        imageVector = if (editingMonth) CalendarCollapse else CalendarExpand,
                         contentDescription = null,
-                        tint = secondary,
+                        tint = if (editingMonth) accent else secondary,
                     )
                 }
             }
@@ -675,10 +676,20 @@ private val CalendarChevron = ImageVector.Builder("CalendarChevron", 24.dp, 24.d
     }
 }.build()
 
-// Calendar 头部实际引用的 16dp 折叠箭头；展开只旋转视图，不替换矢量。
+// Calendar 17.3.70 的 collapsed 16dp 路径；日历形态向下。
 private val CalendarExpand = ImageVector.Builder("CalendarExpand", 16.dp, 16.dp, 16f, 16f).addPath(
     pathData = PathParser().parsePathString(
         "M4.1,5.5h7.8a0.6,0.6 0,0 1,0.6 0.6,0.65 0.65,0 0,1 -0.13,0.38L8.58,11.22a0.76 0.76,0 0,1 -1 0.12l-0.11,-0.12L3.63,6.48a0.61 0.61,0 0,1 0.09 -0.85A0.65 0.65,0 0,1,4.1 5.5Z",
+    ).toNodes(),
+    fill = SolidColor(Color.Black),
+    pathFillType = PathFillType.EvenOdd,
+).build()
+
+// Calendar 17.3.70 的 expanded 16dp 路径；滚轮形态向上。
+// 该布局未设置 supportRotateType，animated-selector 直接交换路径与颜色。
+private val CalendarCollapse = ImageVector.Builder("CalendarCollapse", 16.dp, 16.dp, 16f, 16f).addPath(
+    pathData = PathParser().parsePathString(
+        "M4.1,10.5h7.8a0.6,0.6 0,0 0,0.6 -0.6,0.65 0.65,0 0,0 -0.13,-0.38L8.58,4.78a0.76,0.76 0,0 0,-1 -0.12l-0.11,0.12L3.63,9.52a0.61,0.61 0,0 0,0.09 0.85A0.65,0.65 0,0 0,4.1 10.5Z",
     ).toNodes(),
     fill = SolidColor(Color.Black),
     pathFillType = PathFillType.EvenOdd,

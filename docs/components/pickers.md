@@ -61,4 +61,4 @@ CouiWheelPicker 提供受控整数、range、formatter、语义 label、循环�
 
 ## 主题与显式覆盖
 
-`dark` 默认读取 `CouiTheme.isDark`；滚轮的 `colors` 与月历的 `colors`、`accent` 在消费位置解析，跟随可选 M3 策略和局部 `CouiTheme`。显式传值优先。展开的日期滚轮、网格、选中日期文字和分隔线共用最终色板，禁用透明度只应用一次。倒三角保持朝下，不作旋转；展开区仍保留淡入淡出与延迟。
+`dark` 默认读取 `CouiTheme.isDark`；滚轮的 `colors` 与月历的 `colors`、`accent` 在消费位置解析，跟随可选 M3 策略和局部 `CouiTheme`。显式传值优先。展开的日期滚轮、网格、选中日期文字和分隔线共用最终色板，禁用透明度只应用一次。标题右侧 16dp 三角图标按原厂状态即时切换：日历态向下并使用次级色，滚轮态向上并使用强调色。该页面的 `COUIRotateView` 默认 `supportRotateType=0`，采用 `animated-selector` 两种矢量路径，不播放 180° 旋转；展开区仍保留淡入淡出与 120ms 延迟。
