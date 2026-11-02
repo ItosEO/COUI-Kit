@@ -60,7 +60,11 @@ fun CouiText(modifier: Modifier = Modifier, text: String, kind: CouiTextKind, co
     val style = rememberCouiTextStyle(kind)
     BasicText(text, modifier.then(if (kind == CouiTextKind.Title) Modifier.semantics { heading() } else Modifier),
         style = style.copy(color = color,
-            textAlign = textAlign ?: if (kind == CouiTextKind.Message && lines > 1) TextAlign.Start else TextAlign.Center),
+            textAlign = textAlign ?: when (kind) {
+                CouiTextKind.PreferenceTitle, CouiTextKind.PreferenceSummary -> TextAlign.Start
+                CouiTextKind.Message -> if (lines > 1) TextAlign.Start else TextAlign.Center
+                else -> TextAlign.Center
+            }),
         maxLines = if (kind == CouiTextKind.Button) 2 else Int.MAX_VALUE,
         overflow = if (kind == CouiTextKind.Button) TextOverflow.Ellipsis else TextOverflow.Clip,
         onTextLayout = {

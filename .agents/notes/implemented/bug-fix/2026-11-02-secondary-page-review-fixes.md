@@ -22,6 +22,10 @@ couiVerticalScroll 的惯性触边在同一帧保留父链未消费的整数位�
 
 四条搜索通道复用 CouiSpring，不增加另一套弹簧包装或通道管理器。各自的响应参数及标题、结果消费者保持分离。动画资源归创建 rememberCouiSearchBarState 的组合；仅隐藏搜索节点而保留 state 时仍可供标题和结果消费，输入、图层及局部效果随各自节点释放。
 
+折叠顶栏的搜索槽用现有 Box 承载空内容和多个根节点；状态栏使用标准消费感知 padding，标题的缩放原点与 placeRelative 使用同一逻辑起始边。范围因密度变化时，取消旧像素动画并将可见、逻辑和内容位置同步到已接受目标的新比例，保留搜索前恢复比例；正常拖动与吸附仍有不同的内容跟随职责，不额外建立重测状态机。
+
+通用顶栏继续使用项目已批准的 12dp 默认模糊，Settings 的 30px 放在所属 Defaults 并在消费处换算。Preference 标题和摘要默认逻辑起始对齐，显式对齐优先。列表 pressFeedback 关闭时退出 mask 的组合生命周期并移除按压观察器，hover/focus 不随之关闭。
+
 ## Evidence
 
 初始二级页 Note 指定 Settings 17.0.0 / 17000000，APK SHA-256 为 d97df8a9227520a6f673e5d6f5efbc901b5d9d4c501d12e5d8bf717daae079d5。本次可复查的同版本导出来自 SHA-256 为 1bc5201297662091d318b0e2ea074610d311f65a7ff9be5d24b29104d7d75678 的候选；未取得前者完整输入，不能将两个哈希等同。
@@ -31,6 +35,8 @@ COUIPreferenceFragment.onCreateRecyclerView 确认列表入口。候选 COUIRecy
 惯性越界中 DOWN 后没有 MOVE 的取消另行保留原分支：dispatchTouchEvent 只有真实 UP 将 scrollType 3 切到 2，CANCEL 的 performSpringBack 使用当前可见位置但继续按 type 3 映射。实际 MOVE 进入拖动后改为 type 2。位置来源和显示映射分别传给同一个回弹入口，不能把这些退出都合并成普通松手。
 
 COUISearchBar.changeStateWithAnimation 的宽度和取消通道在运行中改变目标；HomepageImpl.animToEdit/animToNormal 对页面和结果先调用 setStartValue，Java 与 smali 均有该调用。当前材料缺少所用 OEM 动画类的 setter 与默认最小变化量实现。页面和结果保留共享弹簧的连续重定向适配，不将猜测的 snapTo 当作官方语义，也不宣称四通道的快速反向都已证明等价。
+
+折叠范围重测采用已经接受的逻辑位置，依据是 COUIViewOffsetHelper 与 COUICoordinatorScrollingViewAnimator 分别持有逻辑目标、可见整数位置和内容位移。候选 SettingsCollapsableAppBarLayout 的 scroll(type=1) 确有独立跟随参数，但父 Behavior 的传参及对应资源提供者未闭合，不能把这个类型直接映射成 Compose 的非触摸滚动；当前保持方向跟随路径，不增加无依据参数。
 
 | 输入与退出 | 当前处理 | 检查边界 |
 | --- | --- | --- |

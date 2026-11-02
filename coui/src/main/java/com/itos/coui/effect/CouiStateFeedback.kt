@@ -96,6 +96,7 @@ private fun rememberMaskProgress(active: Boolean): State<Float> {
 /**
  * 普通按钮或列表的 hover、focus、press 蒙层；不创建点击或业务提交。
  * list 选择原厂列表的最低按压进度及取消规则，hoverLocked 用于 Popup 展开期间的行悬停。
+ * pressFeedback 同时控制普通与列表按压；关闭时释放当前按压动画，不影响 hover/focus。
  * 宿主将同一 interactionSource 交给唯一的 clickable / toggleable owner，并自行提供外部裁剪。
  */
 @Composable
@@ -106,7 +107,7 @@ fun Modifier.couiButtonFeedback(dark: Boolean, interactionSource: MutableInterac
     val pressed by interactionSource.collectIsPressedAsState()
     val hover = rememberMaskProgress(enabled && (hovered || hoverLocked))
     val focus = rememberMaskProgress(enabled && focused)
-    val listPress = if (list) remember { CouiListPressMask() } else null
+    val listPress = if (list && pressFeedback) remember { CouiListPressMask() } else null
     if (listPress != null) {
         SideEffect { listPress.updateState(enabled, pressed) }
         val view = LocalView.current

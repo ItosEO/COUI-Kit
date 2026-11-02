@@ -25,7 +25,7 @@ CouiPreferenceLayout(
 ) { BasicText(title, style = titleStyle) }
 ```
 
-标题、摘要和右值样式分别使用 CouiTextKind.PreferenceTitle、PreferenceSummary、PreferenceValue。图标与文字沿同一垂直中线；同组分割由宿主选择插入，带图标时让 startIndent 对齐标题，不在独立卡片之间统一加线。
+标题、摘要和右值样式分别使用 CouiTextKind.PreferenceTitle、PreferenceSummary、PreferenceValue。CouiText 的 PreferenceTitle/PreferenceSummary 默认按逻辑起始边对齐，包括多行与 RTL；显式 textAlign 优先。图标与文字沿同一垂直中线；同组分割由宿主选择插入，带图标时让 startIndent 对齐标题，不在独立卡片之间统一加线。
 
 开关直接使用 [CouiSwitch](switch.md)，复选直接使用 [CouiCheckbox](checkbox.md)，滑条直接使用 [CouiSlider](slider.md)，菜单直接使用 [CouiMenu](menu.md)。整行交互时，尾部控件不再独立提交点击；开关拖动继续通过 onDragCheckedChange 提交给同一个业务 owner。整行触觉可使用公开的 CouiHapticFeedback / performCouiHapticFeedback，程序赋值不触发触觉。
 
@@ -41,7 +41,7 @@ CouiPreferenceLayout(
 
 示例供宿主参考、复制并按自身业务调整，不从 Demo 导入私有函数，也不依赖 Demo 的主题作用域。选择范围、加载任务、导航和确认提交均属于宿主。库内公共固定参数继续由各组件 Defaults 持有。
 
-列表反馈使用 couiButtonFeedback 的 list 分支：短 UP/CANCEL 达到最低高亮后退场，父滚动接管、离界、禁用和移除释放会话。Popup 展开时通过 hoverLocked 保留行悬停，pressed 独立退场。窗口失焦只释放会话并继续弹簧退场，Activity 转场期间不清零；禁用或节点销毁才立即释放动画。导航宿主应保留来源行到转场完成，不能先拆掉搜索结果。不要额外叠加 Compose ripple 或普通按钮缩放。
+列表反馈使用 couiButtonFeedback 的 list 分支：短 UP/CANCEL 达到最低高亮后退场，父滚动接管、离界、禁用和移除释放会话。Popup 展开时通过 hoverLocked 保留行悬停，pressed 独立退场。窗口失焦只释放会话并继续弹簧退场，Activity 转场期间不清零；禁用或节点销毁才立即释放动画。显式设置 pressFeedback=false 会释放现有按压动画，并移除按压观察器；hover/focus 继续生效。导航宿主应保留来源行到转场完成，不能先拆掉搜索结果。不要额外叠加 Compose ripple 或普通按钮缩放。
 
 Scaffold 的 content 必须消费它返回的 PaddingValues；内容、顶栏、底栏、Popup 与 Dialog 分层采样。短页和空白区要占满视口，再装配 [couiVerticalScroll](../effects/overscroll.md)，不能因没有滚动范围而移除回弹。完整接入与 ROM 默认 Activity 转场见[二级页接入](../guide/secondary-pages.md)。
 
