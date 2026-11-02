@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +33,7 @@ import com.itos.coui.theme.CouiTheme
 import com.itos.coui.text.CouiText
 import com.itos.coui.text.CouiTextKind
 
+/** 独立配色值；不创建页面主题作用域，也不改变内容槽内其他组件的主题。 */
 @Immutable
 data class CouiPageColors(val background: Color, val card: Color, val title: Color, val summary: Color,
     val disabled: Color, val accent: Color, val divider: Color = title.copy(alpha = .12f))
@@ -65,16 +65,10 @@ object CouiPageDefaults {
         Color(if (dark) 0x4DFFFFFF else 0x4D000000), accent)
 }
 
-internal data class PageStyle(val dark: Boolean, val colors: CouiPageColors)
-internal val LocalPageStyle = staticCompositionLocalOf<PageStyle?> { null }
-
-@Composable
-internal fun pageStyle(): PageStyle = LocalPageStyle.current
-    ?: PageStyle(CouiTheme.isDark, CouiPageDefaults.themeColors())
-
 /**
  * 一组相邻设置项共享项目平滑圆角；条件隐藏的条目不保留空白或分组端点。
  * 内部顶部留白按标题选择 Defaults；modifier.padding 在默认留白之外累加。
+ * colors 只控制本组卡片、标题和说明；任意内容槽继续使用各组件自己的主题或显式参数。
  */
 @Composable
 fun CouiGroup(
@@ -82,9 +76,9 @@ fun CouiGroup(
     title: String? = null,
     footer: String? = null,
     headerActions: @Composable RowScope.() -> Unit = {},
+    colors: CouiPageColors = CouiPageDefaults.themeColors(),
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val colors = pageStyle().colors
     val topSpacing = if (title.isNullOrEmpty()) CouiPageDefaults.groupSpacing else CouiPageDefaults.categoryTopSpacing
     Column(modifier.fillMaxWidth().padding(top = topSpacing)) {
         if (!title.isNullOrEmpty()) Row(Modifier.padding(horizontal = 32.dp, vertical = 8.dp).heightIn(min = 16.dp),
@@ -96,22 +90,22 @@ fun CouiGroup(
         Column(Modifier.padding(horizontal = CouiPageDefaults.horizontalMargin).fillMaxWidth()
             .clip(CouiPageDefaults.shape).background(colors.card)
             .padding(vertical = CouiPageDefaults.groupPadding), content = content)
-        if (!footer.isNullOrEmpty()) CouiFooter(text = footer)
+        if (!footer.isNullOrEmpty()) CouiFooter(text = footer, color = colors.summary)
     }
 }
 
-/** 自定义可点击设置项。容器提供单一语义与反馈，内容拥有排版和内边距。 */
+/** 自定义可点击设置项。只拥有自身点击与反馈，不改变内容槽的主题或业务状态。 */
 @Composable
 fun CouiItem(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     enabled: Boolean = true,
+    dark: Boolean = CouiTheme.isDark,
     content: @Composable RowScope.() -> Unit,
 ) {
-    val style = pageStyle()
     val source = remember { MutableInteractionSource() }
     Row(modifier.fillMaxWidth().heightIn(min = CouiPageDefaults.rowMinHeight)
-        .couiButtonFeedback(style.dark, source, enabled, list = true)
+        .couiButtonFeedback(dark, source, enabled, list = true)
         .clickable(source, null, enabled, role = Role.Button, onClick = onClick)
         .semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, content = content)
 }
@@ -120,16 +114,17 @@ fun CouiItem(
 @Composable
 fun CouiDivider(modifier: Modifier = Modifier,
     startIndent: androidx.compose.ui.unit.Dp = CouiPageDefaults.rowPadding,
-    endIndent: androidx.compose.ui.unit.Dp = CouiPageDefaults.rowPadding) {
-    val style = pageStyle()
+    endIndent: androidx.compose.ui.unit.Dp = CouiPageDefaults.rowPadding,
+    color: Color = CouiTheme.colorScheme.outlineVariant) {
     Box(modifier.fillMaxWidth().padding(start = startIndent, end = endIndent)
         .height(CouiPageDefaults.dividerHeight)
-        .background(style.colors.divider))
+        .background(color))
 }
 
 @Composable
-fun CouiFooter(modifier: Modifier = Modifier, text: String) {
-    CouiText(text = text, kind = CouiTextKind.Description, color = pageStyle().colors.summary, modifier =
+fun CouiFooter(modifier: Modifier = Modifier, text: String,
+    color: Color = CouiTheme.colorScheme.onSurfaceVariant) {
+    CouiText(text = text, kind = CouiTextKind.Description, color = color, modifier =
         modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 8.dp), textAlign = TextAlign.Start)
 }
 

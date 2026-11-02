@@ -1,11 +1,14 @@
 # 组件目录
 
-需要在布局中直接使用控件时，从这里选择。首次接入见[快速开始](../guide/getting-started.md)。
+需要在布局中直接使用控件时，从这里选择。可以只使用一个组件，也可以和其他设计体系混搭；不要求替换宿主 Scaffold、主题或导航。首次接入见[快速开始](../guide/getting-started.md)，页面装配见[宿主页面接入](../guide/secondary-pages.md)。
 
 | 组件 | 用途 |
 | --- | --- |
 | [顶栏与按钮](top-app-bar.md) | 渐进模糊背景、页面标题和操作 |
 | [顶栏搜索](search.md) | 搜索按钮与输入框之间的转场 |
+| [常驻搜索](search-bar.md) | 搜索胶囊与独立取消按钮 |
+| [折叠顶栏](collapsing-app-bar.md) | 大标题折叠与搜索联动 |
+| [分组与行布局](settings.md) | 独立卡片分组、行布局、说明和图示 |
 | [底栏](bottom-bar.md) | 页面选择、左右附件和融合表面 |
 | [FAB](fab.md) | 独立浮动操作 |
 | [菜单](menu.md) | 选择、勾选、分组与子菜单 |
@@ -17,9 +20,3 @@
 | [选择器](pickers.md) | 受控整数滚轮与月历；时间、日期和弹窗由宿主组合 |
 
 浮动材质需要的公共准备见[背景采样](../effects/backdrop.md)；单独使用算法见[效果目录](../effects/README.md)。
-
-- [选择器](pickers.md)：受控整数滚轮与月历，时间、日期和弹窗由宿主组合。
-
-- [设置页布局](settings.md)
-- [常驻搜索](search-bar.md)
-- [折叠顶栏](collapsing-app-bar.md)

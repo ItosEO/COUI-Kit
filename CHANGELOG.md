@@ -6,11 +6,12 @@ COUI-Kit 处于早期预览阶段。本文记录公开 API、行为、接入和�
 
 以下迁移只针对 PR 开发分支中的临时接口，不表示已合入 main 或进入现有发行版本。
 
-- PR #15 布局族公开命名简化：包名 `com.itos.coui.settings` → `com.itos.coui.layout`；`CouiSettingsScaffold/Group/Item/Divider/Footer/Illustration` → `CouiScaffold/Group/Item/Divider/Footer/Illustration`；`CouiSettingsColors/Defaults` → `CouiPageColors/Defaults`。这些入口尚未合入 main，不保留旧名称别名。
-
+- 移除 CouiScaffold（曾名 CouiSettingsScaffold）及其专用页面测量、padding 与配色作用域。保留宿主已有 Scaffold、主题和导航；模糊材质按需组合原有 Backdrop 接口，不增加替代页面包装器。
+- CouiGroup 增加显式 colors，CouiItem 增加 dark，CouiDivider / CouiFooter 增加 color；默认值在消费处读取 CouiTheme。Group 配色仅作用于自身卡片、标题和 footer，不隐式改变其内容槽。原页面级 colors/dark 改为组件参数或既有局部主题，见[宿主页面接入](docs/guide/secondary-pages.md)。
+- PR #15 布局族公开命名简化：包名 `com.itos.coui.settings` → `com.itos.coui.layout`；`CouiSettingsGroup/Item/Divider/Footer/Illustration` → `CouiGroup/Item/Divider/Footer/Illustration`；`CouiSettingsColors/Defaults` → `CouiPageColors/Defaults`。这些入口尚未合入 main，不保留旧名称别名。
 - CouiSearchBarColors 的 background 更名为 fallbackBackground，仅负责 API 31–33 的普通填色；API 34 起继续使用所属模糊材质，文字、图标与清除颜色仍可显式覆盖。
 - CouiGroup 移除 topSpacing 参数，保留按标题选择的默认顶部留白。删除显式传入的默认值；额外外部留白使用 Modifier.padding。该 Modifier 不抵消内部默认留白；需要完全自定组间距时，由宿主组合标题、卡片与内容。CouiPreferenceLayout 移除 minHeight 参数，改用 Modifier.heightIn 或 height，内部默认行高服从外部约束。内部 contentPadding 与 leadingSize 参数保留。
-- CouiTextKind 移除没有消费者的 Title、Message、Button、Input、Counter 角色；弹窗使用已有 Dialog 组件内部排版，自定义文字使用 Compose TextStyle。设置页、搜索与页面标题角色及 onLineCount 回调保留。接入说明见[设置页布局](docs/components/settings.md)。
+- CouiTextKind 移除没有消费者的 Title、Message、Button、Input、Counter 角色；弹窗使用已有 Dialog 组件内部排版，自定义文字使用 Compose TextStyle。设置页、搜索与页面标题角色及 onLineCount 回调保留。接入说明见[分组与行布局](docs/components/settings.md)。
 
 ## [0.0.1-alpha3] - 2026-11-01
 
@@ -18,7 +19,7 @@ COUI-Kit 处于早期预览阶段。本文记录公开 API、行为、接入和�
 
 升级需重新编译消费者，不承诺二进制 ABI。设备上的字体、嵌套主题和最小交互尺寸仍需验收，构建通过不表示视觉兼容已全部确认。
 
-- 核心移除 Material 3 与 Material Icons 依赖，使用独立文本、图标和菜单定位；原生策略保留原最小布局占位。
+- 核心移除 Material 3 与 Material Icons 依赖，使用独立文本、图标和菜单定位；原生默认最小布局占位保留。
 - 新增可选 CouiTheme、原生浅深色预设、普通字体和内容上下文；原组件通过默认参数简化装配，保留显式配置与底层 Effect。
 - 新增可选 `coui-material3` 模块，通过 `Application.onCreate` 中的 `Coui.initialize(defaultStyle = CouiMaterial3Style())` 接入。组件在消费处读取 M3 颜色、字体和内容上下文；顶栏按钮恢复 M3 最小交互尺寸语义。
 - `LocalCouiDarkTheme` 接收宿主模式；`CouiTheme` 支持局部原生或自定义外观。原生默认 tint 透明；M3 菜单与底栏默认使用宿主 surface 作已有色相层。
