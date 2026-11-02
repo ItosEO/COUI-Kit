@@ -1,22 +1,22 @@
 # 设置页布局
 
-库提供可重用的 Scaffold、分组、图示、行布局和输入反馈；完整二级页与具体设置行由宿主装配。库不再分别公开开关行、菜单行、滑条行、输入行等包装入口。
+库提供可重用的 Scaffold、分组、图示、行布局和输入反馈；完整二级页与具体设置行由宿主装配。库不再分别公开开关行、菜单行、滑条行、输入行等包装入口。布局组件统一位于 `com.itos.coui.layout`，公开名称不带 `Settings` 前缀。旧名称只存在于尚未合并的 PR 开发历史中，不保留兼容别名。
 
 | 库内入口 | 职责 |
 | --- | --- |
-| CouiSettingsScaffold | 测量顶栏、底栏和 FAB，提供内容 padding、安全区及独立采样源 |
-| CouiSettingsGroup | 平滑圆角卡片、可选标题、说明和 headerActions |
+| CouiScaffold | 测量顶栏、底栏和 FAB，提供内容 padding、安全区及独立采样源 |
+| CouiGroup | 平滑圆角卡片、可选标题、说明和 headerActions |
 | CouiPreferenceLayout | leading、headline、supporting、trailing、内部留白与图标槽，默认行高服从宿主约束 |
-| CouiSettingsItem | 自定义单一点击与列表反馈；内容自行排版 |
-| CouiSettingsDivider / CouiSettingsFooter | 组内分割与独立说明 |
-| CouiSettingsIllustration | 图示和教程区域，内容由宿主提供 |
+| CouiItem | 自定义单一点击与列表反馈；内容自行排版 |
+| CouiDivider / CouiFooter | 组内分割与独立说明 |
+| CouiIllustration | 图示和教程区域，内容由宿主提供 |
 
 以下片段位于宿主 Composable 中；文字、样式、图标和颜色是宿主参数。行布局不创建点击，交互由唯一的 Modifier 或尾部控件拥有。
 
 ```kotlin
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
-import com.itos.coui.settings.CouiPreferenceLayout
+import com.itos.coui.layout.CouiPreferenceLayout
 
 CouiPreferenceLayout(
     leading = { Icon(icon, null, tint = iconColor) },
@@ -29,7 +29,7 @@ CouiPreferenceLayout(
 
 CouiText 与 rememberCouiTextStyle 提供设置页、标题、搜索等角色的原生排版；需要根据实际行数调整宿主布局时，使用 CouiText 的 onLineCount 回调。弹窗的标题、正文、按钮、输入和计数排版由 [Dialog](dialog.md) 内部持有，继续在消费处解析主题字体。
 
-CouiSettingsGroup 根据是否有标题选用 CouiSettingsDefaults 的默认顶部留白；`modifier.padding` 增加默认留白以外的间距，不会替换或抵消默认值。需要完全自行控制组间距时，由宿主组合 Column、标题、卡片和内容。CouiPreferenceLayout 的外部高度使用标准 `Modifier.height` / `heightIn`；只有调用方没有给出最小高度约束时，`defaultMinSize` 才补充默认行高，内容仍按真实尺寸测量。`contentPadding` 与 `leadingSize` 分别调整行内留白和图标槽，仍通过组件参数设置。
+CouiGroup 根据是否有标题选用 CouiPageDefaults 的默认顶部留白；`modifier.padding` 增加默认留白以外的间距，不会替换或抵消默认值。需要完全自行控制组间距时，由宿主组合 Column、标题、卡片和内容。CouiPreferenceLayout 的外部高度使用标准 `Modifier.height` / `heightIn`；只有调用方没有给出最小高度约束时，`defaultMinSize` 才补充默认行高，内容仍按真实尺寸测量。`contentPadding` 与 `leadingSize` 分别调整行内留白和图标槽，仍通过组件参数设置。
 
 开关直接使用 [CouiSwitch](switch.md)，复选直接使用 [CouiCheckbox](checkbox.md)，滑条直接使用 [CouiSlider](slider.md)，菜单直接使用 [CouiMenu](menu.md)。整行交互时，尾部控件不再独立提交点击；开关拖动继续通过 onDragCheckedChange 提交给同一个业务 owner。整行触觉可使用公开的 CouiHapticFeedback / performCouiHapticFeedback，程序赋值不触发触觉。
 
@@ -55,8 +55,8 @@ topBar、bottomBar 和 floatingActionButton 收到正文源，不包含它们自
 
 迁移：此前临时公开的 CouiSettingsPage、各类 Preference 业务包装不再属于库 API。宿主改为组合 Scaffold、PreferenceLayout 和实际控件；没有保留重复公共别名，也不依赖尚未提供的 Demo 文件。
 
-[公开布局与 Defaults](../../coui/src/main/java/com/itos/coui/settings/CouiSettings.kt)、[Scaffold](../../coui/src/main/java/com/itos/coui/settings/CouiSettingsScaffold.kt)。
+[公开布局与 Defaults](../../coui/src/main/java/com/itos/coui/layout/CouiPageComponents.kt)、[Scaffold](../../coui/src/main/java/com/itos/coui/layout/CouiScaffold.kt)。
 
 ## 主题与显式配色
 
-默认值在消费处读取 `CouiTheme`，跟随原生或可选 M3 策略；显式颜色优先。设置容器使用 `CouiSettingsDefaults.themeColors`，可通过返回值的 `copy` 覆盖各颜色角色。常驻搜索的颜色角色及 `fallbackBackground` 生效范围见[搜索栏配色契约](search-bar.md#主题与显式配色)。
+默认值在消费处读取 `CouiTheme`，跟随原生或可选 M3 策略；显式颜色优先。设置容器使用 `CouiPageDefaults.themeColors`，可通过返回值的 `copy` 覆盖各颜色角色。常驻搜索的颜色角色及 `fallbackBackground` 生效范围见[搜索栏配色契约](search-bar.md#主题与显式配色)。

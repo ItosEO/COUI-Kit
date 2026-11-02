@@ -1,4 +1,4 @@
-package com.itos.coui.settings
+package com.itos.coui.layout
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 
 /** Settings IllustrationPreference 的独立图示区域；不将图示塞入普通点击行。 */
 @Composable
-fun CouiSettingsIllustration(modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
+fun CouiIllustration(modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
     Box(modifier.fillMaxWidth().padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
         Box(Modifier.widthIn(max = 412.dp).heightIn(max = 300.dp).fillMaxWidth(),
             contentAlignment = Alignment.Center, content = content)

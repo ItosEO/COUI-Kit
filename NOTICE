@@ -34,7 +34,7 @@ commonMain/androidx/compose/material/icons/outlined/Search.kt。
 Miuix Scaffold 布局模式
 ---------------------
 
-coui/src/main/java/com/itos/coui/settings/CouiSettingsScaffold.kt 的稳定
+coui/src/main/java/com/itos/coui/layout/CouiScaffold.kt 的稳定
 PaddingValues 与正文子组合复用模式改编自 Miuix Scaffold，已按本容器的
 顶栏、底栏与安全区测量职责调整。
 Copyright 2025, compose-miuix-ui contributors.

@@ -1,4 +1,4 @@
-package com.itos.coui.settings
+package com.itos.coui.layout
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -37,10 +37,10 @@ import com.itos.coui.menu.ProvideCouiMenuBackdrop
  * 三个浮层 slot 不录入其消费的正文源；窗口源录制完整页面，供独立菜单/弹窗使用。
  */
 @Composable
-fun CouiSettingsScaffold(
+fun CouiScaffold(
     modifier: Modifier = Modifier,
     dark: Boolean = CouiTheme.isDark,
-    colors: CouiSettingsColors = CouiSettingsDefaults.themeColors(dark),
+    colors: CouiPageColors = CouiPageDefaults.themeColors(dark),
     contentWindowInsets: WindowInsets = WindowInsets.safeDrawing,
     bottomBar: @Composable (CouiBackdrop) -> Unit = {},
     floatingActionButton: @Composable (CouiBackdrop) -> Unit = {},
@@ -48,7 +48,7 @@ fun CouiSettingsScaffold(
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val backdrop = rememberCouiBackdrop()
-    val contentPadding = remember { SettingsContentPadding() }
+    val contentPadding = remember { PageContentPadding() }
     val bodyContent: @Composable () -> Unit = remember(content, backdrop, colors.background) {
         {
             // 顶栏等消费正文源；独立 Popup/Dialog 消费外层完整窗口源，不把自身录进去。
@@ -59,21 +59,21 @@ fun CouiSettingsScaffold(
     }
     var consumed by remember { mutableStateOf(WindowInsets(0, 0, 0, 0)) }
     val insets = contentWindowInsets.exclude(consumed)
-    CompositionLocalProvider(LocalSettingsStyle provides SettingsStyle(dark, colors)) {
+    CompositionLocalProvider(LocalPageStyle provides PageStyle(dark, colors)) {
         ProvideCouiMenuBackdrop(isolateContent = false) { source ->
             SubcomposeLayout(modifier.fillMaxSize().then(source).background(colors.background)
                 .onConsumedWindowInsetsChanged { consumed = it }
                 .windowInsetsPadding(insets.only(WindowInsetsSides.Horizontal))) { constraints ->
                 val loose = constraints.copy(minWidth = 0, minHeight = 0)
-                val bars = subcompose(SettingsSlot.TopBar) { topBar(backdrop) }.map { it.measure(loose) }
+                val bars = subcompose(PageSlot.TopBar) { topBar(backdrop) }.map { it.measure(loose) }
                 val top = bars.maxOfOrNull { it.height } ?: 0
-                val bottomBars = subcompose(SettingsSlot.BottomBar) { bottomBar(backdrop) }.map { it.measure(loose) }
+                val bottomBars = subcompose(PageSlot.BottomBar) { bottomBar(backdrop) }.map { it.measure(loose) }
                 val bottom = bottomBars.maxOfOrNull { it.height } ?: insets.getBottom(this)
-                val floating = subcompose(SettingsSlot.Floating) { floatingActionButton(backdrop) }
+                val floating = subcompose(PageSlot.Floating) { floatingActionButton(backdrop) }
                     .map { it.measure(loose) }
                 // 内容持有同一 PaddingValues；padding Modifier 在测量阶段读取更新后的值。
                 contentPadding.value = PaddingValues(top = top.toDp(), bottom = bottom.toDp())
-                val body = subcompose(SettingsSlot.Content, bodyContent).map { it.measure(constraints) }
+                val body = subcompose(PageSlot.Content, bodyContent).map { it.measure(constraints) }
                 layout(constraints.maxWidth, constraints.maxHeight) {
                     body.forEach { it.placeRelative(0, 0) }
                     bars.forEach { it.placeRelative(0, 0) }
@@ -89,7 +89,7 @@ fun CouiSettingsScaffold(
 // 稳定 padding 与正文子组合复用模式改编自 Miuix Scaffold（bb7bde3），按本容器测量职责调整。
 // Copyright 2025, compose-miuix-ui contributors. Apache-2.0；来源与许可见 NOTICE。
 @Stable
-private class SettingsContentPadding : PaddingValues {
+private class PageContentPadding : PaddingValues {
     var value by mutableStateOf(PaddingValues(0.dp))
 
     override fun calculateLeftPadding(layoutDirection: LayoutDirection): Dp = value.calculateLeftPadding(layoutDirection)
@@ -98,4 +98,4 @@ private class SettingsContentPadding : PaddingValues {
     override fun calculateBottomPadding(): Dp = value.calculateBottomPadding()
 }
 
-private enum class SettingsSlot { TopBar, BottomBar, Floating, Content }
+private enum class PageSlot { TopBar, BottomBar, Floating, Content }

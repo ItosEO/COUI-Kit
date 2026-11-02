@@ -20,11 +20,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.itos.coui.search.CouiSearchBar
 import com.itos.coui.search.rememberCouiSearchBarState
-import com.itos.coui.settings.CouiPreferenceLayout
-import com.itos.coui.settings.CouiSettingsItem
-import com.itos.coui.settings.CouiSettingsDefaults
-import com.itos.coui.settings.CouiSettingsGroup
-import com.itos.coui.settings.CouiSettingsScaffold
+import com.itos.coui.layout.CouiPreferenceLayout
+import com.itos.coui.layout.CouiItem
+import com.itos.coui.layout.CouiPageDefaults
+import com.itos.coui.layout.CouiGroup
+import com.itos.coui.layout.CouiScaffold
 import com.itos.coui.topappbar.CouiCollapsingTopAppBar
 import com.itos.coui.topappbar.rememberCouiCollapsingAppBarState
 
@@ -32,8 +32,8 @@ val density = LocalDensity.current
 val scroll = rememberScrollState()
 val header = rememberCouiCollapsingAppBarState(canScroll = { scroll.maxValue > 0 })
 val search = rememberCouiSearchBarState(expanded)
-val colors = CouiSettingsDefaults.colors(accent, dark)
-CouiSettingsScaffold(
+val colors = CouiPageDefaults.colors(accent, dark)
+CouiScaffold(
     modifier = Modifier.nestedScroll(header.nestedScrollConnection),
     dark = dark,
     colors = colors,
@@ -52,8 +52,8 @@ CouiSettingsScaffold(
         .verticalScroll(scroll, enabled = !search.active)
         .padding(contentPadding).consumeWindowInsets(padding)) {
         // 实际应用在搜索期间用结果层覆盖，并连接 contentAlpha / resultsAlpha。
-        CouiSettingsGroup {
-            CouiSettingsItem(onClick = openDetail) {
+        CouiGroup {
+            CouiItem(onClick = openDetail) {
                 CouiPreferenceLayout { BasicText(rowTitle, style = rowTextStyle) }
             }
         }
@@ -61,7 +61,7 @@ CouiSettingsScaffold(
 }
 ```
 
-搜索的受控状态、IME、取消与返回契约见[常驻搜索](search-bar.md)。可用 LazyColumn 替换 Column：将前文通过 header.contentPadding 计算的 contentPadding 传给列表，并用原始 padding 调用 consumeWindowInsets，不再套另一层滚动容器。顶栏使用消费感知的状态栏 padding；祖先已消费的部分不会重复添加，内容仍须应用并消费 Scaffold 的实测 padding。底栏/FAB 可继续装入 CouiSettingsScaffold 的对应 slot，业务不进入 coui。
+搜索的受控状态、IME、取消与返回契约见[常驻搜索](search-bar.md)。可用 LazyColumn 替换 Column：将前文通过 header.contentPadding 计算的 contentPadding 传给列表，并用原始 padding 调用 consumeWindowInsets，不再套另一层滚动容器。顶栏使用消费感知的状态栏 padding；祖先已消费的部分不会重复添加，内容仍须应用并消费 Scaffold 的实测 padding。底栏/FAB 可继续装入 CouiScaffold 的对应 slot，业务不进入 coui。
 
 searchBar 是普通内容槽，可为空或产生多个根节点；这些节点在同一个 Box 内测量和叠放。需要横向或纵向排列时，由槽内的 Row/Column 指定。标题的位置与缩放原点都跟随布局方向的逻辑起始边。
 
@@ -87,4 +87,4 @@ canScroll 由宿主读取实际列表是否存在滚动范围；内容完全装�
 
 ## 主题与显式配色
 
-默认值在消费处读取 `CouiTheme`，跟随原生或可选 M3 策略；显式颜色优先。省略标题 color 时按实际 dark 解析对应主题，显式色值继续优先；标题透明度仍由原厂折叠与搜索动画控制。设置容器使用 `CouiSettingsDefaults.themeColors`，常驻搜索使用 `CouiSearchBarDefaults.colors`。搜索的文本、图标与低平台背景覆盖范围见[常驻搜索配色](search-bar.md#主题与显式配色)。
+默认值在消费处读取 `CouiTheme`，跟随原生或可选 M3 策略；显式颜色优先。省略标题 color 时按实际 dark 解析对应主题，显式色值继续优先；标题透明度仍由原厂折叠与搜索动画控制。设置容器使用 `CouiPageDefaults.themeColors`，常驻搜索使用 `CouiSearchBarDefaults.colors`。搜索的文本、图标与低平台背景覆盖范围见[常驻搜索配色](search-bar.md#主题与显式配色)。

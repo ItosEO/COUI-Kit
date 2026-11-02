@@ -1,4 +1,4 @@
-package com.itos.coui.settings
+package com.itos.coui.layout
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,10 +35,10 @@ import com.itos.coui.text.CouiText
 import com.itos.coui.text.CouiTextKind
 
 @Immutable
-data class CouiSettingsColors(val background: Color, val card: Color, val title: Color, val summary: Color,
+data class CouiPageColors(val background: Color, val card: Color, val title: Color, val summary: Color,
     val disabled: Color, val accent: Color, val divider: Color = title.copy(alpha = .12f))
 
-object CouiSettingsDefaults {
+object CouiPageDefaults {
     val horizontalMargin = 16.dp
     val rowPadding = 16.dp
     val rowMinHeight = 48.dp
@@ -54,38 +54,38 @@ object CouiSettingsDefaults {
     val dividerHeight = 0.33.dp
     /** 消费当前原生/可选宿主策略；显式 colors 仍优先。 */
     @Composable
-    fun themeColors(dark: Boolean = CouiTheme.isDark): CouiSettingsColors {
+    fun themeColors(dark: Boolean = CouiTheme.isDark): CouiPageColors {
         val theme = CouiTheme.colorSchemeFor(dark)
-        return CouiSettingsColors(theme.surface, theme.container, theme.onSurface,
+        return CouiPageColors(theme.surface, theme.container, theme.onSurface,
             theme.onSurfaceVariant, theme.onSurface.copy(alpha = .3f), theme.accent, theme.outlineVariant)
     }
-    fun colors(accent: Color, dark: Boolean) = CouiSettingsColors(
+    fun colors(accent: Color, dark: Boolean) = CouiPageColors(
         Color(if (dark) 0xFF000000 else 0xFFF0F1F2), Color(if (dark) 0x1AFFFFFF else 0xFFFFFFFF),
         Color(if (dark) 0xE6FFFFFF else 0xE6000000), Color(if (dark) 0x8AFFFFFF else 0x8A000000),
         Color(if (dark) 0x4DFFFFFF else 0x4D000000), accent)
 }
 
-internal data class SettingsStyle(val dark: Boolean, val colors: CouiSettingsColors)
-internal val LocalSettingsStyle = staticCompositionLocalOf<SettingsStyle?> { null }
+internal data class PageStyle(val dark: Boolean, val colors: CouiPageColors)
+internal val LocalPageStyle = staticCompositionLocalOf<PageStyle?> { null }
 
 @Composable
-internal fun settingsStyle(): SettingsStyle = LocalSettingsStyle.current
-    ?: SettingsStyle(CouiTheme.isDark, CouiSettingsDefaults.themeColors())
+internal fun pageStyle(): PageStyle = LocalPageStyle.current
+    ?: PageStyle(CouiTheme.isDark, CouiPageDefaults.themeColors())
 
 /**
  * 一组相邻设置项共享项目平滑圆角；条件隐藏的条目不保留空白或分组端点。
  * 内部顶部留白按标题选择 Defaults；modifier.padding 在默认留白之外累加。
  */
 @Composable
-fun CouiSettingsGroup(
+fun CouiGroup(
     modifier: Modifier = Modifier,
     title: String? = null,
     footer: String? = null,
     headerActions: @Composable RowScope.() -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val colors = settingsStyle().colors
-    val topSpacing = if (title.isNullOrEmpty()) CouiSettingsDefaults.groupSpacing else CouiSettingsDefaults.categoryTopSpacing
+    val colors = pageStyle().colors
+    val topSpacing = if (title.isNullOrEmpty()) CouiPageDefaults.groupSpacing else CouiPageDefaults.categoryTopSpacing
     Column(modifier.fillMaxWidth().padding(top = topSpacing)) {
         if (!title.isNullOrEmpty()) Row(Modifier.padding(horizontal = 32.dp, vertical = 8.dp).heightIn(min = 16.dp),
             verticalAlignment = Alignment.CenterVertically) {
@@ -93,24 +93,24 @@ fun CouiSettingsGroup(
                 Modifier.weight(1f).semantics { heading() }, textAlign = TextAlign.Start)
             headerActions()
         }
-        Column(Modifier.padding(horizontal = CouiSettingsDefaults.horizontalMargin).fillMaxWidth()
-            .clip(CouiSettingsDefaults.shape).background(colors.card)
-            .padding(vertical = CouiSettingsDefaults.groupPadding), content = content)
-        if (!footer.isNullOrEmpty()) CouiSettingsFooter(text = footer)
+        Column(Modifier.padding(horizontal = CouiPageDefaults.horizontalMargin).fillMaxWidth()
+            .clip(CouiPageDefaults.shape).background(colors.card)
+            .padding(vertical = CouiPageDefaults.groupPadding), content = content)
+        if (!footer.isNullOrEmpty()) CouiFooter(text = footer)
     }
 }
 
 /** 自定义可点击设置项。容器提供单一语义与反馈，内容拥有排版和内边距。 */
 @Composable
-fun CouiSettingsItem(
+fun CouiItem(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     enabled: Boolean = true,
     content: @Composable RowScope.() -> Unit,
 ) {
-    val style = settingsStyle()
+    val style = pageStyle()
     val source = remember { MutableInteractionSource() }
-    Row(modifier.fillMaxWidth().heightIn(min = CouiSettingsDefaults.rowMinHeight)
+    Row(modifier.fillMaxWidth().heightIn(min = CouiPageDefaults.rowMinHeight)
         .couiButtonFeedback(style.dark, source, enabled, list = true)
         .clickable(source, null, enabled, role = Role.Button, onClick = onClick)
         .semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, content = content)
@@ -118,18 +118,18 @@ fun CouiSettingsItem(
 
 /** 卡片内部的细分隔。按真实分组使用，不在相邻独立卡片之间添加线。 */
 @Composable
-fun CouiSettingsDivider(modifier: Modifier = Modifier,
-    startIndent: androidx.compose.ui.unit.Dp = CouiSettingsDefaults.rowPadding,
-    endIndent: androidx.compose.ui.unit.Dp = CouiSettingsDefaults.rowPadding) {
-    val style = settingsStyle()
+fun CouiDivider(modifier: Modifier = Modifier,
+    startIndent: androidx.compose.ui.unit.Dp = CouiPageDefaults.rowPadding,
+    endIndent: androidx.compose.ui.unit.Dp = CouiPageDefaults.rowPadding) {
+    val style = pageStyle()
     Box(modifier.fillMaxWidth().padding(start = startIndent, end = endIndent)
-        .height(CouiSettingsDefaults.dividerHeight)
+        .height(CouiPageDefaults.dividerHeight)
         .background(style.colors.divider))
 }
 
 @Composable
-fun CouiSettingsFooter(modifier: Modifier = Modifier, text: String) {
-    CouiText(text = text, kind = CouiTextKind.Description, color = settingsStyle().colors.summary, modifier =
+fun CouiFooter(modifier: Modifier = Modifier, text: String) {
+    CouiText(text = text, kind = CouiTextKind.Description, color = pageStyle().colors.summary, modifier =
         modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 8.dp), textAlign = TextAlign.Start)
 }
 
@@ -141,15 +141,15 @@ fun CouiPreferenceLayout(
     supporting: (@Composable () -> Unit)? = null,
     trailing: @Composable () -> Unit = {},
     contentPadding: androidx.compose.foundation.layout.PaddingValues = androidx.compose.foundation.layout.PaddingValues(
-        horizontal = CouiSettingsDefaults.rowPadding, vertical = CouiSettingsDefaults.contentPadding),
-    leadingSize: androidx.compose.ui.unit.Dp = CouiSettingsDefaults.iconSize,
+        horizontal = CouiPageDefaults.rowPadding, vertical = CouiPageDefaults.contentPadding),
+    leadingSize: androidx.compose.ui.unit.Dp = CouiPageDefaults.iconSize,
     headline: @Composable () -> Unit,
 ) {
-    Row(modifier.fillMaxWidth().defaultMinSize(minHeight = CouiSettingsDefaults.rowMinHeight).semantics(mergeDescendants = true) {}
+    Row(modifier.fillMaxWidth().defaultMinSize(minHeight = CouiPageDefaults.rowMinHeight).semantics(mergeDescendants = true) {}
         .padding(contentPadding),
         verticalAlignment = Alignment.CenterVertically) {
         if (leading != null) Box(Modifier.padding(end = 16.dp).size(leadingSize), contentAlignment = Alignment.Center) { leading() }
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(CouiSettingsDefaults.summarySpacing)) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(CouiPageDefaults.summarySpacing)) {
             headline()
             supporting?.invoke()
         }

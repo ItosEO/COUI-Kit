@@ -1,6 +1,6 @@
 # 二级页面接入
 
-COUI-Kit 提供页面容器与设置项，宿主负责页面身份、返回栈、主题和业务状态。所有页面通过 CouiSettingsScaffold 自行装配顶栏和滚动内容，不为某种页面组合增加第二个公共入口。
+COUI-Kit 提供页面容器与设置项，宿主负责页面身份、返回栈、主题和业务状态。所有页面通过 CouiScaffold 自行装配顶栏和滚动内容，不为某种页面组合增加第二个公共入口。
 
 组件目录和组件详情分别作为页面：目录用带图标的 行布局与唯一点击 owner 提交导航，具体组件放在详情页内。设置首页的大标题与分裂搜索使用[对应容器](../components/collapsing-app-bar.md)，普通详情仍使用紧凑标题与返回按钮。不要在库中注册 Demo 路由，也不要让通用组件直接启动 Activity。
 
@@ -32,7 +32,7 @@ values/themes.xml：
 startActivity(Intent(this, DetailActivity::class.java))
 ```
 
-Activity 的 setContent 中组合 CouiSettingsScaffold、CouiTopAppBar、CouiSettingsGroup 和实际控件。本批以本文和组件使用页的片段说明装配；完整 DemoSettingsPage 由后续 Demo 批次提供，不属于库 API。宿主自行选择标题、返回、actions、滚动容器和反馈。
+Activity 的 setContent 中组合 CouiScaffold、CouiTopAppBar、CouiGroup 和实际控件。本批以本文和组件使用页的片段说明装配；完整 DemoSettingsPage 由后续 Demo 批次提供，不属于库 API。宿主自行选择标题、返回、actions、滚动容器和反馈。
 
 Activity 根级不需要 BackHandler：系统返回与预测性返回继续由 Activity 处理。只有页面内正在编辑、搜索、存在未保存变更等业务状态需要拦截时，再局部安装处理器；关闭该状态后释放拦截，让 Activity 返回恢复。弹窗自己的返回由弹窗处理。
 
@@ -45,7 +45,7 @@ Scaffold 负责横向和底部安全区，顶栏负责顶部 inset；内容必�
 需要 LazyColumn 时，使用低层容器。以下片段在宿主 Composable 中，dark、colors、title、rows、rowTextStyle 和 openRow 都是宿主提供的参数；rows 的 id 稳定且唯一。
 
 ```kotlin
-CouiSettingsScaffold(dark = dark, colors = colors, topBar = { backdrop ->
+CouiScaffold(dark = dark, colors = colors, topBar = { backdrop ->
     CouiTopAppBar(backdrop = backdrop) {
         Box(Modifier.fillMaxWidth().statusBarsPadding().height(52.dp),
             contentAlignment = Alignment.Center) {
@@ -58,8 +58,8 @@ CouiSettingsScaffold(dark = dark, colors = colors, topBar = { backdrop ->
         contentPadding = innerPadding,
     ) {
         items(rows, key = { it.id }) { row ->
-            CouiSettingsGroup {
-                CouiSettingsItem(onClick = { openRow(row.id) }) {
+            CouiGroup {
+                CouiItem(onClick = { openRow(row.id) }) {
                     CouiPreferenceLayout { BasicText(row.title, style = rowTextStyle) }
                 }
             }
@@ -82,14 +82,14 @@ CouiSettingsScaffold(dark = dark, colors = colors, topBar = { backdrop ->
 
 | 层次 | COUI 入口 | 宿主可调整的部分 |
 | --- | --- | --- |
-| 窗口/页面容器 | CouiSettingsScaffold | topBar、bottomBar、FAB、content、窗口 inset；浮层与内容采样分离 |
+| 窗口/页面容器 | CouiScaffold | topBar、bottomBar、FAB、content、窗口 inset；浮层与内容采样分离 |
 | 常规二级页面装配 | 宿主组合 Scaffold / TopAppBar / 滚动内容 | 标题、返回、actions、ScrollState 与页面内容 |
 | 自定义首页/顶栏 | CouiTopAppBar / CouiCollapsingTopAppBar | 自己装配标题/搜索，连接实际滚动与内容位移 |
-| 分组/图示 | CouiSettingsGroup / CouiSettingsIllustration | 标题、headerActions、说明、间隔与任意内容 |
+| 分组/图示 | CouiGroup / CouiIllustration | 标题、headerActions、说明、间隔与任意内容 |
 | 原厂行布局 | CouiPreferenceLayout | leading/headline/supporting/trailing、内边距、默认行高、图标尺寸；外部高度使用 Modifier |
 | 标准行与控件 | 宿主组合 PreferenceLayout 与唯一控件 | 受控值、文案、图标、状态与唯一业务回调 |
 
-需要整行点击和原厂列表反馈的自定义内容，用 CouiSettingsItem 拥有交互，再在其 RowScope 中放 CouiPreferenceLayout 或自定义内容；不用再嵌套另一个 clickable。纯信息行直接使用 PreferenceLayout。行级装配示例与完整 API 见[列表族](../components/settings.md)。
+需要整行点击和原厂列表反馈的自定义内容，用 CouiItem 拥有交互，再在其 RowScope 中放 CouiPreferenceLayout 或自定义内容；不用再嵌套另一个 clickable。纯信息行直接使用 PreferenceLayout。行级装配示例与完整 API 见[列表族](../components/settings.md)。
 
 顶级切页时，dock、renderer 与反馈节点必须放在稳定的 Scaffold slot 中，只把页面内容放进带页面 key 的状态作用域。把整个 Scaffold 放在该 key 内会在切页时销毁反馈；延迟业务切页不是生命周期修复。Demo 当前结构可直接参考这一点。
 
