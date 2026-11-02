@@ -4,6 +4,8 @@
 
 库公开的是这两个受控组件。时间、倒计时、年月日滚轮组合和选择弹窗属于 Demo 示例，不是额外的公开 Picker API。
 
+滚轮是一列上下滚动的数字，中间为较大的当前值，上下显示相邻数字；单列本身没有时间冒号和整组选择线。月历包含月份标题、左右翻月按钮、七列日期网格和选中圆圈。点击标题切换到内置的年/月/日三列滚轮，不需要单独创建三个 `CouiWheelPicker`。
+
 ## 最小调用
 
 滚轮需要当前整数、范围、回调和无障碍标签：
@@ -19,7 +21,7 @@ CouiWheelPicker(
 )
 ~~~
 
-月历需要当前日期、回调和六项文字说明：
+月历只需要当前日期和回调；年月日文案及按钮的无障碍说明由库按系统语言提供：
 
 ~~~kotlin
 import com.itos.coui.picker.CouiCalendarPicker
@@ -27,12 +29,6 @@ import com.itos.coui.picker.CouiCalendarPicker
 CouiCalendarPicker(
     value = selectedDate,
     onValueChange = onDateChange,
-    previousDescription = "上一月",
-    nextDescription = "下一月",
-    changeMonthDescription = "切换日期选择方式",
-    yearLabel = "年",
-    monthLabel = "月",
-    dayLabel = "日",
 )
 ~~~
 
@@ -81,7 +77,7 @@ fun TimeWheelExample() {
 }
 ~~~
 
-`formatter` 只改变显示文字，不改变整数值。`label` 是无障碍说明，不会直接绘制在数字旁。`repeatIntervalMillis` 控制长按连续调整的间隔。
+`formatter` 只改变显示文字，不改变整数值。`label` 是无障碍说明，不会直接绘制在数字旁。**通用滚轮仍要求提供 `label`**，因为同样的 `0..59` 可以表示分钟、次数或其他业务数值，库无法固定名称。`repeatIntervalMillis` 控制长按连续调整的间隔。
 
 默认 `wrap = true`，但范围只有三个或更少数值时不会循环；需要固定边界时显式设置 `wrap = false`。时间滚轮需要的整组选择线、冒号和 AM/PM 排列由页面组合。Demo 中有对应样式，库内没有公开的 `CouiTimePicker`。
 
@@ -111,17 +107,11 @@ fun CalendarExample(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxWidth(),
         value = selectedDate,
         onValueChange = { epochDay = it.toEpochDay() },
-        previousDescription = "上一月",
-        nextDescription = "下一月",
-        changeMonthDescription = "切换日期选择方式",
-        yearLabel = "年",
-        monthLabel = "月",
-        dayLabel = "日",
     )
 }
 ~~~
 
-`LocalDate` 不直接放入 `rememberSaveable`；此例通过 epoch day 保存日期。生产代码建议用 `stringResource` 提供六项文字，以支持多语言。
+`LocalDate` 不直接放入 `rememberSaveable`；此例通过 epoch day 保存日期。库在 `coui` 模块内提供英文和简体中文默认文案，并随系统语言选择；如需要特殊措辞，可覆盖 `previousDescription` 等可选参数。无需把 Demo 的字符串资源复制到业务项目。
 
 左右翻月箭头只改变浏览月份，不提交日期。点击具体日期或滚动日期编辑器才调用 `onValueChange`。顶部标题右侧的图标随模式切换：月历态向下，滚轮态向上。关闭编辑器后回到宿主已接受的日期。
 
@@ -135,18 +125,26 @@ CouiCalendarPicker(
     onValueChange = onDateChange,
     minDate = LocalDate.of(2026, 11, 1),
     maxDate = LocalDate.of(2026, 11, 30),
-    previousDescription = "上一月",
-    nextDescription = "下一月",
-    changeMonthDescription = "切换日期选择方式",
-    yearLabel = "年",
-    monthLabel = "月",
-    dayLabel = "日",
 )
 ~~~
 
-这里的 `selectedDate` 必须在 2026 年 11 月内。`minDate` 不得晚于 `maxDate`，`value` 也必须在范围内，否则组件会抛出异常。编辑滚轮会按实际月份天数和日期范围限制可选值。只需限定年份或月份时，也应提供合法的完整日期边界。
+这里的 `selectedDate` 必须在 2026 年 11 月内。`minDate` 和 `maxDate` 都是 **`LocalDate`（年月日）**，不接受时分秒；它们可以省略，默认覆盖 1900-01-01 到 2100-12-31。`minDate` 不得晚于 `maxDate`，`value` 也必须在范围内，否则组件会抛出异常。若动态收紧范围，宿主应先将已选日期夹紧到新范围，再传给组件。编辑滚轮会按实际月份天数和日期范围限制可选值。
 
-`today` 仅决定“今天”的显示样式，不会自动更改 `value`；省略时取设备当前日期。
+`today` 仅决定“今天”的显示样式，不会自动更改 `value`；省略时取设备当前日期。需要允许选择未来 7 天时，可以写 `minDate = LocalDate.now()`、`maxDate = LocalDate.now().plusDays(7)`，并确保传入的 `value` 也在这个范围内。
+
+## 禁用月历交互
+
+通过 `enabled = false` 禁用整个月历，包括翻月箭头、日期标题切换、日期网格点击、左右滑动翻月和年/月/日滚轮；界面显示禁用状态，当前日期仍然可见。宿主主动修改 `value` 时，月历仍会显示新值。
+
+~~~kotlin
+CouiCalendarPicker(
+    value = selectedDate,
+    onValueChange = { selectedDate = it },
+    enabled = canSelectDate,
+)
+~~~
+
+`canSelectDate` 是页面的布尔状态。滚轮也有 `enabled` 参数，但它只控制该单列滚轮。
 
 ## 在弹窗内选择日期
 
@@ -187,12 +185,6 @@ fun DatePickerDialog(
         CouiCalendarPicker(
             value = LocalDate.ofEpochDay(draftDay),
             onValueChange = { draftDay = it.toEpochDay() },
-            previousDescription = "上一月",
-            nextDescription = "下一月",
-            changeMonthDescription = "切换日期选择方式",
-            yearLabel = "年",
-            monthLabel = "月",
-            dayLabel = "日",
         )
     }
 }
@@ -267,16 +259,17 @@ CouiWheelPicker(
 | `onValueChange` | `(LocalDate) -> Unit` | 必填；点日期或滚动年月日时请求更新 |
 | `dark` | `Boolean` | `CouiTheme.isDark` |
 | `accent` | `Color` | `CouiTheme.colorSchemeFor(dark).accent` |
-| `previousDescription` | `String` | 必填；上一月按钮的无障碍说明 |
-| `nextDescription` | `String` | 必填；下一月按钮的无障碍说明 |
-| `changeMonthDescription` | `String` | 必填；标题切换按钮的无障碍说明 |
-| `yearLabel` | `String` | 必填；年份滚轮标签和格式 |
-| `monthLabel` | `String` | 必填；月份滚轮标签和格式 |
-| `dayLabel` | `String` | 必填；日期滚轮标签和格式 |
+| `previousDescription` | `String` | 库内本地化文案；上一月按钮的无障碍说明 |
+| `nextDescription` | `String` | 库内本地化文案；下一月按钮的无障碍说明 |
+| `changeMonthDescription` | `String` | 库内本地化文案；标题切换按钮的无障碍说明 |
+| `yearLabel` | `String` | 库内本地化文案；年份滚轮标签和中文后缀 |
+| `monthLabel` | `String` | 库内本地化文案；月份滚轮标签 |
+| `dayLabel` | `String` | 库内本地化文案；日期滚轮标签和中文后缀 |
 | `minDate` | `LocalDate` | `1900-01-01`；最小日期 |
 | `maxDate` | `LocalDate` | `2100-12-31`；最大日期 |
 | `today` | `LocalDate` | `LocalDate.now()`；今天的标记 |
 | `colors` | `CouiCalendarColors` | `CouiCalendarDefaults.colors(dark)` |
+| `enabled` | `Boolean` | `true`；是否允许任何月历交互 |
 
 `CouiPickerDefaults` 还公开了 `columnWidth = 62.dp`、`padding = 12.dp`、`dateYearWidth = 76.dp` 和 `dateMonthWidth = 96.dp` 等布局预设。它们是尺寸常量，不会自动生成整组时间或日期选择器。
 
@@ -284,7 +277,7 @@ CouiWheelPicker(
 
 滚轮支持点击邻项、拖动、惯性滑动、长按、键盘方向键和无障碍调整。`enabled = false` 会停止滚轮交互。`repeatIntervalMillis` 必须大于零；`height` 和两个字号必须大于零，`diffusion` 不能为负值。
 
-月历会按范围约束日期；顶部月份箭头只浏览，不提交日期。月历目前没有独立的 `enabled` 参数，也没有公开的时间、倒计时或多日期选择器。滚轮没有 `onValueChangeFinished`，如需“确认后才保存”，请由页面或弹窗持有草稿。
+月历会按范围约束日期；顶部月份箭头只浏览，不提交日期。月历与滚轮均支持 `enabled = false`。库仍没有公开的时间、倒计时或多日期选择器。滚轮没有 `onValueChangeFinished`，如需“确认后才保存”，请由页面或弹窗持有草稿。
 
 日期圆沿用 Calendar 的选中与退出曲线；新日期文字随圆缩放是当前库按使用反馈保留的视觉适配，不代表 Calendar 17.3.70 的固定字号文字绘制与每帧完全相同。月历分页和无障碍由 Compose 实现，不能将构建成功等同于原厂真机逐帧验收。
 
@@ -292,6 +285,6 @@ CouiWheelPicker(
 
 ## Demo 与源码
 
-Demo 的选择器分组包括时间、倒计时、年月日滚轮、月历和弹窗草稿。页面装配可参考[时间与日期预设](../../demo/src/main/java/com/itos/coui/demo/DemoWheelPresets.kt)、[选择弹窗](../../demo/src/main/java/com/itos/coui/demo/DemoPickerDialog.kt)和[综合示例](../../demo/src/main/java/com/itos/coui/demo/DemoPickerPrSample.kt)。
+Demo 的选择器分组包括时间、倒计时、年月日滚轮、月历和弹窗草稿，另提供月历启用开关以查看禁用状态。页面装配可参考[时间与日期预设](../../demo/src/main/java/com/itos/coui/demo/DemoWheelPresets.kt)、[选择弹窗](../../demo/src/main/java/com/itos/coui/demo/DemoPickerDialog.kt)和[综合示例](../../demo/src/main/java/com/itos/coui/demo/DemoPickerPrSample.kt)。
 
 公开 API 见 [CouiWheelPicker / CouiWheelColors / CouiPickerDefaults](../../coui/src/main/java/com/itos/coui/picker/CouiWheelPicker.kt)、[CouiCalendarPicker](../../coui/src/main/java/com/itos/coui/picker/CouiCalendarPicker.kt)及 [CouiCalendarColors / CouiCalendarDefaults](../../coui/src/main/java/com/itos/coui/picker/CouiCalendarDefaults.kt)。

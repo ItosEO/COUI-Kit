@@ -3,6 +3,7 @@
     <string name="picker_countdown_title">倒计时选择器</string>
     <string name="picker_date_title">日期滚轮</string>
     <string name="picker_calendar_title">月历选择器</string>
+    <string name="picker_calendar_enabled">启用月历选择器</string>
     <string name="picker_inline">页面内选择</string>
     <string name="picker_dialog">弹窗选择</string>
     <string name="picker_open">选择</string>
@@ -14,9 +15,6 @@
     <string name="picker_day">日</string>
     <string name="picker_confirm">确定</string>
     <string name="picker_cancel">取消</string>
-    <string name="picker_previous">上个月</string>
-    <string name="picker_next">下个月</string>
-    <string name="picker_change_month">切换年月</string>
     <string name="picker_selected">已选择：%1$s</string>
     <string name="picker_title">选择器</string>
 </resources>

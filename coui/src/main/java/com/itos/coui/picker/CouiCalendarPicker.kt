@@ -64,6 +64,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -76,6 +77,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.itos.coui.theme.CouiTheme
+import com.itos.coui.R
 import com.itos.coui.shape.CouiCapsuleShape
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -103,16 +105,17 @@ fun CouiCalendarPicker(
     onValueChange: (LocalDate) -> Unit,
     dark: Boolean = CouiTheme.isDark,
     accent: Color = CouiTheme.colorSchemeFor(dark).accent,
-    previousDescription: String,
-    nextDescription: String,
-    changeMonthDescription: String,
-    yearLabel: String,
-    monthLabel: String,
-    dayLabel: String,
+    previousDescription: String = stringResource(R.string.coui_picker_calendar_previous_month),
+    nextDescription: String = stringResource(R.string.coui_picker_calendar_next_month),
+    changeMonthDescription: String = stringResource(R.string.coui_picker_calendar_change_mode),
+    yearLabel: String = stringResource(R.string.coui_picker_calendar_year),
+    monthLabel: String = stringResource(R.string.coui_picker_calendar_month),
+    dayLabel: String = stringResource(R.string.coui_picker_calendar_day),
     minDate: LocalDate = LocalDate.of(1900, 1, 1),
     maxDate: LocalDate = LocalDate.of(2100, 12, 31),
     today: LocalDate = LocalDate.now(),
     colors: CouiCalendarColors = CouiCalendarDefaults.colors(dark),
+    enabled: Boolean = true,
 ) {
     require(minDate <= maxDate && value in minDate..maxDate)
     val locale = LocalConfiguration.current.locales[0]
@@ -159,6 +162,8 @@ fun CouiCalendarPicker(
     val current = first.plusMonths(headerPage.toLong())
     val foreground = colors.foreground
     val secondary = colors.secondary
+    // 非交互状态只建立必要的半透明图层；编辑器内各滚轮自行处理禁用色。
+    val disabledAlpha = if (enabled) Modifier else Modifier.graphicsLayer { alpha = 0.5f }
     val headerFormatter = remember(locale) {
         DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, "MMMMy"), locale)
     }
@@ -219,12 +224,12 @@ fun CouiCalendarPicker(
     }
 
     Column(modifier.fillMaxWidth().padding(vertical = 16.dp)) {
-        Box(Modifier.fillMaxWidth().padding(horizontal = 24.dp).height(32.dp)) {
+        Box(Modifier.fillMaxWidth().padding(horizontal = 24.dp).height(32.dp).then(disabledAlpha)) {
             CalendarArrow(
                 modifier = Modifier.align(Alignment.CenterStart),
                 description = previousDescription,
                 next = false,
-                enabled = !editingMonth && headerPage > 0,
+                enabled = enabled && !editingMonth && headerPage > 0,
                 colors = colors,
                 alpha = if (headerPage > 0) arrowAlpha.value else 0f,
             ) {
@@ -238,7 +243,7 @@ fun CouiCalendarPicker(
             val titleInteraction = remember { MutableInteractionSource() }
             Row(
                 Modifier.align(Alignment.Center)
-                    .clickable(interactionSource = titleInteraction, indication = null, role = Role.Button) {
+                    .clickable(interactionSource = titleInteraction, indication = null, enabled = enabled, role = Role.Button) {
                         toggleEditor()
                     }
                     .semantics { contentDescription = changeMonthDescription },
@@ -273,7 +278,7 @@ fun CouiCalendarPicker(
                 modifier = Modifier.align(Alignment.CenterEnd),
                 description = nextDescription,
                 next = true,
-                enabled = !editingMonth && headerPage < count - 1,
+                enabled = enabled && !editingMonth && headerPage < count - 1,
                 colors = colors,
                 alpha = if (headerPage < count - 1) arrowAlpha.value else 0f,
             ) {
@@ -305,14 +310,17 @@ fun CouiCalendarPicker(
                         dayLabel = dayLabel,
                         dark = dark,
                         colors = colors,
+                        enabled = enabled,
                         onChange = onValueChange,
                     )
                 }
             } else {
-                Box(Modifier.fillMaxWidth().height(CalendarBodyHeight)) {
+                Box(Modifier.fillMaxWidth().height(CalendarBodyHeight).then(disabledAlpha)) {
                     HorizontalPager(
                         state = pager,
-                        modifier = Modifier.fillMaxSize().pointerInput(pager) {
+                        userScrollEnabled = enabled,
+                        modifier = Modifier.fillMaxSize().pointerInput(pager, enabled) {
+                            if (!enabled) return@pointerInput
                             awaitEachGesture {
                                 awaitFirstDown(requireUnconsumed = false)
                                 pageAtDown = pager.currentPage
@@ -326,6 +334,7 @@ fun CouiCalendarPicker(
                         CalendarMonthPage(
                             month = first.plusMonths(page.toLong()),
                             selection = selection,
+                            enabled = enabled,
                             today = today,
                             minDate = minDate,
                             maxDate = maxDate,
@@ -335,8 +344,10 @@ fun CouiCalendarPicker(
                             medium = medium,
                             fullDateFormatter = fullDateFormatter,
                             onValueChange = { date ->
-                                pendingGridSelection = value to date
-                                onValueChange(date)
+                                if (enabled) {
+                                    pendingGridSelection = value to date
+                                    onValueChange(date)
+                                }
                             },
                         )
                     }
@@ -382,6 +393,7 @@ private fun CalendarArrow(
 private fun CalendarMonthPage(
     month: YearMonth,
     selection: CouiCalendarSelectionMotion,
+    enabled: Boolean,
     today: LocalDate,
     minDate: LocalDate,
     maxDate: LocalDate,
@@ -430,6 +442,7 @@ private fun CalendarMonthPage(
                         selected = inMonth && date == selection.selectedDate,
                         old = inMonth && date == selection.oldDate,
                         selection = selection,
+                        enabled = enabled,
                         withinRange = withinRange,
                         today = inMonth && date == today,
                         colors = colors,
@@ -452,6 +465,7 @@ private fun CalendarDayCell(
     selected: Boolean,
     old: Boolean,
     selection: CouiCalendarSelectionMotion,
+    enabled: Boolean,
     withinRange: Boolean,
     today: Boolean,
     colors: CouiCalendarColors,
@@ -478,7 +492,7 @@ private fun CalendarDayCell(
             selected = selected,
             interactionSource = source,
             indication = null,
-            enabled = withinRange,
+            enabled = enabled && withinRange,
             role = Role.RadioButton,
             onClick = { if (!selected) onClick() },
         ).semantics { contentDescription = date.format(fullDateFormatter) },
@@ -544,6 +558,7 @@ private fun CalendarDateEditor(
     dayLabel: String,
     dark: Boolean,
     colors: CouiCalendarColors,
+    enabled: Boolean,
     onChange: (LocalDate) -> Unit,
 ) {
     val layoutDirection = LocalLayoutDirection.current
@@ -569,6 +584,7 @@ private fun CalendarDateEditor(
     }
 
     fun submit(next: LocalDate) {
+        if (!enabled) return
         val candidate = next.coerceIn(minDate, maxDate)
         pendingDate = candidate
         onChange(candidate)
@@ -603,7 +619,7 @@ private fun CalendarDateEditor(
                 val inset = 16.dp.toPx().toInt().toFloat()
                 val half = 24.dp.toPx().toInt().toFloat()
                 val thickness = .33000004.dp.toPx().toInt().coerceAtLeast(1).toFloat()
-                val color = colors.divider
+                val color = if (enabled) colors.divider else colors.divider.copy(alpha = colors.divider.alpha * 0.5f)
                 for (y in listOf(size.height / 2 - half, size.height / 2 + half)) {
                     drawRect(
                         color = color,
@@ -628,6 +644,7 @@ private fun CalendarDateEditor(
                             minDate.year..maxDate.year,
                             yearLabel,
                             dark,
+                            enabled = enabled,
                             colors = CouiWheelColors(colors.hint, colors.foreground),
                             repeatIntervalMillis = 100,
                             formatter = { if (chinese) "$it$yearLabel" else String.format(locale, "%d", it) },
@@ -639,6 +656,7 @@ private fun CalendarDateEditor(
                             minMonth..maxMonth,
                             monthLabel,
                             dark,
+                            enabled = enabled,
                             colors = CouiWheelColors(colors.hint, colors.foreground),
                             wrap = minMonth == 1 && maxMonth == 12,
                             repeatIntervalMillis = 200,
@@ -651,6 +669,7 @@ private fun CalendarDateEditor(
                             minDay..maxDay,
                             dayLabel,
                             dark,
+                            enabled = enabled,
                             colors = CouiWheelColors(colors.hint, colors.foreground),
                             wrap = minDay == 1 && maxDay == date.lengthOfMonth(),
                             repeatIntervalMillis = 100,
