@@ -20,6 +20,8 @@ Dialog/Menu 的半径缺省为 Dp.Unspecified，在消费处从 CouiShape 解析
 
 浮动表面显式接收 renderer 和内容层，继续是单节点低层装配；本轮核对 FAB、底栏、顶栏、Search 与 Chip 的独立 owner。菜单主子面板分别创建材质与阴影，背景源和 anchor 保留单源/单触发节点契约。状态反馈的动画由调用者提供的输入状态驱动，不复制成额外状态机。
 
+Demo 由 DemoTheme 提供深浅主题，示例省略重复的 dark、默认颜色和默认开关值；Picker 组合不再逐层转发主题。材质工厂的必填参数、用于对比的 Material 配色、自定义形状及交互状态仍由各示例配置。
+
 ## Alternatives considered
 
 - 只删 height 并留下重复选择线，改动更少，但没有完成本次跨模块去重；共享入口仅保留实际使用的颜色和内缩。

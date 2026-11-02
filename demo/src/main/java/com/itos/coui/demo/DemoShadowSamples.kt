@@ -44,7 +44,7 @@ internal fun ShadowSamples(dark: Boolean) {
     }
     Text(stringResource(R.string.elevation_value, elevation.toInt()), style = MaterialTheme.typography.labelLarge)
     CouiSlider(modifier = Modifier.fillMaxWidth().demoLabel(R.string.shadow_elevation), value = elevation,
-        onValueChange = { elevation = it }, valueRange = 0f..200f, dark = dark,
+        onValueChange = { elevation = it }, valueRange = 0f..200f,
         colors = CouiSliderDefaults.colors(MaterialTheme.colorScheme.primary, dark), shape = DemoShapes.capsule)
     DemoSwitchRow(stringResource(R.string.low_level_shadow), lowLevel, { lowLevel = it })
     val style = CouiShadowDefaults.menu(dark).copy(elevation = elevation.dp)

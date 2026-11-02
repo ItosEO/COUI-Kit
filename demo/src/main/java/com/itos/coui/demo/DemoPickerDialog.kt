@@ -1,16 +1,15 @@
 package com.itos.coui.demo
 
-import com.itos.coui.picker.*
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.dialog.CouiDialogActionStyle
 import com.itos.coui.dialog.CouiAlertDialog
 import com.itos.coui.dialog.CouiDialogAction
 import com.itos.coui.dialog.CouiDialogDefaults
 import com.itos.coui.dialog.CouiDialogPlacement
+import com.itos.coui.theme.CouiTheme
 
 /**
  * 标准选择弹窗：项目材质、原厂标题/操作区及主题色确认。content 放置任意选择器。
@@ -24,8 +23,6 @@ internal fun DemoPickerDialog(
     title: String,
     confirmText: String,
     cancelText: String,
-    dark: Boolean,
-    accent: Color,
     backdrop: CouiBackdrop? = null,
     confirmEnabled: Boolean = true,
     placement: CouiDialogPlacement = CouiDialogPlacement.Bottom,
@@ -33,9 +30,9 @@ internal fun DemoPickerDialog(
 ) {
     CouiAlertDialog(modifier, onDismissRequest,
         confirmAction = CouiDialogAction(confirmText, onConfirm, confirmEnabled,
-            style = CouiDialogActionStyle.Primary, colors = CouiDialogDefaults.primaryActionColors(accent)),
+            style = CouiDialogActionStyle.Primary, colors = CouiDialogDefaults.primaryActionColors(CouiTheme.colorScheme.accent)),
         dismissAction = CouiDialogAction(cancelText, onDismissRequest),
-        title = title, dark = dark, placement = placement,
-        material = if (CouiDialogDefaults.isMaterialSupported()) CouiDialogDefaults.material(dark) else null,
+        title = title, placement = placement,
+        material = if (CouiDialogDefaults.isMaterialSupported()) CouiDialogDefaults.material(CouiTheme.isDark) else null,
         backdrop = backdrop, content = content)
 }

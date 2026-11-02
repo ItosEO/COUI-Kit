@@ -19,12 +19,10 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.itos.coui.switch.CouiSwitch
-import com.itos.coui.switch.CouiSwitchDefaults
-import com.itos.coui.theme.CouiTheme
 import kotlinx.coroutines.delay
 
 @Composable
-internal fun SwitchSample(dark: Boolean) {
+internal fun SwitchSample() {
     var checked by rememberSaveable { mutableStateOf(false) }
     var described by rememberSaveable { mutableStateOf(true) }
     var loadingChecked by rememberSaveable { mutableStateOf(false) }
@@ -39,23 +37,22 @@ internal fun SwitchSample(dark: Boolean) {
         }
     }
     val loadingDescription = stringResource(R.string.switch_sample_loading_description)
-    val colors = CouiSwitchDefaults.colors(CouiTheme.colorSchemeFor(dark).accent, dark)
     SwitchExampleRow(title = stringResource(R.string.switch_sample_toggle), summary = stringResource(R.string.switch_sample_toggle_summary)) { label ->
         CouiSwitch(Modifier.semantics { contentDescription = label }, checked, { checked = it })
     }
     SwitchExampleRow(title = stringResource(R.string.switch_sample_description), summary = stringResource(R.string.switch_sample_description_summary)) { label ->
-        CouiSwitch(Modifier.semantics { contentDescription = label }, described, { described = it }, dark, colors)
+        CouiSwitch(Modifier.semantics { contentDescription = label }, described, { described = it })
     }
     SwitchExampleRow(title = stringResource(R.string.switch_sample_loading), summary = stringResource(R.string.switch_sample_loading_summary)) { label ->
         CouiSwitch(Modifier.semantics { contentDescription = label }, loadingChecked,
-            onCheckedChange = { pending = it; loading = true }, dark = dark, colors = colors,
+            onCheckedChange = { pending = it; loading = true },
             onDragCheckedChange = null, loading = loading, loadingDescription = loadingDescription)
     }
     SwitchExampleRow(title = stringResource(R.string.switch_sample_disabled_off)) { label ->
-        CouiSwitch(Modifier.semantics { contentDescription = label }, false, {}, dark, colors, enabled = false)
+        CouiSwitch(Modifier.semantics { contentDescription = label }, false, {}, enabled = false)
     }
     SwitchExampleRow(title = stringResource(R.string.switch_sample_disabled_on)) { label ->
-        CouiSwitch(Modifier.semantics { contentDescription = label }, true, {}, dark, colors, enabled = false)
+        CouiSwitch(Modifier.semantics { contentDescription = label }, true, {}, enabled = false)
     }
 }
 
