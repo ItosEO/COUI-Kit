@@ -1,13 +1,10 @@
 package com.itos.coui.demo
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
 import com.itos.coui.picker.CouiCalendarPicker
 import com.itos.coui.theme.CouiTheme
@@ -19,7 +16,6 @@ internal fun PickerPrSample(dark: Boolean) {
     var day by rememberSaveable { mutableLongStateOf(LocalDate.now().toEpochDay()) }
     var draft by rememberSaveable { mutableLongStateOf(day) }
     var opened by rememberSaveable { mutableStateOf(false) }
-    var calendarEnabled by rememberSaveable { mutableStateOf(true) }
     val hour = stringResource(R.string.picker_hour)
     val minute = stringResource(R.string.picker_minute)
     val year = stringResource(R.string.picker_year)
@@ -27,7 +23,7 @@ internal fun PickerPrSample(dark: Boolean) {
     val date = stringResource(R.string.picker_day)
     val calendar: @Composable (Long, (Long) -> Unit) -> Unit = { value, change ->
         CouiCalendarPicker(value = LocalDate.ofEpochDay(value), onValueChange = { change(it.toEpochDay()) },
-            dark = dark, enabled = calendarEnabled)
+            dark = dark)
     }
     Column {
         DemoTimePicker(value = DemoTime(seconds / 3600, seconds / 60 % 60),
@@ -37,10 +33,6 @@ internal fun PickerPrSample(dark: Boolean) {
             secondLabel = stringResource(R.string.picker_second))
         DemoDatePicker(value = LocalDate.ofEpochDay(day), onValueChange = { day = it.toEpochDay() },
             dark = dark, yearLabel = year, monthLabel = month, dayLabel = date)
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.picker_calendar_enabled))
-            Switch(checked = calendarEnabled, onCheckedChange = { calendarEnabled = it })
-        }
         calendar(day, { day = it })
         FilledTonalButton(onClick = { draft = day; opened = true }) { Text(stringResource(R.string.picker_dialog)) }
     }

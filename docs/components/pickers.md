@@ -79,7 +79,7 @@ fun TimeWheelExample() {
 
 `formatter` 只改变显示文字，不改变整数值。`label` 是无障碍说明，不会直接绘制在数字旁。**通用滚轮仍要求提供 `label`**，因为同样的 `0..59` 可以表示分钟、次数或其他业务数值，库无法固定名称。`repeatIntervalMillis` 控制长按连续调整的间隔。
 
-默认 `wrap = true`，但范围只有三个或更少数值时不会循环；需要固定边界时显式设置 `wrap = false`。时间滚轮需要的整组选择线、冒号和 AM/PM 排列由页面组合。Demo 中有对应样式，库内没有公开的 `CouiTimePicker`。
+默认 `wrap = true`，但范围只有三个或更少数值时不会循环；需要固定边界时显式设置 `wrap = false`。例如 `0..59` 循环时，59 后面是 0，0 前面是 59；关闭循环后在两端停止。`wrap` 不会改变 `valueRange` 本身，也不会自动联动其他列。时间滚轮需要的整组选择线、冒号和 AM/PM 排列由页面组合。Demo 中有对应样式，库内没有公开的 `CouiTimePicker`。
 
 ## 显示月历和日期编辑器
 
@@ -131,20 +131,6 @@ CouiCalendarPicker(
 这里的 `selectedDate` 必须在 2026 年 11 月内。`minDate` 和 `maxDate` 都是 **`LocalDate`（年月日）**，不接受时分秒；它们可以省略，默认覆盖 1900-01-01 到 2100-12-31。`minDate` 不得晚于 `maxDate`，`value` 也必须在范围内，否则组件会抛出异常。若动态收紧范围，宿主应先将已选日期夹紧到新范围，再传给组件。编辑滚轮会按实际月份天数和日期范围限制可选值。
 
 `today` 仅决定“今天”的显示样式，不会自动更改 `value`；省略时取设备当前日期。需要允许选择未来 7 天时，可以写 `minDate = LocalDate.now()`、`maxDate = LocalDate.now().plusDays(7)`，并确保传入的 `value` 也在这个范围内。
-
-## 禁用月历交互
-
-通过 `enabled = false` 禁用整个月历，包括翻月箭头、日期标题切换、日期网格点击、左右滑动翻月和年/月/日滚轮；界面显示禁用状态，当前日期仍然可见。宿主主动修改 `value` 时，月历仍会显示新值。
-
-~~~kotlin
-CouiCalendarPicker(
-    value = selectedDate,
-    onValueChange = { selectedDate = it },
-    enabled = canSelectDate,
-)
-~~~
-
-`canSelectDate` 是页面的布尔状态。滚轮也有 `enabled` 参数，但它只控制该单列滚轮。
 
 ## 在弹窗内选择日期
 
@@ -269,7 +255,6 @@ CouiWheelPicker(
 | `maxDate` | `LocalDate` | `2100-12-31`；最大日期 |
 | `today` | `LocalDate` | `LocalDate.now()`；今天的标记 |
 | `colors` | `CouiCalendarColors` | `CouiCalendarDefaults.colors(dark)` |
-| `enabled` | `Boolean` | `true`；是否允许任何月历交互 |
 
 `CouiPickerDefaults` 还公开了 `columnWidth = 62.dp`、`padding = 12.dp`、`dateYearWidth = 76.dp` 和 `dateMonthWidth = 96.dp` 等布局预设。它们是尺寸常量，不会自动生成整组时间或日期选择器。
 
@@ -277,7 +262,7 @@ CouiWheelPicker(
 
 滚轮支持点击邻项、拖动、惯性滑动、长按、键盘方向键和无障碍调整。`enabled = false` 会停止滚轮交互。`repeatIntervalMillis` 必须大于零；`height` 和两个字号必须大于零，`diffusion` 不能为负值。
 
-月历会按范围约束日期；顶部月份箭头只浏览，不提交日期。月历与滚轮均支持 `enabled = false`。库仍没有公开的时间、倒计时或多日期选择器。滚轮没有 `onValueChangeFinished`，如需“确认后才保存”，请由页面或弹窗持有草稿。
+月历会按范围约束日期；顶部月份箭头只浏览，不提交日期。月历不提供整体 `enabled` 参数；通用滚轮仍支持 `enabled = false`，可以分别禁用各列。库没有公开的时间、倒计时或多日期选择器。滚轮没有 `onValueChangeFinished`，如需“确认后才保存”，请由页面或弹窗持有草稿。
 
 日期圆沿用 Calendar 的选中与退出曲线；新日期文字随圆缩放是当前库按使用反馈保留的视觉适配，不代表 Calendar 17.3.70 的固定字号文字绘制与每帧完全相同。月历分页和无障碍由 Compose 实现，不能将构建成功等同于原厂真机逐帧验收。
 
@@ -285,6 +270,6 @@ CouiWheelPicker(
 
 ## Demo 与源码
 
-Demo 的选择器分组包括时间、倒计时、年月日滚轮、月历和弹窗草稿，另提供月历启用开关以查看禁用状态。页面装配可参考[时间与日期预设](../../demo/src/main/java/com/itos/coui/demo/DemoWheelPresets.kt)、[选择弹窗](../../demo/src/main/java/com/itos/coui/demo/DemoPickerDialog.kt)和[综合示例](../../demo/src/main/java/com/itos/coui/demo/DemoPickerPrSample.kt)。
+Demo 的选择器分组包括时间、倒计时、年月日滚轮、月历和弹窗草稿。页面装配可参考[时间与日期预设](../../demo/src/main/java/com/itos/coui/demo/DemoWheelPresets.kt)、[选择弹窗](../../demo/src/main/java/com/itos/coui/demo/DemoPickerDialog.kt)和[综合示例](../../demo/src/main/java/com/itos/coui/demo/DemoPickerPrSample.kt)。
 
 公开 API 见 [CouiWheelPicker / CouiWheelColors / CouiPickerDefaults](../../coui/src/main/java/com/itos/coui/picker/CouiWheelPicker.kt)、[CouiCalendarPicker](../../coui/src/main/java/com/itos/coui/picker/CouiCalendarPicker.kt)及 [CouiCalendarColors / CouiCalendarDefaults](../../coui/src/main/java/com/itos/coui/picker/CouiCalendarDefaults.kt)。

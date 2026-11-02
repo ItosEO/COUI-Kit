@@ -3,7 +3,6 @@
     <string name="picker_countdown_title">Countdown picker</string>
     <string name="picker_date_title">Date wheels</string>
     <string name="picker_calendar_title">Calendar picker</string>
-    <string name="picker_calendar_enabled">Enable calendar picker</string>
     <string name="picker_inline">In page</string>
     <string name="picker_dialog">Dialog</string>
     <string name="picker_open">Choose</string>
