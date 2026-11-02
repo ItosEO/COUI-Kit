@@ -51,6 +51,6 @@ foregroundComposition 只在单主体入口提供，控制材质和光晕的前�
 
 ## 双主体与绘制阶段
 
-搜索与取消使用 CouiFloatingRenderer.pair() 及 Modifier.couiFloatingPair。materials、shadows、shapes、contentLayers 均为两项，材质 index 按 1、2 排列；drawOrder 是这两个下标的排列，仅改变同高绘制顺序。surfaces 返回同一帧的两个节点，几何与内容必须一致。beforeContent 在各材质之后、对应内容之前执行，接收节点下标与缓存裁剪 Path；不得修改 Path。foregroundComposition 只输出前景，以 SrcOver 叠到已绘制页面，要求不透明 SDR 来源；默认仍保留完整 destination 合成。
+搜索与取消使用 CouiFloatingRenderer.pair() 及 Modifier.couiFloatingPair。materials、shadows、shapes、contentLayers 均为两项，材质 index 按 1、2 排列；drawOrder 是这两个下标的排列，仅改变同一 Z 分组内的绘制顺序。三主体入口保留原来的 Z 排序，不因双主体的显式顺序改变。surfaces 返回同一帧的两个节点，几何与内容必须一致。beforeContent 在各材质之后、对应内容之前执行，接收节点下标与缓存裁剪 Path；不得修改 Path。foregroundComposition 只输出前景，以 SrcOver 叠到已绘制页面，要求不透明 SDR 来源；默认仍保留完整 destination 合成。
 
 这条入口复用现有融合和光效，不增加假节点。每个独立绘制组件持有自己的 renderer 和内容层；不得跨搜索实例共享可变资源。

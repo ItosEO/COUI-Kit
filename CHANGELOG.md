@@ -2,6 +2,14 @@
 
 COUI-Kit 处于早期预览阶段。本文记录公开 API、行为、接入和兼容要求的变化。日期以提交合并时间为准；版本归档以真实 Git Tag 和发行产物为准。
 
+## 未发布（PR #15）
+
+以下迁移只针对 PR 开发分支中的临时接口，不表示已合入 main 或进入现有发行版本。
+
+- CouiSearchBarColors 的 background 更名为 fallbackBackground，仅负责 API 31–33 的普通填色；API 34 起继续使用所属模糊材质，文字、图标与清除颜色仍可显式覆盖。
+- CouiSettingsGroup 移除 topSpacing 参数，保留按标题选择的默认顶部留白。删除显式传入的默认值；额外外部留白使用 Modifier.padding。该 Modifier 不抵消内部默认留白；需要完全自定组间距时，由宿主组合标题、卡片与内容。CouiPreferenceLayout 移除 minHeight 参数，改用 Modifier.heightIn 或 height，内部默认行高服从外部约束。内部 contentPadding 与 leadingSize 参数保留。
+- CouiTextKind 移除没有消费者的 Title、Message、Button、Input、Counter 角色；弹窗使用已有 Dialog 组件内部排版，自定义文字使用 Compose TextStyle。设置页、搜索与页面标题角色及 onLineCount 回调保留。接入说明见[设置页布局](docs/components/settings.md)。
+
 ## [0.0.1-alpha3] - 2026-11-01
 
 `coui` 与 `coui-material3` 同版本发行。源码为 [v0.0.1-alpha3](https://github.com/ItosEO/COUI-Kit/tree/v0.0.1-alpha3)，提交 `e40c1c413b68fa43924ac6e48620ad3e9d703a08`。发行文件见 [coui](https://repo.maven.apache.org/maven2/io/github/itoseo/coui/0.0.1-alpha3/) 与 [coui-material3](https://repo.maven.apache.org/maven2/io/github/itoseo/coui-material3/0.0.1-alpha3/)。两个模块均通过发行结构、GPG 签名和校验和检查。

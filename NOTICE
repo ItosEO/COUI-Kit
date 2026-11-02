@@ -31,6 +31,17 @@ commonMain/androidx/compose/material/icons/outlined/Search.kt。
 适用 Apache License, Version 2.0, 完整许可位于:
   coui/src/main/resources/META-INF/coui-androidx-LICENSE
 
+Miuix Scaffold 布局模式
+---------------------
+
+coui/src/main/java/com/itos/coui/settings/CouiSettingsScaffold.kt 的稳定
+PaddingValues 与正文子组合复用模式改编自 Miuix Scaffold，已按本容器的
+顶栏、底栏与安全区测量职责调整。
+Copyright 2025, compose-miuix-ui contributors.
+来源: https://github.com/compose-miuix-ui/miuix/blob/bb7bde3109605b4c98065b53030ba429c39baea9/miuix-ui/src/commonMain/kotlin/top/yukonga/miuix/kmp/basic/Scaffold.kt
+相关部分适用 Apache License, Version 2.0，完整许可位于:
+  coui/src/main/resources/META-INF/coui-androidx-LICENSE
+
 名称与标识
 ----------
 

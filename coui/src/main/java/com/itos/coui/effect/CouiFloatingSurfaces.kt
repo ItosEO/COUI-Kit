@@ -128,7 +128,7 @@ fun Modifier.couiFloatingSurface(
         beforeContent = beforeContent?.let { draw -> { _, path -> draw(path) } }) { listOf(surface()) }
 }
 
-/** 三主体在同一节点按宿主子项顺序绘制；资源与返回的 Modifier 不跨节点复用。菜单 index 1，两侧附件 index 2。 */
+/** 三主体在同一节点按 Z 排序，同 Z 保留宿主子项顺序；资源与返回的 Modifier 不跨节点复用。菜单 index 1，两侧附件 index 2。 */
 @RequiresApi(34)
 @Composable
 fun Modifier.couiFloatingSurfaces(
@@ -184,7 +184,7 @@ private fun Modifier.floatingSurfaces(
     contourGlowEnabled: Boolean,
     foregroundComposition: Boolean = false,
     beforeContent: (DrawScope.(Int, Path) -> Unit)? = null,
-    drawOrder: List<Int> = materials.indices.toList(),
+    drawOrder: List<Int>? = null,
     surfaces: () -> List<CouiFloatingSurface>,
 ): Modifier {
     val recordingDensity = LocalDensity.current
@@ -284,7 +284,8 @@ private fun Modifier.floatingSurfaces(
                 contentLayers[index].clip = true
             }
             floatingDrawGroups(shadows.map { it.elevation }).forEach { indices ->
-                val group = indices.filter { nodes[it].visible }.sortedBy { drawOrder.indexOf(it) }
+                val visible = indices.filter { nodes[it].visible }
+                val group = if (drawOrder == null) visible else visible.sortedBy { drawOrder.indexOf(it) }
                 group.forEach { index ->
                     commands.add(shadowLayers[index])
                     // 前景模式下, 原 Shader 在此阈值内严格输出透明, 无需录制背景或创建光晕图层。

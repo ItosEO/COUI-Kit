@@ -6,7 +6,7 @@
 | --- | --- |
 | CouiSettingsScaffold | 测量顶栏、底栏和 FAB，提供内容 padding、安全区及独立采样源 |
 | CouiSettingsGroup | 平滑圆角卡片、可选标题、说明和 headerActions |
-| CouiPreferenceLayout | leading、headline、supporting、trailing、内边距、最小高度与图标槽 |
+| CouiPreferenceLayout | leading、headline、supporting、trailing、内部留白与图标槽，默认行高服从宿主约束 |
 | CouiSettingsItem | 自定义单一点击与列表反馈；内容自行排版 |
 | CouiSettingsDivider / CouiSettingsFooter | 组内分割与独立说明 |
 | CouiSettingsIllustration | 图示和教程区域，内容由宿主提供 |
@@ -27,6 +27,10 @@ CouiPreferenceLayout(
 
 标题、摘要和右值样式分别使用 CouiTextKind.PreferenceTitle、PreferenceSummary、PreferenceValue。CouiText 的 PreferenceTitle/PreferenceSummary 默认按逻辑起始边对齐，包括多行与 RTL；显式 textAlign 优先。图标与文字沿同一垂直中线；同组分割由宿主选择插入，带图标时让 startIndent 对齐标题，不在独立卡片之间统一加线。
 
+CouiText 与 rememberCouiTextStyle 提供设置页、标题、搜索等角色的原生排版；需要根据实际行数调整宿主布局时，使用 CouiText 的 onLineCount 回调。弹窗的标题、正文、按钮、输入和计数排版由 [Dialog](dialog.md) 内部持有，继续在消费处解析主题字体。
+
+CouiSettingsGroup 根据是否有标题选用 CouiSettingsDefaults 的默认顶部留白；`modifier.padding` 增加默认留白以外的间距，不会替换或抵消默认值。需要完全自行控制组间距时，由宿主组合 Column、标题、卡片和内容。CouiPreferenceLayout 的外部高度使用标准 `Modifier.height` / `heightIn`；只有调用方没有给出最小高度约束时，`defaultMinSize` 才补充默认行高，内容仍按真实尺寸测量。`contentPadding` 与 `leadingSize` 分别调整行内留白和图标槽，仍通过组件参数设置。
+
 开关直接使用 [CouiSwitch](switch.md)，复选直接使用 [CouiCheckbox](checkbox.md)，滑条直接使用 [CouiSlider](slider.md)，菜单直接使用 [CouiMenu](menu.md)。整行交互时，尾部控件不再独立提交点击；开关拖动继续通过 onDragCheckedChange 提交给同一个业务 owner。整行触觉可使用公开的 CouiHapticFeedback / performCouiHapticFeedback，程序赋值不触发触觉。
 
 完整装配源码在 Demo，均为 internal 示例：
@@ -43,7 +47,7 @@ CouiPreferenceLayout(
 
 列表反馈使用 couiButtonFeedback 的 list 分支：短 UP/CANCEL 达到最低高亮后退场，父滚动接管、离界、禁用和移除释放会话。Popup 展开时通过 hoverLocked 保留行悬停，pressed 独立退场。窗口失焦只释放会话并继续弹簧退场，Activity 转场期间不清零；禁用或节点销毁才立即释放动画。显式设置 pressFeedback=false 会释放现有按压动画，并移除按压观察器；hover/focus 继续生效。导航宿主应保留来源行到转场完成，不能先拆掉搜索结果。不要额外叠加 Compose ripple 或普通按钮缩放。
 
-Scaffold 的 content 必须消费它返回的 PaddingValues；内容、顶栏、底栏、Popup 与 Dialog 分层采样。短页和空白区要占满视口，再装配 [couiVerticalScroll](../effects/overscroll.md)，不能因没有滚动范围而移除回弹。完整接入与 ROM 默认 Activity 转场见[二级页接入](../guide/secondary-pages.md)。
+Scaffold 的 content 必须消费它返回的 PaddingValues；将同一对象直接传入 `Modifier.padding` 或滚动容器的 `contentPadding`，使顶栏、底栏和 inset 的高度变化在测量时生效。若在组合阶段调用 calculateTopPadding 等方法拆出值，读值所在的组合仍会随其更新。内容、顶栏、底栏、Popup 与 Dialog 分层采样。短页和空白区要占满视口，再装配 [couiVerticalScroll](../effects/overscroll.md)，不能因没有滚动范围而移除回弹。完整接入与 ROM 默认 Activity 转场见[二级页接入](../guide/secondary-pages.md)。
 
 topBar、bottomBar 和 floatingActionButton 收到正文源，不包含它们自身；rememberCouiWindowBackdrop 返回的窗口源录制完整页面，包含已经绘制的浮层，供独立 Popup/Dialog 采样。两者不能互换，具体规则见[背景采样](../effects/backdrop.md)。
 
@@ -55,4 +59,4 @@ topBar、bottomBar 和 floatingActionButton 收到正文源，不包含它们自
 
 ## 主题与显式配色
 
-默认值在消费处读取 `CouiTheme`，跟随原生或可选 M3 策略；显式颜色优先。设置容器使用 `CouiSettingsDefaults.themeColors`，常驻搜索使用 `CouiSearchBarDefaults.colors`，可通过返回值的 `copy` 覆盖各颜色角色。
+默认值在消费处读取 `CouiTheme`，跟随原生或可选 M3 策略；显式颜色优先。设置容器使用 `CouiSettingsDefaults.themeColors`，可通过返回值的 `copy` 覆盖各颜色角色。常驻搜索的颜色角色及 `fallbackBackground` 生效范围见[搜索栏配色契约](search-bar.md#主题与显式配色)。

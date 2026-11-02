@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -71,17 +72,20 @@ internal val LocalSettingsStyle = staticCompositionLocalOf<SettingsStyle?> { nul
 internal fun settingsStyle(): SettingsStyle = LocalSettingsStyle.current
     ?: SettingsStyle(CouiTheme.isDark, CouiSettingsDefaults.themeColors())
 
-/** 一组相邻设置项共享项目平滑圆角；条件隐藏的条目不保留空白或分组端点。 */
+/**
+ * 一组相邻设置项共享项目平滑圆角；条件隐藏的条目不保留空白或分组端点。
+ * 内部顶部留白按标题选择 Defaults；modifier.padding 在默认留白之外累加。
+ */
 @Composable
 fun CouiSettingsGroup(
     modifier: Modifier = Modifier,
     title: String? = null,
     footer: String? = null,
-    topSpacing: androidx.compose.ui.unit.Dp = if (title.isNullOrEmpty()) CouiSettingsDefaults.groupSpacing else CouiSettingsDefaults.categoryTopSpacing,
     headerActions: @Composable RowScope.() -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val colors = settingsStyle().colors
+    val topSpacing = if (title.isNullOrEmpty()) CouiSettingsDefaults.groupSpacing else CouiSettingsDefaults.categoryTopSpacing
     Column(modifier.fillMaxWidth().padding(top = topSpacing)) {
         if (!title.isNullOrEmpty()) Row(Modifier.padding(horizontal = 32.dp, vertical = 8.dp).heightIn(min = 16.dp),
             verticalAlignment = Alignment.CenterVertically) {
@@ -138,11 +142,10 @@ fun CouiPreferenceLayout(
     trailing: @Composable () -> Unit = {},
     contentPadding: androidx.compose.foundation.layout.PaddingValues = androidx.compose.foundation.layout.PaddingValues(
         horizontal = CouiSettingsDefaults.rowPadding, vertical = CouiSettingsDefaults.contentPadding),
-    minHeight: androidx.compose.ui.unit.Dp = CouiSettingsDefaults.rowMinHeight,
     leadingSize: androidx.compose.ui.unit.Dp = CouiSettingsDefaults.iconSize,
     headline: @Composable () -> Unit,
 ) {
-    Row(modifier.fillMaxWidth().heightIn(min = minHeight).semantics(mergeDescendants = true) {}
+    Row(modifier.fillMaxWidth().defaultMinSize(minHeight = CouiSettingsDefaults.rowMinHeight).semantics(mergeDescendants = true) {}
         .padding(contentPadding),
         verticalAlignment = Alignment.CenterVertically) {
         if (leading != null) Box(Modifier.padding(end = 16.dp).size(leadingSize), contentAlignment = Alignment.Center) { leading() }

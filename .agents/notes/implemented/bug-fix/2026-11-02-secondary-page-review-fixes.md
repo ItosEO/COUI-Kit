@@ -26,6 +26,12 @@ couiVerticalScroll 的惯性触边在同一帧保留父链未消费的整数位�
 
 通用顶栏继续使用项目已批准的 12dp 默认模糊，Settings 的 30px 放在所属 Defaults 并在消费处换算。Preference 标题和摘要默认逻辑起始对齐，显式对齐优先。列表 pressFeedback 关闭时退出 mask 的组合生命周期并移除按压观察器，hover/focus 不随之关闭。
 
+Settings 与 Dialog 只共享两段内部字体计算：TextView 度量/行距，以及原厂字号适配取整。角色、字体来源和参数继续归各组件，Dialog 的异步字体读取仍参与样式和按钮测量。删除本 PR 无消费者的五个重复 Dialog 文字角色；只有 Message 保存自动对齐所需行数，公共 onLineCount 回调保留。
+
+行的外部高度交给标准 Modifier，内部用 defaultMinSize 补充默认最小高度。分组移除重复的 topSpacing 参数，但保留按标题选择的系统默认留白；外部 padding 只能叠加，不能抵消默认值。完全自定组间距时组合已有布局与 Defaults，不为覆盖默认新增开关或包装 API。
+
+Scaffold 持有一个可观察的 PaddingValues 外壳，在测量顶栏、底栏后一次更新；正文子组合 lambda 保持身份，真实内容、背景或主题变化仍更新。双主体的显式绘制顺序只在有明确参数时应用，单/三主体继续保留已有 Z 排序，不能用搜索的子项顺序覆盖通用绘制行为。
+
 ## Evidence
 
 初始二级页 Note 指定 Settings 17.0.0 / 17000000，APK SHA-256 为 d97df8a9227520a6f673e5d6f5efbc901b5d9d4c501d12e5d8bf717daae079d5。本次可复查的同版本导出来自 SHA-256 为 1bc5201297662091d318b0e2ea074610d311f65a7ff9be5d24b29104d7d75678 的候选；未取得前者完整输入，不能将两个哈希等同。
@@ -37,6 +43,8 @@ COUIPreferenceFragment.onCreateRecyclerView 确认列表入口。候选 COUIRecy
 COUISearchBar.changeStateWithAnimation 的宽度和取消通道在运行中改变目标；HomepageImpl.animToEdit/animToNormal 对页面和结果先调用 setStartValue，Java 与 smali 均有该调用。当前材料缺少所用 OEM 动画类的 setter 与默认最小变化量实现。页面和结果保留共享弹簧的连续重定向适配，不将猜测的 snapTo 当作官方语义，也不宣称四通道的快速反向都已证明等价。
 
 折叠范围重测采用已经接受的逻辑位置，依据是 COUIViewOffsetHelper 与 COUICoordinatorScrollingViewAnimator 分别持有逻辑目标、可见整数位置和内容位移。候选 SettingsCollapsableAppBarLayout 的 scroll(type=1) 确有独立跟随参数，但父 Behavior 的传参及对应资源提供者未闭合，不能把这个类型直接映射成 Compose 的非触摸滚动；当前保持方向跟随路径，不增加无依据参数。
+
+稳定 padding 与正文子组合复用模式改编自固定版本 Miuix Scaffold bb7bde3109605b4c98065b53030ba429c39baea9，并按当前容器职责调整，版权和 Apache-2.0 来源已保留在源码与 NOTICE；AndroidX Scaffold 也采用稳定 padding 外壳。此结构仅消除已知的对象/子组合身份变化，不代替重组计数或性能测量。三主体以 elevation 为 5.05、5.0、5.09 的合法输入时，既有组内顺序是 1、0、2，搜索新增的隐式下标排序会误改为 0、1、2；现在无显式 drawOrder 时直接保留原组内顺序。
 
 | 输入与退出 | 当前处理 | 检查边界 |
 | --- | --- | --- |
@@ -60,6 +68,7 @@ COUISearchBar.changeStateWithAnimation 的宽度和取消通道在运行中改�
 - 触边只传剩余速度无需保留位移，但会丢掉触边帧并重新启动一次自由 fling，与原入口不符；直接接续位置和速度。
 - 保留静态摩擦可还原原厂进程首次构造副作用，但库允许不同实例独立配置，跨组件污染更改了公开配置语义；只保留每等级的局部参数。
 - 搜索另设不可见命中层或点击遮挡器会重复维护几何与层序；使用真实交互节点的标准 graphicsLayer，与既有浮动绘制消费同一几何。
+- 全部排版角色共用一个公共 Typography 或继续复制 Dialog 实现，都会扩大维护面；仅提取已有两处重复的纯计算，保持各组件的主题与角色职责。
 
 ## Consequences
 

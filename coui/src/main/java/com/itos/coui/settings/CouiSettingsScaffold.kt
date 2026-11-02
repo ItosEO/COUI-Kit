@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.CompositionLocalProvider
@@ -19,6 +20,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.backdrop.couiBackdrop
 import com.itos.coui.backdrop.rememberCouiBackdrop
@@ -44,6 +48,15 @@ fun CouiSettingsScaffold(
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val backdrop = rememberCouiBackdrop()
+    val contentPadding = remember { SettingsContentPadding() }
+    val bodyContent: @Composable () -> Unit = remember(content, backdrop, colors.background) {
+        {
+            // 顶栏等消费正文源；独立 Popup/Dialog 消费外层完整窗口源，不把自身录进去。
+            Box(Modifier.fillMaxSize().couiBackdrop(backdrop).background(colors.background)) {
+                content(contentPadding)
+            }
+        }
+    }
     var consumed by remember { mutableStateOf(WindowInsets(0, 0, 0, 0)) }
     val insets = contentWindowInsets.exclude(consumed)
     CompositionLocalProvider(LocalSettingsStyle provides SettingsStyle(dark, colors)) {
@@ -58,13 +71,9 @@ fun CouiSettingsScaffold(
                 val bottom = bottomBars.maxOfOrNull { it.height } ?: insets.getBottom(this)
                 val floating = subcompose(SettingsSlot.Floating) { floatingActionButton(backdrop) }
                     .map { it.measure(loose) }
-                val padding = PaddingValues(top = top.toDp(), bottom = bottom.toDp())
-                val body = subcompose(SettingsSlot.Content) {
-                    // 顶栏等消费正文源；独立 Popup/Dialog 消费外层完整窗口源，不把自身录进去。
-                    Box(Modifier.fillMaxSize().couiBackdrop(backdrop).background(colors.background)) {
-                        content(padding)
-                    }
-                }.map { it.measure(constraints) }
+                // 内容持有同一 PaddingValues；padding Modifier 在测量阶段读取更新后的值。
+                contentPadding.value = PaddingValues(top = top.toDp(), bottom = bottom.toDp())
+                val body = subcompose(SettingsSlot.Content, bodyContent).map { it.measure(constraints) }
                 layout(constraints.maxWidth, constraints.maxHeight) {
                     body.forEach { it.placeRelative(0, 0) }
                     bars.forEach { it.placeRelative(0, 0) }
@@ -75,6 +84,18 @@ fun CouiSettingsScaffold(
             }
         }
     }
+}
+
+// 稳定 padding 与正文子组合复用模式改编自 Miuix Scaffold（bb7bde3），按本容器测量职责调整。
+// Copyright 2025, compose-miuix-ui contributors. Apache-2.0；来源与许可见 NOTICE。
+@Stable
+private class SettingsContentPadding : PaddingValues {
+    var value by mutableStateOf(PaddingValues(0.dp))
+
+    override fun calculateLeftPadding(layoutDirection: LayoutDirection): Dp = value.calculateLeftPadding(layoutDirection)
+    override fun calculateTopPadding(): Dp = value.calculateTopPadding()
+    override fun calculateRightPadding(layoutDirection: LayoutDirection): Dp = value.calculateRightPadding(layoutDirection)
+    override fun calculateBottomPadding(): Dp = value.calculateBottomPadding()
 }
 
 private enum class SettingsSlot { TopBar, BottomBar, Floating, Content }
