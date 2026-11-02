@@ -22,6 +22,8 @@ Status: implemented
 
 Settings 17.0.0 / versionCode 17000000，APK SHA-256 d97df8a9227520a6f673e5d6f5efbc901b5d9d4c501d12e5d8bf717daae079d5。HomepageImpl、SettingsCollapsingToolbarLayout.OffsetUpdateListener、SettingsSearchBar → COUISearchBar 的 instant-search 分支分别决定标题、搜索和结果动画。COUIPreferenceFragment.onCreateRecyclerView → COUIRecyclerView 决定列表入口；COUIPhysicalAnimationUtil 与 SpringOverScroller 确定越界映射和 RK4 收尾；ListSelectedItemLayout 与 COUIMaskEffectDrawable 确定最低高亮及取消规则。
 
+上述哈希是初始实现记录的原始输入。本次复核可用的同版本候选哈希、Java/smali 证据、任务取消、触边交接及摩擦隔离由[二级页修复复核](../bug-fix/2026-11-02-secondary-page-review-fixes.md)持有；不能用候选材料替代原包的完整一致性验收。
+
 研究材料只用于核对，不进入源码依赖。公开 Compose 承载输入、焦点和窗口，不承诺 OEM 特权窗口、专用字体、分屏嵌入及 RecyclerView 完整分发协议等价。
 
 ## Existing-note audit

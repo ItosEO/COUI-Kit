@@ -10,11 +10,8 @@ import kotlin.math.sqrt
 /** SpringOverScroller 的轴：两遍预测、fling 专用过阻尼插值及 RK4 回弹。长度均为像素。 */
 internal class CouiScrollPhysics(private val animationLevel: Int,
     private val springBackTensionMultiple: Float = 3.2f, private val scrollView: Boolean = true) {
-    private val flingFriction = normalFriction
-    init {
-        // 原厂先构造 X 轴再构造 Y 轴；首个低等级 X 轴保留初始摩擦，后续轴使用 0.24。
-        if (animationLevel >= 3) normalFriction = 0.24f
-    }
+    // 原厂从全局动画等级初始化；库允许各组件分别配置，不能沿用跨实例的静态写入。
+    private val flingFriction = if (animationLevel >= 3) 0.24f else 0.2f
     private var position = 0.0
     private var velocity = 0.0
     private var tempPosition = 0.0
@@ -82,7 +79,7 @@ internal class CouiScrollPhysics(private val animationLevel: Int,
         running = abs(velocity) > 20
     }
 
-    fun returnToBounds(from: Int, maximum: Int, preserveVelocity: Boolean = false, initialVelocity: Int? = null) {
+    fun returnToBounds(from: Int, maximum: Int, preserveVelocity: Boolean = false, initialVelocity: Float? = null) {
         position = from.toDouble()
         target = from.coerceIn(0, maximum).toDouble()
         // 只有惯性触边先执行 notifyEdgeReached；直接松手回弹保留积分临时位置。
@@ -187,7 +184,4 @@ internal class CouiScrollPhysics(private val animationLevel: Int,
         }
     }
 
-    private companion object {
-        var normalFriction = 0.2f
-    }
 }

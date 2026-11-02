@@ -389,7 +389,7 @@ private class ChipRowScroll(animationLevel: Int, initialPosition: Int = 0, priva
         val fling = speed > minimumVelocity && (position in 1 until maximum ||
             position > maximum && fingerVelocity >= 1500 || position < 0 && fingerVelocity <= -1500)
         if (fling) physics.fling(position, -fingerVelocity, nominalFrameSeconds)
-        else physics.returnToBounds(position, maximum, initialVelocity = if (speed > minimumVelocity) -fingerVelocity else null)
+        else physics.returnToBounds(position, maximum, initialVelocity = if (speed > minimumVelocity) -fingerVelocity.toFloat() else null)
         frameTime = System.nanoTime()
         animationStartMillis = AnimationUtils.currentAnimationTimeMillis()
         choreographer.removeFrameCallback(frame)
