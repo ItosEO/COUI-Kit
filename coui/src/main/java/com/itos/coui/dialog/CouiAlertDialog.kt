@@ -45,6 +45,7 @@ data class CouiDialogAction(val text: String, val onClick: () -> Unit, val enabl
 /**
  * 普通警告弹窗。两短按钮横排，单个、三个或放不下的按钮竖排。
  * content 可装配列表、输入和选择器；不提供推荐/AI Payment 专用按钮及原厂高内容标题合并协议。
+ * CouiShape 自动提供轮廓半径；其他 Shape 使用材质时须显式提供 cornerRadius。
  */
 @Composable
 fun CouiAlertDialog(
@@ -59,7 +60,7 @@ fun CouiAlertDialog(
     placement: CouiDialogPlacement = CouiDialogPlacement.Bottom,
     colors: CouiDialogColors = CouiDialogDefaults.themeColors(dark),
     shape: Shape = CouiDialogDefaults.shape,
-    cornerRadius: Dp = CouiDialogDefaults.cornerRadius,
+    cornerRadius: Dp = Dp.Unspecified,
     material: CouiDialogMaterial? = null,
     backdrop: CouiBackdrop? = null,
     properties: DialogProperties = DialogProperties(usePlatformDefaultWidth = false),

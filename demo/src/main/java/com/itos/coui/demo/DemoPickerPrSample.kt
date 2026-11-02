@@ -7,11 +7,10 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.res.stringResource
 import com.itos.coui.picker.CouiCalendarPicker
-import com.itos.coui.theme.CouiTheme
 import java.time.LocalDate
 
 @Composable
-internal fun PickerPrSample(dark: Boolean) {
+internal fun PickerPrSample() {
     var seconds by rememberSaveable { mutableIntStateOf(27000) }
     var day by rememberSaveable { mutableLongStateOf(LocalDate.now().toEpochDay()) }
     var draft by rememberSaveable { mutableLongStateOf(day) }
@@ -22,24 +21,21 @@ internal fun PickerPrSample(dark: Boolean) {
     val month = stringResource(R.string.picker_month)
     val date = stringResource(R.string.picker_day)
     val calendar: @Composable (Long, (Long) -> Unit) -> Unit = { value, change ->
-        CouiCalendarPicker(value = LocalDate.ofEpochDay(value), onValueChange = { change(it.toEpochDay()) },
-            dark = dark, previousDescription = stringResource(R.string.picker_previous),
-            nextDescription = stringResource(R.string.picker_next), changeMonthDescription = stringResource(R.string.picker_change_month),
-            yearLabel = year, monthLabel = month, dayLabel = date)
+        CouiCalendarPicker(value = LocalDate.ofEpochDay(value), onValueChange = { change(it.toEpochDay()) })
     }
     Column {
         DemoTimePicker(value = DemoTime(seconds / 3600, seconds / 60 % 60),
-            onValueChange = { seconds = it.hour * 3600 + it.minute * 60 }, dark = dark, hourLabel = hour, minuteLabel = minute)
+            onValueChange = { seconds = it.hour * 3600 + it.minute * 60 }, hourLabel = hour, minuteLabel = minute)
         DemoCountdownPicker(value = DemoDuration(seconds / 3600, seconds / 60 % 60, seconds % 60),
-            onValueChange = { seconds = it.totalSeconds }, dark = dark, hourLabel = hour, minuteLabel = minute,
+            onValueChange = { seconds = it.totalSeconds }, hourLabel = hour, minuteLabel = minute,
             secondLabel = stringResource(R.string.picker_second))
         DemoDatePicker(value = LocalDate.ofEpochDay(day), onValueChange = { day = it.toEpochDay() },
-            dark = dark, yearLabel = year, monthLabel = month, dayLabel = date)
+            yearLabel = year, monthLabel = month, dayLabel = date)
         calendar(day, { day = it })
         FilledTonalButton(onClick = { draft = day; opened = true }) { Text(stringResource(R.string.picker_dialog)) }
     }
     if (opened) DemoPickerDialog(onDismissRequest = { opened = false }, onConfirm = { day = draft; opened = false },
         title = stringResource(R.string.picker_calendar_title), confirmText = stringResource(R.string.picker_confirm),
-        cancelText = stringResource(R.string.picker_cancel), dark = dark, accent = CouiTheme.colorSchemeFor(dark).accent,
-        backdrop = null) { calendar(draft, { draft = it }) }
+        cancelText = stringResource(R.string.picker_cancel),
+        ) { calendar(draft, { draft = it }) }
 }

@@ -5,27 +5,31 @@ import android.graphics.RuntimeShader
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.CompositingStrategy as ComposeCompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.layer.CompositingStrategy
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
-import androidx.compose.ui.graphics.rememberGraphicsLayer
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.node.requireGraphicsContext
+import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import com.itos.coui.backdrop.CouiBackdrop
-import com.itos.coui.backdrop.drawCouiBackdrop
+import com.itos.coui.backdrop.CouiBackdropEffectScope
+import com.itos.coui.backdrop.DrawCouiBackdropNode
 import kotlin.math.ceil
 
 private const val BlurOffsetPx = 2f
 private const val SigmaScale = 0.57735f
 
+/** 仅模糊背景；长度为 px，各节点独立持有横纵图层，Shader 在首次绘制创建。 */
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun Modifier.drawCouiGradientBackdrop(
@@ -35,23 +39,76 @@ fun Modifier.drawCouiGradientBackdrop(
     gradientSpeed: Float? = null,
 ): Modifier {
     require(gradientSpeed == null || gradientSpeed.isFinite() && gradientSpeed > 0f)
-    val horizontal = rememberGraphicsLayer()
-    val vertical = rememberGraphicsLayer()
-    val density = LocalDensity.current
-    val renderer = remember(fadeHeightPx, referenceBlurRadiusPx, gradientSpeed, density, horizontal, vertical) {
-        CouiGradientRenderer(fadeHeightPx, referenceBlurRadiusPx, gradientSpeed, density, listOf(horizontal, vertical))
+    return graphicsLayer {
+        shape = RectangleShape
+        clip = true
+        compositingStrategy = ComposeCompositingStrategy.Offscreen
+    }.then(GradientBackdropElement(backdrop, fadeHeightPx, referenceBlurRadiusPx, gradientSpeed))
+}
+
+@RequiresApi(33)
+private data class GradientBackdropElement(
+    val backdrop: CouiBackdrop,
+    val fadeHeightPx: Float,
+    val referenceBlurRadiusPx: Float,
+    val gradientSpeed: Float?,
+) : ModifierNodeElement<GradientBackdropNode>() {
+    override fun create() = GradientBackdropNode(backdrop, fadeHeightPx, referenceBlurRadiusPx, gradientSpeed)
+    override fun update(node: GradientBackdropNode) {
+        node.backdrop = backdrop
+        node.update(fadeHeightPx, referenceBlurRadiusPx, gradientSpeed)
     }
-    return drawCouiBackdrop(
-        backdrop = backdrop,
-        shape = { RectangleShape },
-        effects = {
-            padding = renderer.padding
-            renderer.height = size.height
-        },
-        onDrawBackdrop = { drawBackdrop ->
-            renderer.draw(this, drawBackdrop)
-        },
-    )
+    override fun InspectorInfo.inspectableProperties() { name = "drawCouiGradientBackdrop" }
+}
+
+@RequiresApi(33)
+private class GradientBackdropNode(
+    backdrop: CouiBackdrop,
+    private var fadeHeightPx: Float,
+    private var referenceBlurRadiusPx: Float,
+    private var gradientSpeed: Float?,
+) : DrawCouiBackdropNode(backdrop) {
+    private var passes = emptyList<GraphicsLayer>()
+    private var renderer: CouiGradientRenderer? = null
+    private var rendererDensity: Density? = null
+
+    override fun onAttach() {
+        super.onAttach()
+        passes = List(2) { requireGraphicsContext().createGraphicsLayer() }
+    }
+
+    override fun onDetach() {
+        passes.forEach { requireGraphicsContext().releaseGraphicsLayer(it) }
+        passes = emptyList()
+        renderer = null
+        rendererDensity = null
+        super.onDetach()
+    }
+
+    fun update(fadeHeightPx: Float, referenceBlurRadiusPx: Float, gradientSpeed: Float?) {
+        if (this.fadeHeightPx != fadeHeightPx || this.referenceBlurRadiusPx != referenceBlurRadiusPx ||
+            this.gradientSpeed != gradientSpeed) {
+            this.fadeHeightPx = fadeHeightPx
+            this.referenceBlurRadiusPx = referenceBlurRadiusPx
+            this.gradientSpeed = gradientSpeed
+            renderer = null
+        }
+    }
+
+    override fun configureEffects(scope: CouiBackdropEffectScope) {
+        val density = scope.recordingDensity
+        val current = renderer?.takeIf { rendererDensity == density }
+            ?: CouiGradientRenderer(fadeHeightPx, referenceBlurRadiusPx, gradientSpeed, density, passes).also {
+                renderer = it
+                rendererDensity = density
+            }
+        scope.padding = current.padding
+        current.height = scope.size.height
+    }
+
+    override fun drawSource(scope: DrawScope, source: DrawScope.() -> Unit) {
+        checkNotNull(renderer).draw(scope, source)
+    }
 }
 
 /** 原厂渐进 Gaussian 先横后纵, 每遍保留原尺寸中间图, 不使用多级缩小图混合。 */

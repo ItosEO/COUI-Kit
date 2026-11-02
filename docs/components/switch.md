@@ -134,7 +134,7 @@ CouiSwitch(
 
 触觉反馈遵循系统设置；传入 `hapticFeedbackEnabled = false` 可以关闭。
 
-## 版本和验收
+## 系统版本
 
 开关支持库的最低系统版本。
 

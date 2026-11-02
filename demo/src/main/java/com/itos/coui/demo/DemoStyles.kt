@@ -26,12 +26,11 @@ internal fun demoToolbarStyle(dark: Boolean, contour: Boolean, search: Boolean =
 }
 
 @Composable
-internal fun demoMenuStyle(dark: Boolean): CouiMenuStyle {
-    return CouiMenuDefaults.style(dark).copy(
+internal fun demoMenuStyle(): CouiMenuStyle {
+    return CouiMenuDefaults.style().copy(
         shape = DemoShapes.menu,
         itemShape = DemoShapes.menuItem,
         checkboxShape = DemoShapes.checkbox,
         checkboxBorderShape = DemoShapes.checkboxBorder,
-        radius = DemoShapes.menu.radius,
     )
 }

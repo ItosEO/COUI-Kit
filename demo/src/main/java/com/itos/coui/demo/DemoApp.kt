@@ -183,7 +183,7 @@ internal fun DemoApp(dark: Boolean, onToggleTheme: () -> Unit, materialTheme: Bo
                     CouiFab(
                         modifier = Modifier.align(Alignment.BottomEnd).padding(end = 24.dp,
                             bottom = with(density) { bottomHeight.toDp() } + 16.dp),
-                        backdrop = backdrop, renderer = renderers.fab, onClick = { selectPage(2) }, dark = dark,
+                        backdrop = backdrop, renderer = renderers.fab, onClick = { selectPage(2) },
                         shape = DemoShapes.couiCircle, material = CouiFabDefaults.material(color, dark),
                         shadow = CouiFabDefaults.shadow(color, density.density, contour),
                     ) { Icon(Icons.Default.Palette, stringResource(R.string.open_presets), tint = Color.White) }
@@ -195,7 +195,6 @@ internal fun DemoApp(dark: Boolean, onToggleTheme: () -> Unit, materialTheme: Bo
                         rightIcon = Icons.Default.Palette, rightDescription = stringResource(R.string.open_presets),
                         leftVisible = leftAccessory, rightVisible = rightAccessory,
                         onLeftClick = onToggleTheme, onRightClick = { selectPage(2) }, rightContainerColor = color,
-                        dark = dark, lightColor = Color.White,
                         circleShape = DemoShapes.couiCircle, capsuleShape = DemoShapes.couiCapsule, onSelection = selectPage,
                     )
                 } else {
@@ -255,7 +254,7 @@ private fun DemoToolbar(renderers: DemoRenderers, dark: Boolean, contour: Boolea
                 }
             }
             CouiTopAppBarSearchAction(state = state, visibleWhileSearching = true) {
-                CouiTopAppBarButton(onClick = onToggleTheme, enabled = actionsEnabled, text = false, renderer = renderers.theme) {
+                CouiTopAppBarButton(onClick = onToggleTheme, enabled = actionsEnabled, renderer = renderers.theme) {
                     Icon(Icons.Default.DarkMode, stringResource(R.string.toggle_theme))
                 }
             }

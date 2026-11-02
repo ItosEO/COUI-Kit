@@ -73,7 +73,7 @@ private fun ChipTabMaterialSample(dark: Boolean) {
             items = labels.mapIndexed { index, label ->
                 CouiChipTabItem(index, label, icon = { Icon(Icons.Default.Tune, null) })
             },
-            selectedKey = selected, onSelectedKeyChange = { selected = it as Int }, backdrop = backdrop, dark = dark,
+            selectedKey = selected, onSelectedKeyChange = { selected = it as Int }, backdrop = backdrop,
             enabled = enabled, itemSpacing = 8.dp, renderers = renderers,
             leadingActionVisible = showIconButton,
             leadingAction = if (buttonRenderer != null) {
@@ -82,11 +82,11 @@ private fun ChipTabMaterialSample(dark: Boolean) {
                         CouiChipTabButton(modifier = Modifier.couiMenuAnchor(anchor),
                             onClick = { anchor.open { categoriesOpen = true } },
                             contentDescription = stringResource(R.string.chip_categories), backdrop = backdrop,
-                            dark = dark, enabled = enabled && showIconButton, renderer = buttonRenderer) {
+                            enabled = enabled && showIconButton, renderer = buttonRenderer) {
                             Icon(Icons.Default.Tune, null)
                         }
                         CouiMenu(expanded = categoriesOpen, onDismissRequest = { categoriesOpen = false },
-                            anchor = anchor, style = demoMenuStyle(dark), headerText = stringResource(R.string.chip_categories),
+                            anchor = anchor, style = demoMenuStyle(), headerText = stringResource(R.string.chip_categories),
                             items = labels.mapIndexed { index, label -> CouiMenuItem(index, label, selected = selected == index) },
                             onItemClick = { item -> selected = item.value; categoriesOpen = false })
                     }

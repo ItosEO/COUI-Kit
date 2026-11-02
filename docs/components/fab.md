@@ -28,7 +28,7 @@ fun PageFab(
 }
 ~~~
 
-省略 material 时，底色取 COUI 强调色，内容色取 `onAccent`；省略 shadow 时，阴影颜色从最终 `material.firstColor` 取得。显式 material 保留宿主 ambient 内容色，子内容的显式颜色继续优先。默认强调色本身可以有颜色，但这不表示启用了 Material 页面染色；FAB 不叠加菜单式 `themeTint`。通用主题规则见[外观与预设](../guide/appearance.md)；强调色生成策略（包括 HCT）由宿主负责。
+省略 material 时，底色取 COUI 强调色，内容色取 `onAccent`；省略 shadow 时，阴影颜色从最终 `material.firstColor` 取得。显式 material 使用宿主 ambient 内容色，子内容的显式颜色优先。FAB 不使用页面 `themeTint`。通用主题规则见[外观与预设](../guide/appearance.md)；强调色生成策略（包括 HCT）由宿主负责。
 
 ## 使用显式配色预设
 

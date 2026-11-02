@@ -43,8 +43,6 @@ import com.itos.coui.menu.CouiMenuItem
 import com.itos.coui.menu.couiMenuAnchor
 import com.itos.coui.menu.rememberCouiMenuAnchor
 import com.itos.coui.slider.CouiSlider
-import com.itos.coui.slider.CouiSliderDefaults
-import com.itos.coui.theme.CouiTheme
 import kotlin.math.roundToInt
 
 @Composable
@@ -63,7 +61,7 @@ internal fun DemoSection(title: Int, query: String, content: @Composable ColumnS
 
 @Composable
 private fun DemoCheckboxRow(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit,
-    dark: Boolean, enabled: Boolean = true) {
+    enabled: Boolean = true) {
     Row(Modifier.fillMaxWidth().clip(DemoShapes.item).heightIn(min = 48.dp).toggleable(checked,
         interactionSource = remember { MutableInteractionSource() }, indication = null, enabled = enabled, role = Role.Checkbox,
         onValueChange = onCheckedChange).padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -75,7 +73,7 @@ private fun DemoCheckboxRow(label: String, checked: Boolean, onCheckedChange: (B
 
 @Composable
 internal fun ControlsDemo(dark: Boolean, query: String) {
-    DemoSection(R.string.picker_title, query) { PickerPrSample(dark) }
+    DemoSection(R.string.picker_title, query) { PickerPrSample() }
     DemoSection(R.string.dialog_title, query) { DialogSample(dark) }
     var value by rememberSaveable { mutableFloatStateOf(0.4f) }
     var section by rememberSaveable { mutableFloatStateOf(2f) }
@@ -89,27 +87,25 @@ internal fun ControlsDemo(dark: Boolean, query: String) {
             onValueChange = { value = it }, enabled = enabled)
         Text(stringResource(R.string.section_value, section.roundToInt()))
         CouiSlider(modifier = Modifier.fillMaxWidth().demoLabel(R.string.section_slider), value = section,
-            onValueChange = { section = it }, enabled = enabled, dark = dark,
-            colors = CouiSliderDefaults.colors(CouiTheme.colorSchemeFor(dark).accent, dark, enabled), shape = DemoShapes.capsule,
+            onValueChange = { section = it }, enabled = enabled, shape = DemoShapes.capsule,
             valueRange = 0f..4f, steps = 3, showTickMarks = true)
         Text(stringResource(R.string.implicit_step_value, implicitStep.roundToInt()))
         CouiSlider(modifier = Modifier.fillMaxWidth().demoLabel(R.string.implicit_slider), value = implicitStep,
-            onValueChange = { implicitStep = it }, enabled = enabled, dark = dark,
-            colors = CouiSliderDefaults.colors(CouiTheme.colorSchemeFor(dark).accent, dark, enabled), shape = DemoShapes.capsule,
-            valueRange = 0f..10f, steps = 9, showTickMarks = false)
+            onValueChange = { implicitStep = it }, enabled = enabled, shape = DemoShapes.capsule,
+            valueRange = 0f..10f, steps = 9)
     }
     DemoSection(R.string.checkbox_title, query) {
-        DemoCheckboxRow(stringResource(R.string.checkbox_toggle), checked, { checked = it }, dark)
-        DemoCheckboxRow(stringResource(R.string.checkbox_disabled), true, {}, dark, enabled = false)
-        DemoCheckboxRow(stringResource(R.string.checkbox_disabled_unchecked), false, {}, dark, enabled = false)
+        DemoCheckboxRow(stringResource(R.string.checkbox_toggle), checked, { checked = it })
+        DemoCheckboxRow(stringResource(R.string.checkbox_disabled), true, {}, enabled = false)
+        DemoCheckboxRow(stringResource(R.string.checkbox_disabled_unchecked), false, {}, enabled = false)
     }
-    DemoSection(R.string.switch_title, query) { SwitchSample(dark) }
-    DemoSection(R.string.menu_title, query) { MenuSample(dark) }
+    DemoSection(R.string.switch_title, query) { SwitchSample() }
+    DemoSection(R.string.menu_title, query) { MenuSample() }
     DemoSection(R.string.chip_tab_title, query) { ChipTabSample(dark) }
 }
 
 @Composable
-private fun MenuSample(dark: Boolean) {
+private fun MenuSample() {
     var expanded by remember { mutableStateOf(false) }
     var selected by rememberSaveable { androidx.compose.runtime.mutableIntStateOf(0) }
     var pinned by rememberSaveable { mutableStateOf(false) }
@@ -127,7 +123,7 @@ private fun MenuSample(dark: Boolean) {
         }
         CouiMenu(modifier = if (longMenu) Modifier.heightIn(max = 320.dp) else Modifier,
             expanded = expanded, onDismissRequest = { expanded = false }, anchor = anchor,
-            style = demoMenuStyle(dark), headerText = stringResource(R.string.menu_header),
+            style = demoMenuStyle(), headerText = stringResource(R.string.menu_header),
             items = if (longMenu) longLabels.mapIndexed { index, label ->
                 CouiMenuItem(index, label, icon = Icons.Default.Tune, selected = selected == index,
                     dividerBefore = index > 0 && index % 3 == 0)

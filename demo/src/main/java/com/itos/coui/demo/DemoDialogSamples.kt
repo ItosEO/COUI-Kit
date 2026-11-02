@@ -49,7 +49,7 @@ internal fun DialogSample(dark: Boolean) {
         val close = { opened = null }
         val title = stringResource(R.string.dialog_sample_title)
         val message = stringResource(R.string.dialog_sample_message)
-        CouiAlertDialog(onDismissRequest = close, dark = dark, title = title,
+        CouiAlertDialog(onDismissRequest = close, title = title,
             message = if (example == "long") List(12) { message }.joinToString("\n\n") else message,
             confirmAction = CouiDialogAction(stringResource(R.string.dialog_confirm), { confirmed = true; close() },
                 enabled = example != "disabled",

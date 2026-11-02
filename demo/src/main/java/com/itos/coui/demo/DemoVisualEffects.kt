@@ -87,11 +87,11 @@ private fun BackdropSample(mode: BackdropMode, dark: Boolean) {
     } else null
     Text(stringResource(R.string.blur_radius_value, radius.toInt()), style = MaterialTheme.typography.labelLarge)
     CouiSlider(modifier = Modifier.fillMaxWidth().demoLabel(R.string.blur_radius), value = radius,
-        onValueChange = { radius = it }, valueRange = 0f..32f, dark = dark,
+        onValueChange = { radius = it }, valueRange = 0f..32f,
         colors = CouiSliderDefaults.colors(MaterialTheme.colorScheme.primary, dark), shape = DemoShapes.capsule)
     Text(stringResource(R.string.backdrop_position), style = MaterialTheme.typography.labelLarge)
     CouiSlider(modifier = Modifier.fillMaxWidth().demoLabel(R.string.backdrop_position), value = phase,
-        onValueChange = { phase = it }, dark = dark,
+        onValueChange = { phase = it },
         colors = CouiSliderDefaults.colors(MaterialTheme.colorScheme.primary, dark), shape = DemoShapes.capsule)
     BackdropStage(phase) { backdrop ->
         Box(Modifier.align(Alignment.Center).padding(24.dp).fillMaxWidth().height(112.dp)

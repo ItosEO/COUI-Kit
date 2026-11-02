@@ -37,7 +37,7 @@ val translation by rememberCouiMetaballFollowingTranslation(
 
 运动对象在主线程创建、调用和释放。显式构造时使用主线程 CoroutineScope；取消该 scope 后弹簧停止，实例不再接收输入。Compose 工厂自动处理节点移除，不需要另建作用域。触点、位移及 IntSize 使用像素，缩放为倍率。
 
-Touch 的四轴和 Press.scale 都是只读 State<Float>。在绘制阶段读取 .value；同一触摸组合中的形变与按压使用 `touchScale + pressScale - 1f`，不要相乘。独立外层的展开/收起缩放仍按父子变换相乘。
+Touch 的四轴和 Press.scale 都是只读 State<Float>。在绘制阶段读取 .value；同一触摸组合中的形变与按压使用 `touchScale + pressScale - 1f`，不要相乘。独立外层的展开/收起缩放按父子变换相乘；自定义动画由宿主单独持有。
 
 下面片段位于 Compose 内容中；Box 内放宿主的按钮内容。点击仍由宿主自己的 clickable 处理：
 
@@ -64,15 +64,11 @@ Box(
 }
 ~~~
 
-CouiTouchMotion.release 以输入速度回弹。cancel 只停在当前位置，保留底层速度与待处理目标；需要立即恢复未变形状态时调用 reset，它会同时清除旧动画与触摸会话。reset 不会移除坐标绑定，后续仍可开始新的触摸。
+### 主动控制运动
+
+手动驱动 CouiTouchMotion 时，使用 begin 开始触摸、move 更新位置、release 以输入速度回弹。cancel 只停在当前位置，保留底层速度与待处理目标；需要立即恢复未变形状态时调用 reset，它会同时清除旧动画与触摸会话。reset 不会移除坐标绑定，后续可开始新的触摸。CouiPressMotion 使用 press 和 release 控制按下与释放。
 
 按压输入的 cancelOnConsumedMove 用于父容器消费移动后立即释放，并在本次触摸结束前保持取消。选择、光效、按压与滚动各自有状态 owner，不能用某一路已取消推断其他路径都已收尾。
-
-### 从公开 Animatable 迁移
-
-只读取 `.value` 的源码不用改；原构造函数仍可用。直接调用 Touch 轴的 snapTo/animateTo/stop 不再支持：恢复默认几何改为 `motion.reset()`，输入过程使用 begin/move/release，停止使用 cancel。Press 使用 press/release，不向内部轴写值，也不再提供轴速度读取。
-
-返回类型由 Animatable 改为 State 是二进制不兼容变更。更新依赖后须重新编译全部调用模块，不能混用旧编译产物。自定义独立动画应由宿主单独持有，不接管本组件的内部弹簧。
 
 预设集中在 CouiSwipeRevealDefaults；菜单公开展开弹簧仍可引用。使用参数含义和单位，不在宿主复制固定数值。
 

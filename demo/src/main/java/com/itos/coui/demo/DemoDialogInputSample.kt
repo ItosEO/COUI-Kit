@@ -57,7 +57,7 @@ internal fun RenameDeviceDialogSample(
         }
     }
     CouiInputDialog(state = draft, inputTransformation = transformation,
-        onDismissRequest = onDismissRequest, dark = dark,
+        onDismissRequest = onDismissRequest,
         title = stringResource(R.string.dialog_device_name_title),
         message = stringResource(R.string.dialog_device_name_message),
         clearContentDescription = stringResource(R.string.dialog_input_clear),

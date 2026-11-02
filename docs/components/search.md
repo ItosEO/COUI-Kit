@@ -144,7 +144,7 @@ CouiTopAppBarButtonGroup {
 
 默认动作会在搜索展开时淡出。设置 `visibleWhileSearching = true` 后，动作会移到新位置并保持可用。
 
-示例假定已在 Application 接入可选 M3 适配。搜索表面和顶栏按钮自动同步 M3 内容 Local，部分文字样式与宿主 ambient 合并；显式子样式保持优先。收起时只转发的 title 仍使用宿主样式。SearchButton 保留原固定布局容器，不受 M3 最小交互尺寸 Local 控制。
+示例假定已在 Application 接入可选 M3 适配。搜索表面和顶栏按钮自动同步 M3 内容 Local，部分文字样式与宿主 ambient 合并；显式子样式优先。收起时的 title 使用宿主样式。SearchButton 使用固定布局容器，不受 M3 最小交互尺寸 Local 控制。
 
 ## 搜索框样式
 

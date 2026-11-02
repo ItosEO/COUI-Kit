@@ -35,7 +35,7 @@ dependencies {
 
 ## 配置页面
 
-组件可以直接使用 COUI 原生默认值，也可以由局部 `CouiTheme` 或显式参数配置。M3 宿主添加同版本的可选 `coui-material3` 模块，并在 `Application.onCreate` 调用 `Coui.initialize(defaultStyle = CouiMaterial3Style())`，无需根内容包装或手工色板映射；完整初始化与模式配置见 [README：接入 Material 3](../../README.md#接入-material-3)。核心不读取 `MaterialTheme`。新模块、主题与默认参数从 alpha3 开始提供；旧版本升级需重新编译消费者，见[迁移说明](compatibility.md#原生主题与默认参数迁移)。
+组件可以直接使用 COUI 原生默认值，也可以由局部 `CouiTheme` 或显式参数配置。M3 宿主添加同版本的可选 `coui-material3` 模块，并在 `Application.onCreate` 调用 `Coui.initialize(defaultStyle = CouiMaterial3Style())`；完整初始化与模式配置见 [README：接入 Material 3](../../README.md#接入-material-3)。
 
 平台要求按能力分：普通控件跟随库的最低系统；渐进模糊、轮廓和融合要 API 33；底栏、FAB、顶栏按钮/搜索、ChipTab 和普通阴影要 API 34。调用 API 34 的组件前先判断版本，完整表格见[兼容要求](compatibility.md#效果门槛)。
 
@@ -139,7 +139,7 @@ dependencies {
 
 源码模块还引用了 Maven Publish 和 Dokka 等插件别名。插件版本由项目统一声明，DynamicAnimation 的 `strictly` 约束也要保留。工具链和依赖对齐见[兼容要求](compatibility.md)。
 
-需要 M3 适配时，同样复制 `coui-material3/`，在 settings 增加 `include(":coui-material3")`，并在调用模块依赖 `project(":coui-material3")`。不要把该模块源码复制进核心，也不要复制 Demo 的旧映射函数。
+需要 M3 适配时，同样复制 `coui-material3/`，在 settings 增加 `include(":coui-material3")`，并在调用模块依赖 `project(":coui-material3")`。
 
 [demo/build.gradle.kts](../../demo/build.gradle.kts) 是完整示例，但不用照抄它的签名、应用标识或 Capsule 依赖。
 

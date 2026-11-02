@@ -16,6 +16,8 @@ Status: implemented
 
 默认颜色在消费处读取 CouiTheme 与已初始化的可选 M3 策略；显式 colors 优先，原生 colors 工厂仍可单独使用。沿用最新主线的菜单按需背景隔离、组合期引用所有权和前景透明光晕短路，不整文件回退主题或性能实现。Sheet 与完整 Demo 属于其他范围。
 
+渐进背景沿用具体节点持有 renderer 与横纵图层的实现，图层随 attach/detach 成对取得和释放。gradientSpeed 进入节点参数及 renderer 更新判定，变化时重建对应 Shader 配置；默认分支、两遍卷积、Density 更新和采样缓存规则保持。浮动表面的显式 renderer 与内容层继续遵守单节点所有权。
+
 ## Evidence
 
 Settings 17.0.0 / versionCode 17000000，APK SHA-256 d97df8a9227520a6f673e5d6f5efbc901b5d9d4c501d12e5d8bf717daae079d5。HomepageImpl、SettingsCollapsingToolbarLayout.OffsetUpdateListener、SettingsSearchBar → COUISearchBar 的 instant-search 分支分别决定标题、搜索和结果动画。COUIPreferenceFragment.onCreateRecyclerView → COUIRecyclerView 决定列表入口；COUIPhysicalAnimationUtil 与 SpringOverScroller 确定越界映射和 RK4 收尾；ListSelectedItemLayout 与 COUIMaskEffectDrawable 确定最低高亮及取消规则。
@@ -27,6 +29,7 @@ Settings 17.0.0 / versionCode 17000000，APK SHA-256 d97df8a9227520a6f673e5d6f5e
 - [主题策略](../architecture/2026-10-31-optional-material3-style.md)：沿用消费处解析与显式覆盖；新布局不重新维护根色板。
 - [顶栏与搜索边界](../bug-fix/2026-10-20-topappbar-search-transition-boundaries.md)：不同搜索场景；复用已有固定输入重定位边界，保留便签式顶栏搜索。
 - [模块边界](../architecture/2026-10-21-coui-module-boundary.md)：布局、效果归库，导航、示例和业务归宿主。
+- [Modifier 与节点资源](../architecture/2026-11-02-modifier-contracts-and-picker-layout.md)：复用渐进背景节点生命周期，新增参数沿现有更新路径传递；Picker、面板几何及其 Demo 保留已合入的实现。
 - 本地设置研究与上述决定部分重叠，本篇记录投稿范围；活跃 proposed/rejected 无同范围需要清理的记录。
 
 ## Alternatives considered

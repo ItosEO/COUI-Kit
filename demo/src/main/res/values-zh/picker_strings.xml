@@ -14,9 +14,6 @@
     <string name="picker_day">日</string>
     <string name="picker_confirm">确定</string>
     <string name="picker_cancel">取消</string>
-    <string name="picker_previous">上个月</string>
-    <string name="picker_next">下个月</string>
-    <string name="picker_change_month">切换年月</string>
     <string name="picker_selected">已选择：%1$s</string>
     <string name="picker_title">选择器</string>
 </resources>

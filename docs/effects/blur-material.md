@@ -42,7 +42,9 @@ Box(
 
 ## 坐标、资源与平台
 
-低层渐进接口的长度使用像素，位置与源坐标保持一致；源码声明给出完整要求。rememberCouiMaterialEffect 的 blendMode 默认 Overlay，保留既有调用。ColorDodge 对应原厂材质 mode 3；两者均先执行 luminosity，再以 blend alpha 混合第二层，颜色与模式由调用者选择。弹窗 Defaults 按浅深主题选择模式，不把模式差异改成颜色补偿。材质工厂随颜色和模式输入更新，不把旧 RenderEffect 快照当作可变 uniform 的实时引用。
+低层渐进接口的长度使用像素，位置与源坐标保持一致。`rememberCouiMaterialEffect` 的 `blendMode` 默认为 `Overlay`，也可选择 `ColorDodge`；弹窗 Defaults 按主题选择模式。两种模式均先执行 luminosity，再以 blend alpha 混合第二层。材质工厂随颜色和模式输入更新；RenderEffect 是参数快照。
+
+`drawCouiGradientBackdrop` 可复用到不同尺寸的节点。每个节点拥有独立的横向、纵向图层和 Shader，参数或 Density 改变后更新本节点的 renderer，保留先横后纵的卷积。渐进 Shader 在节点首次绘制时创建；异常直接暴露，不提供替代模糊。
 
 RuntimeShader 的相关效果要求 API 33，具体分支见[兼容要求](../guide/compatibility.md)。Shader 初始化失败按[资源规则](backdrop.md#资源与失败处理)报告。
 

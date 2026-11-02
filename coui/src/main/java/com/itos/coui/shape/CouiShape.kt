@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.isSpecified
 import kotlin.math.ceil
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -55,4 +56,14 @@ data class CouiShape(val radius: Dp, val cornerWeight: Float = CouiCornerWeight)
         // shortcut: Path 使用公开光栅化抗锯齿, 不是厂商 fwidth 覆盖率; 可用同等 GPU 裁剪时替换。
         return Outline.Generic(path)
     }
+}
+
+/** 已知形状直接提供半径；任意 Shape 的轮廓参数仍由宿主明确给出。 */
+internal fun Shape.resolveCouiCornerRadius(explicitRadius: Dp): Dp {
+    val radius = if (this is CouiShape) {
+        require(!explicitRadius.isSpecified || explicitRadius == this.radius) { "显式半径必须与 CouiShape 一致" }
+        this.radius
+    } else explicitRadius
+    require(radius.value.isFinite() && radius.value >= 0f) { "自定义 Shape 必须提供有限非负的轮廓半径" }
+    return radius
 }
