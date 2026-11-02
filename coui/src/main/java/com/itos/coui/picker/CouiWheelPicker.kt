@@ -140,7 +140,7 @@ fun CouiWheelPicker(
     } }
     val normalColor = colors.normal
     val focusColor = colors.focus
-    val baselineMetrics = paint.fontMetrics
+    val baselineMetrics = remember(normal) { Paint().apply { textSize = normal.toFloat() }.fontMetrics }
     val mask = if (verticalFading) Modifier.graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
         .drawWithContent {
             drawContent()
