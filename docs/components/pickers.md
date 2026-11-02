@@ -12,7 +12,7 @@
 | 标题、项目材质、确认/取消与任意选择器内容 | [DemoPickerDialog](../../demo/src/main/java/com/itos/coui/demo/DemoPickerDialog.kt) |
 | 页面与弹窗共用内容、草稿及确认提交 | [PickerPrSample](../../demo/src/main/java/com/itos/coui/demo/DemoPickerPrSample.kt) |
 
-以上均为 internal 装配；宿主按需参考和调整，不导入 Demo。此前的 CouiTimePicker、CouiCountdownPicker、CouiDatePicker、CouiPickerDialog 与示例数据类型已移出库，不保留重复公共别名。
+以上均为 internal 装配；宿主按需参考和调整，不导入 Demo。目前公开的选择器内核仅有 CouiWheelPicker 和 CouiCalendarPicker；时间、倒计时、日期列以及弹窗组合是 Demo 示例，不属于库的公开 API。
 
 以下片段在宿主 Composable 内，标签、主题、整数与更新回调均由宿主提供：
 
@@ -32,9 +32,9 @@ Row {
 
 选择带的整组分割线、冒号、AM/PM 排序、月长夹紧和业务草稿由宿主装配。Demo 保留原厂对应配置：时间/日期有整组选择线，大数字倒计时没有横线。数值没有写死；示例通过受控值、范围和回调传参。
 
-月历使用 CouiCalendarPicker，value、onValueChange、minDate、maxDate、today 和文字说明由调用者提供。翻月箭头只改变浏览月份；点选日期或滚动展开后的年/月/日三列会立即提交受控日期。展开时从当前受控日期初始化，收起后回到该日期所在月份。日期与范围非法时明确失败。
+月历使用 CouiCalendarPicker，value、onValueChange、minDate、maxDate、today 和文字说明由调用者提供。翻月箭头只改变浏览月份；点选日期或滚动展开后的年/月/日三列会立即提交受控日期。展开时读取当前受控日期，编辑候选由宿主决定是否接受；收起后回到已接受日期所在月份，并重新播放选中圆的入场动画。日期与范围非法时明确失败。
 
-月历只有一个呈现入口；原有调用删除 presentation 实参和 CouiCalendarPresentation import 即可，值、回调与范围语义不变。头部使用 16dp 折叠箭头、16sp 标题与 24dp 翻页箭头；网格为周日起始、16sp/14sp sans-serif-medium、32dp 选中/今日圆及 40/48dp 行高。编辑展开延迟 120ms，网格淡入 280ms、淡出 150ms；翻页按 COUICalendarViewPagerScroller 的 300ms COUIMoveEaseInterpolator 收尾。闹钟多日期重复、节假日及过去日期限制是宿主业务，当前 API 为单日期选择。
+月历只有一个呈现入口，宿主使用受控日期和回调接入。头部使用 16dp 折叠箭头、16sp 标题与 24dp 翻页箭头；网格为周日起始、16sp/14sp sans-serif-medium、32dp 选中/今日圆及 40/48dp 行高。编辑展开延迟 120ms，网格淡入 280ms、淡出 150ms；翻页按 COUICalendarViewPagerScroller 的 300ms COUIMoveEaseInterpolator 收尾。闹钟多日期重复、节假日及过去日期限制是宿主业务，当前 API 为单日期选择。
 
 选择弹窗直接组合 [CouiAlertDialog](dialog.md) 与任意滚轮/月历内容。取消、返回和外部点击只关闭，确认才保存草稿；backdrop 必须来自当前窗口且不含弹窗和压暗层。Demo 的弹窗装配没有第二套材质、几何或动画后端。
 
@@ -42,7 +42,7 @@ Row {
 
 CouiWheelPicker 提供受控整数、range、formatter、语义 label、循环、行高、普通/选中字号、diffusion 和渐隐。高度、字号、扩散均用 dp；内核沿原厂 NumberPicker 的像素取整，不将字号再次按 SP 放大。固定预设见 CouiPickerDefaults，业务列布局由宿主组合。
 
-跨项时回调当前值；快速点按上下邻项、拖动、惯性、再次按下中断、长按及键盘调整各自处理。CANCEL 不追加点击，只吸附已有候选值；外部拒绝值在稳定后回到受控值。禁用和移除停止交互与动画，每个节点独立持有 Scroller。厂商马达尝试失败后使用已有标准反馈码，不保证 OEM 波形等价。
+跨项时回调当前值；快速点按上下邻项、拖动、惯性、再次按下中断、长按及键盘调整各自处理。尺寸由实际布局测量统一供运动、裁剪和命中使用；大范围取值不遍历整个 IntRange。CANCEL 不追加点击，只吸附已有候选值；外部拒绝值在稳定后回到受控值。禁用和移除停止交互与动画，每个节点独立持有 Scroller。厂商马达尝试失败后使用已有标准反馈码，不保证 OEM 波形等价。
 
 ## 来源与承载边界
 
@@ -55,7 +55,7 @@ CouiWheelPicker 提供受控整数、range、formatter、语义 label、循环�
 时间/日期预设由整组绘制两条选择分割线；大数字倒计时保留无整组横线的标准分支；月历的年月编辑使用 48dp 选择区上下分割线与 12dp 上下留白。不能因单列 NumberPicker 未启用背景，就省略父选择器的绘制。
 
 
-月历使用 Calendar 原版的周日起始、头部/网格规格和三列日期滚轮；今天的文字和描边使用强调色。value、日期范围和 today 始终由调用者传入，没有写死某年某月；Demo 的初始值来自设备当前日期。
+月历使用 Calendar 原版的周日起始、头部/网格规格和三列日期滚轮；今天的文字和描边使用强调色。日期选中由单一动画 owner 管理；旧选中圆不会在连续点击中堆积。value、日期范围和 today 始终由调用者传入，没有写死某年某月；Demo 的初始值来自设备当前日期。
 
 ## 主题与显式覆盖
 

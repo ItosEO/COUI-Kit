@@ -41,5 +41,5 @@ internal fun PickerPrSample(dark: Boolean) {
     if (opened) DemoPickerDialog(onDismissRequest = { opened = false }, onConfirm = { day = draft; opened = false },
         title = stringResource(R.string.picker_calendar_title), confirmText = stringResource(R.string.picker_confirm),
         cancelText = stringResource(R.string.picker_cancel), dark = dark, accent = CouiTheme.colorSchemeFor(dark).accent,
-        backdrop = null) { calendar(draft, { draft = it }) }
+        ) { calendar(draft, { draft = it }) }
 }

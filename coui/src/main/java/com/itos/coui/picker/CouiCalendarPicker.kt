@@ -7,7 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
@@ -34,6 +34,8 @@ import com.itos.coui.theme.CouiIcon as Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -43,7 +45,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -128,23 +129,26 @@ fun CouiCalendarPicker(
     val pageFling = remember(pager, density) { CouiCalendarFlingBehavior(pager, density) { pageAtDown } }
     var editingMonth by rememberSaveable { mutableStateOf(false) }
     var closingEditor by remember { mutableStateOf(false) }
-    var editorYear by rememberSaveable { mutableIntStateOf(value.year) }
-    var editorMonth by rememberSaveable { mutableIntStateOf(value.monthValue) }
-    var editorDay by rememberSaveable { mutableIntStateOf(value.dayOfMonth) }
     var displayEditor by remember { mutableStateOf(false) }
-    val editorDate = remember(editorYear, editorMonth, editorDay, minDate, maxDate) {
-        LocalDate.of(
-            editorYear,
-            editorMonth,
-            editorDay.coerceAtMost(YearMonth.of(editorYear, editorMonth).lengthOfMonth()),
-        ).coerceIn(minDate, maxDate)
+    var returnVersion by remember { mutableIntStateOf(0) }
+    var consumedReturn by remember { mutableIntStateOf(0) }
+    var pendingGridSelection by remember { mutableStateOf<LocalDate?>(null) }
+    val selection = remember(scope) { CouiCalendarSelectionMotion(scope, value) }
+    DisposableEffect(selection) { onDispose { selection.dispose() } }
+    // SideEffect 只在已接受的宿主 value 上转交选择动画；编辑区淡出时保留旧网格。
+    SideEffect {
+        if (!editingMonth && !displayEditor) {
+            val returning = consumedReturn != returnVersion
+            if (returning) consumedReturn = returnVersion
+            if (selection.selectedDate != value || returning) {
+                selection.update(value, returning || pendingGridSelection == value)
+            }
+        }
+        if (pendingGridSelection != null) pendingGridSelection = null
     }
     val current = first.plusMonths(headerPage.toLong())
     val foreground = colors.foreground
     val secondary = colors.secondary
-    val weekday = colors.weekday
-    val hint = colors.hint
-    val highlight = colors.highlight
     val headerFormatter = remember(locale) {
         DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, "MMMMy"), locale)
     }
@@ -153,29 +157,17 @@ fun CouiCalendarPicker(
     }
     val arrowAlpha = remember { Animatable(1f) }
 
-    fun setEditor(date: LocalDate) {
-        val clamped = date.coerceIn(minDate, maxDate)
-        editorYear = clamped.year
-        editorMonth = clamped.monthValue
-        editorDay = clamped.dayOfMonth
-    }
-
     fun pageOf(date: LocalDate): Int = ChronoUnit.MONTHS.between(first, YearMonth.from(date)).toInt()
-
-    fun submitEditor(date: LocalDate) {
-        val next = date.coerceIn(minDate, maxDate)
-        setEditor(next)
-        onValueChange(next)
-    }
 
     fun toggleEditor() {
         if (editingMonth) {
             closingEditor = true
-            headerPage = pageOf(editorDate)
+            // 未经宿主接受的候选不得影响标题及返回月份。
+            headerPage = pageOf(value)
+            returnVersion++
             editingMonth = false
         } else {
             closingEditor = false
-            setEditor(value)
             editingMonth = true
         }
     }
@@ -185,12 +177,7 @@ fun CouiCalendarPicker(
             delay(120)
             displayEditor = true
         } else {
-            val wasDisplayed = displayEditor
             displayEditor = false
-            if (closingEditor && !wasDisplayed) {
-                val page = pageOf(editorDate)
-                if (page != pager.currentPage) pager.scrollToPage(page)
-            }
         }
     }
     LaunchedEffect(editingMonth) {
@@ -202,25 +189,21 @@ fun CouiCalendarPicker(
             ),
         )
     }
-    LaunchedEffect(value, minDate, maxDate) {
-        setEditor(value)
-        val valuePage = pageOf(value)
-        headerPage = valuePage
-        if (!editingMonth && valuePage != pager.currentPage) {
-            pager.animateScrollToPage(valuePage, animationSpec = tween(300, easing = CouiCalendarPageEasing))
+    LaunchedEffect(value, minDate, maxDate, editingMonth, displayEditor, closingEditor) {
+        if (!editingMonth && !displayEditor) {
+            val target = pageOf(value)
+            headerPage = target
+            if (closingEditor) {
+                // 关闭编辑器时须终止旧分页动画，即使旧 currentPage 已等于目标。
+                pager.scrollToPage(target)
+                closingEditor = false
+            } else if (pager.currentPage != target || pager.targetPage != target) {
+                pager.animateScrollToPage(target, animationSpec = tween(300, easing = CouiCalendarPageEasing))
+            }
         }
     }
     LaunchedEffect(pager.isScrollInProgress) {
         if (!pager.isScrollInProgress) headerPage = pager.currentPage
-    }
-    LaunchedEffect(displayEditor) {
-        if (!displayEditor && closingEditor) {
-            val page = pageOf(editorDate)
-            if (page != pager.currentPage) pager.scrollToPage(page)
-        }
-    }
-    LaunchedEffect(pager.currentPage, closingEditor) {
-        if (closingEditor && pager.currentPage == pageOf(editorDate)) closingEditor = false
     }
 
     Column(modifier.fillMaxWidth().padding(vertical = 16.dp)) {
@@ -230,7 +213,6 @@ fun CouiCalendarPicker(
                 description = previousDescription,
                 next = false,
                 enabled = !editingMonth && headerPage > 0,
-                dark = dark,
                 colors = colors,
                 alpha = if (headerPage > 0) arrowAlpha.value else 0f,
             ) {
@@ -240,7 +222,7 @@ fun CouiCalendarPicker(
                     pager.animateScrollToPage(target, animationSpec = tween(300, easing = CouiCalendarPageEasing))
                 }
             }
-            val headerMonth = if (editingMonth || closingEditor) YearMonth.from(editorDate) else current
+            val headerMonth = if (editingMonth || closingEditor) YearMonth.from(value) else current
             val titleInteraction = remember { MutableInteractionSource() }
             Row(
                 Modifier.align(Alignment.Center)
@@ -263,7 +245,7 @@ fun CouiCalendarPicker(
                     maxLines = 2,
                 )
                 Box(
-                    Modifier.size(16.dp).clip(CouiCapsuleShape).clickable { toggleEditor() },
+                    Modifier.size(16.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
@@ -279,7 +261,6 @@ fun CouiCalendarPicker(
                 description = nextDescription,
                 next = true,
                 enabled = !editingMonth && headerPage < count - 1,
-                dark = dark,
                 colors = colors,
                 alpha = if (headerPage < count - 1) arrowAlpha.value else 0f,
             ) {
@@ -294,7 +275,7 @@ fun CouiCalendarPicker(
             targetState = displayEditor,
             modifier = Modifier.fillMaxWidth(),
             transitionSpec = {
-                fadeIn(tween(280, easing = CalendarFadeInEase)) togetherWith
+                fadeIn(tween(280, easing = LinearEasing)) togetherWith
                     fadeOut(tween(150, easing = CalendarEase))
             },
             label = "年月切换",
@@ -302,7 +283,7 @@ fun CouiCalendarPicker(
             if (editing) {
                 Box(Modifier.fillMaxWidth().height(CalendarBodyHeight), contentAlignment = Alignment.Center) {
                     CalendarDateEditor(
-                        date = editorDate,
+                        date = value,
                         minDate = minDate,
                         maxDate = maxDate,
                         locale = locale,
@@ -311,7 +292,7 @@ fun CouiCalendarPicker(
                         dayLabel = dayLabel,
                         dark = dark,
                         colors = colors,
-                        onChange = ::submitEditor,
+                        onChange = onValueChange,
                     )
                 }
             } else {
@@ -331,20 +312,19 @@ fun CouiCalendarPicker(
                     ) { page ->
                         CalendarMonthPage(
                             month = first.plusMonths(page.toLong()),
-                            value = value,
+                            selection = selection,
                             today = today,
                             minDate = minDate,
                             maxDate = maxDate,
                             locale = locale,
-                            dark = dark,
                             colors = colors,
                             accent = accent,
                             medium = medium,
-                            weekdayColor = weekday,
-                            hintColor = hint,
-                            highlightColor = highlight,
                             fullDateFormatter = fullDateFormatter,
-                            onValueChange = { date -> headerPage = pageOf(date); onValueChange(date) },
+                            onValueChange = { date ->
+                                pendingGridSelection = date
+                                onValueChange(date)
+                            },
                         )
                     }
                 }
@@ -359,7 +339,6 @@ private fun CalendarArrow(
     description: String,
     next: Boolean,
     enabled: Boolean,
-    dark: Boolean,
     colors: CouiCalendarColors,
     alpha: Float,
     click: () -> Unit,
@@ -389,18 +368,14 @@ private fun CalendarArrow(
 @Composable
 private fun CalendarMonthPage(
     month: YearMonth,
-    value: LocalDate,
+    selection: CouiCalendarSelectionMotion,
     today: LocalDate,
     minDate: LocalDate,
     maxDate: LocalDate,
     locale: Locale,
-    dark: Boolean,
     colors: CouiCalendarColors,
     accent: Color,
     medium: FontFamily,
-    weekdayColor: Color,
-    hintColor: Color,
-    highlightColor: Color,
     fullDateFormatter: DateTimeFormatter,
     onValueChange: (LocalDate) -> Unit,
 ) {
@@ -422,7 +397,7 @@ private fun CalendarMonthPage(
                             fontWeight = FontWeight.Normal,
                             platformStyle = PlatformTextStyle(includeFontPadding = false),
                             textAlign = TextAlign.Center,
-                            color = weekdayColor,
+                            color = colors.weekday,
                         ),
                         maxLines = 1,
                     )
@@ -439,14 +414,13 @@ private fun CalendarMonthPage(
                         modifier = Modifier.weight(1f).fillMaxHeight(),
                         date = date,
                         inMonth = inMonth,
-                        selected = inMonth && date == value,
+                        selected = inMonth && date == selection.selectedDate,
+                        old = inMonth && date == selection.oldDate,
+                        selection = selection,
                         withinRange = withinRange,
                         today = inMonth && date == today,
-                        dark = dark,
                         colors = colors,
                         accent = accent,
-                        hintColor = hintColor,
-                        highlightColor = highlightColor,
                         medium = medium,
                         locale = locale,
                         fullDateFormatter = fullDateFormatter,
@@ -463,13 +437,12 @@ private fun CalendarDayCell(
     date: LocalDate,
     inMonth: Boolean,
     selected: Boolean,
+    old: Boolean,
+    selection: CouiCalendarSelectionMotion,
     withinRange: Boolean,
     today: Boolean,
-    dark: Boolean,
     colors: CouiCalendarColors,
     accent: Color,
-    hintColor: Color,
-    highlightColor: Color,
     medium: FontFamily,
     locale: Locale,
     fullDateFormatter: DateTimeFormatter,
@@ -477,20 +450,10 @@ private fun CalendarDayCell(
 ) {
     val source = remember { MutableInteractionSource() }
     val pressed by source.collectIsPressedAsState()
-    val newProgress by animateFloatAsState(
-        targetValue = if (selected) 1f else 0f,
-        animationSpec = if (selected) tween(280, easing = CouiCalendarPageEasing) else tween(0),
-        label = "日期选中",
-    )
-    val oldProgress by animateFloatAsState(
-        targetValue = if (selected) 1f else 0f,
-        animationSpec = if (selected) tween(0) else tween(150, easing = CalendarEase),
-        label = "日期退出",
-    )
     val foreground = colors.foreground
     val textColor = when {
         selected -> colors.onAccent
-        !inMonth -> hintColor
+        !inMonth -> colors.hint
         today -> accent
         withinRange -> foreground
         else -> foreground.copy(alpha = foreground.alpha * .5f)
@@ -510,11 +473,11 @@ private fun CalendarDayCell(
             Modifier.size(32.dp).drawBehind {
                 val radius = size.minDimension / 2
                 if (selected) {
-                    val alpha = if (pressed) 176f / 255f else newProgress
-                    drawCircle(accent.copy(alpha = alpha), radius * (.8f + .2f * newProgress))
+                    val alpha = if (pressed) 176f / 255f else selection.enter
+                    drawCircle(accent.copy(alpha = alpha), radius * (.8f + .2f * selection.enter))
                 } else {
-                    if (pressed) drawCircle(highlightColor, radius)
-                    if (oldProgress > 0f) drawCircle(accent.copy(alpha = oldProgress), radius)
+                    if (pressed) drawCircle(colors.highlight, radius)
+                    if (old && selection.exit > 0f) drawCircle(accent.copy(alpha = selection.exit), radius)
                 }
                 if (today && !selected) {
                     drawCircle(accent, radius, style = Stroke(1.8.dp.toPx()))
@@ -559,6 +522,9 @@ private fun CalendarDateEditor(
     }
     val chinese = locale.language == "zh"
     val months = remember(locale) { DateFormatSymbols.getInstance(locale).shortMonths }
+    var pendingDate by remember { mutableStateOf(date) }
+    // 每次重组与外部已接受日期对账；同一帧的多列回调先在本地合成。
+    SideEffect { if (pendingDate != date) pendingDate = date }
     val year = date.year
     val month = date.monthValue
     val minMonth = if (year == minDate.year) minDate.monthValue else 1
@@ -571,26 +537,32 @@ private fun CalendarDateEditor(
     }
 
     fun submit(next: LocalDate) {
-        onChange(next.coerceIn(minDate, maxDate))
+        val candidate = next.coerceIn(minDate, maxDate)
+        pendingDate = candidate
+        onChange(candidate)
     }
 
     fun submitYear(nextYear: Int) {
+        val base = pendingDate
         val y = nextYear.coerceIn(minDate.year, maxDate.year)
-        val m = month.coerceIn(
+        val m = base.monthValue.coerceIn(
             if (y == minDate.year) minDate.monthValue else 1,
             if (y == maxDate.year) maxDate.monthValue else 12,
         )
-        val d = date.dayOfMonth.coerceAtMost(YearMonth.of(y, m).lengthOfMonth())
+        val d = base.dayOfMonth.coerceAtMost(YearMonth.of(y, m).lengthOfMonth())
         submit(LocalDate.of(y, m, d))
     }
 
     fun submitMonth(nextMonth: Int) {
-        val d = date.dayOfMonth.coerceAtMost(YearMonth.of(year, nextMonth).lengthOfMonth())
-        submit(LocalDate.of(year, nextMonth, d))
+        val base = pendingDate
+        val m = nextMonth.coerceIn(1, 12)
+        val d = base.dayOfMonth.coerceAtMost(YearMonth.of(base.year, m).lengthOfMonth())
+        submit(LocalDate.of(base.year, m, d))
     }
 
     fun submitDay(nextDay: Int) {
-        submit(LocalDate.of(year, month, nextDay))
+        val base = pendingDate
+        submit(base.withDayOfMonth(nextDay.coerceIn(1, base.lengthOfMonth())))
     }
 
     Box(
@@ -648,6 +620,7 @@ private fun CalendarDateEditor(
                             dayLabel,
                             dark,
                             colors = CouiWheelColors(colors.hint, colors.foreground),
+                            wrap = minDay == 1 && maxDay == date.lengthOfMonth(),
                             repeatIntervalMillis = 100,
                             formatter = { if (chinese) "$it$dayLabel" else String.format(locale, "%02d", it) },
                         )
@@ -660,7 +633,6 @@ private fun CalendarDateEditor(
 
 private val CalendarBodyHeight = 280.dp
 private val CalendarEase = CubicBezierEasing(.33f, 0f, .67f, 1f)
-private val CalendarFadeInEase = CubicBezierEasing(.4f, 0f, 1f, 1f)
 
 // Calendar 实际引用的 24dp chevron；不拿返回长箭头充当月历箭头。
 private val CalendarChevron = ImageVector.Builder("CalendarChevron", 24.dp, 24.dp, 24f, 24f,

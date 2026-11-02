@@ -8,9 +8,9 @@ Status: implemented
 
 ## Decision
 
-公开 CouiWheelPicker 与 CouiCalendarPicker，组合预设和草稿留在 Demo。滚轮使用两路 Scroller、整数位移和原厂像素取整；跨项提交当前候选值。CANCEL 只吸附，不追加点击；禁用、移除停止动画；宿主拒绝候选时稳定后回到受控值。
+公开 CouiWheelPicker 与 CouiCalendarPicker，组合预设和草稿留在 Demo。滚轮使用两路 Scroller、整数位移和原厂像素取整；跨项提交当前候选值。CANCEL 先终止旧帧任务，再吸附已有位移，不追加点击；普通长按 UP 保留已开始的单步，DOWN 先结算剩余位移，再检查新方向。禁用、移除停止动画；宿主拒绝候选时稳定后回到受控值。步长来自真实测量高度，区间基数以 Long 计算，避免每帧遍历 IntRange。
 
-月历用 Calendar 的头部、星期条、月网格和三列日期编辑器。翻月只浏览；点日期与编辑滚轮立即提交。日期范围、月长与外部更新统一夹紧。按本次用户要求，倒三角始终朝下，不旋转；编辑区保留淡入淡出及展开延迟。这是明确特化：原厂通用 delegate 的 setCurrentView 调用 startExpandAnimation/startCollapseAnimation，不能将无旋转称为该通用分支的默认行为。
+月历用 Calendar 的头部、星期条、月网格和三列日期编辑器。翻月只浏览；点日期与编辑滚轮立即提交。日期范围、月长与外部更新统一夹紧，只有完整自然月/日范围才循环。编辑器不持有长期日期镜像；外部 value 是唯一已接受日期，同帧的列回调先合成最新临时值，再由宿主决定是否接受。按本次用户要求，倒三角始终朝下，不旋转；编辑区保留淡入淡出及展开延迟。滚轮返回月历时显式重播选中圆的 280ms 半径/透明度变化，单一动画 owner 只允许一个旧圆退出；普通外部设值不伪造旧圆。整体淡入使用原厂线性 280ms。这是明确特化：原厂通用 delegate 的 setCurrentView 调用 startExpandAnimation/startCollapseAnimation，不能将无旋转称为该通用分支的默认行为。
 
 基于上游 2aabbd1 的可选主题策略解析默认颜色；显式配色优先。月历网格、箭头、分隔线、选中内容和展开滚轮共用最终色板，核心不读取 MaterialTheme。时间/日期列、确认草稿与标准 Dialog 由宿主组合，不引入普通按钮、Sheet、厂商二进制或反射对照桥。
 
@@ -34,4 +34,4 @@ Status: implemented
 
 ## Consequences
 
-宿主可独立使用内核并覆盖颜色；所有业务状态与确认提交仍由宿主承担。新增源码需要重新编译，不承诺二进制 ABI。取消收尾、反向、日期范围和主题路径已做源码核对；构建与 Note 检查不代表像素、动画中段、RTL、IME、键盘、TalkBack 或性能验收。
+宿主可独立使用内核并覆盖颜色；所有业务状态与确认提交仍由宿主承担。新增源码需要重新编译，不承诺二进制 ABI。修复审查覆盖了受控拒绝、同帧列回调、两路 Scroller 中断、范围截断、翻页目标以及日期圆动画的输入序列。静态源码与来源核对不代表像素、动画中段、RTL、IME、键盘、TalkBack 或性能设备验收；最终 Android Lint/Debug/Release 的状态以本 PR 这次提交后生成的 Checks 为准。

@@ -1,12 +1,21 @@
 package com.itos.coui.picker
 
 import androidx.compose.animation.core.AnimationState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.TargetedFlingBehavior
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import java.time.LocalDate
 import kotlin.math.abs
 import kotlin.math.floor
 
@@ -21,17 +30,20 @@ internal class CouiCalendarFlingBehavior(
 ) : TargetedFlingBehavior {
     override suspend fun ScrollScope.performFling(initialVelocity: Float,
         onRemainingDistanceUpdated: (Float) -> Unit): Float {
-        val width = pager.layoutInfo.pageSize
-        if (width <= 0) return 0f
+        val width = pager.layoutInfo.pageSize + pager.layoutInfo.pageSpacing
+        if (width <= 0 || pager.pageCount <= 0) return 0f
         val position = pager.currentPage + pager.currentPageOffsetFraction
         val base = floor(position).toInt()
         val offset = position - base
-        val moved = abs(position - startPage()) * width
+        val initialPage = startPage()
+        val moved = abs(position - initialPage) * width
         val fling = moved > 25f * density && abs(initialVelocity) > 400f * density
+        // 原厂 ViewPager.determineTargetPage：慢拖的 0.4/0.6 偏置以 DOWN 时页号为准。
+        // Compose 的 scroll 速度正向表示页号增加，对应原厂负的触摸 X 速度。
         val target = (if (fling) {
-            if (initialVelocity > 0f) startPage() + 1 else startPage() - 1
+            if (initialVelocity > 0f) base + 1 else base
         } else {
-            base + if (offset > .5f) 1 else 0
+            (base + offset + if (base >= initialPage) .4f else .6f).toInt()
         }).coerceIn(0, pager.pageCount - 1)
         val distance = (target - position) * width
         var previous = 0f
@@ -46,3 +58,46 @@ internal class CouiCalendarFlingBehavior(
         return 0f
     }
 }
+
+/** 月历的选中动画由单一月份选择持有，不让每格保留独立的过期圆。 */
+internal class CouiCalendarSelectionMotion(
+    private val scope: CoroutineScope,
+    initial: LocalDate,
+) {
+    var selectedDate by mutableStateOf(initial)
+        private set
+    var oldDate by mutableStateOf<LocalDate?>(null)
+        private set
+    var enter by mutableFloatStateOf(1f)
+        private set
+    var exit by mutableFloatStateOf(0f)
+        private set
+    private var job: Job? = null
+
+    /** 只有网格内的已接受点击及返回网格才播放；宿主直接修改值不伪造旧圆。 */
+    fun update(date: LocalDate, animate: Boolean) {
+        job?.cancel()
+        val previous = selectedDate
+        oldDate = if (animate && previous != date) previous else null
+        selectedDate = date
+        enter = if (animate) 0f else 1f
+        exit = if (oldDate != null) 1f else 0f
+        if (!animate) return
+        job = scope.launch {
+            launch {
+                Animatable(0f).animateTo(1f, tween(280, easing = CouiCalendarPageEasing)) {
+                    enter = value
+                }
+            }
+            if (oldDate != null) launch {
+                Animatable(1f).animateTo(0f, tween(150, easing = CouiCalendarExitEasing)) {
+                    exit = value
+                }
+            }
+        }
+    }
+
+    fun dispose() { job?.cancel() }
+}
+
+internal val CouiCalendarExitEasing = CubicBezierEasing(.33f, 0f, .67f, 1f)

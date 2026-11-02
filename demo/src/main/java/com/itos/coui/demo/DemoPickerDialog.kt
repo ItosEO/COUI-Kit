@@ -1,7 +1,6 @@
 package com.itos.coui.demo
 
 import com.itos.coui.picker.*
-import android.os.Build
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -27,7 +26,7 @@ internal fun DemoPickerDialog(
     cancelText: String,
     dark: Boolean,
     accent: Color,
-    backdrop: CouiBackdrop?,
+    backdrop: CouiBackdrop? = null,
     confirmEnabled: Boolean = true,
     placement: CouiDialogPlacement = CouiDialogPlacement.Bottom,
     content: @Composable ColumnScope.() -> Unit,
@@ -37,6 +36,6 @@ internal fun DemoPickerDialog(
             style = CouiDialogActionStyle.Primary, colors = CouiDialogDefaults.primaryActionColors(accent)),
         dismissAction = CouiDialogAction(cancelText, onDismissRequest),
         title = title, dark = dark, placement = placement,
-        material = if (Build.VERSION.SDK_INT >= 33 && backdrop != null) CouiDialogDefaults.material(dark) else null,
+        material = if (CouiDialogDefaults.isMaterialSupported()) CouiDialogDefaults.material(dark) else null,
         backdrop = backdrop, content = content)
 }
