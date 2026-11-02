@@ -24,9 +24,11 @@ internal class CouiWheelMotion(
     initial: Int,
     val range: IntRange,
     wrap: Boolean,
-    val step: Float,
+    step: Float,
     private val diffusion: Float,
 ) {
+    var step: Float = step
+        private set
     private val count = range.last.toLong() - range.first.toLong() + 1L
     val wrap = wrap && count > 3L
     var value by mutableIntStateOf(initial)
@@ -85,6 +87,12 @@ internal class CouiWheelMotion(
 
     fun reset(next: Int) { stop(); value = next; offset = 0f }
     fun dispose() { disposed = true; stop() }
+
+    /** 测量阶段同步切换步长；旧像素位移不能继续驱动新几何，不产生业务回调。 */
+    fun resize(step: Float) {
+        reset(controlled)
+        this.step = step
+    }
 
     /** DOWN 中断旧曲线，但保留当前像素位置供下一个事件按原厂规则对齐。 */
     fun begin() {

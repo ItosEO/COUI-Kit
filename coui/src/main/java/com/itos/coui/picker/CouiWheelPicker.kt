@@ -14,6 +14,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -111,13 +112,12 @@ fun CouiWheelPicker(
     val focus = with(density) { focusTextSize.roundToPx().coerceAtLeast(1) }
     val defaultHeight = with(density) { CouiPickerDefaults.height.roundToPx() }
     val spread = with(density) { diffusion.toPx().toInt().toFloat() }
-    var measuredHeight by remember { mutableStateOf<Int?>(null) }
-    val actualHeight = measuredHeight ?: defaultHeight
+    var measuredHeight by remember(density) { mutableIntStateOf(defaultHeight) }
     // Clock 使用实测高度生成像素步长；保持触摸、动画和 Canvas 的同一几何。
-    val row = normal + (actualHeight - 3 * normal).coerceAtLeast(0) / 3
+    val row = normal + (measuredHeight - 3 * normal).coerceAtLeast(0) / 3
     val rangeSize = valueRange.last.toLong() - valueRange.first.toLong() + 1L
     val semanticSteps = (rangeSize - 2L).coerceIn(0L, Int.MAX_VALUE.toLong()).toInt()
-    val motion = remember(context, valueRange, wrap, row, spread) {
+    val motion = remember(context, valueRange, wrap, normal, spread, density) {
         CouiWheelMotion(context, scope, value, valueRange, wrap, row.toFloat(), spread)
     }
     val repeatJob = remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
@@ -148,7 +148,15 @@ fun CouiWheelPicker(
             drawRect(Brush.verticalGradient(0f to Color.Transparent, edge to Color.White,
                 (1f - edge) to Color.White, 1f to Color.Transparent), blendMode = BlendMode.DstIn)
         } else Modifier
-    Canvas(modifier.height(CouiPickerDefaults.height).onSizeChanged { measuredHeight = it.height }.clipToBounds().then(mask)
+    Canvas(modifier.height(CouiPickerDefaults.height).onSizeChanged {
+        val nextStep = normal + (it.height - 3 * normal).coerceAtLeast(0) / 3
+        if (motion.step != nextStep.toFloat()) {
+            repeatJob.value?.cancel()
+            repeatJob.value = null
+            motion.resize(nextStep.toFloat())
+        }
+        measuredHeight = it.height
+    }.clipToBounds().then(mask)
         .progressSemantics(motion.value.toFloat(), valueRange.first.toFloat()..valueRange.last.toFloat(), semanticSteps)
         .semantics {
             contentDescription = label; stateDescription = formatter(motion.value)
@@ -174,7 +182,7 @@ fun CouiWheelPicker(
                     motion.keyboardStep(direction)
                 }
             }
-        }.focusable(enabled).pointerInput(motion, enabled) {
+        }.focusable(enabled).pointerInput(motion, enabled, row) {
             if (!enabled) return@pointerInput
             awaitEachGesture {
                 val down = awaitFirstDown(requireUnconsumed = false)
@@ -230,7 +238,7 @@ fun CouiWheelPicker(
             for (relative in -2..2) {
                 val number = motion.display(relative) ?: continue
                 val text = formatter(number)
-                val y = (baseline + motion.offset + relative * (row + spread)).toInt().toFloat()
+                val y = (baseline + motion.offset + relative * (motion.step + spread)).toInt().toFloat()
                 val alpha = if (enabled) 1f else .5f
                 // 原厂超宽文本以普通字号判断，放不下时保留开头而非两侧裁切。
                 paint.textSize = normal.toFloat()

@@ -10,7 +10,7 @@ Wheel 同时接收高度参数与根 Modifier，父容器已有布局入口。Ca
 
 参数与 Modifier 的归属规则由 [API 设计](../../../../docs/development/api-design.md)持有。外部布局使用标准 Modifier，内部状态、字形、运动和分区样式继续用参数；不新增 Style 总容器或组件配置 Modifier。
 
-Wheel 移除 height 参数，根节点在调用者链后追加 Defaults 高度，继续接受外部约束。实际高度参与原有整数步长，零高度也作为真实测量值，渐隐不对零高度做除法；双 Scroller、取整、选中带及输入规则保持原样。
+Wheel 移除 height 参数，根节点在调用者链后追加 Defaults 高度，继续接受外部约束。实际高度参与原有整数步长，零高度也作为真实测量值，渐隐不对零高度做除法；双 Scroller、取整、选中带及输入规则保持原样。测量回调同步更新运动步长，绘制直接读取该步长，不等待下一次重组才替换默认高度产生的行距。实际步长改变时取消旧长按任务和像素运动，恢复宿主已接受值，不触发业务回调；手势随几何变化取消，density 或字号变化重建相应运动对象。
 
 Picker 选择线共用 `couiPickerSelectionLines`，颜色由消费处传入，横向内缩保留各场景值。Calendar 与 Demo 分属不同模块，而 Demo 只消费公开 API，因此公开这个独立绘制入口；不公开多列状态、布局容器或内部测量数据。原厂依据仍为 [Picker 记录](../feature/2026-11-01-coui-pickers.md)中的 Clock/Calendar，保留原有中心、线厚、整数截断和先线后列顺序。
 
