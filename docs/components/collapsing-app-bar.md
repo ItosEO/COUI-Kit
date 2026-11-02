@@ -61,7 +61,7 @@ CouiSettingsScaffold(
 }
 ```
 
-搜索的受控状态、IME、取消与返回契约见[常驻搜索](search-bar.md)。可用 LazyColumn 替换 Column：以 padding 作为 contentPadding，并消费该 inset，不再套另一层滚动容器。顶栏使用消费感知的状态栏 padding；祖先已消费的部分不会重复添加，内容仍须应用并消费 Scaffold 的实测 padding。底栏/FAB 可继续装入 CouiSettingsScaffold 的对应 slot，业务不进入 coui。
+搜索的受控状态、IME、取消与返回契约见[常驻搜索](search-bar.md)。可用 LazyColumn 替换 Column：将前文通过 header.contentPadding 计算的 contentPadding 传给列表，并用原始 padding 调用 consumeWindowInsets，不再套另一层滚动容器。顶栏使用消费感知的状态栏 padding；祖先已消费的部分不会重复添加，内容仍须应用并消费 Scaffold 的实测 padding。底栏/FAB 可继续装入 CouiSettingsScaffold 的对应 slot，业务不进入 coui。
 
 searchBar 是普通内容槽，可为空或产生多个根节点；这些节点在同一个 Box 内测量和叠放。需要横向或纵向排列时，由槽内的 Row/Column 指定。标题的位置与缩放原点都跟随布局方向的逻辑起始边。
 
@@ -87,4 +87,4 @@ canScroll 由宿主读取实际列表是否存在滚动范围；内容完全装�
 
 ## 主题与显式配色
 
-默认值在消费处读取 `CouiTheme`，跟随原生或可选 M3 策略；显式颜色优先。设置容器使用 `CouiSettingsDefaults.themeColors`，常驻搜索使用 `CouiSearchBarDefaults.colors`。搜索的文本、图标与低平台背景覆盖范围见[常驻搜索配色](search-bar.md#主题与显式配色)。
+默认值在消费处读取 `CouiTheme`，跟随原生或可选 M3 策略；显式颜色优先。省略标题 color 时按实际 dark 解析对应主题，显式色值继续优先；标题透明度仍由原厂折叠与搜索动画控制。设置容器使用 `CouiSettingsDefaults.themeColors`，常驻搜索使用 `CouiSearchBarDefaults.colors`。搜索的文本、图标与低平台背景覆盖范围见[常驻搜索配色](search-bar.md#主题与显式配色)。

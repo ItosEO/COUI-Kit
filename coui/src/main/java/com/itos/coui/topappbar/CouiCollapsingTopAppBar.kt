@@ -35,7 +35,7 @@ fun CouiCollapsingTopAppBar(
     state: CouiCollapsingAppBarState,
     searchState: CouiSearchBarState,
     title: String,
-    color: Color = CouiTheme.colorScheme.onSurface,
+    color: Color = Color.Unspecified,
     backdrop: CouiBackdrop,
     backgroundColor: Color = Color.Transparent,
     dark: Boolean = CouiTheme.isDark,
@@ -43,6 +43,7 @@ fun CouiCollapsingTopAppBar(
 ) {
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
+    val titleColor = if (color == Color.Unspecified) CouiTheme.colorSchemeFor(dark).onSurface else color
     val titleStyle = rememberCouiTextStyle(CouiTextKind.HomeTitle)
     val descent = remember(titleStyle, density) { Paint().apply {
         typeface = Typeface.create(Typeface.create("sans-serif-semibold", Typeface.NORMAL), 700, false)
@@ -69,7 +70,7 @@ fun CouiCollapsingTopAppBar(
                 scaleY = scaleX
                 translationY = -200f * p
                 transformOrigin = TransformOrigin(if (layoutDirection == LayoutDirection.Rtl) 1f else 0f, 0f)
-            }, style = titleStyle.copy(color = color.copy(alpha = 1f)),
+            }, style = titleStyle.copy(color = titleColor.copy(alpha = 1f)),
                 maxLines = 1, overflow = TextOverflow.Ellipsis)
             Box(propagateMinConstraints = true) { searchBar() }
         }) { children, constraints ->

@@ -27,10 +27,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.node.DelegatableNode
+import androidx.compose.ui.node.LayoutAwareModifierNode
 import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.node.PointerInputModifierNode
 import androidx.compose.ui.platform.LocalView
@@ -52,10 +54,11 @@ import kotlin.math.sqrt
  * 每个滚动容器持有独立实例，传给 verticalScroll 的 overscrollEffect，不能多节点共用。
  * 只持有边界运动，常规滚动、列表数据与 fling owner 仍由宿主滚动容器提供。
  */
-class CouiOverscrollEffect internal constructor(private val scope: CoroutineScope, private val screenHeight: Int,
+class CouiOverscrollEffect internal constructor(private val scope: CoroutineScope, private val overscrollDistance: Int,
     private val nominalFrameSeconds: Float, private val view: View,
     private val hapticFeedbackEnabled: Boolean) : OverscrollEffect {
     private var translation by mutableFloatStateOf(0f)
+    private var mappingScreenHeight = overscrollDistance
     private val physics = CouiScrollPhysics(1, springBackTensionMultiple = 2.15f, scrollView = false)
     private var animation: Job? = null
     private var fling: Job? = null
@@ -101,7 +104,7 @@ class CouiOverscrollEffect internal constructor(private val scope: CoroutineScop
     }
 
     private fun damp(delta: Float, displacement: Float = translation): Float = ((delta.toInt() *
-        (1f - (abs(displacement) / screenHeight).coerceAtMost(1f))) / 5f * 2f).toInt().toFloat()
+        (1f - (abs(displacement) / overscrollDistance).coerceAtMost(1f))) / 5f * 2f).toInt().toFloat()
 
     override suspend fun applyToFling(velocity: Velocity, performFling: suspend (Velocity) -> Velocity) = coroutineScope {
         stop()
@@ -182,7 +185,7 @@ class CouiOverscrollEffect internal constructor(private val scope: CoroutineScop
     }
 
     private fun overFlingTranslation(position: Int): Float {
-        val limit = screenHeight * .3731f
+        val limit = mappingScreenHeight * .3731f
         return -((position * limit).toDouble() / sqrt((position * position + limit * limit).toDouble())).toInt().toFloat()
     }
 
@@ -196,7 +199,9 @@ class CouiOverscrollEffect internal constructor(private val scope: CoroutineScop
     }
     internal fun dispose() { disposed = true; stop(); translation = 0f }
 
-    private inner class EdgeNode : Modifier.Node(), LayoutModifierNode, PointerInputModifierNode {
+    private inner class EdgeNode : Modifier.Node(), LayoutModifierNode, LayoutAwareModifierNode, PointerInputModifierNode {
+        private var lastSize = IntSize.Zero
+        private var activePointer: PointerId? = null
         private var downPosition = Offset.Zero
         private var lastPosition = Offset.Zero
         private var downTime = 0L
@@ -209,6 +214,7 @@ class CouiOverscrollEffect internal constructor(private val scope: CoroutineScop
             val click = SystemClock.uptimeMillis() - downTime < ViewConfiguration.getLongPressTimeout() &&
                 sqrt((dx.toDouble() * dx + dy.toDouble() * dy)).toInt() < 10
             touched = false
+            activePointer = null
             // dispatchTouchEvent 只在真实 UP 把 scrollType=3 改为 2；CANCEL 保留映射，
             // 但 springBack 的起点仍取当前可见位置，不沿用上次积分器的 raw position。
             if (!cancelled) overflowFling = false
@@ -221,20 +227,37 @@ class CouiOverscrollEffect internal constructor(private val scope: CoroutineScop
             val child = measurable.measure(constraints)
             return layout(child.width, child.height) { child.placeWithLayer(0, translation.toInt()) }
         }
+        override fun onRemeasured(size: IntSize) {
+            if (size == lastSize) return
+            // 原厂 onSizeChanged 只更新惯性越界映射高度；拖动距离保持初始化值。
+            mappingScreenHeight = view.resources.displayMetrics.heightPixels.coerceAtLeast(1)
+            lastSize = size
+        }
         override fun onPointerEvent(pointerEvent: PointerEvent, pass: PointerEventPass, bounds: IntSize) {
             if (pass != PointerEventPass.Initial) return
-            val down = pointerEvent.changes.firstOrNull { it.pressed && !it.previousPressed }
-            if (down != null && !touched) {
+            val changes = pointerEvent.changes
+            val down = if (!touched) changes.firstOrNull { it.pressed && !it.previousPressed } else null
+            if (down != null) {
                 touched = true; stop()
-                downPosition = down.position; lastPosition = down.position; downTime = down.uptimeMillis
+                downTime = down.uptimeMillis
             }
-            pointerEvent.changes.firstOrNull()?.let { lastPosition = it.position }
-            if (pointerEvent.changes.none { it.pressed }) {
+            // Settings 屏蔽 POINTER_DOWN；首次之后仅活动指针抬起才换点击基准，计时不重置。
+            val next = down ?: if (changes.any { it.id == activePointer && !it.pressed }) {
+                changes.firstOrNull { it.pressed }
+            } else null
+            if (next != null) {
+                activePointer = next.id
+                downPosition = Offset((next.position.x + .5f).toInt().toFloat(),
+                    (next.position.y + .5f).toInt().toFloat())
+            }
+            // isClickEvent 使用事件首指；抬指后只保留仍按下的首指，供无事件的取消回调使用。
+            (changes.firstOrNull { it.pressed } ?: changes.firstOrNull())?.let { lastPosition = it.position }
+            if (changes.none { it.pressed }) {
                 finishTouch(cancelled = pointerEvent.isCouiTouchCancelled())
             }
         }
         override fun onCancelPointerInput() { finishTouch(cancelled = true) }
-        override fun onDetach() { touched = false; stop(); translation = 0f }
+        override fun onDetach() { touched = false; activePointer = null; stop(); translation = 0f }
     }
 }
 
@@ -243,10 +266,10 @@ class CouiOverscrollEffect internal constructor(private val scope: CoroutineScop
 fun rememberCouiOverscrollEffect(hapticFeedbackEnabled: Boolean = true): CouiOverscrollEffect {
     val scope = rememberCoroutineScope()
     val view = LocalView.current
-    val height = view.resources.displayMetrics.heightPixels.coerceAtLeast(1)
     val refresh = checkNotNull(view.display).refreshRate
     require(refresh.isFinite() && refresh > 0f)
-    val effect = remember(scope, height, refresh, view, hapticFeedbackEnabled) {
+    val effect = remember(scope, refresh, view, hapticFeedbackEnabled) {
+        val height = view.resources.displayMetrics.heightPixels.coerceAtLeast(1)
         CouiOverscrollEffect(scope, height, 1f / refresh, view, hapticFeedbackEnabled)
     }
     DisposableEffect(effect) { onDispose { effect.dispose() } }

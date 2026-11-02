@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -141,7 +142,7 @@ fun CouiSearchBar(
     }
     val cancelSearch = { releaseInput(); onExpandedChange(false) }
     LaunchedEffect(state.expanded) {
-        if (state.expanded) { requester.requestFocus(); keyboard?.show() }
+        if (state.expanded) { if (requester.requestFocus()) keyboard?.show() }
         else releaseInput()
     }
     fun bodySurface(): CouiFloatingSurface {
@@ -203,7 +204,7 @@ fun CouiSearchBar(
         .then(surfaceModifier), content = {
         val recordBody = if (renderer != null) Modifier.drawWithContent { bodyLayer.record { this@drawWithContent.drawContent() } }
             else Modifier.background(background, shape).clip(shape).drawWithContent { bodyLight?.invoke(this); drawContent() }
-        Row(Modifier.graphicsLayer {
+        Box(Modifier.graphicsLayer {
             val node = bodySurface()
             translationX = bodyTouch.translationX.value
             translationY = bodyTouch.translationY.value
@@ -213,38 +214,42 @@ fun CouiSearchBar(
             .couiPressMotion(bodyPress, !state.expanded && !state.running)
             .then(bodyLightInput).then(recordBody).clip(shape).couiToolbarFeedback(dark, bodySource, !state.expanded)
             .then(if (!state.expanded) Modifier.semantics { contentDescription = placeholder }
-                .clickable(bodySource, null, role = Role.Button) { onExpandedChange(true) } else Modifier)
-            .padding(start = CouiSearchBarDefaults.iconStart, end = CouiSearchBarDefaults.textEnd),
-            verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(CouiSearchBarDefaults.innerIconSlot), contentAlignment = Alignment.Center) {
-                Icon(modifier = Modifier.size(CouiSearchBarDefaults.iconSize), imageVector = CouiIcons.SearchField,
-                    contentDescription = null, tint = secondary)
-            }
-            BasicTextField(query, onQueryChange, Modifier.weight(1f).focusRequester(requester)
+                .clickable(bodySource, null, role = Role.Button) { onExpandedChange(true) } else Modifier)) {
+            // 装饰也属于输入本体，完整胶囊的触摸与语义不能穿过 padding 命中下层取消。
+            BasicTextField(query, onQueryChange, Modifier.fillMaxSize().focusRequester(requester)
                 .onFocusChanged { ownsFocus = it.hasFocus }
                 .then(if (!state.expanded) Modifier.clearAndSetSemantics {} else Modifier),
                 enabled = state.expanded, readOnly = !state.expanded, singleLine = true,
                 textStyle = textStyle.copy(color = foreground), cursorBrush = SolidColor(foreground),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { keyboard?.hide(); onSearch() }),
-                decorationBox = { field -> Box {
-                    if (query.isEmpty()) BasicText(placeholder, style = textStyle.copy(color = secondary), maxLines = 1)
-                    field()
-                } })
-            if (state.expanded && query.isNotEmpty()) {
-                Canvas(Modifier.size(CouiSearchBarDefaults.innerIconSlot).semantics { contentDescription = clearDescription }
-                    .clickable(remember { MutableInteractionSource() }, null, role = Role.Button) { onQueryChange("") }) {
-                    val unit = this.size.width / 36f
-                    drawCircle(colors.clear, radius = 9 * unit)
-                    val p = Path().apply {
-                        moveTo(18f, 16.868f); lineTo(15.031f, 13.898f); lineTo(13.899f, 15.03f)
-                        lineTo(16.869f, 18f); lineTo(13.898f, 20.97f); lineTo(15.03f, 22.101f)
-                        lineTo(18f, 19.131f); lineTo(20.97f, 22.101f); lineTo(22.102f, 20.969f)
-                        lineTo(19.132f, 18f); lineTo(22.101f, 15.03f); lineTo(20.969f, 13.899f); this.close()
+                decorationBox = { field ->
+                    Row(Modifier.fillMaxSize().padding(start = CouiSearchBarDefaults.iconStart,
+                        end = CouiSearchBarDefaults.textEnd), verticalAlignment = Alignment.CenterVertically) {
+                        Box(Modifier.size(CouiSearchBarDefaults.innerIconSlot), contentAlignment = Alignment.Center) {
+                            Icon(modifier = Modifier.size(CouiSearchBarDefaults.iconSize), imageVector = CouiIcons.SearchField,
+                                contentDescription = null, tint = secondary)
+                        }
+                        Box(Modifier.weight(1f)) {
+                            if (query.isEmpty()) BasicText(placeholder, style = textStyle.copy(color = secondary), maxLines = 1)
+                            field()
+                        }
+                        if (state.expanded && query.isNotEmpty()) {
+                            Canvas(Modifier.size(CouiSearchBarDefaults.innerIconSlot).semantics { contentDescription = clearDescription }
+                                .clickable(remember { MutableInteractionSource() }, null, role = Role.Button) { onQueryChange("") }) {
+                                val unit = this.size.width / 36f
+                                drawCircle(colors.clear, radius = 9 * unit)
+                                val p = Path().apply {
+                                    moveTo(18f, 16.868f); lineTo(15.031f, 13.898f); lineTo(13.899f, 15.03f)
+                                    lineTo(16.869f, 18f); lineTo(13.898f, 20.97f); lineTo(15.03f, 22.101f)
+                                    lineTo(18f, 19.131f); lineTo(20.97f, 22.101f); lineTo(22.102f, 20.969f)
+                                    lineTo(19.132f, 18f); lineTo(22.101f, 15.03f); lineTo(20.969f, 13.899f); this.close()
+                                }
+                                withTransform({ scale(unit, unit, Offset.Zero) }) { drawPath(p, Color.White) }
+                            }
+                        }
                     }
-                    withTransform({ scale(unit, unit, Offset.Zero) }) { drawPath(p, Color.White) }
-                }
-            }
+                })
         }
         val recordCancel = if (renderer != null) Modifier.drawWithContent { cancelLayer.record { this@drawWithContent.drawContent() } }
             else Modifier.background(background, shape)

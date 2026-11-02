@@ -230,8 +230,7 @@ fun CouiTopAppBarSearch(
                 }
                 LaunchedEffect(focusPending, enabled, visible, state.motion.expanded) {
                     if (focusPending && enabled && visible && state.motion.expanded) {
-                        requester.requestFocus()
-                        keyboard?.show()
+                        if (requester.requestFocus()) keyboard?.show()
                         onFocused()
                     }
                 }

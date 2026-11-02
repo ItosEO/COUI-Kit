@@ -32,7 +32,7 @@ values/themes.xml：
 startActivity(Intent(this, DetailActivity::class.java))
 ```
 
-Activity 的 setContent 中组合 CouiSettingsScaffold、CouiTopAppBar、CouiSettingsGroup 和实际控件。完整工作示例见 DemoSettingsPage（完整 Demo 在后续重构批次提供）；它是 Demo 的 internal 装配，不属于库 API。宿主可以参考这份装配，自行选择标题、返回、actions、滚动容器和反馈。
+Activity 的 setContent 中组合 CouiSettingsScaffold、CouiTopAppBar、CouiSettingsGroup 和实际控件。本批以本文和组件使用页的片段说明装配；完整 DemoSettingsPage 由后续 Demo 批次提供，不属于库 API。宿主自行选择标题、返回、actions、滚动容器和反馈。
 
 Activity 根级不需要 BackHandler：系统返回与预测性返回继续由 Activity 处理。只有页面内正在编辑、搜索、存在未保存变更等业务状态需要拦截时，再局部安装处理器；关闭该状态后释放拦截，让 Activity 返回恢复。弹窗自己的返回由弹窗处理。
 
@@ -86,7 +86,7 @@ CouiSettingsScaffold(dark = dark, colors = colors, topBar = { backdrop ->
 | 常规二级页面装配 | 宿主组合 Scaffold / TopAppBar / 滚动内容 | 标题、返回、actions、ScrollState 与页面内容 |
 | 自定义首页/顶栏 | CouiTopAppBar / CouiCollapsingTopAppBar | 自己装配标题/搜索，连接实际滚动与内容位移 |
 | 分组/图示 | CouiSettingsGroup / CouiSettingsIllustration | 标题、headerActions、说明、间隔与任意内容 |
-| 原厂行布局 | CouiPreferenceLayout | leading/headline/supporting/trailing、内边距、最小高度、图标尺寸 |
+| 原厂行布局 | CouiPreferenceLayout | leading/headline/supporting/trailing、内边距、默认行高、图标尺寸；外部高度使用 Modifier |
 | 标准行与控件 | 宿主组合 PreferenceLayout 与唯一控件 | 受控值、文案、图标、状态与唯一业务回调 |
 
 需要整行点击和原厂列表反馈的自定义内容，用 CouiSettingsItem 拥有交互，再在其 RowScope 中放 CouiPreferenceLayout 或自定义内容；不用再嵌套另一个 clickable。纯信息行直接使用 PreferenceLayout。行级装配示例与完整 API 见[列表族](../components/settings.md)。

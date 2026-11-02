@@ -21,7 +21,7 @@ Column(Modifier.fillMaxSize().couiVerticalScroll(scroll, overscrollEffect = edge
 }
 ```
 
-Demo 的完整二级页装配使用该能力；宿主在实际内容滚动容器上使用 couiVerticalScroll，传 null 可以关闭。不要同时安装另一个 overscroll 或给同一容器叠加 verticalScroll。
+宿主在实际内容滚动容器上使用 couiVerticalScroll，传 null 可以关闭。不要同时安装另一个 overscroll 或给同一容器叠加 verticalScroll。
 
 ## 状态和输入
 
@@ -31,9 +31,9 @@ Demo 的完整二级页装配使用该能力；宿主在实际内容滚动容器
 
 惯性越界中按下但尚未拖动时，UP 按原厂切回直接回弹；CANCEL 保留原厂惯性越界的显示映射。两者重新开始 springBack 时都取当前可见位置，不能把取消误当作一次新的惯性触边、恢复旧物理起点。
 
-所有长度与速度在内核中使用像素。阻尼上限来自显示高度，名义时间步长来自公开 Display 刷新率，回弹按帧时钟推进。RK4 与分类栏共享内核，纵向使用实际 RecyclerView 的张力配置，不能套用分类栏横向系数。
+所有长度与速度在内核中使用像素。拖动阻尼距离取实例创建时的显示高度；惯性越界映射高度按原厂 onSizeChanged，在容器实际尺寸改变后重新读取当前显示高度。尺寸更新不重建 effect，也不中断已有运动。名义时间步长来自公开 Display 刷新率，回弹按帧时钟推进。RK4 与分类栏共享内核，纵向使用实际 RecyclerView 的张力配置，不能套用分类栏横向系数。
 
-越界拖动的 UP/CANCEL 排除原厂短点按后调用当前 View 的 COUI 边缘触觉码；惯性首次进入越界时反馈一次，不在回弹帧中重复调用。可用 `rememberCouiOverscrollEffect(hapticFeedbackEnabled = false)` 关闭。系统触觉设置继续生效；不支持该码的 ROM 不强行播放另一种波形。禁用和节点移除只清理运动，不额外发触觉。
+越界拖动的 UP/CANCEL 排除原厂短点按后调用当前 View 的 COUI 边缘触觉码；按 Settings 的实际入口，新增手指不重置点击基准，活动指针抬起后才切换到剩余手指，计时保留首次 DOWN；惯性首次进入越界时反馈一次，不在回弹帧中重复调用。可用 `rememberCouiOverscrollEffect(hapticFeedbackEnabled = false)` 关闭。系统触觉设置继续生效；不支持该码的 ROM 不强行播放另一种波形。禁用和节点移除只清理运动，不额外发触觉。
 
 ## 承载范围
 

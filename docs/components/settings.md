@@ -33,7 +33,7 @@ CouiSettingsGroup 根据是否有标题选用 CouiSettingsDefaults 的默认顶�
 
 开关直接使用 [CouiSwitch](switch.md)，复选直接使用 [CouiCheckbox](checkbox.md)，滑条直接使用 [CouiSlider](slider.md)，菜单直接使用 [CouiMenu](menu.md)。整行交互时，尾部控件不再独立提交点击；开关拖动继续通过 onDragCheckedChange 提交给同一个业务 owner。整行触觉可使用公开的 CouiHapticFeedback / performCouiHapticFeedback，程序赋值不触发触觉。
 
-完整装配源码在 Demo，均为 internal 示例：
+以下完整 Demo 装配由后续批次提供，当前 PR 尚不包含这些示例文件；本批可按本文及[折叠顶栏](collapsing-app-bar.md)的片段接入：
 
 | 装配 | 示例源码 |
 | --- | --- |
@@ -43,7 +43,7 @@ CouiSettingsGroup 根据是否有标题选用 CouiSettingsDefaults 的默认顶�
 | 紧凑顶栏、返回、滚动与安全区 | DemoSettingsPage（完整 Demo 在后续重构批次提供） |
 | 右上角三点菜单 | DemoMenuPresets（完整 Demo 在后续重构批次提供） |
 
-示例供宿主参考、复制并按自身业务调整，不从 Demo 导入私有函数，也不依赖 Demo 的主题作用域。选择范围、加载任务、导航和确认提交均属于宿主。库内公共固定参数继续由各组件 Defaults 持有。
+后续示例仅供宿主参考和按业务调整，不应从 Demo 导入私有函数，也不依赖 Demo 的主题作用域。选择范围、加载任务、导航和确认提交均属于宿主。库内公共固定参数继续由各组件 Defaults 持有。
 
 列表反馈使用 couiButtonFeedback 的 list 分支：短 UP/CANCEL 达到最低高亮后退场，父滚动接管、离界、禁用和移除释放会话。Popup 展开时通过 hoverLocked 保留行悬停，pressed 独立退场。窗口失焦只释放会话并继续弹簧退场，Activity 转场期间不清零；禁用或节点销毁才立即释放动画。显式设置 pressFeedback=false 会释放现有按压动画，并移除按压观察器；hover/focus 继续生效。导航宿主应保留来源行到转场完成，不能先拆掉搜索结果。不要额外叠加 Compose ripple 或普通按钮缩放。
 
@@ -53,7 +53,7 @@ topBar、bottomBar 和 floatingActionButton 收到正文源，不包含它们自
 
 布局依据 Settings 17 的实际 AppBar、Preference 与 cardlist 消费者，使用项目平滑圆角及公共效果。OEM 特权窗口协议、专用字体及设备动画中段仍需验收。
 
-迁移：此前临时公开的 CouiSettingsPage、各类 Preference 包装已移到上述 Demo 源码。宿主改为组合 Scaffold、PreferenceLayout 和实际控件；没有保留重复公共别名。
+迁移：此前临时公开的 CouiSettingsPage、各类 Preference 业务包装不再属于库 API。宿主改为组合 Scaffold、PreferenceLayout 和实际控件；没有保留重复公共别名，也不依赖尚未提供的 Demo 文件。
 
 [公开布局与 Defaults](../../coui/src/main/java/com/itos/coui/settings/CouiSettings.kt)、[Scaffold](../../coui/src/main/java/com/itos/coui/settings/CouiSettingsScaffold.kt)。
 
