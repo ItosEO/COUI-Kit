@@ -512,11 +512,10 @@ private fun CalendarDayCell(
             BasicText(
                 String.format(locale, "%d", date.dayOfMonth),
                 modifier = if (selected && selectedProgress < 1f) {
-                    // 用户观察到的文字同动效特化；Calendar 17.3.70 的原始 drawText 固定字号。
+                    // 按反馈让文字同圈缩放；原厂 drawText 固定字号，文字不额外做 alpha 动画。
                     Modifier.graphicsLayer {
                         scaleX = selectedScale
                         scaleY = selectedScale
-                        alpha = selectedProgress
                     }
                 } else Modifier,
                 style = TextStyle(
