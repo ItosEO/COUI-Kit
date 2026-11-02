@@ -131,3 +131,7 @@ CompositionLocalProvider(LocalCouiDarkTheme provides darkTheme) {
 ColorOS 及相关名称归 OPPO 所有；本项目与 OPPO 没有隶属、授权或背书关系。
 
 修改版和分叉版的发行名称、Logo 及来源说明遵循[名称与标识使用政策](TRADEMARKS.md)。
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ItosEO/COUI-Kit&type=Date)](https://star-history.com/#ItosEO/COUI-Kit&Date)
