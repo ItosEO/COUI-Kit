@@ -104,6 +104,7 @@ class CouiFloatingRenderer private constructor(internal val standalone: Boolean)
  * foregroundComposition 为 true 时材质和光晕仅输出前景; 共用 backdrop, 源须覆盖不透明 SDR 页面。
  * beforeContent 在材质之后、内容之前直接混合到目标；接收内容的缓存裁剪路径，调用方不得修改。
  * 回调坐标仍为节点本地坐标，变换及裁剪由调用方提供。
+ * renderer、contentLayer 与返回的 Modifier 绑定一个绘制节点，不跨节点复用。
  */
 @RequiresApi(34)
 @Composable
@@ -124,7 +125,7 @@ fun Modifier.couiFloatingSurface(
         listOf(contentLayer), contourGlowEnabled, foregroundComposition, beforeContent) { listOf(surface()) }
 }
 
-/** 三主体按宿主子项顺序传入; 菜单使用 index 1, 两侧附件均使用 index 2。 */
+/** 三主体在同一节点按宿主子项顺序绘制；资源与返回的 Modifier 不跨节点复用。菜单 index 1，两侧附件 index 2。 */
 @RequiresApi(34)
 @Composable
 fun Modifier.couiFloatingSurfaces(

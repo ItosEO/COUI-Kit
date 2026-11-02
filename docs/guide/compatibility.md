@@ -31,6 +31,12 @@ DynamicAnimation 保持版本目录中的 **strictly** 约束。持续重定向�
 
 M3 宿主使用可选模块并初始化后，组件自动桥接内容 Local；无需复制色板映射或逐插槽接线，见[内容作用域](appearance.md#内容插槽与最小交互尺寸)。模式来自显式组件配置、`LocalCouiDarkTheme` 或系统，不从任意 M3 色板推断。顶栏按钮的 M3 路径使用真实最小交互尺寸 Modifier；SearchButton 原固定容器保持不变，不受该尺寸 Local 控制。菜单普通锚点仍按原 AndroidX Below 候选顺序与安全区定位；触点窗口避让继续由原有 COUI motion provider 处理。
 
+### Picker 与面板几何迁移
+
+`CouiWheelPicker` 移除 `height` 参数，改用 `Modifier.height()`；其余参数相对顺序不变。位置调用需要去掉原高度实参，并重新编译。默认高度、实际测量与选择线用法见[选择器](../components/pickers.md)。
+
+Dialog 的 `cornerRadius`、MenuStyle 的 `radius` 默认改为 `Dp.Unspecified`，在消费处从 `CouiShape` 解析，不能把原始配置字段当作已解析的像素半径。相同的显式半径仍可传入；不同值会报错。任意 Shape 的显式半径入口继续保留。迁移与作用范围见[弹窗](../components/dialog.md)和[菜单](../components/menu.md)。
+
 ### 运动接口迁移
 
 Touch/Press 的动画轴改为只读 State<Float>，原 `.value` 读取和构造入口保留，直接轴控制改走组件方法。这是二进制不兼容变更，所有调用模块需要重新编译；具体替换方式与生命周期要求见[运动与跟随回弹](../effects/motion.md#从公开-animatable-迁移)。

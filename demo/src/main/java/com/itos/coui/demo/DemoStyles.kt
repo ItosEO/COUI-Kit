@@ -32,6 +32,5 @@ internal fun demoMenuStyle(dark: Boolean): CouiMenuStyle {
         itemShape = DemoShapes.menuItem,
         checkboxShape = DemoShapes.checkbox,
         checkboxBorderShape = DemoShapes.checkboxBorder,
-        radius = DemoShapes.menu.radius,
     )
 }

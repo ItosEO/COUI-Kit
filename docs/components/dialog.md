@@ -205,7 +205,9 @@ CouiAlertDialog(
 
 默认 `colors` 使用 `CouiDialogDefaults.themeColors(dark)`。显式自定义时可从该入口复制调整；主操作配色可以使用 `CouiDialogDefaults.primaryActionColors(accent)`。
 
-修改圆角时，请同时调整 `shape` 和 `cornerRadius`，让面板、操作区和外层裁剪保持一致。
+修改圆角时，传入 `shape = CouiShape(radius, cornerWeight)` 即可。裁剪与材质轮廓从这一个 Shape 读取半径和权重，`cornerRadius` 默认 `Dp.Unspecified`。旧调用若同时传入半径，必须与 CouiShape 一致；可删除重复的 `cornerRadius`。
+
+任意自定义 `Shape` 仍可使用。开启材质轮廓时，须显式提供有限非负的 `cornerRadius`；库不从任意路径猜半径，轮廓权重继续使用 Dialog 预设。无材质轮廓时只使用 Shape 裁剪。
 
 ## 窗口和限制
 

@@ -13,7 +13,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.withFrameNanos
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
@@ -78,6 +77,7 @@ object CouiPickerDefaults {
 /**
  * 可装配数值滚轮；受控 value，每次跨项提交，CANCEL 只吸附当前项、不产生额外点击。
  * textSize 为 dp；与原厂 NumberPicker 一样不重复应用系统 SP 放大。
+ * 高度由 modifier 控制；未指定时使用 Defaults，运动步长与命中区域使用实际视口。
  */
 @Composable
 fun CouiWheelPicker(
@@ -89,7 +89,6 @@ fun CouiWheelPicker(
     dark: Boolean = CouiTheme.isDark,
     enabled: Boolean = true,
     wrap: Boolean = true,
-    height: Dp = CouiPickerDefaults.height,
     textSize: Dp = 16.dp,
     focusTextSize: Dp = 20.dp,
     diffusion: Dp = 0.dp,
@@ -100,7 +99,7 @@ fun CouiWheelPicker(
     colors: CouiWheelColors = CouiPickerDefaults.wheelColors(dark),
 ) {
     require(!valueRange.isEmpty() && value in valueRange)
-    require(textSize.value > 0 && focusTextSize.value > 0 && height.value > 0)
+    require(textSize.value > 0 && focusTextSize.value > 0)
     require(repeatIntervalMillis > 0)
     require(diffusion.value >= 0f)
     val density = LocalDensity.current
@@ -110,10 +109,10 @@ fun CouiWheelPicker(
     val callback by rememberUpdatedState(onValueChange)
     val normal = with(density) { textSize.roundToPx().coerceAtLeast(1) }
     val focus = with(density) { focusTextSize.roundToPx().coerceAtLeast(1) }
-    val h = with(density) { height.roundToPx().coerceAtLeast(1) }
+    val defaultHeight = with(density) { CouiPickerDefaults.height.roundToPx() }
     val spread = with(density) { diffusion.toPx().toInt().toFloat() }
-    var measuredHeight by remember { mutableIntStateOf(0) }
-    val actualHeight = measuredHeight.takeIf { it > 0 } ?: h
+    var measuredHeight by remember { mutableStateOf<Int?>(null) }
+    val actualHeight = measuredHeight ?: defaultHeight
     // Clock 使用实测高度生成像素步长；保持触摸、动画和 Canvas 的同一几何。
     val row = normal + (actualHeight - 3 * normal).coerceAtLeast(0) / 3
     val rangeSize = valueRange.last.toLong() - valueRange.first.toLong() + 1L
@@ -144,11 +143,12 @@ fun CouiWheelPicker(
     val mask = if (verticalFading) Modifier.graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
         .drawWithContent {
             drawContent()
+            if (size.height <= 0f) return@drawWithContent
             val edge = (((size.height.toInt() - normal) / 2) * .9f / size.height).coerceIn(0f, .5f)
             drawRect(Brush.verticalGradient(0f to Color.Transparent, edge to Color.White,
                 (1f - edge) to Color.White, 1f to Color.Transparent), blendMode = BlendMode.DstIn)
         } else Modifier
-    Canvas(modifier.height(height).onSizeChanged { measuredHeight = it.height }.clipToBounds().then(mask)
+    Canvas(modifier.height(CouiPickerDefaults.height).onSizeChanged { measuredHeight = it.height }.clipToBounds().then(mask)
         .progressSemantics(motion.value.toFloat(), valueRange.first.toFloat()..valueRange.last.toFloat(), semanticSteps)
         .semantics {
             contentDescription = label; stateDescription = formatter(motion.value)

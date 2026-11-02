@@ -8,6 +8,8 @@ Status: implemented
 
 ## Decision
 
+外部高度与多列选择线的当前装配见 [Modifier 与 Picker 布局](../architecture/2026-11-02-modifier-contracts-and-picker-layout.md)；本记录继续持有原厂运动、状态与视觉特化依据。
+
 公开 CouiWheelPicker 与 CouiCalendarPicker，组合预设和草稿留在 Demo。滚轮使用两路 Scroller、整数位移和原厂像素取整；跨项提交当前候选值。CANCEL 先终止旧帧任务，再吸附已有位移，不追加点击；普通长按 UP 保留已开始的单步，DOWN 先结算剩余位移，再检查新方向。禁用、移除停止动画；宿主拒绝候选时稳定后回到受控值。步长来自真实测量高度，区间基数以 Long 计算，避免每帧遍历 IntRange。
 
 月历用 Calendar 的头部、星期条、月网格和三列日期编辑器。翻月只浏览；点日期与编辑滚轮立即提交。日期范围、月长与外部更新统一夹紧，只有完整自然月/日范围才循环。编辑器不持有长期日期镜像；外部 value 是唯一已接受日期，同帧的列回调先合成最新临时值，再由宿主决定是否接受。标题右侧箭头按 Calendar 17.3.70 的 `coui_calendar_arrow.xml` 状态选择器切换：日历态向下、次级色；滚轮态向上、强调色。该页面 `COUIRotateView` 未设置 `supportRotateType`，默认值为 0，`startExpandAnimation/startCollapseAnimation` 实际切换两种矢量状态，而非 180° 旋转动画。编辑区保留淡入淡出及展开延迟。滚轮返回月历时显式重播选中圆的 280ms 半径/透明度变化，单一动画 owner 只允许一个旧圆退出；普通外部设值不伪造旧圆。整体淡入使用原厂线性 280ms。此前将箭头始终固定向下是与原厂不符的特化，本次恢复 `setCurrentView` 的两态图标切换，不额外添加原厂当前布局中不存在的旋转。

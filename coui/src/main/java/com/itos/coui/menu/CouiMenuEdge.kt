@@ -10,18 +10,17 @@ import androidx.compose.ui.graphics.asComposeRenderEffect
 import com.itos.coui.effect.CouiEdge
 import com.itos.coui.effect.CouiEdgeStyle
 import com.itos.coui.effect.LocalCouiContourGlowEnabled
-import com.itos.coui.shape.CouiCornerWeight
 
 @RequiresApi(33)
 @Composable
-internal fun rememberCouiMenuEdge(dark: Boolean, radiusPx: Float, mix: Color, blend: Color): CouiMenuEdge {
+internal fun rememberCouiMenuEdge(dark: Boolean, radiusPx: Float, cornerWeight: Float, mix: Color, blend: Color): CouiMenuEdge {
     val contourGlowEnabled = LocalCouiContourGlowEnabled.current
-    return remember(dark, radiusPx, mix, blend, contourGlowEnabled) {
+    return remember(dark, radiusPx, cornerWeight, mix, blend, contourGlowEnabled) {
         CouiMenuEdge(
             CouiEdge(
                 style = if (dark) CouiEdgeStyle.Dark else CouiEdgeStyle.Light,
                 radiusPx = radiusPx,
-                cornerWeight = CouiCornerWeight,
+                cornerWeight = cornerWeight,
                 mix = mix,
                 blend = blend,
                 innerGlowAlpha = 0.6f * if (dark) 0.1f else 0.9f,

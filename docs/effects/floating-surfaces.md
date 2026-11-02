@@ -27,6 +27,8 @@ val surfaceModifier = Modifier.couiFloatingSurface(
 
 将 surfaceModifier 挂到负责绘制的节点。宿主负责内容层的录制、当前尺寸与变换，完整单主体装配见 [CouiFab](../../coui/src/main/java/com/itos/coui/floatingactionbutton/CouiFab.kt)。不要将空的 GraphicsLayer 当作已录制内容。
 
+此 Modifier 绑定传入的 renderer、内容层和当前坐标，只能挂到该节点。第二个节点须单独装配；可复用 material、shadow 等不可变配置。它不改变测量，内容路径、投影溢出和材质 patch 各按原有层序绘制，不能再用外层 clip 一并裁掉投影。
+
 ## 单主体与三主体
 
 - CouiFloatingRenderer.standalone() 配合 couiFloatingSurface，仅创建单主体链路。

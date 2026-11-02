@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.motion.CouiTouchMotion
+import com.itos.coui.shape.CouiCornerWeight
+import com.itos.coui.shape.CouiShape
 
 /** 材质只处理背景, 菜单文字和状态层保持清晰。 */
 internal data class CouiMenuMaterial(val drawing: Modifier = Modifier, val input: Modifier = Modifier)
@@ -59,9 +61,10 @@ internal fun couiMenuMaterial(
     val density = LocalDensity.current
     val legacyBlurRadius = 12.dp.value * density.density
     val blurPadding = if (runtimeShaderSupported) 0 else legacyBlurRadius.toInt()
-    val edgeRadiusPx = LocalCouiMenuStyle.current.radius.value * density.density
+    val edgeRadiusPx = LocalCouiMenuStyle.current.resolvedRadius.value * density.density
+    val edgeWeight = (LocalCouiMenuStyle.current.shape as? CouiShape)?.cornerWeight ?: CouiCornerWeight
     val edge = if (runtimeShaderSupported) {
-        rememberCouiMenuEdge(dark, edgeRadiusPx, mix, blend)
+        rememberCouiMenuEdge(dark, edgeRadiusPx, edgeWeight, mix, blend)
     } else null
     if (!runtimeShaderSupported) {
         // shortcut: API 33 以下保留旧 Gaussian/Canvas 混合, 不视为厂商逐像素等价实现。

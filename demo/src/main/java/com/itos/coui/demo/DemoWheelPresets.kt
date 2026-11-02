@@ -2,12 +2,10 @@ package com.itos.coui.demo
 
 import com.itos.coui.picker.*
 import android.text.format.DateFormat
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
@@ -76,7 +74,8 @@ internal fun DemoTimePicker(
             enabled, wrap = false, textSize = 18.dp, formatter = { periods[it] })
     }
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-        Row(modifier.fillMaxWidth().pickerSelectionLines(dark, if (fillColumns) 0.dp else 16.dp).padding(vertical = CouiPickerDefaults.padding),
+        Row(modifier.fillMaxWidth().couiPickerSelectionLines(CouiTheme.colorSchemeFor(dark).outlineVariant,
+            if (fillColumns) 0.dp else 16.dp).padding(vertical = CouiPickerDefaults.padding),
             horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
             if (!is24Hour && periodFirst) period()
             CouiWheelPicker(if (fillColumns) Modifier.weight(1f) else Modifier.width(CouiPickerDefaults.columnWidth),
@@ -115,10 +114,10 @@ internal fun DemoCountdownPicker(
             val values = listOf(value.hour, value.minute, value.second)
             val labels = listOf(hourLabel, minuteLabel, secondLabel)
             values.forEachIndexed { index, number ->
-                CouiWheelPicker(Modifier.weight(1f), number, { next -> submit(when (index) {
+                CouiWheelPicker(Modifier.weight(1f).height(CountdownHeight), number, { next -> submit(when (index) {
                     0 -> latest.copy(hour = next); 1 -> latest.copy(minute = next); else -> latest.copy(second = next)
                 }) }, if (index == 0) 0..23 else 0..59, labels[index], dark, enabled,
-                    height = CountdownHeight, textSize = 38.dp, focusTextSize = 38.dp,
+                    textSize = 38.dp, focusTextSize = 38.dp,
                     diffusion = 4.dp, verticalFading = true, clockTypeface = true,
                     repeatIntervalMillis = if (index == 0) 300 else 100,
                     formatter = { String.format(locale, "%02d", it) })
@@ -144,7 +143,7 @@ internal fun DemoTimerEditorPicker(
     SideEffect { if (latest != value) latest = value }
     fun submit(next: DemoDuration) { latest = next; onValueChange(next) }
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-        Row(modifier.fillMaxWidth().pickerSelectionLines(dark, 0.dp),
+        Row(modifier.fillMaxWidth().couiPickerSelectionLines(CouiTheme.colorSchemeFor(dark).outlineVariant, 0.dp),
             horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
             listOf(value.hour, value.minute, value.second).forEachIndexed { index, number ->
                 CouiWheelPicker(Modifier.width(58.dp), number, { next -> submit(when (index) {
@@ -189,7 +188,8 @@ internal fun DemoDatePicker(
         latest = next
         onValueChange(next)
     }
-    Row(modifier.fillMaxWidth().pickerSelectionLines(dark).padding(vertical = CouiPickerDefaults.padding),
+    Row(modifier.fillMaxWidth().couiPickerSelectionLines(CouiTheme.colorSchemeFor(dark).outlineVariant)
+        .padding(vertical = CouiPickerDefaults.padding),
         horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
         order.forEach { kind -> when (kind) {
             'y' -> CouiWheelPicker(Modifier.width(CouiPickerDefaults.dateYearWidth), value.year,
@@ -204,23 +204,5 @@ internal fun DemoDatePicker(
                 wrap = minDay == 1 && maxDay == value.lengthOfMonth(),
                 formatter = { if (chinese) "$it$dayLabel" else String.format(locale, "%02d", it) })
         } }
-    }
-}
-
-
-/** COUITimeLimitPicker / COUIDatePicker.dispatchDraw，先画全宽分割线再画列。 */
-@Composable
-private fun Modifier.pickerSelectionLines(
-    dark: Boolean,
-    horizontalInset: androidx.compose.ui.unit.Dp = 16.dp,
-): Modifier {
-    val color = CouiTheme.colorSchemeFor(dark).outlineVariant
-    return drawBehind {
-        val inset = horizontalInset.toPx().toInt().toFloat()
-        val half = 24.dp.toPx().toInt().toFloat()
-        val thickness = .33000004.dp.toPx().toInt().coerceAtLeast(1).toFloat()
-        for (y in listOf(size.height / 2 - half, size.height / 2 + half)) {
-            drawRect(color, Offset(inset, y.toInt().toFloat()), Size((size.width - inset * 2).coerceAtLeast(0f), thickness))
-        }
     }
 }

@@ -12,6 +12,7 @@ import com.itos.coui.checkbox.CouiCheckboxColors
 import com.itos.coui.checkbox.CouiCheckboxDefaults
 import com.itos.coui.effect.SpotlightDiagnostic
 import com.itos.coui.shape.CouiShape
+import com.itos.coui.shape.resolveCouiCornerRadius
 import com.itos.coui.theme.CouiTheme
 
 data class CouiMenuColors(
@@ -37,7 +38,7 @@ object CouiMenuDefaults {
                 colors.onSurface, colors.onSurfaceVariant, colors.outlineVariant),
             shape = shape, itemShape = itemShape,
             checkboxShape = CouiCheckboxDefaults.shape, checkboxBorderShape = CouiCheckboxDefaults.borderShape,
-            checkboxColors = CouiCheckboxDefaults.colors(colors.menuCheckboxAccent, dark), radius = radius,
+            checkboxColors = CouiCheckboxDefaults.colors(colors.menuCheckboxAccent, dark),
             itemTextStyle = CouiTheme.typography.menuItem, headerTextStyle = CouiTheme.typography.label,
             themeTint = CouiTheme.materialTintFor(dark),
             dark = dark,
@@ -45,7 +46,7 @@ object CouiMenuDefaults {
     }
 }
 
-/** 仅描述宿主外观; COUI 不读取应用主题、偏好或日志。 */
+/** 仅描述宿主外观。CouiShape 自动提供半径；其他 Shape 须显式提供 radius。 */
 data class CouiMenuStyle(
     val colors: CouiMenuColors,
     val shape: Shape,
@@ -53,13 +54,16 @@ data class CouiMenuStyle(
     val checkboxShape: Shape,
     val checkboxBorderShape: Shape,
     val checkboxColors: CouiCheckboxColors,
-    val radius: Dp,
+    val radius: Dp = Dp.Unspecified,
     val itemTextStyle: TextStyle,
     val headerTextStyle: TextStyle,
     val themeTint: Color = Color.Transparent,
     val spotlightDiffuse: Float? = null,
     val dark: Boolean? = null,
 )
+
+internal val CouiMenuStyle.resolvedRadius: Dp
+    get() = shape.resolveCouiCornerRadius(radius)
 
 /** 旧完整 Style 未携带模式时保留原判定；自动主题必须提供实际模式。 */
 internal val CouiMenuStyle.isDark: Boolean

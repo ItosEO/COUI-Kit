@@ -188,7 +188,6 @@ fun rememberMenuStyle(
         checkboxShape = CouiShape(4.dp),
         checkboxBorderShape = CouiShape(3.2.dp),
         checkboxColors = CouiCheckboxDefaults.colors(checked = accent, dark = dark),
-        radius = 16.dp,
         itemTextStyle = TextStyle(fontSize = 15.sp, color = contentColor),
         headerTextStyle = TextStyle(fontSize = 12.sp, color = contentColor.copy(alpha = 0.6f)),
         themeTint = surface,
@@ -196,7 +195,11 @@ fun rememberMenuStyle(
 }
 ~~~
 
-`radius` 要和 `shape` 的半径一致。菜单没有默认高度上限；长菜单可以在 `CouiMenu` 的 `modifier` 中传入 `Modifier.heightIn(max = 320.dp)`，让它在限定高度内滚动。子菜单会按窗口高度限制。
+`shape` 为 `CouiShape` 时，材质轮廓和普通投影从它读取半径，轮廓同时使用它的权重。`radius` 默认 `Dp.Unspecified`，表示由 Shape 解析；旧调用中的重复半径可删除，同时传入时必须一致。`CouiMenuDefaults.style().copy(shape = newShape)` 因此只需更新一处。`itemShape` 和 Checkbox 的形状仍分别控制内部区域。
+
+任意自定义 Shape 仍需显式提供有限非负 `radius`，轮廓权重沿用菜单预设；库不从任意路径推导半径。普通投影保留既有 RoundRect caster，不将内容的 G2 路径改成投影算法。
+
+菜单没有默认高度上限；长菜单可以在 `CouiMenu` 的 `modifier` 中传入 `Modifier.heightIn(max = 320.dp)`，让它在限定高度内滚动。子菜单会按窗口高度限制。
 
 新样式建议在末尾传 `dark = dark`。默认工厂已填实际模式，主菜单与子菜单的文字、材质、阴影和反馈共同使用它。旧完整 Style 未填模式时保留原 surface 亮度判定；自动 M3 默认值不会猜色板模式。M3 模糊补底取 surface，无 Backdrop 的容器取 surfaceBright；selected 取 primary，checkbox 深色取 inversePrimary。
 

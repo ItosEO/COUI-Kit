@@ -41,6 +41,8 @@ fun ShadowSample(modifier: Modifier = Modifier, dark: Boolean) {
 
 CouiShadowStyle 的长度使用 dp。便捷入口完成本地坐标和像素换算，不改变布局尺寸；父级变换作用于主体和投影整体。radius 省略时使用短边的一半。
 
+同一个 `couiShadow` Modifier 可用于多个节点，每个节点各持有 renderer 和缓存槽。尺寸变化更新本节点的网格，不重建 Shader。阴影画在内容后方；将主体的 clip 放在阴影内侧，外层 padding 用来给阴影留出空间。
+
 CouiShadowOutline 提供公开轮廓选项；普通 RoundRect 不支持 inverse clipping。使用 SmoothCapsule 时，内容形状和投影几何需要按同一主体装配，示例见 DemoShadowSamples。
 
 需要窗口坐标、节点 alpha、轴向缩放或多主体槽位时，直接持有 CouiShadowRenderer，并调用其 Canvas 绘制接口；不要把已经缩放的网格再次整体缩放。完整参数见[公开声明](../../coui/src/main/java/com/itos/coui/effect/CouiShadowRenderer.kt)。

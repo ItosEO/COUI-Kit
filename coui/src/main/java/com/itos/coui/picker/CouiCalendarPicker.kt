@@ -47,8 +47,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.SolidColor
@@ -601,19 +599,7 @@ private fun CalendarDateEditor(
 
     Box(
         Modifier.fillMaxWidth().height(CouiPickerDefaults.height + CouiPickerDefaults.padding * 2)
-            .drawBehind {
-                val inset = 16.dp.toPx().toInt().toFloat()
-                val half = 24.dp.toPx().toInt().toFloat()
-                val thickness = .33000004.dp.toPx().toInt().coerceAtLeast(1).toFloat()
-                val color = colors.divider
-                for (y in listOf(size.height / 2 - half, size.height / 2 + half)) {
-                    drawRect(
-                        color = color,
-                        topLeft = Offset(inset, y.toInt().toFloat()),
-                        size = Size((size.width - 2 * inset).coerceAtLeast(0f), thickness),
-                    )
-                }
-            },
+            .couiPickerSelectionLines(colors.divider),
     ) {
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             Row(

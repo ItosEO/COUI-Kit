@@ -8,6 +8,8 @@ Status: implemented
 
 ## Decision
 
+面板 Shape 与轮廓半径的当前解析契约见 [Modifier 与面板几何](../architecture/2026-11-02-modifier-contracts-and-picker-layout.md)，窗口、操作与材质算法仍沿用本文依据。
+
 通用弹窗以 CouiAlertDialog 为唯一窗口与操作后端，操作数据、配色和 Defaults 归同一组件。窗口、操作按钮和字体度量均在 dialog 包内部，Demo 只消费公开 API，不新增普通按钮或 Typography 组件。用户另行要求的专门输入预设 CouiInputDialog 复用本后端，依据与接入边界见[输入型弹窗记录](2026-10-27-coui-input-dialog-preset.md)。组件负责局部交互，宿主持有可见性、文案、主题和业务提交。
 
 以主线 3a13b9f7b6e866dec421244357d14ce1de8b1a54 为本批起点，保留原 Demo 的三页、顶栏、dock、图标及其他示例。接入沿用上游 PR #2：DemoSamples 增加一个 DemoSection、DemoApp 的分组搜索标题增加一项，独立 DemoDialogSamples 持有显示与确认结果。一个分组中提供底部、居中、长文、三个操作、禁用确认及主题色确认六种参数装配，另展示输入型预设，并允许切换材质；不带二级页、开关、选择器和目录重构。

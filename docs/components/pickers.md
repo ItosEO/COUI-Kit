@@ -180,18 +180,20 @@ fun DatePickerDialog(
 
 ## 自定义滚轮外观
 
-`height`、`textSize`、`focusTextSize` 和 `diffusion` 都使用 `Dp`，与原厂滚轮的像素测量方式一致，而不是将字号再次按系统 `sp` 放大。下面沿用前面的 `minute` 状态：
+高度通过 `Modifier.height()` 设置；省略时使用 `CouiPickerDefaults.height`。父级约束和 Modifier 顺序决定实际视口，绘制、命中和运动步长使用实测高度。`textSize`、`focusTextSize` 和 `diffusion` 使用 `Dp`，字号不再次按系统 `sp` 放大。下面沿用前面的 `minute` 状态：
 
 ~~~kotlin
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.itos.coui.picker.CouiPickerDefaults
 
 CouiWheelPicker(
+    modifier = Modifier.height(160.dp),
     value = minute,
     onValueChange = { minute = it },
     valueRange = 0..59,
     label = "分钟",
-    height = 160.dp,
     textSize = 16.dp,
     focusTextSize = 22.dp,
     diffusion = 4.dp,
@@ -203,6 +205,31 @@ CouiWheelPicker(
 ~~~
 
 这里的 `accent` 由宿主提供。`verticalFading` 开启上下渐隐，额外使用离屏合成；无须渐隐时保留默认 `false`。`clockTypeface` 使用时钟专用字体配置，显示效果可能受设备字体支持情况影响。
+
+旧调用的 `height = h` 迁移为 `modifier = Modifier.height(h)`；已有 Modifier 时在同一链中设置高度。不要用外部 padding 代替 `diffusion`，后者参与滚轮的运动步长和选中带。
+
+## 整组选择线
+
+时间或日期列需要贯穿整组的选择线时，在父级 Row 使用共享绘制：
+
+~~~kotlin
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
+import com.itos.coui.picker.CouiPickerDefaults
+import com.itos.coui.picker.couiPickerSelectionLines
+
+Row(
+    Modifier.fillMaxWidth()
+        .couiPickerSelectionLines(dividerColor)
+        .padding(vertical = CouiPickerDefaults.padding),
+) {
+    // 放入前述小时、分钟滚轮。
+}
+~~~
+
+此片段位于 Compose 内容中，布局 API 使用 `androidx.compose.foundation.layout`；`dividerColor` 由宿主主题提供。选择线只绘制在内容后方，不改变高度、裁剪和输入。普通滚轮中心带沿用原厂像素取整；对称的上下留白可放内侧，非对称留白放在选择线外侧。倒计时的大字与 diffusion 配置不使用这组标准选择线。`horizontalInset` 可调整横向内缩，须为有限非负 Dp。
 
 ## 颜色与主题
 
@@ -226,7 +253,6 @@ CouiWheelPicker(
 | `dark` | `Boolean` | `CouiTheme.isDark`；颜色模式 |
 | `enabled` | `Boolean` | `true`；是否允许交互 |
 | `wrap` | `Boolean` | `true`；值域大于三个时可循环 |
-| `height` | `Dp` | `CouiPickerDefaults.height`（135.dp） |
 | `textSize` | `Dp` | `16.dp`；普通项字号 |
 | `focusTextSize` | `Dp` | `20.dp`；选中项字号 |
 | `diffusion` | `Dp` | `0.dp`；相邻项额外间距 |
@@ -260,7 +286,7 @@ CouiWheelPicker(
 
 ## 交互与限制
 
-滚轮支持点击邻项、拖动、惯性滑动、长按、键盘方向键和无障碍调整。`enabled = false` 会停止滚轮交互。`repeatIntervalMillis` 必须大于零；`height` 和两个字号必须大于零，`diffusion` 不能为负值。
+滚轮支持点击邻项、拖动、惯性滑动、长按、键盘方向键和无障碍调整。`enabled = false` 会停止滚轮交互。`repeatIntervalMillis` 和两个字号必须大于零，`diffusion` 不能为负值。
 
 月历会按范围约束日期；顶部月份箭头只浏览，不提交日期。月历不提供整体 `enabled` 参数；通用滚轮仍支持 `enabled = false`，可以分别禁用各列。库没有公开的时间、倒计时或多日期选择器。滚轮没有 `onValueChangeFinished`，如需“确认后才保存”，请由页面或弹窗持有草稿。
 
@@ -270,6 +296,12 @@ CouiWheelPicker(
 
 ## Demo 与源码
 
-Demo 的选择器分组包括时间、倒计时、年月日滚轮、月历和弹窗草稿。页面装配可参考[时间与日期预设](../../demo/src/main/java/com/itos/coui/demo/DemoWheelPresets.kt)、[选择弹窗](../../demo/src/main/java/com/itos/coui/demo/DemoPickerDialog.kt)和[综合示例](../../demo/src/main/java/com/itos/coui/demo/DemoPickerPrSample.kt)。
+Demo 的选择器分组包括时间、倒计时、年月日滚轮、月历和弹窗草稿。
+
+| 组合                    | 示例                                                                                  |
+|-----------------------|-------------------------------------------------------------------------------------|
+| 时间、AM/PM、倒计时、日期顺序与范围  | [DemoWheelPresets](../../demo/src/main/java/com/itos/coui/demo/DemoWheelPresets.kt) |
+| 标题、项目材质、确认/取消与任意选择器内容 | [DemoPickerDialog](../../demo/src/main/java/com/itos/coui/demo/DemoPickerDialog.kt) |
+| 页面与弹窗共用内容、草稿及确认提交     | [PickerPrSample](../../demo/src/main/java/com/itos/coui/demo/DemoPickerPrSample.kt) |
 
 公开 API 见 [CouiWheelPicker / CouiWheelColors / CouiPickerDefaults](../../coui/src/main/java/com/itos/coui/picker/CouiWheelPicker.kt)、[CouiCalendarPicker](../../coui/src/main/java/com/itos/coui/picker/CouiCalendarPicker.kt)及 [CouiCalendarColors / CouiCalendarDefaults](../../coui/src/main/java/com/itos/coui/picker/CouiCalendarDefaults.kt)。
