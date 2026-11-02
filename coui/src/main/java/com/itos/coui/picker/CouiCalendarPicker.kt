@@ -489,12 +489,19 @@ private fun CalendarDayCell(
                 if (selected) {
                     // Compose 的 onClick 可能先于 PressInteraction.Release 更新，
                     // 新选中帧不能被残留 pressed 直接跳到 176/255 再回落到 0。
-                    val alpha = if (pressed && selectedProgress >= 1f) 176f / 255f else selectedProgress
+                    val alpha = if (pressed && selectedProgress >= 1f) {
+                        176f / 255f
+                    } else {
+                        (selectedProgress * 255f).toInt() / 255f
+                    }
                     drawCircle(accent.copy(alpha = alpha), radius * selectedScale)
                 } else {
                     // 原厂 highlighted 与 old selector 互斥，不能叠两层造成瞬时色闪。
                     if (pressed) drawCircle(colors.highlight, radius)
-                    else if (old && selection.exit > 0f) drawCircle(accent.copy(alpha = selection.exit), radius)
+                    else if (old && withinRange && selection.exit > 0f) {
+                        val oldAlpha = (selection.exit * 255f).toInt() / 255f
+                        drawCircle(accent.copy(alpha = oldAlpha), radius)
+                    }
                 }
                 if (today && !selected) {
                     drawCircle(accent, radius, style = Stroke(1.8.dp.toPx()))
