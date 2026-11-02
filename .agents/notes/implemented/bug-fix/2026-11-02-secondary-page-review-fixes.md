@@ -16,6 +16,12 @@ couiVerticalScroll 的惯性触边在同一帧保留父链未消费的整数位�
 
 摩擦由每个物理轴的 animationLevel 独立确定，不再读写跨实例变量。原厂运行在单一系统动画等级，本库允许多个组件各自传入等级；将全局构造历史带入库会改变无关纵向列表。高等级使用初始摩擦，低等级使用原厂初始化后的摩擦。这项局部配置适配替代此前保留首个低等级实例构造副作用的决定，不声称复现原厂进程中首个 X 轴的历史轨迹。积分公式、预测、速度分段、横向 scrollView 临时位置和张力保持。
 
+常驻搜索的焦点所有权来自实际输入节点，只在仍拥有焦点时释放自身输入。取消先隐藏键盘、清理该焦点，再请求宿主关闭；IME Search 先隐藏键盘再执行宿主回调，避免覆盖回调内的新输入。宿主拒绝关闭时保留展开和查询，不因失焦立即抢回输入。
+
+搜索的真实输入节点与浮动后端使用同一位移、缩放、整数宽度和层序，内容录制位于实际变换内部，由浮动后端绘制一次。普通填色分支同样消费几何。背景填色参数明确为 fallbackBackground，仅作用于 API 31–33；API 34 起继续使用已批准的系统模糊材质。旧顶栏搜索直接复用已有固定输入重定位边界。
+
+四条搜索通道复用 CouiSpring，不增加另一套弹簧包装或通道管理器。各自的响应参数及标题、结果消费者保持分离。动画资源归创建 rememberCouiSearchBarState 的组合；仅隐藏搜索节点而保留 state 时仍可供标题和结果消费，输入、图层及局部效果随各自节点释放。
+
 ## Evidence
 
 初始二级页 Note 指定 Settings 17.0.0 / 17000000，APK SHA-256 为 d97df8a9227520a6f673e5d6f5efbc901b5d9d4c501d12e5d8bf717daae079d5。本次可复查的同版本导出来自 SHA-256 为 1bc5201297662091d318b0e2ea074610d311f65a7ff9be5d24b29104d7d75678 的候选；未取得前者完整输入，不能将两个哈希等同。
@@ -23,6 +29,8 @@ couiVerticalScroll 的惯性触边在同一帧保留父链未消费的整数位�
 COUIPreferenceFragment.onCreateRecyclerView 确认列表入口。候选 COUIRecyclerView.ViewFlinger.run 先 overScrollBy 本帧 residual，再把当前速度交给 notifyVerticalEdgeReached；COUIRecyclerView.scrollByInternal 的纵向反向分支读取 getScrollX，已用 smali 交叉核对。UP 对超过阈值的纵向速度先调用 setCurrVelocityY，仅反向另启 fling，同向直接 springBack。COUIPhysicalAnimationUtil 决定整数阻尼与 overfling 映射，SpringOverScroller.ReboundOverScroller 决定触边回弹的当前位置、临时位置和速度。Foundation OverscrollEffect 的 performScroll/performFling 契约由其公开接口持有。
 
 惯性越界中 DOWN 后没有 MOVE 的取消另行保留原分支：dispatchTouchEvent 只有真实 UP 将 scrollType 3 切到 2，CANCEL 的 performSpringBack 使用当前可见位置但继续按 type 3 映射。实际 MOVE 进入拖动后改为 type 2。位置来源和显示映射分别传给同一个回弹入口，不能把这些退出都合并成普通松手。
+
+COUISearchBar.changeStateWithAnimation 的宽度和取消通道在运行中改变目标；HomepageImpl.animToEdit/animToNormal 对页面和结果先调用 setStartValue，Java 与 smali 均有该调用。当前材料缺少所用 OEM 动画类的 setter 与默认最小变化量实现。页面和结果保留共享弹簧的连续重定向适配，不将猜测的 snapTo 当作官方语义，也不宣称四通道的快速反向都已证明等价。
 
 | 输入与退出 | 当前处理 | 检查边界 |
 | --- | --- | --- |
@@ -45,6 +53,7 @@ COUIPreferenceFragment.onCreateRecyclerView 确认列表入口。候选 COUIRecy
 - 继续手写短页拖动可直接绕开零范围门控，但必须重复处理速度、多指、取消与父级分发；采用现有 Foundation scrollable。
 - 触边只传剩余速度无需保留位移，但会丢掉触边帧并重新启动一次自由 fling，与原入口不符；直接接续位置和速度。
 - 保留静态摩擦可还原原厂进程首次构造副作用，但库允许不同实例独立配置，跨组件污染更改了公开配置语义；只保留每等级的局部参数。
+- 搜索另设不可见命中层或点击遮挡器会重复维护几何与层序；使用真实交互节点的标准 graphicsLayer，与既有浮动绘制消费同一几何。
 
 ## Consequences
 

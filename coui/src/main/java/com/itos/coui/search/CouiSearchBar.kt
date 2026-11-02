@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -112,7 +113,7 @@ fun CouiSearchBar(
     }
     val surfaceHeight = with(density) { CouiSearchBarDefaults.surfaceHeight.roundToPx() }
     val gap = with(density) { CouiSearchBarDefaults.cancelGap.roundToPx() }
-    var size by remember { mutableStateOf(IntSize.Zero) }
+    var boundsSize by remember { mutableStateOf(IntSize.Zero) }
     val shape = CouiSearchBarDefaults.shape
     val bodyLayer = rememberGraphicsLayer()
     val cancelLayer = rememberGraphicsLayer()
@@ -127,36 +128,43 @@ fun CouiSearchBar(
     val (cancelLightInput, cancelLight) = rememberCouiSpotlight(state.expanded, SpotlightPreset.OpaqueMedium2, dark)
     val foreground = colors.foreground
     val secondary = colors.secondary
-    val background = colors.background
+    val background = colors.fallbackBackground
     val requester = remember { FocusRequester() }
     val focus = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
-    val cancelSearch = { focus.clearFocus(); keyboard?.hide(); onExpandedChange(false) }
+    var ownsFocus by remember { mutableStateOf(false) }
+    fun releaseInput() {
+        if (ownsFocus) {
+            keyboard?.hide()
+            focus.clearFocus()
+        }
+    }
+    val cancelSearch = { releaseInput(); onExpandedChange(false) }
     LaunchedEffect(state.expanded) {
         if (state.expanded) { requester.requestFocus(); keyboard?.show() }
-        else { focus.clearFocus(); keyboard?.hide() }
+        else releaseInput()
     }
-    fun surfaces(): List<CouiFloatingSurface> {
-        val p = state.widthProgress
+    fun bodySurface(): CouiFloatingSurface {
+        val width = (boundsSize.width - (cancelWidth + gap) * state.widthProgress).roundToInt().coerceAtLeast(1).toFloat()
+        val y = ((boundsSize.height - surfaceHeight) / 2).toFloat()
+        val bodyX = if (rtl) boundsSize.width - width else 0f
+        return CouiFloatingSurface(Rect(bodyX + bodyTouch.translationX.value, y + bodyTouch.translationY.value,
+            bodyX + bodyTouch.translationX.value + width, y + bodyTouch.translationY.value + surfaceHeight),
+            scaleX = bodyTouch.scaleX.value + bodyPress.scale.value - 1f,
+            scaleY = bodyTouch.scaleY.value + bodyPress.scale.value - 1f, cornerWeight = 1f)
+    }
+    fun cancelSurface(): CouiFloatingSurface {
         val f = state.cancelProgress
-        val width = (size.width - (cancelWidth + gap) * p).coerceAtLeast(1f)
-        val y = (size.height - surfaceHeight) * .5f
-        val bodyX = if (rtl) size.width - width else 0f
-        val cancelX = if (rtl) 0f else size.width - cancelWidth.toFloat()
+        val y = ((boundsSize.height - surfaceHeight) / 2).toFloat()
+        val cancelX = if (rtl) 0f else boundsSize.width - cancelWidth.toFloat()
         val translation = CouiSearchBarDefaults.cancelTranslationPx * (1f - f) * if (rtl) -1f else 1f
         val scale = (.5f + .5f * f).coerceAtLeast(.001f)
-        return listOf(
-            CouiFloatingSurface(Rect(bodyX + bodyTouch.translationX.value, y + bodyTouch.translationY.value,
-                bodyX + bodyTouch.translationX.value + width, y + bodyTouch.translationY.value + surfaceHeight),
-                scaleX = bodyTouch.scaleX.value + bodyPress.scale.value - 1f,
-                scaleY = bodyTouch.scaleY.value + bodyPress.scale.value - 1f, cornerWeight = 1f),
-            CouiFloatingSurface(Rect(cancelX + translation + touch.translationX.value,
-                y + touch.translationY.value, cancelX + translation + touch.translationX.value + cancelWidth,
-                y + touch.translationY.value + surfaceHeight),
-                scaleX = scale * (touch.scaleX.value + press.scale.value - 1f),
-                scaleY = scale * (touch.scaleY.value + press.scale.value - 1f), cornerWeight = 1f,
-                alpha = (f / .2f).coerceIn(0f, 1f), visible = state.active),
-        )
+        return CouiFloatingSurface(Rect(cancelX + translation + touch.translationX.value,
+            y + touch.translationY.value, cancelX + translation + touch.translationX.value + cancelWidth,
+            y + touch.translationY.value + surfaceHeight),
+            scaleX = scale * (touch.scaleX.value + press.scale.value - 1f),
+            scaleY = scale * (touch.scaleY.value + press.scale.value - 1f), cornerWeight = 1f,
+            alpha = (f / .2f).coerceIn(0f, 1f), visible = state.active)
     }
     val contour = LocalCouiContourGlowEnabled.current
     var normalShadow by remember { mutableFloatStateOf(shadowProgress) }
@@ -181,21 +189,27 @@ fun CouiSearchBar(
         // 双胶囊只叠前景，不以整块 Src 回填擦掉下方渐进背景或兄弟投影。
         foregroundComposition = true,
         beforeContent = { index, path ->
-            val node = surfaces()[index]
+            val node = if (index == 0) bodySurface() else cancelSurface()
             val draw = if (index == 0) bodyLight else cancelLight
             if (draw != null && node.visible) inset(node.bounds.left, node.bounds.top,
                 size.width - node.bounds.right, size.height - node.bounds.bottom) {
                 withTransform({ scale(node.scaleX, node.scaleY, center) }) { clipPath(path) { draw() } }
             }
-        }, surfaces = ::surfaces)
+        }, surfaces = { listOf(bodySurface(), cancelSurface()) })
         else Modifier
     Layout(modifier = modifier.fillMaxWidth().height(CouiSearchBarDefaults.height)
-        .padding(horizontal = CouiSearchBarDefaults.horizontalMargin).onSizeChanged { size = it }
+        .padding(horizontal = CouiSearchBarDefaults.horizontalMargin).onSizeChanged { boundsSize = it }
         .then(CouiSearchRelocationBoundary)
         .then(surfaceModifier), content = {
         val recordBody = if (renderer != null) Modifier.drawWithContent { bodyLayer.record { this@drawWithContent.drawContent() } }
             else Modifier.background(background, shape).clip(shape).drawWithContent { bodyLight?.invoke(this); drawContent() }
-        Row(Modifier.couiTouchMotion(bodyTouch, !state.expanded && !state.running)
+        Row(Modifier.graphicsLayer {
+            val node = bodySurface()
+            translationX = bodyTouch.translationX.value
+            translationY = bodyTouch.translationY.value
+            scaleX = node.scaleX
+            scaleY = node.scaleY
+        }.couiTouchMotion(bodyTouch, !state.expanded && !state.running)
             .couiPressMotion(bodyPress, !state.expanded && !state.running)
             .then(bodyLightInput).then(recordBody).clip(shape).couiToolbarFeedback(dark, bodySource, !state.expanded)
             .then(if (!state.expanded) Modifier.semantics { contentDescription = placeholder }
@@ -207,11 +221,12 @@ fun CouiSearchBar(
                     contentDescription = null, tint = secondary)
             }
             BasicTextField(query, onQueryChange, Modifier.weight(1f).focusRequester(requester)
+                .onFocusChanged { ownsFocus = it.hasFocus }
                 .then(if (!state.expanded) Modifier.clearAndSetSemantics {} else Modifier),
                 enabled = state.expanded, readOnly = !state.expanded, singleLine = true,
                 textStyle = textStyle.copy(color = foreground), cursorBrush = SolidColor(foreground),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = { onSearch(); keyboard?.hide() }),
+                keyboardActions = KeyboardActions(onSearch = { keyboard?.hide(); onSearch() }),
                 decorationBox = { field -> Box {
                     if (query.isEmpty()) BasicText(placeholder, style = textStyle.copy(color = secondary), maxLines = 1)
                     field()
@@ -232,9 +247,17 @@ fun CouiSearchBar(
             }
         }
         val recordCancel = if (renderer != null) Modifier.drawWithContent { cancelLayer.record { this@drawWithContent.drawContent() } }
-            else Modifier.graphicsLayer { alpha = state.cancelProgress.coerceIn(0f, 1f) }.background(background, shape)
+            else Modifier.background(background, shape)
                 .clip(shape).drawWithContent { cancelLight?.invoke(this); drawContent() }
         Box(Modifier.width(with(density) { cancelWidth.toDp() }).height(CouiSearchBarDefaults.surfaceHeight)
+            .graphicsLayer {
+                val node = cancelSurface()
+                translationX = node.bounds.left - (if (rtl) 0f else boundsSize.width - cancelWidth.toFloat())
+                translationY = touch.translationY.value
+                scaleX = node.scaleX
+                scaleY = node.scaleY
+                alpha = if (renderer != null) node.alpha else state.cancelProgress.coerceIn(0f, 1f)
+            }
             .couiTouchMotion(touch, state.expanded && !state.running).couiPressMotion(press, state.expanded)
             .then(cancelLightInput).then(recordCancel).clip(shape).couiToolbarFeedback(dark, cancelSource, state.expanded)
             .clickable(cancelSource, null, enabled = state.expanded, role = Role.Button, onClick = cancelSearch),
@@ -252,8 +275,9 @@ fun CouiSearchBar(
         val button = children[1].measure(Constraints.fixed(cancelWidth, surfaceHeight))
         layout(constraints.maxWidth, constraints.maxHeight) {
             val y = (constraints.maxHeight - surfaceHeight) / 2
-            body.placeRelative(0, y)
             if (state.active) button.placeRelative(constraints.maxWidth - cancelWidth, y)
+            // 输入与语义也按取消在下、搜索在上的顺序放置。
+            body.placeRelative(0, y)
         }
     }
 }

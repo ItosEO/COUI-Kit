@@ -8,7 +8,13 @@ import com.itos.coui.theme.CouiTheme
 import com.itos.coui.shape.CouiCapsuleShape
 
 @Immutable
-data class CouiSearchBarColors(val foreground: Color, val secondary: Color, val background: Color, val clear: Color)
+data class CouiSearchBarColors(
+    val foreground: Color,
+    val secondary: Color,
+    /** API 31–33 普通填色背景；API 34 起使用所属原厂材质。 */
+    val fallbackBackground: Color,
+    val clear: Color,
+)
 
 
 /** SettingsSearchBar 的 instant-search 分支。位置尺寸为 dp，额外动画留白保留原始 px。 */
