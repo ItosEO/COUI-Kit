@@ -12,12 +12,17 @@ Status: implemented
 
 月历用 Calendar 的头部、星期条、月网格和三列日期编辑器。翻月只浏览；点日期与编辑滚轮立即提交。日期范围、月长与外部更新统一夹紧，只有完整自然月/日范围才循环。编辑器不持有长期日期镜像；外部 value 是唯一已接受日期，同帧的列回调先合成最新临时值，再由宿主决定是否接受。按本次用户要求，倒三角始终朝下，不旋转；编辑区保留淡入淡出及展开延迟。滚轮返回月历时显式重播选中圆的 280ms 半径/透明度变化，单一动画 owner 只允许一个旧圆退出；普通外部设值不伪造旧圆。整体淡入使用原厂线性 280ms。这是明确特化：原厂通用 delegate 的 setCurrentView 调用 startExpandAnimation/startCollapseAnimation，不能将无旋转称为该通用分支的默认行为。
 
+选中日的绘制状态通过一次 Compose 快照写入当前日期、旧日期与两路动画进度，不允许上一轮的旧日期和新一轮的退出透明度混用。旧圆只在相同月份内绘制，150ms 退出完成立即清除；每次新点击使上一动画代次失效，被取消的回调不能回写后续动画。网格点击来源保留至宿主接受或被其他值取代；`PressInteraction.Release` 延迟时不能使新圆的透明度从 176/255 突跳到 0。按压高亮与旧选中圆互斥，对应原厂 `drawDays` 分支。
+
+Calendar 17.3.70 的 `COUIDateMonthView.drawDays` 仅对圆半径/透明度做插值，`mDayPaint` 以固定字号 `drawText`；没有文本缩放。用户反馈的目标表现是新选中数字与圆同步放大，本库仅对入场的新选中数字采用同一 0.8→1 比例与 280ms 进度的缩放/透明度过渡。这是用户要求的视觉特化，**不能宣称其文字绘制严格等同这份原厂源码**；需要同帧设备录像才能进一步确认不同版本/页面是否另有文字变换。普通未选中数字不增加图层，避免整月动画重组。
+
 基于上游 2aabbd1 的可选主题策略解析默认颜色；显式配色优先。月历网格、箭头、分隔线、选中内容和展开滚轮共用最终色板，核心不读取 MaterialTheme。时间/日期列、确认草稿与标准 Dialog 由宿主组合，不引入普通按钮、Sheet、厂商二进制或反射对照桥。
 
 ## Evidence
 
 - Clock 17.6.94 的 COUINumberPicker、COUITimeLimitPicker、OplusTimePickerCustomClock、COUIDatePicker：双 Scroller、惯性/吸附、文本分区裁剪与像素取整。
 - Calendar 17.3.70 / 17003070，APK SHA-256 ba72436c495e581e058878a82a9c5858b061e2bf08105871bc33e9a853354752。COUICalendarPickerDelegate.setCurrentView、COUIDateMonthView、COUICalendarViewPagerScroller 与日期编辑布局确定当前布局、选中动画和分页参数。
+- Calendar `COUIDateMonthView.configAnimator`：进入使用 280ms COUIMoveEaseInterpolator，退出 150ms COUIEaseInterpolator。内部 Animator 更新圆半径/alpha；`drawDays` 固定 `TextPaint` 绘制日期字符，按压高亮与旧圆的分支互斥。适配记录区分源码事实和用户视觉要求。
 - 源材料不进入依赖。公开 HorizontalPager、Compose selectable 与系统 Scroller 承载移植，不宣称 OEM ViewPager 触摸分发、虚拟无障碍节点与字体缩放协议全部等价。
 
 ## Existing-note audit

@@ -12,10 +12,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.YearMonth
 import kotlin.math.abs
 import kotlin.math.floor
 
@@ -59,7 +61,7 @@ internal class CouiCalendarFlingBehavior(
     }
 }
 
-/** 月历的选中动画由单一月份选择持有，不让每格保留独立的过期圆。 */
+/** 月历选中动画采用单一 owner，并将日期、旧圆及进度切换作为一次快照提交。 */
 internal class CouiCalendarSelectionMotion(
     private val scope: CoroutineScope,
     initial: LocalDate,
@@ -73,31 +75,50 @@ internal class CouiCalendarSelectionMotion(
     var exit by mutableFloatStateOf(0f)
         private set
     private var job: Job? = null
+    private var generation = 0L
 
-    /** 只有网格内的已接受点击及返回网格才播放；宿主直接修改值不伪造旧圆。 */
+    /** 只有被接受的网格点击和返回网格才动画；旧圆限于同一月份。 */
     fun update(date: LocalDate, animate: Boolean) {
+        val currentGeneration = ++generation
         job?.cancel()
+        job = null
         val previous = selectedDate
-        oldDate = if (animate && previous != date) previous else null
-        selectedDate = date
-        enter = if (animate) 0f else 1f
-        exit = if (oldDate != null) 1f else 0f
+        val outgoing = previous.takeIf {
+            animate && it != date && YearMonth.from(it) == YearMonth.from(date)
+        }
+        // 不能让新一轮 exit=1 与前一轮 oldDate 同时暴露给 Compose。
+        Snapshot.withMutableSnapshot {
+            oldDate = outgoing
+            selectedDate = date
+            enter = if (animate) 0f else 1f
+            exit = if (outgoing != null) 1f else 0f
+        }
         if (!animate) return
         job = scope.launch {
             launch {
                 Animatable(0f).animateTo(1f, tween(280, easing = CouiCalendarPageEasing)) {
-                    enter = value
+                    if (generation == currentGeneration) enter = value
                 }
             }
-            if (oldDate != null) launch {
+            if (outgoing != null) launch {
                 Animatable(1f).animateTo(0f, tween(150, easing = CouiCalendarExitEasing)) {
-                    exit = value
+                    if (generation == currentGeneration) exit = value
+                }
+                if (generation == currentGeneration) {
+                    Snapshot.withMutableSnapshot {
+                        exit = 0f
+                        oldDate = null
+                    }
                 }
             }
         }
     }
 
-    fun dispose() { job?.cancel() }
+    fun dispose() {
+        generation++
+        job?.cancel()
+        job = null
+    }
 }
 
 internal val CouiCalendarExitEasing = CubicBezierEasing(.33f, 0f, .67f, 1f)

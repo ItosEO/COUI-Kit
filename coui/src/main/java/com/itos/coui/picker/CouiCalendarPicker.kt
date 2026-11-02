@@ -133,7 +133,8 @@ fun CouiCalendarPicker(
     var displayEditor by remember { mutableStateOf(false) }
     var returnVersion by remember { mutableIntStateOf(0) }
     var consumedReturn by remember { mutableIntStateOf(0) }
-    var pendingGridSelection by remember { mutableStateOf<LocalDate?>(null) }
+    // 记录请求的来源和目标，宿主尚未接受时不能提前丢失点击来源。
+    var pendingGridSelection by remember { mutableStateOf<Pair<LocalDate, LocalDate>?>(null) }
     val selection = remember(scope) { CouiCalendarSelectionMotion(scope, value) }
     DisposableEffect(selection) { onDispose { selection.dispose() } }
     // SideEffect 只在已接受的宿主 value 上转交选择动画；编辑区淡出时保留旧网格。
@@ -141,11 +142,19 @@ fun CouiCalendarPicker(
         if (!editingMonth && !displayEditor) {
             val returning = consumedReturn != returnVersion
             if (returning) consumedReturn = returnVersion
+            val submitted = pendingGridSelection
+            val acceptedClick = submitted != null &&
+                submitted.first == selection.selectedDate && submitted.second == value
             if (selection.selectedDate != value || returning) {
-                selection.update(value, returning || pendingGridSelection == value)
+                selection.update(value, returning || acceptedClick)
             }
+            // 异步宿主回调未接受时保留请求；被接受或被其他值取代后立即清除。
+            if (submitted != null && (value != submitted.first || returning)) {
+                pendingGridSelection = null
+            }
+        } else {
+            pendingGridSelection = null
         }
-        if (pendingGridSelection != null) pendingGridSelection = null
     }
     val current = first.plusMonths(headerPage.toLong())
     val foreground = colors.foreground
@@ -163,11 +172,13 @@ fun CouiCalendarPicker(
     fun toggleEditor() {
         if (editingMonth) {
             closingEditor = true
+            pendingGridSelection = null
             // 未经宿主接受的候选不得影响标题及返回月份。
             headerPage = pageOf(value)
             returnVersion++
             editingMonth = false
         } else {
+            pendingGridSelection = null
             closingEditor = false
             editingMonth = true
         }
@@ -323,7 +334,7 @@ fun CouiCalendarPicker(
                             medium = medium,
                             fullDateFormatter = fullDateFormatter,
                             onValueChange = { date ->
-                                pendingGridSelection = date
+                                pendingGridSelection = value to date
                                 onValueChange(date)
                             },
                         )
@@ -459,6 +470,8 @@ private fun CalendarDayCell(
         withinRange -> foreground
         else -> foreground.copy(alpha = foreground.alpha * .5f)
     }
+    val selectedProgress = if (selected) selection.enter else 1f
+    val selectedScale = .8f + .2f * selectedProgress
     Box(
         modifier.selectable(
             selected = selected,
@@ -474,11 +487,14 @@ private fun CalendarDayCell(
             Modifier.size(32.dp).drawBehind {
                 val radius = size.minDimension / 2
                 if (selected) {
-                    val alpha = if (pressed) 176f / 255f else selection.enter
-                    drawCircle(accent.copy(alpha = alpha), radius * (.8f + .2f * selection.enter))
+                    // Compose 的 onClick 可能先于 PressInteraction.Release 更新，
+                    // 新选中帧不能被残留 pressed 直接跳到 176/255 再回落到 0。
+                    val alpha = if (pressed && selectedProgress >= 1f) 176f / 255f else selectedProgress
+                    drawCircle(accent.copy(alpha = alpha), radius * selectedScale)
                 } else {
+                    // 原厂 highlighted 与 old selector 互斥，不能叠两层造成瞬时色闪。
                     if (pressed) drawCircle(colors.highlight, radius)
-                    if (old && selection.exit > 0f) drawCircle(accent.copy(alpha = selection.exit), radius)
+                    else if (old && selection.exit > 0f) drawCircle(accent.copy(alpha = selection.exit), radius)
                 }
                 if (today && !selected) {
                     drawCircle(accent, radius, style = Stroke(1.8.dp.toPx()))
@@ -488,6 +504,14 @@ private fun CalendarDayCell(
         ) {
             BasicText(
                 String.format(locale, "%d", date.dayOfMonth),
+                modifier = if (selected && selectedProgress < 1f) {
+                    // 用户观察到的文字同动效特化；Calendar 17.3.70 的原始 drawText 固定字号。
+                    Modifier.graphicsLayer {
+                        scaleX = selectedScale
+                        scaleY = selectedScale
+                        alpha = selectedProgress
+                    }
+                } else Modifier,
                 style = TextStyle(
                     fontSize = 16.sp,
                     fontFamily = medium,
