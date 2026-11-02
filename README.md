@@ -16,7 +16,7 @@ COUI-Kit 参考 ColorOS 17 的「凝光视效」，提供背景模糊、材质�
 
 - 组件和效果可以分别使用，也可以组合使用。
 - 支持接入 App 的配色、文字样式和形状，并提供常用外观预设。
-- 当前源码提供原生主题、组件默认值与可选 `coui-material3` 适配模块。核心独立于 Material 3；M3 宿主只需启动初始化，见[接入与外观](docs/guide/appearance.md)和[版本与迁移](docs/guide/compatibility.md#原生主题与默认参数迁移)。
+- 提供原生主题、组件默认值与可选 `coui-material3` 适配模块。核心独立于 Material 3；M3 宿主可在启动时初始化适配，见[外观与预设](docs/guide/appearance.md)。
 - 基于 Android、Compose 和 AndroidX 的公开 API，不依赖厂商 SDK 或私有 SO。
 
 ## Demo
@@ -70,7 +70,7 @@ dependencies {
 }
 ```
 
-适配模块从 `0.0.1-alpha3` 开始发行，会传递引入同版本核心与 M3；如果同时显式声明 `coui`，也使用该版本。
+适配模块会传递引入同版本核心与 M3；如果同时显式声明 `coui`，也使用该版本。
 
 协作调试时，也可通过 [GitHub Packages](docs/guide/github-packages.md) 接入已发布的开发快照。需要本地修改库时，按[源码模块接入](docs/guide/getting-started.md#源码模块)配置工程；`project(":coui-material3")` 仅用于这种情况。
 
@@ -114,7 +114,6 @@ CompositionLocalProvider(LocalCouiDarkTheme provides darkTheme) {
 - [效果目录](docs/effects/README.md)
 - [兼容要求](docs/guide/compatibility.md)
 - [外观与预设](docs/guide/appearance.md)
-- [更新记录](CHANGELOG.md)
 - [GitHub Packages 开发快照](docs/guide/github-packages.md)
 - [更新记录与版本映射](CHANGELOG.md)
 

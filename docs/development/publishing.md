@@ -18,16 +18,15 @@
 
 ### 手动发布步骤
 
-1. 将发布配置合入 main，使 GitHub 注册[发布工作流](../../.github/workflows/publish-preview.yml)。
-2. 打开 Actions → 发布库预览版 → Run workflow，选择已经评审的受信任分支。日常使用 main；手动选择分支等于授权执行该分支的构建脚本。
-3. 等待本地 Maven 产物检查、上传和远端元数据读取全部成功。
-4. 从运行摘要复制完整依赖坐标，并记录对应源码提交与 Actions run 地址。
+1. 打开 Actions → 发布库预览版 → Run workflow，选择已经评审的受信任分支。日常使用 main；手动选择分支等于授权执行该分支的构建脚本。
+2. 等待本地 Maven 产物检查、上传和远端元数据读取全部成功。
+3. 从运行摘要复制完整依赖坐标，并记录对应源码提交与 Actions run 地址。
 
 普通分支 push 和 `[ci]` push 均不触发库发布；发行 Tag 触发 Central 工作流。Demo 打包仍按 [CI 指南](ci.md)执行。两个发布工作流只允许在上游仓库运行，不使用 PR 事件，不把发布凭据提供给 fork PR。
 
 ## 版本与产物
 
-从适配模块首次发行起，`coui` 与 `coui-material3` 始终同版本、同步发布，正式版、预览版和开发快照均遵守此规则。即使某个模块没有代码变化，也随另一模块发布对应版本。适配模块依赖同版本核心；只有两个坐标均可下载，才视为该版本发布完成。
+`coui` 与 `coui-material3` 同版本、同步发布，正式版、预览版和开发快照均遵守此规则。即使某个模块没有代码变化，也随另一模块发布对应版本。适配模块依赖同版本核心；只有两个坐标均可下载，才视为该版本发布完成。
 
 库 group、核心 artifactId 和开发基础版本由根目录 [gradle.properties](../../gradle.properties) 持有。可选模块在[自身配置](../../coui-material3/build.gradle.kts)显式指定 `coui-material3`，不继承核心的 artifactId。GitHub Packages 在开发版本中加入提交短 SHA；Central 从 Tag 去掉首字母 `v`，通过 `-PVERSION_NAME` 同时覆盖两个模块的版本，不修改开发基础版本。库版本不读取 Demo versionCode 或显示版本名。
 
@@ -77,8 +76,6 @@ git push origin v0.0.1-alpha4
 4. 在 [CHANGELOG](../../CHANGELOG.md) 记录用户可见能力、API 兼容性、迁移说明与发布日期；同步 README、快速开始和兼容表中的版本号。
 5. 正式版、Alpha 与 SNAPSHOT 分开标识；不把快照重发视为不可变版本。
 
-alpha3 起以发行 Tag 记录源码映射；历史版本缺少对应 Tag，不反推过去每个 Alpha 版本的源码或发布时间。
-
 ## 凭据与本地检查入口
 
 GitHub Packages 工作流使用自身的 `GITHUB_TOKEN`，仅上传与远端读取步骤接收凭据；job 授予 contents: read、packages: write。该渠道不使用 Central、Demo 签名或 GPG Secrets。Central 工作流仅需 contents: read，发布认证使用上文的 User Token。带凭据的 Gradle 任务关闭 configuration cache，发布工作流不缓存 Gradle 状态。
@@ -100,4 +97,4 @@ node .github/scripts/verify-maven-artifacts.cjs
 
 Central 已发布版本不可覆盖。发布步骤失败或超时时，先用日志中的 deployment ID 检查 [Central Deployments](https://central.sonatype.com/publishing/deployments)。若仍在发布，等待原部署完成；若已发布而只有匿名下载检查失败，可重跑下载命令确认，不重新上传同一版本，也不移动旧 Tag。需要改变源码时使用新版本 Tag。工作流不自动撤销部署或重发，以免把超时误判为上传失败。
 
-构建配置及静态检查不代表远端权限和实际下载已经验证。私有包消耗仓库所有者的存储与下载额度，重复快照的保留和清理按实际使用处理。Maven Central 已发行坐标见[快速开始](../guide/getting-started.md)，不把 SNAPSHOT 与 Central 版本等同，也不推断其提交对应关系。当前不提供 JitPack 流程。
+私有包消耗仓库所有者的存储与下载额度，重复快照的保留和清理按实际使用处理。Maven Central 接入坐标见[快速开始](../guide/getting-started.md)。

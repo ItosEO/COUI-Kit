@@ -77,9 +77,9 @@ fun TimeWheelExample() {
 }
 ~~~
 
-`formatter` 只改变显示文字，不改变整数值。`label` 是无障碍说明，不会直接绘制在数字旁。**通用滚轮仍要求提供 `label`**，因为同样的 `0..59` 可以表示分钟、次数或其他业务数值，库无法固定名称。`repeatIntervalMillis` 控制长按连续调整的间隔。
+`formatter` 只改变显示文字，不改变整数值。`label` 是页面必须提供的无障碍说明，不会显示在数字旁。`repeatIntervalMillis` 控制长按连续调整的间隔。
 
-默认 `wrap = true`，但范围只有三个或更少数值时不会循环；需要固定边界时显式设置 `wrap = false`。例如 `0..59` 循环时，59 后面是 0，0 前面是 59；关闭循环后在两端停止。`wrap` 不会改变 `valueRange` 本身，也不会自动联动其他列。时间滚轮需要的整组选择线、冒号和 AM/PM 排列由页面组合。Demo 中有对应样式，库内没有公开的 `CouiTimePicker`。
+默认 `wrap = true`，但范围只有三个或更少数值时不会循环；需要固定边界时显式设置 `wrap = false`。例如 `0..59` 循环时，59 后面是 0，0 前面是 59；关闭循环后在两端停止。`wrap` 不会改变 `valueRange` 本身，也不会自动联动其他列。时间滚轮需要的整组选择线、冒号和 AM/PM 排列由页面组合，样式可参考 Demo。
 
 ## 显示月历和日期编辑器
 
@@ -206,7 +206,7 @@ CouiWheelPicker(
 
 这里的 `accent` 由宿主提供。`verticalFading` 开启上下渐隐，额外使用离屏合成；无须渐隐时保留默认 `false`。`clockTypeface` 使用时钟专用字体配置，显示效果可能受设备字体支持情况影响。
 
-旧调用的 `height = h` 迁移为 `modifier = Modifier.height(h)`；已有 Modifier 时在同一链中设置高度。不要用外部 padding 代替 `diffusion`，后者参与滚轮的运动步长和选中带。
+`diffusion` 参与滚轮的运动步长和选中带，不能用外部 padding 替代。
 
 ## 整组选择线
 
@@ -229,7 +229,7 @@ Row(
 }
 ~~~
 
-此片段位于 Compose 内容中，布局 API 使用 `androidx.compose.foundation.layout`；`dividerColor` 由宿主主题提供。选择线只绘制在内容后方，不改变高度、裁剪和输入。普通滚轮中心带沿用原厂像素取整；对称的上下留白可放内侧，非对称留白放在选择线外侧。倒计时的大字与 diffusion 配置不使用这组标准选择线。`horizontalInset` 可调整横向内缩，须为有限非负 Dp。
+此片段位于 Compose 内容中，`dividerColor` 由宿主主题提供。选择线绘制在内容后方，不改变高度、裁剪和输入。对称的上下留白可放内侧，非对称留白放在选择线外侧。倒计时的大字与 diffusion 配置不适用这组标准选择线。`horizontalInset` 控制横向内缩，须为有限非负 Dp。
 
 ## 颜色与主题
 
@@ -237,7 +237,7 @@ Row(
 
 `CouiWheelColors` 包含 `normal`（普通项）和 `focus`（选中项）；`CouiCalendarColors` 包含 `foreground`、`secondary`、`weekday`、`hint`、`highlight`、`divider` 和 `onAccent`。月历另有独立的 `accent` 参数，用于选中圆及强调色元素。自定义 `accent` 时，应确保 `onAccent` 文字与选中圆有足够对比度。
 
-这些颜色类和默认工厂都属于库的公开 API；核心库不依赖 Material3。可选 M3 主题适配的接入方式见[外观与预设](../guide/appearance.md)。
+M3 主题适配的接入方式见[外观与预设](../guide/appearance.md)。
 
 ## 公开参数
 
@@ -282,15 +282,13 @@ Row(
 | `today` | `LocalDate` | `LocalDate.now()`；今天的标记 |
 | `colors` | `CouiCalendarColors` | `CouiCalendarDefaults.colors(dark)` |
 
-`CouiPickerDefaults` 还公开了 `columnWidth = 62.dp`、`padding = 12.dp`、`dateYearWidth = 76.dp` 和 `dateMonthWidth = 96.dp` 等布局预设。它们是尺寸常量，不会自动生成整组时间或日期选择器。
+组合多列滚轮时，可使用 `CouiPickerDefaults` 的 `columnWidth`、`padding`、`dateYearWidth` 和 `dateMonthWidth` 布局预设。
 
 ## 交互与限制
 
 滚轮支持点击邻项、拖动、惯性滑动、长按、键盘方向键和无障碍调整。`enabled = false` 会停止滚轮交互。`repeatIntervalMillis` 和两个字号必须大于零，`diffusion` 不能为负值。
 
-月历会按范围约束日期；顶部月份箭头只浏览，不提交日期。月历不提供整体 `enabled` 参数；通用滚轮仍支持 `enabled = false`，可以分别禁用各列。库没有公开的时间、倒计时或多日期选择器。滚轮没有 `onValueChangeFinished`，如需“确认后才保存”，请由页面或弹窗持有草稿。
-
-日期圆沿用 Calendar 的选中与退出曲线；新日期文字随圆缩放是当前库按使用反馈保留的视觉适配，不代表 Calendar 17.3.70 的固定字号文字绘制与每帧完全相同。月历分页和无障碍由 Compose 实现，不能将构建成功等同于原厂真机逐帧验收。
+月历会按范围约束日期；顶部月份箭头只浏览，不提交日期。月历不提供整体 `enabled` 参数。滚轮没有 `onValueChangeFinished`，如需“确认后才保存”，请由页面或弹窗持有草稿。
 
 选择器本身不需要背景源；只有宿主额外使用材质弹窗时，才按[弹窗背景材质](dialog.md#使用背景材质)要求配置。系统与构建门槛见[兼容要求](../guide/compatibility.md)。
 

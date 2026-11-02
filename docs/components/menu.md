@@ -134,7 +134,7 @@ ProvideCouiMenuBackdrop { source ->
 
 ### 空闲时按需离屏
 
-上面的单参数入口保留内容隔离，现有调用无需迁移。对于已经核对的不透明、静态页面根，可以显式使用 `isolateContent = false`，让没有菜单或材质弹窗消费背景时的源使用 `CompositingStrategy.Auto`。下面沿用前面的 import、参数和 `MenuButton`：
+背景内容默认使用离屏隔离。不透明的静态页面可设置 `isolateContent = false`，让没有菜单或材质弹窗消费背景时的源使用 `CompositingStrategy.Auto`。下面沿用前面的 import、参数和 `MenuButton`：
 
 ~~~kotlin
 ProvideCouiMenuBackdrop(isolateContent = false) { source ->
@@ -149,7 +149,7 @@ ProvideCouiMenuBackdrop(isolateContent = false) { source ->
 
 库在菜单进入、显示和退出期间保持源及其父窗口源的离屏隔离。材质弹窗按实际存活期持有背景；最后一个消费者释放后，源恢复所选的空闲策略。普通菜单、子菜单和嵌套窗口共用这套管理，宿主不要按 `expanded` 手动切换背景策略。
 
-此模式保留源节点、裁剪、坐标和绘制指令录制，只取消空闲时强制建立的离屏隔离。`Auto` 不保证底层完全没有离屏缓冲，也不保证固定比例的 GPU 收益。内容的目标混合必须自行隔离；透明窗口、移动的 BottomSheet、缩放或分数位移容器应先保留原入口。完整的合成要求见[背景源的离屏策略](../effects/backdrop.md#菜单窗口的离屏策略)，公开声明见 [ProvideCouiMenuBackdrop](../../coui/src/main/java/com/itos/coui/menu/CouiMenuBackdrop.kt)。
+`Auto` 仍可能使用离屏缓冲，内容的目标混合需要自行隔离。透明窗口、移动的 BottomSheet、缩放或分数位移容器应使用默认隔离模式。完整要求见[背景源的离屏策略](../effects/backdrop.md#菜单窗口的离屏策略)，公开声明见 [ProvideCouiMenuBackdrop](../../coui/src/main/java/com/itos/coui/menu/CouiMenuBackdrop.kt)。
 
 ## 菜单样式
 
@@ -195,13 +195,13 @@ fun rememberMenuStyle(
 }
 ~~~
 
-`shape` 为 `CouiShape` 时，材质轮廓和普通投影从它读取半径，轮廓同时使用它的权重。`radius` 默认 `Dp.Unspecified`，表示由 Shape 解析；旧调用中的重复半径可删除，同时传入时必须一致。`CouiMenuDefaults.style().copy(shape = newShape)` 因此只需更新一处。`itemShape` 和 Checkbox 的形状仍分别控制内部区域。
+`shape` 为 `CouiShape` 时，材质轮廓和普通投影从它读取半径，轮廓同时使用它的权重。`radius` 默认 `Dp.Unspecified`，表示由 Shape 解析；显式传入时必须与 Shape 的半径一致。可通过 `CouiMenuDefaults.style().copy(shape = newShape)` 修改形状。`itemShape` 和 Checkbox 的形状分别控制内部区域。
 
-任意自定义 Shape 仍需显式提供有限非负 `radius`，轮廓权重沿用菜单预设；库不从任意路径推导半径。普通投影保留既有 RoundRect caster，不将内容的 G2 路径改成投影算法。
+使用其他自定义 Shape 时，须显式提供有限非负的 `radius`，轮廓权重使用菜单预设。普通投影使用圆角矩形轮廓。
 
 菜单没有默认高度上限；长菜单可以在 `CouiMenu` 的 `modifier` 中传入 `Modifier.heightIn(max = 320.dp)`，让它在限定高度内滚动。子菜单会按窗口高度限制。
 
-新样式建议在末尾传 `dark = dark`。默认工厂已填实际模式，主菜单与子菜单的文字、材质、阴影和反馈共同使用它。旧完整 Style 未填模式时保留原 surface 亮度判定；自动 M3 默认值不会猜色板模式。M3 模糊补底取 surface，无 Backdrop 的容器取 surfaceBright；selected 取 primary，checkbox 深色取 inversePrimary。
+自定义样式应传入 `dark`，省略时按 surface 亮度判断。默认工厂使用当前主题模式，主菜单与子菜单的文字、材质、阴影和反馈共同使用它。M3 模糊补底取 surface，无 Backdrop 的容器取 surfaceBright；selected 取 primary，checkbox 深色取 inversePrimary。
 
 ## 兼容性和滚动
 
@@ -209,6 +209,6 @@ API 33 以下的菜单模糊效果与较新系统不同，见[兼容要求](../g
 
 `headerText` 用于显示提示文案，不参与选择。`themeTint` 透明时关闭采样材质上的页面色相叠加；显式样式可以提供非透明色。
 
-标题字体默认来自 `CouiTheme.typography.label`。修改主题的 `label` 或显式传入 `CouiMenuStyle.headerTextStyle` 可以调整字体、字号、字重和行距；绘制时不再覆盖这些设置。标题颜色、对齐和最多两行的规则仍由菜单控制。
+标题字体默认来自 `CouiTheme.typography.label`。修改主题的 `label` 或显式传入 `CouiMenuStyle.headerTextStyle` 可以调整字体、字号、字重和行距。标题颜色、对齐和最多两行由菜单控制。
 
 源码见 [CouiMenu / CouiMenuItem](../../coui/src/main/java/com/itos/coui/menu/CouiMenu.kt)、[样式](../../coui/src/main/java/com/itos/coui/menu/CouiMenuStyle.kt)、[触点锚点](../../coui/src/main/java/com/itos/coui/menu/CouiMenuAnchor.kt)，选中、勾选、子菜单和限高示例见 [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)。
