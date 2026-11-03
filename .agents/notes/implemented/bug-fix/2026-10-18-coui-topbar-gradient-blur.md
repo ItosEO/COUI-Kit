@@ -8,7 +8,7 @@ Status: implemented
 
 ## Decision
 
-CouiTopAppBar 在相应平台通过 CouiGradientBlur 移植位置可变 Gaussian。横、纵两遍分别记录到原尺寸 GraphicsLayer，前一遍栅格化后再进入后一遍。保留整数核、对称权重、中心剩余权重和末端返回，不改成均匀模糊与原图混合。不进行 Bitmap 回读，也不在低分辨率图层重绘矢量源。
+TopAppBar 在相应平台通过 CouiGradientBlur 移植位置可变 Gaussian。横、纵两遍分别记录到原尺寸 GraphicsLayer，前一遍栅格化后再进入后一遍。保留整数核、对称权重、中心剩余权重和末端返回，不改成均匀模糊与原图混合。不进行 Bitmap 回读，也不在低分辨率图层重绘矢量源。
 
 独立 Density 用于采样录制，不能让 DrawScope 成为自己的密度代理。背景源、坐标和裁剪继续复用 CouiBackdrop；渐进输出排除标题与按钮，按钮采样该输出并通过 parent 补足源区域外底图。
 

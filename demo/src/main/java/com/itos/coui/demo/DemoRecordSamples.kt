@@ -56,7 +56,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
-import com.itos.coui.dialog.CouiAlertDialog
+import com.itos.coui.dialog.AlertDialog
 import com.itos.coui.dialog.CouiDialogAction
 import com.itos.coui.effect.CouiMetaballRenderer
 import kotlinx.coroutines.launch
@@ -116,7 +116,7 @@ internal fun RecordSwipeSamples(dark: Boolean) {
         }
     }
     SampleRecords.firstOrNull { it.id == viewedId }?.let { record ->
-        CouiAlertDialog(onDismissRequest = { viewedId = 0 }, dark = dark,
+        AlertDialog(onDismissRequest = { viewedId = 0 }, dark = dark,
             title = stringResource(R.string.record_preview),
             confirmAction = CouiDialogAction(stringResource(R.string.dialog_confirm), { viewedId = 0 })) {
             RecordHistoryContent(record = record)

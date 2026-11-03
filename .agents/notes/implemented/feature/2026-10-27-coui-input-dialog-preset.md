@@ -10,7 +10,7 @@ Status: implemented
 
 ## Decision
 
-在 dialog 包提供 CouiInputDialog 预设，复用 CouiAlertDialog 的窗口、标题、操作按钮、位置、项目材质及取消路径。预设只补输入区，不新增输入框组件、窗口后端或 Shader。TextFieldValue 与 onValueChange 由宿主持有草稿、选区和输入法组合区；计数文案、计数错误色、确认启用及保存回调均受控。清除回调空值并保留编辑焦点，不提交确认。
+在 dialog 包提供 InputDialog 预设，复用 AlertDialog 的窗口、标题、操作按钮、位置、项目材质及取消路径。预设只补输入区，不新增输入框组件、窗口后端或 Shader。TextFieldValue 与 onValueChange 由宿主持有草稿、选区和输入法组合区；计数文案、计数错误色、确认启用及保存回调均受控。清除回调空值并保留编辑焦点，不提交确认。
 
 ### 原厂依据与承载
 
@@ -39,19 +39,19 @@ DemoDialogInputSample 只消费公开预设，示例名称由 DialogSample 保�
 | 计数与达到上限 | OnEditTextChangeListener | 宿主计算 counter / counterIsError，预设绘制 |
 | 清除与失焦 | initDeleteButton / updateDeleteButton / updateLineModeBackground | 受控空值回调、获焦显示、焦点线协程收尾 |
 | 保存 | TextWatcher / verifyDeviceName 的本地提交分支 | Demo 校验后更新示例名称并关闭，不接系统业务 |
-| 取消、返回、外点及移除 | 原 AlertDialog / onDialogDismissed | 复用 CouiAlertDialog 的关闭请求，宿主销毁草稿 |
+| 取消、返回、外点及移除 | 原 AlertDialog / onDialogDismissed | 复用 AlertDialog 的关闭请求，宿主销毁草稿 |
 | 按钮 UP / CANCEL / 父接管 | 普通弹窗的公共触摸链 | 保留 PR 中 3b346e7 的滚动取消修复，不复制或覆盖 |
 
 ## Alternatives considered
 
-- **只在 Demo 中装配输入区。** 可保持库 API 最少，也符合此前组合示例的边界；这次用户明确指定专门的预设组件，因此提供可直接调用的 CouiInputDialog，业务继续留在 Demo。
+- **只在 Demo 中装配输入区。** 可保持库 API 最少，也符合此前组合示例的边界；这次用户明确指定专门的预设组件，因此提供可直接调用的 InputDialog，业务继续留在 Demo。
 - **另外实现完整输入框和另一种输入弹窗窗口。** 更便于独立扩展，却超出一个输入预设的需求，还会使普通弹窗的材质、按钮与取消链分叉；只复用现有后端并补所属预设内容。
 - **把 32 上限和设备改名规则固定到预设。** 宿主调用更短，但普通文本输入会被设备名称业务限制；由调用方控制输入值、计数和确认，Demo 展示具体策略。
 - **沿用默认窗口模式，或额外加 imePadding。** 改动少，但当前依赖没有明确请求 resize，重复 inset 也可能多留键盘高度；预设持有单一窗口避让策略，并公开说明覆盖属性的要求。
 
 ## Consequences
 
-库新增的是普通弹窗的专门预设，不改变现有 CouiAlertDialog 签名、普通间距或共享材质默认行为。宿主能直接调用标准输入弹窗，但仍需正确保存 TextFieldValue、计算校验并处理确认和取消。公开 API 不预设字符上限、语言、设备名或真实系统写入。
+库新增的是普通弹窗的专门预设，不改变现有 AlertDialog 签名、普通间距或共享材质默认行为。宿主能直接调用标准输入弹窗，但仍需正确保存 TextFieldValue、计算校验并处理确认和取消。公开 API 不预设字符上限、语言、设备名或真实系统写入。
 
 输入、计数和下划线需要随 Compose 编辑承载维护；OEM 光标/选区菜单、私有窗口调度、网络错误抖动动画与跨 ROM 字体不因此等价。键盘弹出/收起、横屏和极矮窗口、中文 IME、TalkBack、RTL、焦点反向及 GPU 动画中段仍需设备验收，源码和 Release 构建不能替代验收。
 

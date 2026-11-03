@@ -56,7 +56,7 @@ import com.itos.coui.backdrop.CouiBackdrop
 import kotlinx.coroutines.flow.first
 
 /**
- * 单输入弹窗预设，复用 [CouiAlertDialog] 的窗口、操作区与材质。
+ * 单输入弹窗预设，复用 [AlertDialog] 的窗口、操作区与材质。
  *
  * 对应 Settings 17 的 COUIAlertDialog.SingleInput / COUIInputView。value 包含宿主的草稿、
  * 选区和输入法组合区；输入过滤、counter 文案、counterIsError 与确认启用条件均由宿主持有。
@@ -65,7 +65,7 @@ import kotlinx.coroutines.flow.first
  * properties 必须保留 decorFitsSystemWindows=true；预设显式请求窗口 resize，勿再叠加 imePadding。
  */
 @Composable
-fun CouiInputDialog(
+fun InputDialog(
     modifier: Modifier = Modifier,
     value: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
@@ -100,7 +100,7 @@ fun CouiInputDialog(
  * 适合粘贴过滤和 IME 组合编辑；程序性 state.edit 不经过输入转换。布局与窗口沿用值回调版本。
  */
 @Composable
-fun CouiInputDialog(
+fun InputDialog(
     modifier: Modifier = Modifier,
     state: TextFieldState,
     onDismissRequest: () -> Unit,
@@ -158,7 +158,7 @@ private fun InputDialogFrame(
     val softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or
         if (autoFocus) WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE else WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED
     CompositionLocalProvider(LocalCouiDialogSoftInputMode provides softInputMode) {
-        CouiAlertDialog(modifier = modifier, onDismissRequest = onDismissRequest, confirmAction = confirmAction,
+        AlertDialog(modifier = modifier, onDismissRequest = onDismissRequest, confirmAction = confirmAction,
             dark = dark, title = title, dismissAction = dismissAction, placement = placement,
             colors = colors, material = material, backdrop = backdrop, properties = properties) {
             // SingleInput 属于 BottomAssignment：正文到 customPanel 是 4dp，不沿用普通警告的 16dp。

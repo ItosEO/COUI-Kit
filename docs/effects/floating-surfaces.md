@@ -25,7 +25,7 @@ val surfaceModifier = Modifier.couiFloatingSurface(
 )
 ~~~
 
-将 surfaceModifier 挂到负责绘制的节点。宿主负责内容层的录制、当前尺寸与变换，完整单主体装配见 [CouiFab](../../coui/src/main/java/com/itos/coui/floatingactionbutton/CouiFab.kt)。不要将空的 GraphicsLayer 当作已录制内容。
+将 surfaceModifier 挂到负责绘制的节点。宿主负责内容层的录制、当前尺寸与变换，完整单主体装配见 [Fab](../../coui/src/main/java/com/itos/coui/floatingactionbutton/Fab.kt)。不要将空的 GraphicsLayer 当作已录制内容。
 
 此 Modifier 绑定传入的 renderer、内容层和当前坐标，只能挂到该节点。第二个节点须单独装配；可复用 material、shadow 等不可变配置。它不改变测量，内容路径、投影溢出和材质 patch 各按原有层序绘制，不能再用外层 clip 一并裁掉投影。
 
@@ -49,7 +49,7 @@ val surfaceModifier = Modifier.couiFloatingSurface(
 
 单主体和双主体支持 `foregroundComposition`。启用时，材质与光晕只输出前景，以 SrcOver 叠到已绘制页面；Backdrop 必须覆盖不透明 SDR 页面。三主体保留完整 destination 合成。
 
-`beforeContent` 在对应材质之后、内容之前绘制。双主体回调另接收列表下标。回调坐标属于当前绘制节点，缓存 Path 描述未缩放主体的局部轮廓；调用方负责位移、缩放和裁剪，不得修改该 Path。完整双主体装配见 [CouiSearchBar](../../coui/src/main/java/com/itos/coui/search/CouiSearchBar.kt)。
+`beforeContent` 在对应材质之后、内容之前绘制。双主体回调另接收列表下标。回调坐标属于当前绘制节点，缓存 Path 描述未缩放主体的局部轮廓；调用方负责位移、缩放和裁剪，不得修改该 Path。完整双主体装配见 [SearchBar](../../coui/src/main/java/com/itos/coui/search/SearchBar.kt)。
 
 ## 资源与错误
 

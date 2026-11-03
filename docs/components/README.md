@@ -4,7 +4,7 @@
 
 | 组件 | 用途 |
 | --- | --- |
-| [页面容器](scaffold.md) | 可选的 `CouiScaffold`，统一顶栏、底栏、正文 Padding 与安全区 |
+| [页面容器](scaffold.md) | 可选的 `Scaffold`，统一顶栏、底栏、正文 Padding 与安全区 |
 | [顶栏与按钮](top-app-bar.md) | 渐进模糊背景、页面标题和操作 |
 | [顶栏搜索](search.md) | 搜索按钮与输入框之间的转场 |
 | [常驻搜索](search-bar.md) | 搜索胶囊与独立取消按钮 |

@@ -1,5 +1,6 @@
 package com.itos.coui.demo
 
+import com.itos.coui.icons.CouiIcons
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,14 +18,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicText
 import com.itos.coui.scroll.couiVerticalScroll
 import com.itos.coui.scroll.CouiOverscrollEffect
 import com.itos.coui.scroll.rememberCouiOverscrollEffect
 import androidx.compose.material3.Icon
 import com.itos.coui.backdrop.couiBackdrop
 import com.itos.coui.backdrop.rememberCouiBackdrop
-import com.itos.coui.theme.LocalCouiContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -35,19 +34,19 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.itos.coui.effect.couiButtonFeedback
 import com.itos.coui.shape.CouiShape
 import com.itos.coui.text.CouiTextKind
+import com.itos.coui.text.Text
 import com.itos.coui.text.rememberCouiTextStyle
-import com.itos.coui.topappbar.CouiTopAppBar
-import com.itos.coui.topappbar.CouiTopAppBarButton
+import com.itos.coui.topappbar.TopAppBar
+import com.itos.coui.topappbar.TopAppBarButton
 import com.itos.coui.topappbar.CouiTopAppBarButtonDefaults
-import com.itos.coui.topappbar.CouiToolbarStyle
 import com.itos.coui.effect.LocalCouiContourGlowEnabled
 import androidx.compose.ui.platform.LocalDensity
 import android.os.Build
-import com.itos.coui.shape.CouiCapsuleShape
 
 import com.itos.coui.layout.*
 
@@ -72,20 +71,19 @@ internal fun DemoSettingsPage(
     val density = LocalDensity.current.density
     val contour = LocalCouiContourGlowEnabled.current
     val backdrop = rememberCouiBackdrop()
-    CouiScaffold(modifier = modifier.fillMaxSize().imePadding(),
+    Scaffold(modifier = modifier.fillMaxSize().imePadding(),
         containerColor = colors.background,
         topBar = {
-                CouiTopAppBar(Modifier.fillMaxWidth(), backdrop) {
+                TopAppBar(Modifier.fillMaxWidth(), backdrop) {
                     Row(Modifier.fillMaxWidth().statusBarsPadding().height(CouiPageDefaults.toolbarHeight)
                         .padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                         if (Build.VERSION.SDK_INT >= 34) {
-                            CouiTopAppBarButton(onClick = onBack, style = CouiToolbarStyle(dark = dark,
-                                contourGlowEnabled = contour, circleShape = CouiShape(20.dp, 2f),
-                                capsuleShape = CouiCapsuleShape, contentColor = colors.title,
+                            TopAppBarButton(onClick = onBack, style = CouiTopAppBarButtonDefaults.style(dark).copy(
+                                contentColor = colors.title,
                                 textStyle = rememberCouiTextStyle(CouiTextKind.Toolbar), cursorColor = colors.accent,
                                 material = { CouiTopAppBarButtonDefaults.systemMaterial(dark, it) },
                                 shadow = { CouiTopAppBarButtonDefaults.shadow(dark, it, density, contour, alphaScale = 1f) })) {
-                                Icon(DemoIcons.Back, backDescription, Modifier.size(24.dp))
+                                Icon(CouiIcons.Back, backDescription, Modifier.size(24.dp))
                             }
                         } else Box(Modifier.size(48.dp).clip(CouiShape(24.dp, 2f))
                             .couiButtonFeedback(dark, source, true)
@@ -93,8 +91,9 @@ internal fun DemoSettingsPage(
                             .semantics { contentDescription = backDescription }, contentAlignment = Alignment.Center) {
                             DemoSettingsArrow(Modifier.size(24.dp), back = true, color = colors.title)
                         }
-                        BasicText(title, Modifier.weight(1f).padding(start = 8.dp, end = 8.dp).semantics { heading() },
-                            style = rememberCouiTextStyle(CouiTextKind.Toolbar).copy(color = colors.title),
+                        Text(Modifier.weight(1f).padding(start = 8.dp, end = 8.dp).semantics { heading() },
+                            text = title, kind = CouiTextKind.Toolbar, color = colors.title,
+                            textAlign = TextAlign.Start,
                             maxLines = 1, overflow = TextOverflow.Ellipsis)
                         actions()
                     }

@@ -12,7 +12,7 @@ Demo 保留组件、效果、预设三页与底栏，组件和效果由目录进
 
 详情按稳定 page 标识直接装配示例。目录搜索只筛选可导航条目，不把本地化标题转换成 query 再筛回详情。首页页签继续使用 SaveableStateHolder，详情保留各示例自身的 rememberSaveable；不为固定 Activity 再保存一层筛选分组。设置行直接组合公开 COUI 控件，删除无消费者的旧 M3 开关和纯参数转发。整行开关的点击与拖动边界见[整行开关输入](../bug-fix/2026-11-03-switch-row-drag.md)。
 
-DemoApp 与 DemoSettingsPage 使用[可选 CouiScaffold](../architecture/2026-11-03-optional-coui-scaffold.md)。正文源录制完整视口，顶栏与底栏不录入自身消费的源；DemoHostActivity 提供菜单和弹窗的窗口源。容器负责横向安全区，栏位负责对应纵向 Insets，IME 在容器外消费。独立组件与主题、采样的关系沿用[宿主页面所有权](../architecture/2026-11-03-host-owned-page-layout.md)。
+DemoApp 与 DemoSettingsPage 使用[可选 Scaffold](../architecture/2026-11-03-optional-coui-scaffold.md)。正文源录制完整视口，顶栏与底栏不录入自身消费的源；DemoHostActivity 提供菜单和弹窗的窗口源。容器负责横向安全区，栏位负责对应纵向 Insets，IME 在容器外消费。独立组件与主题、采样的关系沿用[宿主页面所有权](../architecture/2026-11-03-host-owned-page-layout.md)。
 
 Application 初始化 CouiMaterial3Style；局部 CouiTheme 切换原生外观，movableContentOf 保留同一内容树。Activity 共享偏好与实际模式，行控件直接读取 CouiTheme 和 CouiPageDefaults，不另存一份 Demo 主题 Local。DemoTheme 为全部 Activity 提供 M3 LocalContentColor=onBackground；MaterialTheme 本身不提供该内容色，仅在首页设置会使独立详情中的普通 Text/Icon 回退黑色。显式样式取最终 COUI 角色，菜单使用明确模式。依据见[可选主题策略](../architecture/2026-10-31-optional-material3-style.md)。
 

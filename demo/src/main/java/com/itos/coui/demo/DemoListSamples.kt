@@ -1,5 +1,6 @@
 package com.itos.coui.demo
 
+import com.itos.coui.icons.CouiIcons
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.Icon
@@ -32,8 +33,8 @@ internal fun ListSamples(dark: Boolean, open: (String) -> Unit) {
         if (progress >= 1f) running = false
     }
     Group(title = stringResource(R.string.list_item_info)) {
-        DemoPreference(title = stringResource(R.string.app_name), value = "ColorOS 17", icon = { Icon(DemoIcons.Info, null) })
-        Divider(startIndent = 56.dp)
+        DemoPreference(title = stringResource(R.string.app_name), value = "ColorOS 17", icon = { Icon(CouiIcons.Info, null) })
+        Divider(startIndent = CouiPageDefaults.rowPadding + CouiPageDefaults.iconSize + CouiPageDefaults.iconSpacing)
         DemoPreference(title = stringResource(R.string.settings_local), summary = stringResource(R.string.settings_privacy_summary))
     }
     Group {
@@ -74,7 +75,7 @@ internal fun ListSamples(dark: Boolean, open: (String) -> Unit) {
     Group {
         DemoPreference(title = stringResource(R.string.dialog_title), onClick = { open("dialogs") })
     }
-    if (editing) CouiAlertDialog(onDismissRequest = { editing = false }, dark = dark,
+    if (editing) AlertDialog(onDismissRequest = { editing = false }, dark = dark,
         title = stringResource(R.string.list_item_input),
         confirmAction = CouiDialogAction(stringResource(R.string.picker_confirm), { name = draft; editing = false }),
         dismissAction = CouiDialogAction(stringResource(R.string.picker_cancel), { editing = false }),

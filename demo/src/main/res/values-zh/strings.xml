@@ -49,6 +49,7 @@
     <string name="left_accessory_toggle">显示左侧附件</string>
     <string name="right_accessory_toggle">显示右侧附件</string>
     <string name="toolbar_enabled">启用顶栏操作按钮</string>
+    <string name="search_enabled">启用搜索</string>
     <string name="backdrop_title">背景采样与模糊</string>
     <string name="material_title">材质混色</string>
     <string name="blur_radius">模糊半径</string>

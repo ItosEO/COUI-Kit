@@ -4,20 +4,38 @@ COUI-Kit 处于早期预览阶段。本文记录公开 API、行为、接入和�
 
 ## 未发布
 
+### 组件命名迁移
+
+公开 UI 组件统一去掉 `Coui` 前缀，包名和参数保持不变。升级当前源码时，同步修改 import、调用和函数引用；不保留旧名称转发。此项属于源码及二进制不兼容变更，已发布版本的名称不变。
+
+- `CouiText`、`CouiSwitch`、`CouiSlider`、`CouiCheckbox` → `Text`、`Switch`、`Slider`、`Checkbox`。
+- `CouiMenu`、`CouiFab`、`CouiBottomBar`、`CouiScaffold` → `Menu`、`Fab`、`BottomBar`、`Scaffold`。
+- `CouiSearchBar`、`CouiCollapsingTopAppBar`、`CouiTopAppBar` → `SearchBar`、`CollapsingTopAppBar`、`TopAppBar`；顶栏的 Button、ButtonGroup、ActionVisibility、Search、SearchButton、SearchAction 入口同样去掉前缀。
+- `CouiChipTab`、`CouiChipTabButton`、`CouiChipTabRow` → `ChipTab`、`ChipTabButton`、`ChipTabRow`。
+- `CouiAlertDialog`、`CouiInputDialog`、`CouiWheelPicker`、`CouiCalendarPicker` → `AlertDialog`、`InputDialog`、`WheelPicker`、`CalendarPicker`。
+
+`CouiTextKind`、Defaults、Style、状态等类型，以及 `CouiTheme`、`rememberCoui…` 工厂和 `coui…` 效果入口保持原名。与 M3 等同名组件混用时，通过 import 别名区分来源。
+
 ### 新增
 
+- `Text` 增加可选 `maxLines`、`overflow`；Body 与 Description 默认按逻辑起始边对齐，显式 `textAlign` 优先。
+- `SearchBar` 增加可选 `enabled`，统一控制点击、编辑、清除、取消、IME 提交和交互反馈，禁用时释放自身输入但保留宿主状态。取消文字宽度按文本、样式、密度、布局方向和测量器缓存。
+- `Item` 移除无条件语义合并；整行点击沿用 clickable 的语义，纯布局保留子控件语义。`Group.headerActions` 仅随非空标题渲染。
+- 移除无效的 `CouiPageDefaults.groupPadding` 与仅供 Demo 使用的 `homeRowMinHeight`；目录行高由 Demo 持有。Demo 顶栏使用既有 Defaults 并覆盖所需外观，同名图标直接使用 CouiIcons。
+- `CouiPageDefaults.iconSpacing` 统一 Item 图标与文字的间距；Demo 的带图标分隔线由行内留白、图标尺寸和该间距计算缩进。
 - `Group`、`Item`、`Divider` 和 `Footer` 提供可独立组合的设置式布局；`Item` 支持内容槽和可选整行点击。
-- 可选 `CouiScaffold` 提供栏位测量、正文 Padding 和系统安全区处理，核心无需 Material 3。采样、滚动、导航与主题由宿主分别组合。
-- `CouiCollapsingTopAppBar`、`CouiSearchBar` 和相应状态提供折叠标题及常驻搜索；与既有顶栏搜索分别使用。
+- `Item` 的内容槽参数 `headline` 更名为 `title`，`supporting` 更名为 `summary`，`leading` 更名为 `icon`，图标槽尺寸 `leadingSize` 更名为 `iconSize` 并移至 `icon` 后；开发分支消费者需同步名称及受影响的位置参数，参数类型与默认值保持不变。
+- 可选 `Scaffold` 提供栏位测量、正文 Padding 和系统安全区处理，核心无需 Material 3。采样、滚动、导航与主题由宿主分别组合。
+- `CollapsingTopAppBar`、`SearchBar` 和相应状态提供折叠标题及常驻搜索；与既有顶栏搜索分别使用。
 - `couiVerticalScroll` 提供 COUI 纵向惯性与边界回弹，支持短内容和空内容。拖动事件由可选 `interactionSource` 提供，位置与范围继续使用 `ScrollState`。
-- `CouiText` 与 `rememberCouiTextStyle` 提供固定 COUI 排版角色；`CouiIcons` 提供系统功能矢量子集，来源与权利说明随源码和 API 文档归档分发。
+- `Text` 与 `rememberCouiTextStyle` 提供固定 COUI 排版角色；`CouiIcons` 提供系统功能矢量子集，来源与权利说明随源码和 API 文档归档分发。
 - Demo 使用目录和独立 Activity 组织详情，提供目录搜索、共享外观偏好及完整页面装配示例。
 
 ### 既有接口与行为
 
 - `LocalCouiContentColor` 的缺省值为 `Color.Unspecified`。COUI 文字和图标在消费处解析当前主题前景色；直接读取该 Local 的宿主需处理未指定值。显式文字颜色及图标的不染色语义保留。
 - `CouiColorScheme` 增加独立 `background`，默认沿用 `surface`；原生页面与组件表面分别配色。M3 适配的菜单项和头部标签分别读取 `labelLarge` 与 `bodySmall`。
-- `CouiTopAppBar` 支持背景透明度和全高渐隐曲线，保留显式渐变颜色的 alpha；`dark` 默认跟随 `CouiTheme`。
+- `TopAppBar` 支持背景透明度和全高渐隐曲线，保留显式渐变颜色的 alpha；`dark` 默认跟随 `CouiTheme`。
 - 浮动表面增加双主体入口，复用既有材质、融合和光效。列表按压复用现有反馈入口。
 - ChipTab 与纵向滚动共享物理内核，各实例的动画等级独立决定摩擦参数。
 

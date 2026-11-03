@@ -50,7 +50,7 @@ import com.itos.coui.motion.rememberCouiTouchMotion
 
 @RequiresApi(34)
 @Composable
-fun CouiTopAppBarButton(
+fun TopAppBarButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     enabled: Boolean = true,
@@ -59,7 +59,7 @@ fun CouiTopAppBarButton(
     style: CouiToolbarStyle = CouiTopAppBarButtonDefaults.style(),
     content: @Composable RowScope.() -> Unit,
 ) {
-    val backdrop = checkNotNull(LocalCouiToolbarBackdrop.current) { "顶栏按钮必须位于 CouiTopAppBar 内" }
+    val backdrop = checkNotNull(LocalCouiToolbarBackdrop.current) { "顶栏按钮必须位于 TopAppBar 内" }
     val dark = style.dark
     val contour = style.contourGlowEnabled
     var boundsSize by remember { mutableStateOf(IntSize.Zero) }

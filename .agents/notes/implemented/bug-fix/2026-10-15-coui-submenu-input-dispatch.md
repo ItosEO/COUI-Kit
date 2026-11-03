@@ -22,7 +22,7 @@ Fast Kawase 使用变换后的设备像素建立各轮独立网格，原源先�
 
 本篇从原宿主的同名 Note 与菜单契约整理迁入。原厂基准为 PJZ110 相册/录音的 Root、RootListener、RegionBasedLongPressDetector、COUITouchRecyclerView 和 RoundFrameLayout。原厂子 View 可独立收 CANCEL/DOWN，Compose 需要还原会话语义，不能向整个 ComposeView 重投事件。直接按下和父转发会话的范围外光源行为曾对照官方相册取样，该结果不是修改后组件验收。
 
-当前入口见 [CouiMenu](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenu.kt)、[子菜单](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenuSubMenu.kt) 和 [模糊](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenuBlur.kt)。公开宿主只接数据、外观与回调，不读写滚动条、运动帧或坐标状态。
+当前入口见 [Menu](../../../../coui/src/main/java/com/itos/coui/menu/Menu.kt)、[子菜单](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenuSubMenu.kt) 和 [模糊](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenuBlur.kt)。公开宿主只接数据、外观与回调，不读写滚动条、运动帧或坐标状态。
 
 密度自引用核对 `ui-graphics-android:1.13.0-beta02` 的 `DrawScope.record` 与 `CanvasDrawScope` 源码。在 JVM 上直接使用该 AAR 的实际类，将作用域写入自身 `DrawContext.density` 后，读取 `density` 和 `fontScale` 均复现 `StackOverflowError`；改用独立 Density 后两项读取均通过。此检查验证密度代理行为，未执行 Android 图层录制、菜单实绘或设备验收。
 

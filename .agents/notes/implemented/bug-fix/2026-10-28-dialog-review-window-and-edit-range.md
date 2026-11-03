@@ -10,7 +10,7 @@ PR #6 的审查指出：仅改变 DialogProperties 时 Compose Dialog.updatePara
 
 输入预设只通过内部 LocalCouiDialogSoftInputMode 声明策略，[CouiDialogWindow](../../../../coui/src/main/java/com/itos/coui/dialog/CouiDialogWindow.kt)持有实际 Window。子组合首次发布窗口时应用初始配置；owner 在组合阶段读取窗口引用，并在 Dialog 调用之后的 SideEffect 统一设置窗口属性，确保晚于 Compose updateParameters。输入内容不重组、窗口标题改变或 autoFocus 改变，均由同一窗口 owner 恢复所需模式；普通警告没有输入策略时保留 Compose 默认行为。没有增加公开窗口回调或另一套 Dialog 后端。
 
-[CouiInputDialog](../../../../coui/src/main/java/com/itos/coui/dialog/CouiInputDialog.kt)保留原 TextFieldValue 重载，新增宿主持有 TextFieldState 与 InputTransformation 的同名重载。它们共享真实的窗口、正文、输入行、占位提示、计数、清除和焦点实现，仅 BasicTextField 的值契约不同，不新增第二个输入框组件。新方式由 Foundation 编辑事务提供实际替换范围，不以字符串差异恢复已经丢失的编辑命令。
+[InputDialog](../../../../coui/src/main/java/com/itos/coui/dialog/InputDialog.kt)保留原 TextFieldValue 重载，新增宿主持有 TextFieldState 与 InputTransformation 的同名重载。它们共享真实的窗口、正文、输入行、占位提示、计数、清除和焦点实现，仅 BasicTextField 的值契约不同，不新增第二个输入框组件。新方式由 Foundation 编辑事务提供实际替换范围，不以字符串差异恢复已经丢失的编辑命令。
 
 [重命名示例](../../../../demo/src/main/java/com/itos/coui/demo/DemoDialogInputSample.kt)使用新重载。转换先快照 ChangeList 的不重叠插入区间，计算未替换文本的字节配额，再按文本顺序分配插入配额，最后逆序替换，避免后续区间偏移。禁用字符令对应插入片段为空，保留实际删除的选区；长度按原 UTF-16 单元 1/2/3 计算，不切断代理对。原厂节流提示、初始保存禁用、取消草稿、计数与本地保存保留。程序性清除不经过转换，宿主通过 snapshotFlow 观察编辑结果。
 

@@ -63,7 +63,7 @@ private val FadeColors = LongArray(FadeStopCount) { index ->
  * gradientColor 非透明时叠加主题背景渐变，其 alpha 与预设透明度相乘；dark 默认跟随当前主题。
  */
 @Composable
-fun CouiTopAppBar(
+fun TopAppBar(
     modifier: Modifier = Modifier,
     backdrop: CouiBackdrop,
     fadeHeight: androidx.compose.ui.unit.Dp = CouiTopAppBarDefaults.fadeHeight,

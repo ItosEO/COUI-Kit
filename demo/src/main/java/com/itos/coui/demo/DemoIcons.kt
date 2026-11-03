@@ -4,22 +4,6 @@ import com.itos.coui.icons.CouiIcons
 
 /** 各演示场景复用已核对调用来源的库图标。 */
 internal object DemoIcons {
-    val Components get() = CouiIcons.Components
-    val ComponentsSelected get() = CouiIcons.ComponentsSelected
-    val Featured get() = CouiIcons.Featured
-    val Theme get() = CouiIcons.Theme
-    val Add get() = CouiIcons.Add
-    val Search get() = CouiIcons.Search
-    val More get() = CouiIcons.More
-    val Settings get() = CouiIcons.Settings
-    val Time get() = CouiIcons.Time
-    val Countdown get() = CouiIcons.Countdown
-    val Calendar get() = CouiIcons.Calendar
-    val Info get() = CouiIcons.Info
-    val Check get() = CouiIcons.Check
-    val Back get() = CouiIcons.Back
-    val Next get() = CouiIcons.Next
-    val Popup get() = CouiIcons.Popup
     val Effects get() = CouiIcons.Featured
     val EffectsSelected get() = CouiIcons.FeaturedSelected
     val Presets get() = CouiIcons.Personalise

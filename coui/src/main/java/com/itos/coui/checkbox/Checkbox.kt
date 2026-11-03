@@ -45,7 +45,7 @@ private val CheckmarkReturnEasing = CubicBezierEasing(0.3f, 0f, 0.633f, 1f)
 
 /** 承接短信 coui_btn_check 的几何和切换动效; 点击和无障碍语义由宿主提供。 */
 @Composable
-fun CouiCheckbox(
+fun Checkbox(
     modifier: Modifier = Modifier,
     checked: Boolean,
     enabled: Boolean = true,

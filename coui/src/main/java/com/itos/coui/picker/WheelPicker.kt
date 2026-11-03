@@ -81,7 +81,7 @@ object CouiPickerDefaults {
  * 高度由 modifier 控制；未指定时使用 Defaults，运动步长与命中区域使用实际视口。
  */
 @Composable
-fun CouiWheelPicker(
+fun WheelPicker(
     modifier: Modifier = Modifier,
     value: Int,
     onValueChange: (Int) -> Unit,

@@ -66,7 +66,7 @@ import kotlin.math.PI
  */
 @RequiresApi(34)
 @Composable
-fun CouiChipTab(
+fun ChipTab(
     modifier: Modifier = Modifier,
     selected: Boolean,
     onClick: () -> Unit,
@@ -101,7 +101,7 @@ fun CouiChipTab(
 /** 分类栏的独立图标标签；不参与单选组，图标和动作由宿主提供。 */
 @RequiresApi(34)
 @Composable
-fun CouiChipTabButton(
+fun ChipTabButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     contentDescription: String,

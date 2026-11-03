@@ -1,15 +1,15 @@
 # 🔘开关
 
-`CouiSwitch` 用于开启或关闭一个选项，支持点击、拖动和加载状态。
+`Switch` 用于开启或关闭一个选项，支持点击、拖动和加载状态。
 
 ## 最小调用
 
 页面持有当前值并在回调中更新：
 
 ~~~kotlin
-import com.itos.coui.switch.CouiSwitch
+import com.itos.coui.switch.Switch
 
-CouiSwitch(
+Switch(
     checked = checked,
     onCheckedChange = onCheckedChange,
 )
@@ -29,12 +29,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import com.itos.coui.switch.CouiSwitch
+import com.itos.coui.switch.Switch
 import com.itos.coui.switch.CouiSwitchDefaults
 
 var checked by rememberSaveable { mutableStateOf(false) }
 
-CouiSwitch(
+Switch(
     modifier = Modifier.semantics { contentDescription = "消息通知" },
     checked = checked,
     onCheckedChange = { checked = it },
@@ -65,7 +65,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import com.itos.coui.switch.CouiSwitch
+import com.itos.coui.switch.Switch
 import com.itos.coui.switch.CouiSwitchDefaults
 
 @Composable
@@ -89,7 +89,7 @@ fun SwitchRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(label, Modifier.weight(1f))
-        CouiSwitch(
+        Switch(
             checked = checked,
             onCheckedChange = null,
             interactionSource = source,
@@ -108,7 +108,7 @@ fun SwitchRow(
 需要等待异步操作时，可以在开关上显示加载状态。请求开始时设置 `loading = true`，并保留原来的 `checked`；成功后更新 `checked` 并结束加载，失败或取消时结束加载即可。下面的 `requestChange`、`label` 和 `loadingLabel` 由页面提供。
 
 ~~~kotlin
-CouiSwitch(
+Switch(
     modifier = Modifier.semantics { contentDescription = label },
     checked = checked,
     onCheckedChange = requestChange,
@@ -134,12 +134,6 @@ CouiSwitch(
 
 触觉反馈遵循系统设置；传入 `hapticFeedbackEnabled = false` 可以关闭。
 
-## 系统版本
-
-开关支持库的最低系统版本。
-
 ## Demo 示例
 
-Demo 的“组件 → 开关”详情页包含普通、加载和禁用的整行示例。可交互行支持整行点击和滑块拖动，两者使用同一个业务回调；拖动达到阈值后取消本次整行点击。加载中的行和禁用行不接受这两种输入。
-
-Demo 示例见 [DemoSettingsSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsSamples.kt)，库入口和配色见 [CouiSwitch / CouiSwitchDefaults](../../coui/src/main/java/com/itos/coui/switch/CouiSwitch.kt)。
+普通、加载和禁用示例见 [DemoSettingsSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsSamples.kt)，库入口和配色见 [Switch / CouiSwitchDefaults](../../coui/src/main/java/com/itos/coui/switch/Switch.kt)。

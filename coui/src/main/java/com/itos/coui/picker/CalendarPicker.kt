@@ -97,7 +97,7 @@ import java.util.Locale
  * 月份浏览不读取业务数据，宿主持有选中日期与范围。
  */
 @Composable
-fun CouiCalendarPicker(
+fun CalendarPicker(
     modifier: Modifier = Modifier,
     value: LocalDate,
     onValueChange: (LocalDate) -> Unit,
@@ -609,7 +609,7 @@ private fun CalendarDateEditor(
             ) {
                 for (kind in order) {
                     when (kind) {
-                        'y' -> CouiWheelPicker(
+                        'y' -> WheelPicker(
                             Modifier.width(CouiPickerDefaults.dateYearWidth),
                             year,
                             ::submitYear,
@@ -620,7 +620,7 @@ private fun CalendarDateEditor(
                             repeatIntervalMillis = 100,
                             formatter = { if (chinese) "$it$yearLabel" else String.format(locale, "%d", it) },
                         )
-                        'M' -> CouiWheelPicker(
+                        'M' -> WheelPicker(
                             Modifier.width(CouiPickerDefaults.dateMonthWidth),
                             month,
                             ::submitMonth,
@@ -632,7 +632,7 @@ private fun CalendarDateEditor(
                             repeatIntervalMillis = 200,
                             formatter = { months[it - 1] },
                         )
-                        'd' -> CouiWheelPicker(
+                        'd' -> WheelPicker(
                             Modifier.width(CouiPickerDefaults.columnWidth),
                             date.dayOfMonth,
                             ::submitDay,

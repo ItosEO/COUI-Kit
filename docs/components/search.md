@@ -1,6 +1,6 @@
 # 🔍顶栏搜索
 
-`CouiTopAppBarSearch` 可以将顶栏中的搜索按钮展开为输入框。页面负责保存查询内容和控制搜索的展开、关闭。
+`TopAppBarSearch` 可以将顶栏中的搜索按钮展开为输入框。页面负责保存查询内容和控制搜索的展开、关闭。
 
 ## 显示一个可展开的搜索
 
@@ -31,10 +31,10 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.topappbar.CouiToolbarStyle
-import com.itos.coui.topappbar.CouiTopAppBar
-import com.itos.coui.topappbar.CouiTopAppBarButtonGroup
-import com.itos.coui.topappbar.CouiTopAppBarSearch
-import com.itos.coui.topappbar.CouiTopAppBarSearchButton
+import com.itos.coui.topappbar.TopAppBar
+import com.itos.coui.topappbar.TopAppBarButtonGroup
+import com.itos.coui.topappbar.TopAppBarSearch
+import com.itos.coui.topappbar.TopAppBarSearchButton
 import com.itos.coui.topappbar.rememberCouiTopAppBarSearchState
 
 @RequiresApi(34)
@@ -63,13 +63,13 @@ fun SearchToolbar(
         Unit
     }
     BackHandler(enabled = expanded, onBack = close)
-    CouiTopAppBar(modifier = modifier, backdrop = backdrop) {
+    TopAppBar(modifier = modifier, backdrop = backdrop) {
         Row(
             modifier = Modifier.fillMaxWidth().statusBarsPadding()
                 .heightIn(min = 64.dp).padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            CouiTopAppBarSearch(
+            TopAppBarSearch(
                 modifier = Modifier.weight(1f),
                 state = state,
                 style = searchStyle,
@@ -87,8 +87,8 @@ fun SearchToolbar(
             ) {
                 Text(title)
             }
-            CouiTopAppBarButtonGroup {
-                CouiTopAppBarSearchButton(
+            TopAppBarButtonGroup {
+                TopAppBarSearchButton(
                     state = state,
                     style = style,
                     onClick = {
@@ -109,28 +109,28 @@ fun SearchToolbar(
 
 ## 添加常驻动作
 
-将前面示例中的 `CouiTopAppBarButtonGroup` 替换为下面的内容，可以控制右侧动作在搜索展开时的显示方式。动作回调和描述文案由页面提供：
+将前面示例中的 `TopAppBarButtonGroup` 替换为下面的内容，可以控制右侧动作在搜索展开时的显示方式。动作回调和描述文案由页面提供：
 
 ~~~kotlin
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
-import com.itos.coui.topappbar.CouiTopAppBarButton
-import com.itos.coui.topappbar.CouiTopAppBarSearchAction
+import com.itos.coui.topappbar.TopAppBarButton
+import com.itos.coui.topappbar.TopAppBarSearchAction
 
-CouiTopAppBarButtonGroup {
-    CouiTopAppBarSearchAction(state = state) {
-        CouiTopAppBarButton(onClick = onReset, style = style) {
+TopAppBarButtonGroup {
+    TopAppBarSearchAction(state = state) {
+        TopAppBarButton(onClick = onReset, style = style) {
             Icon(Icons.Default.Refresh, contentDescription = resetLabel)
         }
     }
-    CouiTopAppBarSearchAction(state = state, visibleWhileSearching = true) {
-        CouiTopAppBarButton(onClick = onSettings, style = style) {
+    TopAppBarSearchAction(state = state, visibleWhileSearching = true) {
+        TopAppBarButton(onClick = onSettings, style = style) {
             Icon(Icons.Default.Settings, contentDescription = settingsLabel)
         }
     }
-    CouiTopAppBarSearchButton(
+    TopAppBarSearchButton(
         state = state,
         style = style,
         onClick = {
@@ -144,7 +144,7 @@ CouiTopAppBarButtonGroup {
 
 默认动作会在搜索展开时淡出。设置 `visibleWhileSearching = true` 后，动作会移到新位置并保持可用。
 
-示例假定已在 Application 接入可选 M3 适配。搜索表面和顶栏按钮自动同步 M3 内容 Local，部分文字样式与宿主 ambient 合并；显式子样式优先。收起时的 title 使用宿主样式。SearchButton 使用固定布局容器，不受 M3 最小交互尺寸 Local 控制。
+M3 插槽的主题继承见[外观与预设](../guide/appearance.md)。收起时的 title 使用宿主样式。`TopAppBarSearchButton` 使用固定布局容器，不受 M3 最小交互尺寸 Local 控制。
 
 ## 搜索框样式
 
@@ -155,7 +155,7 @@ material = { capsule -> CouiTopAppBarButtonDefaults.material(dark, capsule, sear
 shadow = { capsule -> CouiTopAppBarButtonDefaults.shadow(dark, capsule, density, contour, search = true) },
 ~~~
 
-`dark`、`density` 和 `contour` 来自顶栏样式示例。`CouiTopAppBarSearch` 的 `visible` 控制搜索区域显隐，不会改变 `expanded`；隐藏时搜索框不接受输入。
+`dark`、`density` 和 `contour` 来自顶栏样式示例。`TopAppBarSearch` 的 `visible` 控制搜索区域显隐，不会改变 `expanded`；隐藏时搜索框不接受输入。
 
 ## 版本和键盘
 
@@ -163,4 +163,4 @@ shadow = { capsule -> CouiTopAppBarButtonDefaults.shadow(dark, capsule, density,
 
 部分设备在请求焦点后可能不会自动弹出键盘，可以手动点击输入框。
 
-搜索框会占满可用宽度，放在 Row 里用 `Modifier.weight(1f)`，再按页面需要调 `endPadding`。源码见[搜索与动作](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarSearch.kt)、[状态工厂](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarSearchState.kt)，页面示例见 [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)。
+搜索框会占满可用宽度，放在 Row 里用 `Modifier.weight(1f)`，再按页面需要调 `endPadding`。源码见[搜索与动作](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBarSearch.kt)、[状态工厂](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarSearchState.kt)，页面示例见 [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)。

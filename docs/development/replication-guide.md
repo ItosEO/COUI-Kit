@@ -127,7 +127,7 @@ COUIPopupListWindow / COUIPopupWindow
 
 [CouiFloatingShader](../../coui/src/main/java/com/itos/coui/effect/CouiFloatingShader.kt) 的轮廓使用融合距离场。轮廓分离时，先检查这条链路。
 
-[CouiFloatingSurfaces](../../coui/src/main/java/com/itos/coui/effect/CouiFloatingSurfaces.kt) 承接采样、普通投影、caustic、材质和内容的分层。独立 FAB 走单主体入口，不填充假附件，也不共享底栏的收放状态。当前保留附件式底栏和独立 FAB，没有实现普通底栏绑定外部 FAB 的协议，当前装配见[独立 FAB](../../coui/src/main/java/com/itos/coui/floatingactionbutton/CouiFab.kt)与[底栏](../../coui/src/main/java/com/itos/coui/navigation/CouiBottomBar.kt)。
+[CouiFloatingSurfaces](../../coui/src/main/java/com/itos/coui/effect/CouiFloatingSurfaces.kt) 承接采样、普通投影、caustic、材质和内容的分层。独立 FAB 走单主体入口，不填充假附件，也不共享底栏的收放状态。当前保留附件式底栏和独立 FAB，没有实现普通底栏绑定外部 FAB 的协议，当前装配见[独立 FAB](../../coui/src/main/java/com/itos/coui/floatingactionbutton/Fab.kt)与[底栏](../../coui/src/main/java/com/itos/coui/navigation/BottomBar.kt)。
 
 **普通投影与有色外光晕分开研究：**
 
@@ -143,7 +143,7 @@ COUIPopupListWindow / COUIPopupWindow
 
 顶栏从 `ToolbarMaterialEffectDelegate` 继续追到状态 Drawable、点触光及形变消费者；不能直接复用 FAB 整套预设。
 
-便签搜索从 `COUISearchBar.showInToolBar/hideInToolBar` 追到宽度裁剪、位移、内容透明度和中段模糊。当前 [CouiTopAppBarSearch](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarSearch.kt) 只模糊透明内容层，材质、轮廓、光晕和投影保持清晰；不是将整个按钮等比放大并模糊。
+便签搜索从 `COUISearchBar.showInToolBar/hideInToolBar` 追到宽度裁剪、位移、内容透明度和中段模糊。当前 [TopAppBarSearch](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBarSearch.kt) 只模糊透明内容层，材质、轮廓、光晕和投影保持清晰；不是将整个按钮等比放大并模糊。
 
 当前搜索支持常驻与退场操作，Demo 展示两种装配。常驻操作移动和收起避让包含已批准的适配，不能将全部收起参数视为原厂默认；宿主自行决定动作内容。研究与修复依据见[搜索转场边界](../../.agents/notes/implemented/bug-fix/2026-10-20-topappbar-search-transition-boundaries.md)。
 
@@ -151,7 +151,7 @@ COUIPopupListWindow / COUIPopupWindow
 
 字体设置页的研究从 `FontSettingsFragment` 分别进入 `COUISeekBar` 和 `COUISectionSeekBar`，再查核心交互、Section 动画、纹理绘制、跟手和反馈。隐藏点位不等于没有内部步进；预览节流也不是滑块步长。
 
-当前 [CouiSlider](../../coui/src/main/java/com/itos/coui/slider/CouiSlider.kt) 分离逻辑值与视觉位置，业务范围及保存仍由宿主负责。宿主选择的 G2 轨道是外观适配，不是提取版本的原厂默认；专用马达波形及完整物理引擎没有跨平台等价保证。见[滑条决策](../../.agents/notes/implemented/feature/2026-10-21-coui-slider.md)。
+当前 [Slider](../../coui/src/main/java/com/itos/coui/slider/Slider.kt) 分离逻辑值与视觉位置，业务范围及保存仍由宿主负责。宿主选择的 G2 轨道是外观适配，不是提取版本的原厂默认；专用马达波形及完整物理引擎没有跨平台等价保证。见[滑条决策](../../.agents/notes/implemented/feature/2026-10-21-coui-slider.md)。
 
 [CouiMetaballRenderer](../../coui/src/main/java/com/itos/coui/effect/CouiMetaballRenderer.kt) 实现通知侧滑的同色横向双主体 CONIC 场。[Demo 融合示例](../../demo/src/main/java/com/itos/coui/demo/DemoRecordMetaball.kt)中的背景与内容遮罩使用相同算法、分别持有 renderer。它不提供背景采样或输入，也不替代底栏的多主体分层材质。
 
@@ -163,7 +163,7 @@ COUIPopupListWindow / COUIPopupWindow
 
 | 反例与检查方法                            | 需要核对的行为                         | 原厂依据与当前入口                                                                                                                                                                                                |
 |------------------------------------|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 越界回弹中按下，不达到拖动阈值就抬手；从 DOWN 追到每个提前返回 | DOWN 停止回弹后，UP/CANCEL 能否恢复边界收尾    | 原厂分发及触摸路径在 UP/CANCEL 调用 `springBack`，未进入拖动的 UP 也有处理；当前 [CouiChipTabRow](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabRow.kt) 将阈值等待纳入同一收尾范围                                                     |
+| 越界回弹中按下，不达到拖动阈值就抬手；从 DOWN 追到每个提前返回 | DOWN 停止回弹后，UP/CANCEL 能否恢复边界收尾    | 原厂分发及触摸路径在 UP/CANCEL 调用 `springBack`，未进入拖动的 UP 也有处理；当前 [ChipTabRow](../../coui/src/main/java/com/itos/coui/chip/ChipTabRow.kt) 将阈值等待纳入同一收尾范围                                                     |
 | 按住分类项后横向拖动，让父容器接管；分别检查按压与点触光       | 点触光取消不能代替按压释放；按压还须防止本次手势中重新启动 | `COUIChip.handleActionCancel` 调用 `executeFeedbackAnimator(false)`；当前分类项显式开启公共输入的 `cancelOnConsumedMove`，其他消费者保留原行为                                                                                       |
 | 分别追直接松手、惯性触边和中断，不只比较可见位置与速度        | 将临时积分位置统一重置到边界，会改变不同入口的初始状态   | 原厂 `springBack` 经 `setCurrentValue(..., false)` 保留临时位置；`setAtRest` 同步当前位置；`notifyEdgeReached` 写入边界。当前 [CouiScrollPhysics](../../coui/src/main/java/com/itos/coui/scroll/CouiScrollPhysics.kt) 分别处理 |
 
@@ -214,7 +214,7 @@ COUIPopupListWindow / COUIPopupWindow
 | 症状 / 错误前提                      | 实际检查点与经验                                                                               | 依据                                                                                                     |
 |--------------------------------|----------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
 | 同名 Overlay 就是同一算法              | 背景材质模式、Paint 混合、通知 EdgeType 属于不同消费者，不能按名字互换                                            | [菜单合成记录](../../.agents/notes/implemented/bug-fix/2026-10-15-coui-submenu-input-dispatch.md)            |
-| 顶栏点触光过强，先减 intensity           | 原参数相同也可能因混合目标不同而变强。透明前景内 Overlay 后再 SrcOver，不等于直接混合已完成的按钮表面；先核对层序                      | [点触光合成](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButton.kt)                       |
+| 顶栏点触光过强，先减 intensity           | 原参数相同也可能因混合目标不同而变强。透明前景内 Overlay 后再 SrcOver，不等于直接混合已完成的按钮表面；先核对层序                      | [点触光合成](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBarButton.kt)                       |
 | 按下整面发灰，资源里有 press 色所以正确        | `setNativeStateEnabled` 的提取实现写入 disabled flag；顶栏也未走相应 touchEntered 通知。必须核对消费者，不能按方法名猜  | [顶栏状态反馈](../../coui/src/main/java/com/itos/coui/effect/CouiStateFeedback.kt)                           |
 | 相邻按钮出现矩形截断，扩大 Canvas           | 完整 destination patch 用 Src 回填时会擦掉先绘制的兄弟投影。扩大 patch 反而扩大擦除。顶栏改用透明前景表达，但真正重叠的光区仍有采样顺序差异  | [兄弟投影合成](../../.agents/notes/implemented/bug-fix/2026-10-20-topappbar-search-transition-boundaries.md) |
 | 浅色有色 FAB 底下不明显，全部当成 caustic 调整 | 先分普通 ambient/spot、caustic、轮廓和内晕。阴影颜色 alpha 不是最终像素强度；还受光源、节点/Outline alpha、全局乘数、截断和裁剪影响 | [阴影移植](../../.agents/notes/implemented/bug-fix/2026-10-18-coui-native-shadow.md)                       |
@@ -237,7 +237,7 @@ COUIPopupListWindow / COUIPopupWindow
 
 | 症状 / 错误前提                 | 实际检查点与经验                                                                        | 依据                                                                                                     |
 |---------------------------|---------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
-| 静止正常，淡入淡出时阴影被裁            | `clip=false` 不能解除祖先 alpha 离屏纹理边界。逐层核对动画 outsets，不用布局 padding 改测量、命中和菜单锚点        | [动画绘制边界](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButtonGroup.kt)                 |
+| 静止正常，淡入淡出时阴影被裁            | `clip=false` 不能解除祖先 alpha 离屏纹理边界。逐层核对动画 outsets，不用布局 padding 改测量、命中和菜单锚点        | [动画绘制边界](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBarButtonGroup.kt)                 |
 | 将每个按钮单独提升到 overlay 就能保留动画 | 可能丢失内部祖先淡化。当前提升完整槽位、保留原位输入与锚点；局部 overlay 仍受页面/Pager 外层变换约束                      | [槽位与背景](../../.agents/notes/implemented/bug-fix/2026-10-20-topappbar-search-transition-boundaries.md)  |
 | 聚焦搜索时突然翻页，必然是 overlay 跨页  | 先追焦点 → BringIntoView → Pager。关闭用户滑动不等于禁止焦点滚动；固定顶栏应约束向祖先传递的可见范围，不延迟焦点或强制跳回页面掩盖原因 | [搜索转场边界](../../.agents/notes/implemented/bug-fix/2026-10-20-topappbar-search-transition-boundaries.md) |
 | 搜索起点跳一下、收起偶发横移            | 点击时捕获实际中心，真实放置时换算；转场端点保持稳定，宽度与位移使用同帧进度。不能等待全局坐标后修正首帧，也不能由操作区恢复重定向收起路径           | 同上                                                                                                     |
@@ -291,11 +291,11 @@ COUIPopupListWindow / COUIPopupWindow
 |---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 模块归属与预设       | [架构](architecture.md)、[分层决策](../../.agents/notes/implemented/architecture/2026-10-21-coui-module-boundary.md)                                                                                                                                           |
 | 菜单采样、材质与输入    | [菜单记录](../../.agents/notes/implemented/bug-fix/2026-10-15-coui-submenu-input-dispatch.md)、[模糊实现](../../coui/src/main/java/com/itos/coui/menu/CouiMenuBlur.kt)、[主子面板](../../coui/src/main/java/com/itos/coui/menu/CouiMenuSubMenu.kt)                    |
-| 底栏、独立 FAB 与配色 | [底栏](../../coui/src/main/java/com/itos/coui/navigation/CouiBottomBar.kt)、[独立 FAB](../../coui/src/main/java/com/itos/coui/floatingactionbutton/CouiFab.kt)、[配色预设](../../coui/src/main/java/com/itos/coui/floatingactionbutton/CouiFabDefaults.kt)        |
+| 底栏、独立 FAB 与配色 | [底栏](../../coui/src/main/java/com/itos/coui/navigation/BottomBar.kt)、[独立 FAB](../../coui/src/main/java/com/itos/coui/floatingactionbutton/Fab.kt)、[配色预设](../../coui/src/main/java/com/itos/coui/floatingactionbutton/CouiFabDefaults.kt)        |
 | 轮廓门控与材质分层     | [浮动表面](../effects/floating-surfaces.md)、[光效开关](../../coui/src/main/java/com/itos/coui/effect/CouiEffectLocals.kt)、[浮动表面](../../coui/src/main/java/com/itos/coui/effect/CouiFloatingSurfaces.kt)                                                         |
 | 普通投影          | [网格、覆盖率与缓存决定](../../.agents/notes/implemented/bug-fix/2026-10-18-coui-native-shadow.md)、[菜单投影装配](../../coui/src/main/java/com/itos/coui/menu/CouiMenuShadow.kt)                                                                                         |
 | 顶栏与搜索         | [渐进模糊](../../.agents/notes/implemented/bug-fix/2026-10-18-coui-topbar-gradient-blur.md)、[overlay 与搜索边界](../../.agents/notes/implemented/bug-fix/2026-10-20-topappbar-search-transition-boundaries.md)                                                   |
-| 滑条            | [接入与物理边界](../../.agents/notes/implemented/feature/2026-10-21-coui-slider.md)、[公开组件](../../coui/src/main/java/com/itos/coui/slider/CouiSlider.kt)                                                                                                        |
+| 滑条            | [接入与物理边界](../../.agents/notes/implemented/feature/2026-10-21-coui-slider.md)、[公开组件](../../coui/src/main/java/com/itos/coui/slider/Slider.kt)                                                                                                        |
 | ChipTab 与横向输入 | [组件装配](../../.agents/notes/implemented/feature/2026-10-24-chip-tab.md)、[选中项露出](../../.agents/notes/implemented/bug-fix/2026-10-24-chip-selection-visibility.md)、[命中与中断](../../.agents/notes/implemented/bug-fix/2026-10-24-chip-scroll-interruption.md) |
 | 横向双主体融合       | [算法接入](../effects/metaball.md)、[生产算法](../../coui/src/main/java/com/itos/coui/effect/CouiMetaballRenderer.kt)、[Demo](../../demo/src/main/java/com/itos/coui/demo/DemoRecordSamples.kt)                                                                   |
 | 开发与验证流程       | [Developer 指南](README.md)、[消费者兼容要求](../guide/compatibility.md)、[执行约束](../../AGENTS.md)                                                                                                                                                                  |

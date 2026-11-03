@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import com.itos.coui.theme.CouiTheme
 import kotlin.math.roundToInt
@@ -36,18 +37,20 @@ enum class CouiTextKind(internal val size: Float, internal val family: String, i
     Description(12f, "sans-serif", 400),
 }
 
-/** 系统资源决定排版，组件与语义由 Compose 承载，不继承宿主 M3 Typography。 */
+/** 系统资源决定排版；正文与说明默认起始对齐，行数和溢出交给 BasicText 处理。 */
 @Composable
-fun CouiText(modifier: Modifier = Modifier, text: String, kind: CouiTextKind, color: Color = Color.Unspecified,
-    onLineCount: (Int) -> Unit = {}, textAlign: TextAlign? = null) {
+fun Text(modifier: Modifier = Modifier, text: String, kind: CouiTextKind, color: Color = Color.Unspecified,
+    onLineCount: (Int) -> Unit = {}, textAlign: TextAlign? = null,
+    maxLines: Int = Int.MAX_VALUE, overflow: TextOverflow = TextOverflow.Clip) {
     val style = rememberCouiTextStyle(kind)
     BasicText(text, modifier,
         style = style.copy(color = color.takeOrElse { CouiTheme.contentColor },
             textAlign = textAlign ?: when (kind) {
-                CouiTextKind.PreferenceTitle, CouiTextKind.PreferenceSummary -> TextAlign.Start
+                CouiTextKind.PreferenceTitle, CouiTextKind.PreferenceSummary,
+                CouiTextKind.Body, CouiTextKind.Description -> TextAlign.Start
                 else -> TextAlign.Center
             }),
-        onTextLayout = { onLineCount(it.lineCount) })
+        onTextLayout = { onLineCount(it.lineCount) }, maxLines = maxLines, overflow = overflow)
 }
 
 @Composable

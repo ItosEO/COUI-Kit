@@ -80,7 +80,7 @@ import androidx.compose.ui.unit.round
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.window.SecureFlagPolicy
-import com.itos.coui.checkbox.CouiCheckbox
+import com.itos.coui.checkbox.Checkbox
 import com.itos.coui.effect.CouiStateProgress
 import com.itos.coui.effect.SpotlightDiagnostic
 import com.itos.coui.input.isCouiTouchCancelled
@@ -159,7 +159,7 @@ private fun <T> CouiMenuContent(
     themeTintEnabled: Boolean = true,
 ) {
     require(items.all { item -> item.children.all { it.children.isEmpty() } }) {
-        "CouiMenu 只支持两级菜单"
+        "Menu 只支持两级菜单"
     }
     if (items.any { it.children.isNotEmpty() }) {
         CouiMenuWithSubMenu(
@@ -702,7 +702,7 @@ private fun <T> CouiMenuRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         item.checked?.let { checked ->
-            CouiCheckbox(
+            Checkbox(
                 checked = checked,
                 enabled = item.enabled,
                 shape = LocalCouiMenuStyle.current.checkboxShape,
@@ -760,7 +760,7 @@ private fun CouiMenuDivider() {
 
 /** 默认使用当前 COUI 主题；显式 style 优先。菜单独立管理窗口、输入和退场资源。 */
 @Composable
-fun <T> CouiMenu(
+fun <T> Menu(
     modifier: Modifier = Modifier,
     expanded: Boolean,
     onDismissRequest: () -> Unit,

@@ -89,7 +89,7 @@ object CouiSwitchDefaults {
  * 正常点击、拖动吸附只提交一次；取消/父级接管/禁用回到宿主状态。当前原厂分支关闭跟手光。
  */
 @Composable
-fun CouiSwitch(
+fun Switch(
     modifier: Modifier = Modifier,
     checked: Boolean,
     onCheckedChange: ((Boolean) -> Unit)?,

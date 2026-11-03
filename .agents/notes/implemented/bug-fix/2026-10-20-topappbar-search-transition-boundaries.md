@@ -8,7 +8,7 @@ Material3 顶栏的祖先裁剪会截断悬浮按钮。逐按钮提升会丢失�
 
 ## Decision
 
-CouiTopAppBar 建立局部 SharedTransitionScope。完整槽位通过 CouiTopAppBarButtonGroup 提升，捕获边界包含内部进出动画；测量、输入、语义和 Popup 锚点仍在原位。不要只设置按钮 clip=false，也不要复制 Material3 布局。overlay 仍受外层页面和窗口变换/裁剪影响，不是全局独立窗口。
+TopAppBar 建立局部 SharedTransitionScope。完整槽位通过 TopAppBarButtonGroup 提升，捕获边界包含内部进出动画；测量、输入、语义和 Popup 锚点仍在原位。不要只设置按钮 clip=false，也不要复制 Material3 布局。overlay 仍受外层页面和窗口变换/裁剪影响，不是全局独立窗口。
 
 按钮材质与 caustic 使用已绘制的渐进背景，排除标题和按钮自身。顶栏单主体启用 foregroundComposition，将结果编码为合法预乘透明前景后 SrcOver；无光区域输出透明，避免背景回填擦除兄弟投影。保留原距离场、衰减和自身普通投影前缀。真正重叠的有光区域仍没有完整兄弟 framebuffer 参考，不承诺原厂顺序等价。底栏与 FAB 不跟随改为该模式。
 
@@ -22,7 +22,7 @@ CouiTopAppBar 建立局部 SharedTransitionScope。完整槽位通过 CouiTopApp
 
 合并整理原宿主的同名搜索 Note、2026-10-20-coui-toolbar-clipping-backdrop、topappbar-sibling-shadow-compositing 及顶栏/搜索契约。对应 AndroidX AppBarLayout 的祖先 clipToBounds、SharedTransitionScope 的捕获/绘制、PlacementScope 的真实坐标与 Pager BringIntoView 行为是承载依据。原厂转场来源为便签 COUISearchBar.showInToolBar/hideInToolBar，不等比缩放整条输入。
 
-当前实现见 [搜索组件](../../../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarSearch.kt) 和 [按钮组](../../../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButtonGroup.kt)。本项目为常驻操作避让而加快搜索收起、调整部分光效强度，属于已有特化，不称为原厂全部曲线逐项一致。
+当前实现见 [搜索组件](../../../../coui/src/main/java/com/itos/coui/topappbar/TopAppBarSearch.kt) 和 [按钮组](../../../../coui/src/main/java/com/itos/coui/topappbar/TopAppBarButtonGroup.kt)。本项目为常驻操作避让而加快搜索收起、调整部分光效强度，属于已有特化，不称为原厂全部曲线逐项一致。
 
 ## Alternatives considered
 

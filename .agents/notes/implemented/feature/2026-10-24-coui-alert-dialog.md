@@ -10,7 +10,7 @@ Status: implemented
 
 面板 Shape 与轮廓半径的当前解析契约见 [Modifier 与面板几何](../architecture/2026-11-02-modifier-contracts-and-picker-layout.md)，窗口、操作与材质算法仍沿用本文依据。
 
-通用弹窗以 CouiAlertDialog 为唯一窗口与操作后端，操作数据、配色和 Defaults 归同一组件。窗口、操作按钮和字体度量均在 dialog 包内部，Demo 只消费公开 API，不新增普通按钮或 Typography 组件。用户另行要求的专门输入预设 CouiInputDialog 复用本后端，依据与接入边界见[输入型弹窗记录](2026-10-27-coui-input-dialog-preset.md)。组件负责局部交互，宿主持有可见性、文案、主题和业务提交。
+通用弹窗以 AlertDialog 为唯一窗口与操作后端，操作数据、配色和 Defaults 归同一组件。窗口、操作按钮和字体度量均在 dialog 包内部，Demo 只消费公开 API，不新增普通按钮或 Typography 组件。用户另行要求的专门输入预设 InputDialog 复用本后端，依据与接入边界见[输入型弹窗记录](2026-10-27-coui-input-dialog-preset.md)。组件负责局部交互，宿主持有可见性、文案、主题和业务提交。
 
 以主线 3a13b9f7b6e866dec421244357d14ce1de8b1a54 为本批起点，保留原 Demo 的三页、顶栏、dock、图标及其他示例。接入沿用上游 PR #2：DemoSamples 增加一个 DemoSection、DemoApp 的分组搜索标题增加一项，独立 DemoDialogSamples 持有显示与确认结果。一个分组中提供底部、居中、长文、三个操作、禁用确认及主题色确认六种参数装配，另展示输入型预设，并允许切换材质；不带二级页、开关、选择器和目录重构。
 
@@ -61,7 +61,7 @@ ColorDodge 保留原厂的 `d / (1 - s)`，不增加 epsilon 或白色通道特�
 
 在本批独立目录执行 `:demo:assembleRelease --offline --console=plain --no-daemon` 成功，包含依赖编译、R8、资源优化和 Release vital lint；最后一次构建 85 项任务，20 项执行、65 项复用。首次沙箱阻断 Gradle 与本机 daemon 的连接，获本次本机构建执行权限后完成，未改变构建或依赖配置。
 
-差异格式、21 篇 Note 的树/格式/归档检查、72 篇 Markdown 的 471 个本地文件链接、16 组双语资源及新增 XML 解析通过。新增公开 Composable 仅 CouiAlertDialog；库内窗口、按钮及字体入口保持 internal/private，Demo 不导入内部接口。窗口宽度含留白的约束、普通/材质按钮配色和窗口属性转交做了定向源码核对。
+差异格式、21 篇 Note 的树/格式/归档检查、72 篇 Markdown 的 471 个本地文件链接、16 组双语资源及新增 XML 解析通过。新增公开 Composable 仅 AlertDialog；库内窗口、按钮及字体入口保持 internal/private，Demo 不导入内部接口。窗口宽度含留白的约束、普通/材质按钮配色和窗口属性转交做了定向源码核对。
 
 最终 APK 的 v2 测试签名有效，源码时间早于产物。这里不沿用完整重构 Demo 的旧构建结论；本地没有运行 Debug、独立 Lint、库发行、设备或原库运行对照。动画、GPU、输入、字体和性能仍未完成设备验收。
 

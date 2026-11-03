@@ -33,7 +33,7 @@ Box(
 | 目标       | 入口与行为                                              |
 |----------|----------------------------------------------------|
 | 均匀背景模糊   | drawCouiBackdrop 的 effects / blur，半径使用本地像素         |
-| 顶栏渐进模糊   | CouiTopAppBar；低层 drawCouiGradientBackdrop 使用位置可变卷积 |
+| 顶栏渐进模糊   | TopAppBar；低层 drawCouiGradientBackdrop 使用位置可变卷积 |
 | 菜单快速模糊   | rememberCouiMenuBlur / CouiMenuBlur.draw，由工厂管理中间图层 |
 | 已有覆盖率模糊链 | CouiCoverageBlurEffect                             |
 | 材质混色     | rememberCouiMaterialEffect，输入为采样颜色合成所需的两种颜色        |

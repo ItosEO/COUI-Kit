@@ -8,7 +8,7 @@ Status: implemented
 
 ## Decision
 
-核心 layout 包提供可选 `CouiScaffold`，只处理栏位测量、正文 Padding、安全区和背景色。它使用 Compose UI / Foundation，背景默认读取 CouiTheme；不创建主题 Provider、采样源、页面状态或导航。
+核心 layout 包提供可选 `Scaffold`，只处理栏位测量、正文 Padding、安全区和背景色。它使用 Compose UI / Foundation，背景默认读取 CouiTheme；不创建主题 Provider、采样源、页面状态或导航。
 
 容器先应用并消费横向安全区，再测量栏位。正文顶部和底部 Padding 使用对应栏位的实测高度；空槽或零高度槽使用父级消费后剩余的纵向 Insets。栏位负责自身纵向安全区。正文保留完整视口，先于顶栏、底栏绘制，使内容可进入模糊栏位下方。
 

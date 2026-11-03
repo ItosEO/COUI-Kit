@@ -14,12 +14,12 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.DialogProperties
-import com.itos.coui.dialog.CouiAlertDialog
+import com.itos.coui.dialog.AlertDialog
 import com.itos.coui.dialog.CouiDialogAction
 import com.itos.coui.dialog.CouiDialogDefaults
 import com.itos.coui.dialog.CouiDialogPlacement
 import com.itos.coui.dialog.CouiDialogActionStyle
-import com.itos.coui.switch.CouiSwitch
+import com.itos.coui.switch.Switch
 import com.itos.coui.switch.CouiSwitchDefaults
 import com.itos.coui.menu.rememberCouiWindowBackdrop
 import com.itos.coui.layout.*
@@ -56,7 +56,7 @@ internal fun DialogSample(dark: Boolean, onToggleTheme: (() -> Unit)? = null) {
         if (variant == "input") RenameDeviceDialogSample(dark = dark, initialName = deviceName,
             material = material && supported, backdrop = windowBackdrop, onDismissRequest = dismiss,
             onSave = { deviceName = it; result = true; opened = null })
-        else CouiAlertDialog(onDismissRequest = dismiss, dark = dark,
+        else AlertDialog(onDismissRequest = dismiss, dark = dark,
             title = title,
             message = if (variant == "long") List(12) { regularMessage }.joinToString("\n\n") else regularMessage,
             confirmAction = CouiDialogAction(stringResource(R.string.dialog_confirm), { result = true; opened = null }, variant != "disabled",

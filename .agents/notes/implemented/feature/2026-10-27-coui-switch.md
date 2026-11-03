@@ -12,9 +12,9 @@ Demo 的整行装配与共享触觉入口见[整行开关输入](../bug-fix/2026
 
 ## Decision
 
-[CouiSwitch](../../../../coui/src/main/java/com/itos/coui/switch/CouiSwitch.kt)是唯一基础组件，宿主持有 checked、loading、主题与业务回调。库公开 CouiSwitchColors 和 CouiSwitchDefaults；运动和加载绘制保持 internal，触觉辅助为 private，不另公开按钮、设置行或通用触觉枚举。
+[Switch](../../../../coui/src/main/java/com/itos/coui/switch/Switch.kt)是唯一基础组件，宿主持有 checked、loading、主题与业务回调。库公开 CouiSwitchColors 和 CouiSwitchDefaults；运动和加载绘制保持 internal，触觉辅助为 private，不另公开按钮、设置行或通用触觉枚举。
 
-加载和禁用都是同一个 CouiSwitch 的状态。[DemoSettingsSamples](../../../../demo/src/main/java/com/itos/coui/demo/DemoSettingsSamples.kt)直接传入 loading 或 enabled 展示，仅模拟业务等待。开关详情通过 Demo 的行布局装配，目录与页面组织见[设置式 Demo](2026-11-01-demo-catalog-and-system-icons.md)，业务等待不进入库。
+加载和禁用都是同一个 Switch 的状态。[DemoSettingsSamples](../../../../demo/src/main/java/com/itos/coui/demo/DemoSettingsSamples.kt)直接传入 loading 或 enabled 展示，仅模拟业务等待。开关详情通过 Demo 的行布局装配，目录与页面组织见[设置式 Demo](2026-11-01-demo-catalog-and-system-icons.md)，业务等待不进入库。
 
 ### 原厂依据与移植
 
@@ -43,7 +43,7 @@ SpringData 的构造顺序为 bounce、response、velocity，已经由 smali 字
 - [Demo 材质与语义](2026-10-23-demo-material-and-gallery.md)：部分重叠；原 M3 配置开关继续由 App 装配，本篇新增库内 COUI 控件及独立分组，不全局替换 Demo。
 - [模块边界](../architecture/2026-10-21-coui-module-boundary.md)、[API 收口](../architecture/2026-10-23-public-api-boundary.md)：保持主题/业务归宿主、可变绘制节点独立、内部状态不公开，新增实际组件包。
 - [ChipTab](2026-10-24-chip-tab.md)：保留原有输入与示例，没有共享修改其物理算法或页面。
-- 主线没有同范围 CouiSwitch 决定，也没有需要归档或删除的同范围 proposed/rejected。
+- 主线没有同范围 Switch 决定，也没有需要归档或删除的同范围 proposed/rejected。
 
 ## Alternatives considered
 

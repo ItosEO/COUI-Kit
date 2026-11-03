@@ -2,6 +2,8 @@
 
 默认使用 `internal` 或 `private`。公开入口应能解释使用场景、状态 owner、平台门槛、单位、失败行为和资源生命周期。组件通过受控值与回调接入，不接管宿主业务。`Modifier` 为第一个参数并默认 `Modifier`。
 
+公开 UI 组件使用无 Coui 前缀的名称，如 `Text`、`Switch`、`Menu` 和 `Scaffold`，通过包名区分来源。类型、Defaults、Style、状态、`CouiTheme`、`rememberCoui…` 工厂及 `coui…` 效果入口保留前缀。同文件混用其他设计体系的同名组件时，用 import 别名区分。
+
 保留高自定义程度的底层算法接口；常用入口复用同一后端，不再造效果。普通阴影保留 `couiShadow` 与 `CouiShadowRenderer`，双主体融合只公开算法和跟随回弹，不加入侧滑容器。预设集中在所属组件族 Defaults，宿主不复制固定参数。
 
 菜单滚动条坐标、拖动状态、Popup 定位、菜单动效帧、搜索运动实现和底栏附件控制器属于内部装配。不要为了测试或 Demo 暴露它们。公开预设弹簧仍可直接引用。菜单模糊从 `rememberCouiMenuBlur` 获取，不让宿主组装固定数量的 GraphicsLayer。

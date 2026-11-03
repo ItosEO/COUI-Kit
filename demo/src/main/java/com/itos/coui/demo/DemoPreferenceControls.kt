@@ -1,5 +1,6 @@
 package com.itos.coui.demo
 
+import com.itos.coui.icons.CouiIcons
 import com.itos.coui.layout.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -23,13 +24,13 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.itos.coui.effect.couiButtonFeedback
-import com.itos.coui.menu.CouiMenu
+import com.itos.coui.menu.Menu
 import com.itos.coui.menu.CouiMenuItem
 import com.itos.coui.menu.CouiMenuStyle
 import com.itos.coui.menu.couiMenuAnchor
 import com.itos.coui.menu.rememberCouiMenuAnchor
 import com.itos.coui.shape.CouiCapsuleShape
-import com.itos.coui.slider.CouiSlider
+import com.itos.coui.slider.Slider
 import com.itos.coui.slider.CouiSliderDefaults
 import com.itos.coui.text.CouiTextKind
 import com.itos.coui.text.rememberCouiTextStyle
@@ -38,7 +39,7 @@ import com.itos.coui.motion.couiPressMotion
 import com.itos.coui.theme.CouiTheme
 import kotlinx.coroutines.delay
 
-/** CouiMenu 的设置行装配预设；展开期间锁住行蒙层，菜单选择和退场仍由同一个 CouiMenu 持有。 */
+/** Menu 的设置行装配预设；展开期间锁住行蒙层，菜单选择和退场仍由同一个 Menu 持有。 */
 @Composable
 internal fun <T> DemoPopupPreference(
     modifier: Modifier = Modifier,
@@ -67,14 +68,14 @@ internal fun <T> DemoPopupPreference(
             PopupArrow(Modifier.padding(start = 4.dp).size(14.dp, 24.dp),
                 Color(if (dark) 0x4DFFFFFF else 0x42000000))
         }
-        CouiMenu(expanded = expanded, onDismissRequest = { onExpandedChange(false) }, items = items,
+        Menu(expanded = expanded, onDismissRequest = { onExpandedChange(false) }, items = items,
             onItemClick = { item -> onItemClick(item); onExpandedChange(false) }, style = menuStyle, anchor = anchor)
     }
 }
 
 @Composable
 private fun PopupArrow(modifier: Modifier, color: Color) {
-    androidx.compose.material3.Icon(DemoIcons.Popup, null, modifier, tint = color)
+    androidx.compose.material3.Icon(CouiIcons.Popup, null, modifier, tint = color)
 }
 
 /** 设置滑条行：标题/右值独立于滑条，48dp 触摸槽始终以自身中线绘制。 */
@@ -100,7 +101,7 @@ internal fun DemoSliderPreference(
         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically) {
             leading?.invoke()
-            CouiSlider(Modifier.weight(1f).semantics { contentDescription = title }, value, onValueChange,
+            Slider(Modifier.weight(1f).semantics { contentDescription = title }, value, onValueChange,
                 dark = dark, enabled = enabled,
                 colors = CouiSliderDefaults.colors(colors.accent, dark, enabled), shape = CouiCapsuleShape,
                 valueRange = valueRange, steps = steps, showTickMarks = showTickMarks)

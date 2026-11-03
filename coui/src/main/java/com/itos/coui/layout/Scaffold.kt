@@ -36,7 +36,7 @@ import com.itos.coui.theme.CouiTheme
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun CouiScaffold(
+fun Scaffold(
     modifier: Modifier = Modifier,
     topBar: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
@@ -53,7 +53,7 @@ fun CouiScaffold(
             .onConsumedWindowInsetsChanged { remainingInsets.insets = windowInsets.exclude(it) },
     ) { constraints ->
         require(constraints.hasBoundedWidth && constraints.hasBoundedHeight) {
-            "CouiScaffold 需要有界的宽度和高度"
+            "Scaffold 需要有界的宽度和高度"
         }
         val looseConstraints = constraints.copy(minWidth = 0, minHeight = 0)
         val top = subcompose(ScaffoldSlot.TopBar, topBar).map { it.measure(looseConstraints) }

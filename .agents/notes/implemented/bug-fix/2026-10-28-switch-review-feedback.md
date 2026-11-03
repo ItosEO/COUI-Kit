@@ -8,7 +8,7 @@ PR #7 审查指出：开关在 Initial 消费拖动 MOVE 后，Foundation toggle
 
 ## Decision
 
-[CouiSwitch](../../../../coui/src/main/java/com/itos/coui/switch/CouiSwitch.kt)的 pointerInput 在 DOWN 开启局部 touchPressed，会话 finally 在 UP、CANCEL、父级接管、输入失效或节点移除时清理。它与 InteractionSource 的点击/键盘 pressed 取并集，只决定按压反馈，不创建第二个 clickable 或业务提交。原有 MOVE 消费、拖动/吸附、受控 CANCEL、VelocityTracker 回收保持；不取消消费来维持蒙层。
+[Switch](../../../../coui/src/main/java/com/itos/coui/switch/Switch.kt)的 pointerInput 在 DOWN 开启局部 touchPressed，会话 finally 在 UP、CANCEL、父级接管、输入失效或节点移除时清理。它与 InteractionSource 的点击/键盘 pressed 取并集，只决定按压反馈，不创建第二个 clickable 或业务提交。原有 MOVE 消费、拖动/吸附、受控 CANCEL、VelocityTracker 回收保持；不取消消费来维持蒙层。
 
 [CouiStateFeedback](../../../../coui/src/main/java/com/itos/coui/effect/CouiStateFeedback.kt)的开关分支只合成 hover/press；焦点复用同一蒙层弹簧和 ARGB 插值，按 COUIStrokeDrawable.TYPE_OUTER 将双倍笔宽的 stroke 绘在形状边界，再裁掉轨道内部。焦点绘制位于轨道 clip 之前，轨道和滑块继续使用用户批准的平滑几何。没有复制 Shader、动画后端或改变导航/FAB/工具栏的反馈。
 

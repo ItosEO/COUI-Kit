@@ -1,5 +1,6 @@
 package com.itos.coui.demo
 
+import com.itos.coui.icons.CouiIcons
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -33,19 +34,19 @@ import com.itos.coui.backdrop.couiBackdrop
 import com.itos.coui.backdrop.rememberCouiBackdrop
 import com.itos.coui.effect.CouiFloatingRenderer
 import com.itos.coui.effect.LocalCouiContourGlowEnabled
-import com.itos.coui.floatingactionbutton.CouiFab
+import com.itos.coui.floatingactionbutton.Fab
 import com.itos.coui.floatingactionbutton.CouiFabColor
 import com.itos.coui.floatingactionbutton.CouiFabDefaults
 import com.itos.coui.layout.CouiPageDefaults
 import com.itos.coui.layout.Footer
 import com.itos.coui.layout.Group
-import com.itos.coui.navigation.CouiBottomBar
+import com.itos.coui.navigation.BottomBar
 import com.itos.coui.navigation.CouiNavigationItem
-import com.itos.coui.search.CouiSearchBar
+import com.itos.coui.search.SearchBar
 import com.itos.coui.search.rememberCouiSearchBarState
 import com.itos.coui.text.CouiTextKind
 import com.itos.coui.text.rememberCouiTextStyle
-import com.itos.coui.topappbar.CouiTopAppBar
+import com.itos.coui.topappbar.TopAppBar
 
 /** 各类导航组件的独立 Activity 内容，宿主标题栏仍由 DemoSettingsPage 提供。 */
 @Composable
@@ -53,24 +54,30 @@ internal fun ChromeDetail(page: String, dark: Boolean, open: (String) -> Unit) {
     when (page) {
         "search" -> {
             var expanded by rememberSaveable { mutableStateOf(false) }
+            var enabled by rememberSaveable { mutableStateOf(true) }
             var query by rememberSaveable { mutableStateOf("") }
             val state = rememberCouiSearchBarState(expanded)
             BackHandler(expanded) { expanded = false; query = "" }
             Group {
+                DemoSwitchPreference(title = stringResource(R.string.search_enabled),
+                    checked = enabled, onCheckedChange = { enabled = it })
+            }
+            Group {
                 ChromePreview(Modifier.height(152.dp)) { backdrop ->
-                    CouiSearchBar(Modifier.align(Alignment.Center), state, query, { query = it },
+                    SearchBar(Modifier.align(Alignment.Center), state, query, { query = it },
                         { expanded = it; if (!it) query = "" }, stringResource(R.string.catalog_search_hint),
-                        stringResource(R.string.catalog_search_cancel), stringResource(R.string.catalog_search_clear), dark, backdrop)
+                        stringResource(R.string.catalog_search_cancel), stringResource(R.string.catalog_search_clear), dark, backdrop,
+                        enabled = enabled)
                 }
             }
-            if (state.active) Column(if (expanded) Modifier else Modifier.clearAndSetSemantics {}) {
-                DemoCatalogSearch(query, enabled = expanded, open = open)
+            if (state.active) Column(if (enabled && expanded) Modifier else Modifier.clearAndSetSemantics {}) {
+                DemoCatalogSearch(query, enabled = enabled && expanded, open = open)
             }
         }
         "appbar" -> {
             Group {
                 ChromePreview(Modifier.height(260.dp)) { backdrop ->
-                    CouiTopAppBar(Modifier.align(Alignment.TopCenter), backdrop) {
+                    TopAppBar(Modifier.align(Alignment.TopCenter), backdrop) {
                         Text(stringResource(R.string.catalog_appbar), Modifier.fillMaxWidth().padding(16.dp),
                             style = rememberCouiTextStyle(CouiTextKind.Toolbar), color = MaterialTheme.colorScheme.onSurface)
                     }
@@ -91,11 +98,11 @@ internal fun ChromeDetail(page: String, dark: Boolean, open: (String) -> Unit) {
                     if (Build.VERSION.SDK_INT >= 34 && renderer != null) {
                         if (page == "navigation") {
                             var selected by rememberSaveable { mutableIntStateOf(0) }
-                            CouiBottomBar(Modifier.align(Alignment.BottomCenter), backdrop, renderer,
-                                items = listOf(CouiNavigationItem(stringResource(R.string.controls), DemoIcons.Components, DemoIcons.ComponentsSelected),
+                            BottomBar(Modifier.align(Alignment.BottomCenter), backdrop, renderer,
+                                items = listOf(CouiNavigationItem(stringResource(R.string.controls), CouiIcons.Components, CouiIcons.ComponentsSelected),
                                     CouiNavigationItem(stringResource(R.string.effects), DemoIcons.Effects, DemoIcons.EffectsSelected),
                                     CouiNavigationItem(stringResource(R.string.presets), DemoIcons.Presets, DemoIcons.PresetsSelected)),
-                                selectedIndex = selected, leftIcon = DemoIcons.Theme, rightIcon = DemoIcons.Add,
+                                selectedIndex = selected, leftIcon = CouiIcons.Theme, rightIcon = CouiIcons.Add,
                                 leftVisible = true, rightVisible = true,
                                 leftDescription = stringResource(R.string.toggle_theme), rightDescription = stringResource(R.string.sample_click),
                                 onLeftClick = { clicks++ }, onRightClick = { clicks++ }, rightContainerColor = com.itos.coui.theme.CouiTheme.colorScheme.accent,
@@ -103,10 +110,10 @@ internal fun ChromeDetail(page: String, dark: Boolean, open: (String) -> Unit) {
                                 circleShape = DemoShapes.couiCircle, capsuleShape = DemoShapes.couiCapsule, onSelection = { selected = it })
                         } else {
                             val color = CouiFabDefaults.containerColor(CouiFabColor.Notes, dark)
-                            CouiFab(Modifier.align(Alignment.BottomEnd).padding(16.dp), backdrop, renderer, { clicks++ }, dark,
+                            Fab(Modifier.align(Alignment.BottomEnd).padding(16.dp), backdrop, renderer, { clicks++ }, dark,
                                 shape = DemoShapes.couiCircle, material = CouiFabDefaults.material(color, dark),
                                 shadow = CouiFabDefaults.shadow(color, LocalDensity.current.density, LocalCouiContourGlowEnabled.current)) {
-                                Icon(DemoIcons.Add, stringResource(R.string.sample_click), Modifier.size(24.dp), tint = Color.White)
+                                Icon(CouiIcons.Add, stringResource(R.string.sample_click), Modifier.size(24.dp), tint = Color.White)
                             }
                         }
                     }

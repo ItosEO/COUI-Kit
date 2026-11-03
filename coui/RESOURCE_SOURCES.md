@@ -8,4 +8,4 @@
 
 Settings.apk SHA-256：d97df8a9227520a6f673e5d6f5efbc901b5d9d4c501d12e5d8bf717daae079d5。
 
-原厂 COUISwitchStyle.loadingDrawable 引用 switch_loading；COUISwitch.drawLoading 在整数 Drawable 边界上绘制，并围绕滑块浮点中心缩放、旋转。库内原图与 APK 条目字节一致，未裁切、改色、重采样或转换为矢量。每个开关独立持有 Drawable，沿用原有动画；资源随应用打包，不在运行时读取系统 APK、本机路径或厂商类。
+原厂 `COUISwitchStyle.loadingDrawable` 引用 `switch_loading`。库内资源保留原始 PNG，随库打包。

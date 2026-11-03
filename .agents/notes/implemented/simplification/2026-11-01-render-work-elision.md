@@ -15,8 +15,8 @@ Status: implemented
 1. [CouiGradientBlur](../../../../coui/src/main/java/com/itos/coui/effect/CouiGradientBlur.kt) 保留两遍、原分辨率、padding、整数半径、权重、中心余重、噪声及覆盖率处理。先保留小半径的原直通分支，再仅对中心 alpha 精确等于零的卷积分支返回透明；不截断低但非零的覆盖率。第一遍逐次录制动态背景，第二遍仅在尺寸或 LayoutDirection 改变时录制固定的前驱层引用；Density 改变由 remember 重建 renderer。
 2. [CouiMenuBlur](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenuBlur.kt) 保留原 Fast Kawase 的九轮滤镜和独立像素网格。只在采样网格、density、fontScale 或 LayoutDirection 改变时录制九层固定指令；输入层逐次录制。每个闭包捕获固定的前驱层，保存独立 Density 值，不长期持有易变 DrawScope 代理。
 3. [CouiFloatingSurfaces](../../../../coui/src/main/java/com/itos/coui/effect/CouiFloatingSurfaces.kt) 仅在 foregroundComposition 分支跳过原 Shader 已定义为透明的 caustic。有效 alpha 使用与 uniform 相同的乘积和原阈值；[CouiCausticShader](../../../../coui/src/main/java/com/itos/coui/effect/CouiCausticShader.kt) 及完整 destination 回填分支保持。
-4. [CouiCheckbox](../../../../coui/src/main/java/com/itos/coui/checkbox/CouiCheckbox.kt) 用 drawWithCache 缓存轮廓、Stroke、勾线、PathMeasure 和 segment。每次提取 segment 前 reset；颜色、状态与时间线仍在绘制阶段读取。Spacer 配合 onDrawBehind 保留原 Canvas 的布局与绘制位置，不改变方向动画、受控值或外层交互语义。
-5. [CouiMenu](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenu.kt) 的私有预选框使用 lambda offset，在 placement 阶段读取动画值；像素取整、弹簧和淡出逻辑保持。官方实现通过 placement layer 移动预选框，不要求每个位置帧重组。
+4. [Checkbox](../../../../coui/src/main/java/com/itos/coui/checkbox/Checkbox.kt) 用 drawWithCache 缓存轮廓、Stroke、勾线、PathMeasure 和 segment。每次提取 segment 前 reset；颜色、状态与时间线仍在绘制阶段读取。Spacer 配合 onDrawBehind 保留原 Canvas 的布局与绘制位置，不改变方向动画、受控值或外层交互语义。
+5. [Menu](../../../../coui/src/main/java/com/itos/coui/menu/Menu.kt) 的私有预选框使用 lambda offset，在 placement 阶段读取动画值；像素取整、弹簧和淡出逻辑保持。官方实现通过 placement layer 移动预选框，不要求每个位置帧重组。
 
 这些缓存只复用对象或固定绘制指令，不缓存旧背景像素；滤镜执行遍数和节点各自持有 renderer 的要求保持。
 

@@ -103,7 +103,7 @@ data class CouiNavigationItem(val title: String, val icon: ImageVector, val sele
 /** 只负责底栏装配; 页面状态和导航提交仍由宿主持有。 */
 @RequiresApi(34)
 @Composable
-fun CouiBottomBar(
+fun BottomBar(
     modifier: Modifier = Modifier,
     backdrop: CouiBackdrop,
     renderer: CouiFloatingRenderer,

@@ -63,7 +63,7 @@ private fun PickerBody(page: String, seconds: Int, setSeconds: (Int) -> Unit, da
             minuteLabel = minute, secondLabel = stringResource(R.string.picker_second))
         "datepicker" -> DemoDatePicker(value = LocalDate.ofEpochDay(date), onValueChange = { setDate(it.toEpochDay()) },
             yearLabel = year, monthLabel = month, dayLabel = day)
-        "calendar" -> CouiCalendarPicker(value = LocalDate.ofEpochDay(date), onValueChange = { setDate(it.toEpochDay()) },
+        "calendar" -> CalendarPicker(value = LocalDate.ofEpochDay(date), onValueChange = { setDate(it.toEpochDay()) },
             dark = dark)
     }
 }

@@ -22,7 +22,7 @@ import androidx.compose.ui.text.TextRange
 import com.itos.coui.dialog.CouiDialogAction
 import com.itos.coui.dialog.CouiDialogDefaults
 import com.itos.coui.backdrop.CouiBackdrop
-import com.itos.coui.dialog.CouiInputDialog
+import com.itos.coui.dialog.InputDialog
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.collect
 
@@ -59,7 +59,7 @@ internal fun RenameDeviceDialogSample(
             }
         }
     }
-    CouiInputDialog(state = draft, inputTransformation = transformation,
+    InputDialog(state = draft, inputTransformation = transformation,
         onDismissRequest = onDismissRequest, dark = dark, accent = com.itos.coui.theme.CouiTheme.colorScheme.accent,
         title = stringResource(R.string.dialog_device_name_title),
         message = stringResource(R.string.dialog_device_name_message),

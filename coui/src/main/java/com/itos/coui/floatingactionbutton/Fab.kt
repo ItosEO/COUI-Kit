@@ -47,7 +47,7 @@ import com.itos.coui.motion.rememberCouiTouchMotion
 
 @RequiresApi(34)
 @Composable
-fun CouiFab(
+fun Fab(
     modifier: Modifier = Modifier,
     backdrop: CouiBackdrop,
     renderer: CouiFloatingRenderer,

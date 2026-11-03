@@ -4,15 +4,15 @@ Status: implemented
 
 ## Problem
 
-Demo 将开关放入整行 toggleable 后，为避免重复点击，给 CouiSwitch 传入 onCheckedChange=null。onDragCheckedChange 的默认值也因此变成 null，普通开关示例失去拖动。只恢复子控件点击会产生第二个点击与语义 owner；只让滑块交互又不满足整行可点击的要求。
+Demo 将开关放入整行 toggleable 后，为避免重复点击，给 Switch 传入 onCheckedChange=null。onDragCheckedChange 的默认值也因此变成 null，普通开关示例失去拖动。只恢复子控件点击会产生第二个点击与语义 owner；只让滑块交互又不满足整行可点击的要求。
 
 ## Decision
 
-DemoSwitchPreference 继续由整行 toggleable 处理点击、键盘和 Switch 语义。子 CouiSwitch 的 onCheckedChange 保持 null，onDragCheckedChange 显式接到同一个业务回调；两者共用 MutableInteractionSource。所有可交互的整行开关使用这一装配，不增加拖动开关参数或另一类行组件。
+DemoSwitchPreference 继续由整行 toggleable 处理点击、键盘和 Switch 语义。子 Switch 的 onCheckedChange 保持 null，onDragCheckedChange 显式接到同一个业务回调；两者共用 MutableInteractionSource。所有可交互的整行开关使用这一装配，不增加拖动开关参数或另一类行组件。
 
 未达到拖动阈值的 UP 由整行点击提交。达到阈值后，现有 Switch 输入在 Initial 阶段消费移动，整行的点击检测取消；滑块沿已有吸附过程提交候选值。取消、父容器接管、禁用、加载及组件移除沿已有输入和运动生命周期收尾，宿主拒绝候选时恢复实际 checked。业务值仍由宿主持有。
 
-整行点击与滑块拖动分别在自身提交处调用现有公开触觉入口。CouiSwitch 也使用该入口，不再重复维护触觉码和附着检查。加载期间两条输入均禁用；加载示例在空闲时允许点击或拖动发起同一个模拟请求。
+整行点击与滑块拖动分别在自身提交处调用现有公开触觉入口。Switch 也使用该入口，不再重复维护触觉码和附着检查。加载期间两条输入均禁用；加载示例在空闲时允许点击或拖动发起同一个模拟请求。
 
 ## Existing-note audit
 

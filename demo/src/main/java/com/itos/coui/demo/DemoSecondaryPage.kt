@@ -18,7 +18,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.itos.coui.dialog.CouiDialogActionStyle
-import com.itos.coui.dialog.CouiAlertDialog
+import com.itos.coui.dialog.AlertDialog
 import com.itos.coui.dialog.CouiDialogAction
 import com.itos.coui.dialog.CouiDialogDefaults
 import com.itos.coui.effect.LocalCouiContourGlowEnabled
@@ -139,7 +139,7 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
                 }
             }
             val backdrop = rememberCouiWindowBackdrop()
-            if (reset) CouiAlertDialog(onDismissRequest = { reset = false }, dark = dark,
+            if (reset) AlertDialog(onDismissRequest = { reset = false }, dark = dark,
                 title = stringResource(R.string.settings_reset), message = stringResource(R.string.settings_reset_message),
                 confirmAction = CouiDialogAction(stringResource(R.string.dialog_confirm), { preferences.reset(); reset = false },
                     style = CouiDialogActionStyle.Primary, colors = CouiDialogDefaults.primaryActionColors(accent)),

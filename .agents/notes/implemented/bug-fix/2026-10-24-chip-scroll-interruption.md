@@ -12,7 +12,7 @@ DOWN 中断越界回弹后，如果本次触摸没有达到拖动阈值，原来
 
 ## Decision
 
-[CouiChipTabRow](../../../../coui/src/main/java/com/itos/coui/chip/CouiChipTabRow.kt) 使用裁剪 Shape 限制横向列表的绘制和子项命中。横向范围等于列表自身宽度；纵向按已有阴影扩展范围放宽，保留上下投影。边缘渐隐仍由原遮罩绘制。RTL 下同样禁止子项越过列表边界命中图标按钮。
+[ChipTabRow](../../../../coui/src/main/java/com/itos/coui/chip/ChipTabRow.kt) 使用裁剪 Shape 限制横向列表的绘制和子项命中。横向范围等于列表自身宽度；纵向按已有阴影扩展范围放宽，保留上下投影。边缘渐隐仍由原遮罩绘制。RTL 下同样禁止子项越过列表边界命中图标按钮。
 
 列表在收到 DOWN 后通过 `stopScroll` 同时停止惯性、帧回调和选中露出弹簧。点击识别期间项目位置保持稳定，超过水平触摸阈值后由拖动接管。
 

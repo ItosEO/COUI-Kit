@@ -1,15 +1,15 @@
 # 📋菜单
 
-`CouiMenu` 可以显示普通菜单项、勾选项和一级子菜单。菜单的展开状态和选择结果由页面保存。
+`Menu` 可以显示普通菜单项、勾选项和一级子菜单。菜单的展开状态和选择结果由页面保存。
 
 ## 最小调用
 
 页面提供展开状态、菜单项和回调：
 
 ~~~kotlin
-import com.itos.coui.menu.CouiMenu
+import com.itos.coui.menu.Menu
 
-CouiMenu(
+Menu(
     expanded = expanded,
     onDismissRequest = onDismissRequest,
     items = items,
@@ -33,7 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.itos.coui.menu.CouiMenu
+import com.itos.coui.menu.Menu
 import com.itos.coui.menu.CouiMenuDefaults
 import com.itos.coui.menu.CouiMenuItem
 import com.itos.coui.menu.CouiMenuStyle
@@ -57,7 +57,7 @@ fun MenuButton(
         ) {
             Text(label)
         }
-        CouiMenu(
+        Menu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
             items = items,
@@ -201,7 +201,7 @@ fun rememberMenuStyle(
 
 使用其他自定义 Shape 时，须显式提供有限非负的 `radius`，轮廓权重使用菜单预设。普通投影使用圆角矩形轮廓。
 
-菜单没有默认高度上限；长菜单可以在 `CouiMenu` 的 `modifier` 中传入 `Modifier.heightIn(max = 320.dp)`，让它在限定高度内滚动。子菜单会按窗口高度限制。
+菜单没有默认高度上限；长菜单可以在 `Menu` 的 `modifier` 中传入 `Modifier.heightIn(max = 320.dp)`，让它在限定高度内滚动。子菜单会按窗口高度限制。
 
 自定义样式应传入 `dark`，省略时按 surface 亮度判断。默认工厂使用当前主题模式，主菜单与子菜单的文字、材质、阴影和反馈共同使用它。M3 模糊补底取 surface，无 Backdrop 的容器取 surfaceBright；selected 取 primary，checkbox 深色取 inversePrimary。
 
@@ -213,4 +213,4 @@ API 33 以下的菜单模糊效果与较新系统不同，见[兼容要求](../g
 
 标题字体默认来自 `CouiTheme.typography.label`。修改主题的 `label` 或显式传入 `CouiMenuStyle.headerTextStyle` 可以调整字体、字号、字重和行距。标题颜色、对齐和最多两行由菜单控制。
 
-源码见 [CouiMenu / CouiMenuItem](../../coui/src/main/java/com/itos/coui/menu/CouiMenu.kt)、[样式](../../coui/src/main/java/com/itos/coui/menu/CouiMenuStyle.kt)、[触点锚点](../../coui/src/main/java/com/itos/coui/menu/CouiMenuAnchor.kt)，选中、勾选、子菜单和限高示例见 [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)。
+源码见 [Menu / CouiMenuItem](../../coui/src/main/java/com/itos/coui/menu/Menu.kt)、[样式](../../coui/src/main/java/com/itos/coui/menu/CouiMenuStyle.kt)、[触点锚点](../../coui/src/main/java/com/itos/coui/menu/CouiMenuAnchor.kt)，选中、勾选、子菜单和限高示例见 [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)。

@@ -6,7 +6,7 @@ Status: implemented
 
 ## Problem
 
-初始 CouiScaffold 同时承担页面测量、安全区、背景采样和局部配色，容易使调用方把 COUI 组件视为整套页面框架的一部分。已有 Material、Miuix 或自有布局的应用应能只取用一个 COUI 控件。
+初始 Scaffold 同时承担页面测量、安全区、背景采样和局部配色，容易使调用方把 COUI 组件视为整套页面框架的一部分。已有 Material、Miuix 或自有布局的应用应能只取用一个 COUI 控件。
 
 ## Decision
 
@@ -16,7 +16,7 @@ Status: implemented
 
 ### 已被部分取代的页面选择
 
-本篇移除初始 CouiScaffold 及 PageContentPadding、PageSlot、PageStyle、LocalPageStyle 和 pageStyle，选择由宿主完成通用页面布局，不另提供同职能容器。理由是页面测量、配色作用域和采样被绑定，而当时已有基础接口能表达 COUI 特有能力。
+本篇移除初始 Scaffold 及 PageContentPadding、PageSlot、PageStyle、LocalPageStyle 和 pageStyle，选择由宿主完成通用页面布局，不另提供同职能容器。理由是页面测量、配色作用域和采样被绑定，而当时已有基础接口能表达 COUI 特有能力。
 
 [可选轻量页面容器](2026-11-03-optional-coui-scaffold.md)恢复通用栏位测量与 Insets 处理，接管“不提供容器”这一部分。旧页面配色作用域和隐式采样不恢复。
 

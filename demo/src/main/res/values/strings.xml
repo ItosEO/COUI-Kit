@@ -49,6 +49,7 @@
     <string name="left_accessory_toggle">Show left accessory</string>
     <string name="right_accessory_toggle">Show right accessory</string>
     <string name="toolbar_enabled">Enable top bar action buttons</string>
+    <string name="search_enabled">Enable search</string>
     <string name="backdrop_title">Background sampling and blur</string>
     <string name="material_title">Material blending</string>
     <string name="blur_radius">Blur radius</string>

@@ -1,13 +1,12 @@
 # 页面容器
 
-`CouiScaffold` 测量顶栏、底栏并向正文提供 Padding。它使用 Compose UI / Foundation，纯 COUI 页面只需依赖核心 `coui`。
+`Scaffold` 测量顶栏、底栏并向正文提供 Padding。它使用 Compose UI / Foundation，纯 COUI 页面只需依赖核心 `coui`。
 
-## 带模糊顶栏的列表
+## 显示带顶栏的列表
 
-以下函数可直接放入应用的 Compose 内容中。标题和条目由宿主传入，应用文案来自字符串资源。Activity 负责启用 edge-to-edge。
+下面用顶栏槽显示标题，将正文 Padding 传给列表。标题和条目由页面提供，Activity 负责启用 edge-to-edge。
 
 ```kotlin
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,16 +18,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.itos.coui.backdrop.couiBackdrop
-import com.itos.coui.backdrop.rememberCouiBackdrop
 import com.itos.coui.layout.CouiPageDefaults
-import com.itos.coui.layout.CouiScaffold
+import com.itos.coui.layout.Scaffold
 import com.itos.coui.layout.Group
 import com.itos.coui.layout.Item
-import com.itos.coui.text.CouiText
+import com.itos.coui.text.Text
 import com.itos.coui.text.CouiTextKind
 import com.itos.coui.theme.CouiTheme
-import com.itos.coui.topappbar.CouiTopAppBar
 
 @Composable
 fun NativePage(
@@ -37,31 +33,25 @@ fun NativePage(
     entries: List<String>,
 ) {
     CouiTheme {
-        val backdrop = rememberCouiBackdrop()
-        val background = CouiTheme.colorScheme.background
-        CouiScaffold(
+        Scaffold(
             modifier = modifier,
             topBar = {
-                CouiTopAppBar(backdrop = backdrop) {
-                    Box(
-                        Modifier.fillMaxWidth().statusBarsPadding()
-                            .height(CouiPageDefaults.toolbarHeight),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        CouiText(text = title, kind = CouiTextKind.Toolbar)
-                    }
+                Box(
+                    Modifier.fillMaxWidth().statusBarsPadding()
+                        .height(CouiPageDefaults.toolbarHeight),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(text = title, kind = CouiTextKind.Toolbar)
                 }
             },
         ) { padding ->
-            Box(Modifier.fillMaxSize().couiBackdrop(backdrop).background(background)) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize().consumeWindowInsets(padding),
-                    contentPadding = padding,
-                ) {
-                    items(entries) { entry ->
-                        Group {
-                            Item { CouiText(text = entry, kind = CouiTextKind.PreferenceTitle) }
-                        }
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().consumeWindowInsets(padding),
+                contentPadding = padding,
+            ) {
+                items(entries) { entry ->
+                    Group {
+                        Item { Text(text = entry, kind = CouiTextKind.PreferenceTitle) }
                     }
                 }
             }
@@ -70,7 +60,7 @@ fun NativePage(
 }
 ```
 
-正文先绘制，顶栏和底栏再覆盖在正文上。需要背景采样时，像示例一样让正文源使用 `fillMaxSize()` 并绘制底色，使滚动内容能进入模糊栏位下方。只有使用模糊材质时才需要示例中的 Backdrop；普通页面可直接提供正文。采样规则见[背景采样](../effects/backdrop.md)。
+正文先绘制，顶栏和底栏覆盖在正文上。需要模糊顶栏时，让背景源覆盖整个正文视口，使滚动内容进入栏位下方；装配见[宿主页面接入](../guide/secondary-pages.md)。
 
 ## Padding 与系统 Insets
 
@@ -84,7 +74,7 @@ fun NativePage(
 | 有底栏 | 正文底部 Padding 等于底栏实测高度；底栏负责底部安全区 |
 | 栏位为空或高度为零 | 对应正文 Padding 使用剩余系统 Insets |
 
-`CouiCollapsingTopAppBar` 已处理状态栏；通用 `CouiTopAppBar` 的内容使用 `statusBarsPadding()`，如上例。`CouiBottomBar` 自带底部可点击区域的避让和浮动间距。自定义底栏应按其布局使用 `navigationBarsPadding()` 等 Foundation Modifier。不要把同一纵向 Insets 再加到返回的正文 Padding 上。
+`CollapsingTopAppBar` 已处理状态栏；通用 `TopAppBar` 的内容需要使用 `statusBarsPadding()`。`BottomBar` 自带底部可点击区域的避让和浮动间距。自定义底栏应按其布局使用 `navigationBarsPadding()` 等 Foundation Modifier。不要把同一纵向 Insets 再加到返回的正文 Padding 上。
 
 普通正文使用 `Modifier.padding(padding).consumeWindowInsets(padding)`。`LazyColumn` 使用 `contentPadding = padding` 并消费它；`Column` 加滚动时，将 Padding 放在滚动 Modifier 后，保留栏位下方的采样区域。折叠标题需使用状态的顶部补偿，见[折叠顶栏](collapsing-app-bar.md)。
 
@@ -96,4 +86,4 @@ fun NativePage(
 
 已有 Material 3 `Scaffold`、Miuix 或自有布局可以继续使用。COUI 控件、主题和采样接口都可独立调用，见[宿主页面接入](../guide/secondary-pages.md)。导航、返回、业务状态、滚动、Snackbar 和 FAB 由宿主组合；设置页直接组合 `Group` 与 `Item`。
 
-[公开实现](../../coui/src/main/java/com/itos/coui/layout/CouiScaffold.kt) · [首页 Demo](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt) · [二级页 Demo](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsPage.kt)
+[公开实现](../../coui/src/main/java/com/itos/coui/layout/Scaffold.kt) · [首页 Demo](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt) · [二级页 Demo](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsPage.kt)

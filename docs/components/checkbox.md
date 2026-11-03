@@ -1,15 +1,15 @@
 # ☑️复选框
 
-`CouiCheckbox` 显示勾选状态。它只负责绘制，需要由外层添加点击和无障碍语义。
+`Checkbox` 显示勾选状态。它只负责绘制，需要由外层添加点击和无障碍语义。
 
 ## 最小调用
 
 页面提供当前勾选状态：
 
 ~~~kotlin
-import com.itos.coui.checkbox.CouiCheckbox
+import com.itos.coui.checkbox.Checkbox
 
-CouiCheckbox(checked = checked)
+Checkbox(checked = checked)
 ~~~
 
 组件没有点击回调或 `dark` 参数。默认配色使用 COUI checkbox 角色；原生主题使用强调色，M3 适配在浅色使用 primary、深色使用 inversePrimary。交互由外层提供。通用主题规则见[外观与预设](../guide/appearance.md)。
@@ -33,7 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import com.itos.coui.checkbox.CouiCheckbox
+import com.itos.coui.checkbox.Checkbox
 import com.itos.coui.checkbox.CouiCheckboxDefaults
 import com.itos.coui.shape.CouiShape
 
@@ -59,7 +59,7 @@ fun CheckboxRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(label, Modifier.weight(1f))
-        CouiCheckbox(
+        Checkbox(
             modifier = Modifier.size(24.dp),
             checked = checked,
             enabled = enabled,
@@ -98,7 +98,7 @@ Box(
         ),
     contentAlignment = Alignment.Center,
 ) {
-    CouiCheckbox(
+    Checkbox(
         checked = checked,
         enabled = enabled,
         shape = CouiShape(4.dp),
@@ -118,4 +118,4 @@ Box(
 
 复选框以 24dp 为基准等比缩放，外层尺寸和留白由页面决定。
 
-示例见 [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)，公开参数见 [CouiCheckbox](../../coui/src/main/java/com/itos/coui/checkbox/CouiCheckbox.kt) 和 [Defaults](../../coui/src/main/java/com/itos/coui/checkbox/CouiCheckboxDefaults.kt)。
+示例见 [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)，公开参数见 [Checkbox](../../coui/src/main/java/com/itos/coui/checkbox/Checkbox.kt) 和 [Defaults](../../coui/src/main/java/com/itos/coui/checkbox/CouiCheckboxDefaults.kt)。

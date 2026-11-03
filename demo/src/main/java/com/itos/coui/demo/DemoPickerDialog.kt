@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.dialog.CouiDialogActionStyle
-import com.itos.coui.dialog.CouiAlertDialog
+import com.itos.coui.dialog.AlertDialog
 import com.itos.coui.dialog.CouiDialogAction
 import com.itos.coui.dialog.CouiDialogDefaults
 import com.itos.coui.dialog.CouiDialogPlacement
@@ -28,7 +28,7 @@ internal fun DemoPickerDialog(
     placement: CouiDialogPlacement = CouiDialogPlacement.Bottom,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    CouiAlertDialog(modifier, onDismissRequest,
+    AlertDialog(modifier, onDismissRequest,
         confirmAction = CouiDialogAction(confirmText, onConfirm, confirmEnabled,
             style = CouiDialogActionStyle.Primary, colors = CouiDialogDefaults.primaryActionColors(CouiTheme.colorScheme.accent)),
         dismissAction = CouiDialogAction(cancelText, onDismissRequest),

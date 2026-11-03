@@ -1,5 +1,6 @@
 package com.itos.coui.demo
 
+import com.itos.coui.icons.CouiIcons
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
@@ -36,13 +37,13 @@ import com.itos.coui.effect.LocalCouiContourGlowEnabled
 import com.itos.coui.effect.couiNavigationFeedback
 import com.itos.coui.floatingactionbutton.CouiFabColor
 import com.itos.coui.floatingactionbutton.CouiFabDefaults
-import com.itos.coui.navigation.CouiBottomBar
+import com.itos.coui.navigation.BottomBar
 import com.itos.coui.navigation.CouiNavigationItem
-import com.itos.coui.search.CouiSearchBar
+import com.itos.coui.search.SearchBar
 import com.itos.coui.search.rememberCouiSearchBarState
 import com.itos.coui.layout.CouiPageDefaults
-import com.itos.coui.layout.CouiScaffold
-import com.itos.coui.topappbar.CouiCollapsingTopAppBar
+import com.itos.coui.layout.Scaffold
+import com.itos.coui.topappbar.CollapsingTopAppBar
 import com.itos.coui.topappbar.CouiCollapsingAppBarDefaults
 import com.itos.coui.topappbar.rememberCouiCollapsingAppBarState
 
@@ -63,8 +64,8 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
     val rendering = remember { if (Build.VERSION.SDK_INT >= 34) runCatching { DemoRenderers() } else null }
     val renderers = rendering?.getOrNull()
     val titles = listOf(stringResource(R.string.controls), stringResource(R.string.effects), stringResource(R.string.presets))
-    val navigation = listOf(DemoIcons.Components, DemoIcons.Effects, DemoIcons.Presets)
-    val selectedNavigation = listOf(DemoIcons.ComponentsSelected, DemoIcons.EffectsSelected, DemoIcons.PresetsSelected)
+    val navigation = listOf(CouiIcons.Components, DemoIcons.Effects, DemoIcons.Presets)
+    val selectedNavigation = listOf(CouiIcons.ComponentsSelected, DemoIcons.EffectsSelected, DemoIcons.PresetsSelected)
     val selectPage: (Int) -> Unit = { target ->
         if (target != page) { page = target; query = ""; searching = false }
     }
@@ -85,12 +86,12 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
             val search = rememberCouiSearchBarState(searching)
             val density = LocalDensity.current
             val resultOffset = with(LocalDensity.current) { CouiCollapsingAppBarDefaults.resultsStartOffset.toPx() }
-            CouiScaffold(modifier = Modifier.fillMaxSize().imePadding()
+            Scaffold(modifier = Modifier.fillMaxSize().imePadding()
                 .nestedScroll(header.nestedScrollConnection), containerColor = background,
                 topBar = {
-                    CouiCollapsingTopAppBar(state = header, searchState = search, title = titles[page],
+                    CollapsingTopAppBar(state = header, searchState = search, title = titles[page],
                         color = colors.onSurface, backdrop = backdrop, backgroundColor = background, dark = dark) {
-                        CouiSearchBar(state = search, query = query, onQueryChange = { query = it },
+                        SearchBar(state = search, query = query, onQueryChange = { query = it },
                             onExpandedChange = { searching = it; if (!it) query = "" },
                             placeholder = stringResource(R.string.catalog_search_hint),
                             cancelText = stringResource(R.string.catalog_search_cancel),
@@ -100,12 +101,12 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
                 }, bottomBar = {
                     if (Build.VERSION.SDK_INT >= 34 && renderers != null) {
                         Box(Modifier.fillMaxWidth()) {
-                            CouiBottomBar(
+                            BottomBar(
                                 modifier = Modifier.align(Alignment.BottomCenter),
                                 backdrop = backdrop, renderer = renderers.bottom,
                                 items = titles.mapIndexed { index, title -> CouiNavigationItem(title, navigation[index], selectedNavigation[index]) },
-                                selectedIndex = page, leftIcon = DemoIcons.Theme, leftDescription = stringResource(R.string.toggle_theme),
-                                rightIcon = DemoIcons.Add, rightDescription = stringResource(R.string.catalog_fab),
+                                selectedIndex = page, leftIcon = CouiIcons.Theme, leftDescription = stringResource(R.string.toggle_theme),
+                                rightIcon = CouiIcons.Add, rightDescription = stringResource(R.string.catalog_fab),
                                 leftVisible = leftAccessory, rightVisible = rightAccessory,
                                 onLeftClick = onToggleTheme, onRightClick = { openPage("fab") }, rightContainerColor = color,
                                 dark = dark, lightColor = Color.White,

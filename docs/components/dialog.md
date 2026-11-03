@@ -1,16 +1,16 @@
 # 💬弹窗
 
-`CouiAlertDialog` 用于显示确认、提示等弹窗，可以放在屏幕底部或居中显示。需要单行输入时，可以使用 `CouiInputDialog`。
+`AlertDialog` 用于显示确认、提示等弹窗，可以放在屏幕底部或居中显示。需要单行输入时，可以使用 `InputDialog`。
 
 ## 最小调用
 
 页面提供显隐状态、操作文案和回调；`confirmAction` 是宿主用文案和业务回调构造的 `CouiDialogAction`：
 
 ~~~kotlin
-import com.itos.coui.dialog.CouiAlertDialog
+import com.itos.coui.dialog.AlertDialog
 
 if (visible) {
-    CouiAlertDialog(
+    AlertDialog(
         onDismissRequest = onDismiss,
         confirmAction = confirmAction,
     )
@@ -26,7 +26,7 @@ if (visible) {
 ~~~kotlin
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.itos.coui.dialog.CouiAlertDialog
+import com.itos.coui.dialog.AlertDialog
 import com.itos.coui.dialog.CouiDialogAction
 
 @Composable
@@ -42,7 +42,7 @@ fun ConfirmDialog(
     onDismiss: () -> Unit,
 ) {
     if (visible) {
-        CouiAlertDialog(
+        AlertDialog(
             modifier = modifier,
             onDismissRequest = onDismiss,
             dark = dark,
@@ -67,7 +67,7 @@ fun ConfirmDialog(
 import com.itos.coui.dialog.CouiDialogActionStyle
 import com.itos.coui.dialog.CouiDialogDefaults
 
-CouiAlertDialog(
+AlertDialog(
     onDismissRequest = onDismiss,
     dark = dark,
     title = title,
@@ -93,7 +93,7 @@ CouiAlertDialog(
 ~~~kotlin
 import androidx.compose.material3.Text
 
-CouiAlertDialog(
+AlertDialog(
     onDismissRequest = onDismiss,
     dark = dark,
     title = title,
@@ -108,7 +108,7 @@ CouiAlertDialog(
 
 ## 输入型弹窗
 
-需要单行输入时，可以使用 `CouiInputDialog`。下面用 `TextFieldState` 保存草稿，仅在输入非空时启用保存按钮：
+需要单行输入时，可以使用 `InputDialog`。下面用 `TextFieldState` 保存草稿，仅在输入非空时启用保存按钮：
 
 ~~~kotlin
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -116,7 +116,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.itos.coui.dialog.CouiDialogAction
-import com.itos.coui.dialog.CouiInputDialog
+import com.itos.coui.dialog.InputDialog
 
 @Composable
 fun RenameDialog(
@@ -134,7 +134,7 @@ fun RenameDialog(
 ) {
     if (!visible) return
     val editor = rememberTextFieldState()
-    CouiInputDialog(
+    InputDialog(
         modifier = modifier,
         state = editor,
         onDismissRequest = onDismiss,
@@ -155,7 +155,7 @@ fun RenameDialog(
 
 编辑不会自动提交或关闭弹窗。示例在 `onSave` 中传出输入值，由页面保存并关闭弹窗；关闭后重新打开会创建新的输入状态。需要保留草稿时，可以将 `TextFieldState` 提到弹窗外层。
 
-页面负责设置长度、内容校验和确认条件。`CouiInputDialog` 支持 `TextFieldState` 和 `TextFieldValue`。需要按替换范围过滤粘贴或输入法组合输入时，使用 `state` 版本的 `inputTransformation`；程序性的 `state.edit` 和清除不会经过该转换。
+页面负责设置长度、内容校验和确认条件。`InputDialog` 支持 `TextFieldState` 和 `TextFieldValue`。需要按替换范围过滤粘贴或输入法组合输入时，使用 `state` 版本的 `inputTransformation`；程序性的 `state.edit` 和清除不会经过该转换。
 
 默认会在窗口获焦后请求输入焦点和键盘。需要手动点击输入区时，设置 `autoFocus = false`。输入弹窗使用 `ADJUST_RESIZE`，内容不需要再添加 `imePadding`。自定义 `properties` 时，请保留 `decorFitsSystemWindows = true` 和 `usePlatformDefaultWidth = false`。
 
@@ -167,7 +167,7 @@ fun RenameDialog(
 import com.itos.coui.dialog.CouiDialogDefaults
 
 if (visible) {
-    CouiAlertDialog(
+    AlertDialog(
         onDismissRequest = onDismiss,
         dark = dark,
         title = title,
@@ -195,7 +195,7 @@ if (visible) {
 ~~~kotlin
 import com.itos.coui.dialog.CouiDialogPlacement
 
-CouiAlertDialog(
+AlertDialog(
     onDismissRequest = onDismiss,
     confirmAction = CouiDialogAction(confirmLabel, onConfirm),
     dark = dark,
@@ -221,4 +221,4 @@ Demo 的“组件 → 弹窗”分组包含底部、居中、长内容、多个�
 
 支持的设备可以通过“弹窗背景材质”开关比较模糊材质和不透明表面。
 
-Demo 源码见 [DemoDialogSamples.kt](../../demo/src/main/java/com/itos/coui/demo/DemoDialogSamples.kt) 与[输入型示例](../../demo/src/main/java/com/itos/coui/demo/DemoDialogInputSample.kt)。公开参数见 [CouiAlertDialog / CouiDialogAction](../../coui/src/main/java/com/itos/coui/dialog/CouiAlertDialog.kt)、[CouiDialogActionStyle / CouiDialogActionColors](../../coui/src/main/java/com/itos/coui/dialog/CouiDialogButton.kt)、[CouiInputDialog](../../coui/src/main/java/com/itos/coui/dialog/CouiInputDialog.kt) 与 [CouiDialogDefaults](../../coui/src/main/java/com/itos/coui/dialog/CouiDialogDefaults.kt)。
+Demo 源码见 [DemoDialogSamples.kt](../../demo/src/main/java/com/itos/coui/demo/DemoDialogSamples.kt) 与[输入型示例](../../demo/src/main/java/com/itos/coui/demo/DemoDialogInputSample.kt)。公开参数见 [AlertDialog / CouiDialogAction](../../coui/src/main/java/com/itos/coui/dialog/AlertDialog.kt)、[CouiDialogActionStyle / CouiDialogActionColors](../../coui/src/main/java/com/itos/coui/dialog/CouiDialogButton.kt)、[InputDialog](../../coui/src/main/java/com/itos/coui/dialog/InputDialog.kt) 与 [CouiDialogDefaults](../../coui/src/main/java/com/itos/coui/dialog/CouiDialogDefaults.kt)。

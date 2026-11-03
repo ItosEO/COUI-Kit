@@ -68,7 +68,7 @@ internal fun DemoTimePicker(
     val periods = DateFormatSymbols(locale).amPmStrings
     val periodFirst = DateFormat.getBestDateTimePattern(locale, "hm").startsWith("a")
     val period: @Composable () -> Unit = {
-        CouiWheelPicker(Modifier.width(CouiPickerDefaults.columnWidth), value.hour / 12,
+        WheelPicker(Modifier.width(CouiPickerDefaults.columnWidth), value.hour / 12,
             { submit(latest.copy(hour = latest.hour % 12 + it * 12)) }, 0..1, periods[value.hour / 12],
             enabled = enabled, wrap = false, textSize = 18.dp, formatter = { periods[it] })
     }
@@ -77,12 +77,12 @@ internal fun DemoTimePicker(
             if (fillColumns) 0.dp else 16.dp).padding(vertical = CouiPickerDefaults.padding),
             horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
             if (!is24Hour && periodFirst) period()
-            CouiWheelPicker(if (fillColumns) Modifier.weight(1f) else Modifier.width(CouiPickerDefaults.columnWidth),
+            WheelPicker(if (fillColumns) Modifier.weight(1f) else Modifier.width(CouiPickerDefaults.columnWidth),
                 if (is24Hour) value.hour else ((value.hour + 11) % 12 + 1),
                 { submit(latest.copy(hour = if (is24Hour) it else it % 12 + latest.hour / 12 * 12)) },
                 if (is24Hour) 0..23 else 1..12, hourLabel, enabled = enabled,
                 formatter = { String.format(locale, if (twoDigitHours) "%02d" else "%d", it) })
-            CouiWheelPicker(if (fillColumns) Modifier.weight(1f) else Modifier.width(CouiPickerDefaults.columnWidth), value.minute,
+            WheelPicker(if (fillColumns) Modifier.weight(1f) else Modifier.width(CouiPickerDefaults.columnWidth), value.minute,
                 { submit(latest.copy(minute = it)) }, 0..59, minuteLabel, enabled = enabled,
                 repeatIntervalMillis = 100, formatter = { String.format(locale, "%02d", it) })
             if (!is24Hour && !periodFirst) period()
@@ -112,7 +112,7 @@ internal fun DemoCountdownPicker(
             val values = listOf(value.hour, value.minute, value.second)
             val labels = listOf(hourLabel, minuteLabel, secondLabel)
             values.forEachIndexed { index, number ->
-                CouiWheelPicker(Modifier.weight(1f).height(CountdownHeight), number, { next -> submit(when (index) {
+                WheelPicker(Modifier.weight(1f).height(CountdownHeight), number, { next -> submit(when (index) {
                     0 -> latest.copy(hour = next); 1 -> latest.copy(minute = next); else -> latest.copy(second = next)
                 }) }, if (index == 0) 0..23 else 0..59, labels[index], enabled = enabled,
                     textSize = 38.dp, focusTextSize = 38.dp,
@@ -143,7 +143,7 @@ internal fun DemoTimerEditorPicker(
         Row(modifier.fillMaxWidth().couiPickerSelectionLines(CouiTheme.colorScheme.outlineVariant, 0.dp),
             horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
             listOf(value.hour, value.minute, value.second).forEachIndexed { index, number ->
-                CouiWheelPicker(Modifier.width(58.dp), number, { next -> submit(when (index) {
+                WheelPicker(Modifier.width(58.dp), number, { next -> submit(when (index) {
                     0 -> latest.copy(hour = next); 1 -> latest.copy(minute = next); else -> latest.copy(second = next)
                 }) }, if (index == 0) 0..23 else 0..59, labels[index],
                     repeatIntervalMillis = if (index == 0) 300 else 100,
@@ -188,14 +188,14 @@ internal fun DemoDatePicker(
         .padding(vertical = CouiPickerDefaults.padding),
         horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
         order.forEach { kind -> when (kind) {
-            'y' -> CouiWheelPicker(Modifier.width(CouiPickerDefaults.dateYearWidth), value.year,
+            'y' -> WheelPicker(Modifier.width(CouiPickerDefaults.dateYearWidth), value.year,
                 { submit(latest.withYear(it)) }, minDate.year..maxDate.year, yearLabel, enabled = enabled,
                 formatter = { if (chinese) "$it$yearLabel" else String.format(locale, "%d", it) })
-            'M' -> CouiWheelPicker(Modifier.width(CouiPickerDefaults.dateMonthWidth), value.monthValue,
+            'M' -> WheelPicker(Modifier.width(CouiPickerDefaults.dateMonthWidth), value.monthValue,
                 { submit(latest.withMonth(it)) }, minMonth..maxMonth, monthLabel, enabled = enabled,
                 wrap = minMonth == 1 && maxMonth == 12,
                 formatter = { if (chinese) "$it$monthLabel" else months[it - 1] })
-            'd' -> CouiWheelPicker(Modifier.width(CouiPickerDefaults.columnWidth), value.dayOfMonth,
+            'd' -> WheelPicker(Modifier.width(CouiPickerDefaults.columnWidth), value.dayOfMonth,
                 { submit(latest.withDayOfMonth(it.coerceAtMost(latest.lengthOfMonth()))) }, minDay..maxDay, dayLabel, enabled = enabled,
                 wrap = minDay == 1 && maxDay == value.lengthOfMonth(),
                 formatter = { if (chinese) "$it$dayLabel" else String.format(locale, "%02d", it) })

@@ -48,7 +48,7 @@ data class CouiDialogAction(val text: String, val onClick: () -> Unit, val enabl
  * CouiShape 自动提供轮廓半径；其他 Shape 使用材质时须显式提供 cornerRadius。
  */
 @Composable
-fun CouiAlertDialog(
+fun AlertDialog(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
     confirmAction: CouiDialogAction,

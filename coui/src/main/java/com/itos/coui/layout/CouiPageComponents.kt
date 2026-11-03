@@ -33,7 +33,7 @@ import com.itos.coui.shape.CouiShape
 import com.itos.coui.theme.CouiTheme
 import com.itos.coui.theme.CouiColorScheme
 import com.itos.coui.theme.CouiPresets
-import com.itos.coui.text.CouiText
+import com.itos.coui.text.Text
 import com.itos.coui.text.CouiTextKind
 
 /** 独立配色值；不创建页面主题作用域，也不改变内容槽内其他组件的主题。 */
@@ -45,11 +45,10 @@ object CouiPageDefaults {
     val horizontalMargin = 16.dp
     val rowPadding = 16.dp
     val rowMinHeight = 48.dp
-    val homeRowMinHeight = 52.dp
     val iconSize = 24.dp
+    val iconSpacing = 16.dp
     val contentPadding = 10.dp
     val summarySpacing = 2.dp
-    val groupPadding = 0.dp
     val groupSpacing = 16.dp
     val categoryTopSpacing = 12.dp
     val shape = CouiShape(24.dp, 3f)
@@ -71,6 +70,7 @@ private fun CouiColorScheme.pageColors() = CouiPageColors(background, container,
  * 一组相邻设置项共享项目平滑圆角；条件隐藏的条目不保留空白或分组端点。
  * 内部顶部留白按标题选择 Defaults；modifier.padding 在默认留白之外累加。
  * colors 只控制本组卡片、标题和说明；任意内容槽继续使用各组件自己的主题或显式参数。
+ * headerActions 仅在 title 非空时渲染，位于标题行末端。
  */
 @Composable
 fun Group(
@@ -85,13 +85,12 @@ fun Group(
     Column(modifier.fillMaxWidth().padding(top = topSpacing)) {
         if (!title.isNullOrEmpty()) Row(Modifier.padding(horizontal = 32.dp, vertical = 8.dp).heightIn(min = 16.dp),
             verticalAlignment = Alignment.CenterVertically) {
-            CouiText(text = title, kind = CouiTextKind.GroupTitle, color = colors.summary, modifier =
+            Text(text = title, kind = CouiTextKind.GroupTitle, color = colors.summary, modifier =
                 Modifier.weight(1f).semantics { heading() }, textAlign = TextAlign.Start)
             headerActions()
         }
         Column(Modifier.padding(horizontal = CouiPageDefaults.horizontalMargin).fillMaxWidth()
-            .clip(CouiPageDefaults.shape).background(colors.card)
-            .padding(vertical = CouiPageDefaults.groupPadding), content = content)
+            .clip(CouiPageDefaults.shape).background(colors.card), content = content)
         if (!footer.isNullOrEmpty()) Footer(text = footer, color = colors.summary)
     }
 }
@@ -113,28 +112,28 @@ fun Divider(modifier: Modifier = Modifier,
 @Composable
 fun Footer(modifier: Modifier = Modifier, text: String,
     color: Color = CouiTheme.colorScheme.onSurfaceVariant) {
-    CouiText(text = text, kind = CouiTextKind.Description, color = color, modifier =
+    Text(text = text, kind = CouiTextKind.Description, color = color, modifier =
         modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 8.dp), textAlign = TextAlign.Start)
 }
 
 /**
  * 通用行内容槽；onClick 非空时安装唯一的点击与反馈，行内留白也参与点击。
- * 无 onClick 时不提供点击、按钮语义或反馈；宿主可自行组合 toggleable/selectable 与反馈。
+ * 无 onClick 时不提供点击、按钮语义、语义合并或反馈；宿主可自行组合 toggleable/selectable 与反馈。
  * enabled 仅控制本组件的点击与反馈，任意内容槽的交互与禁用状态由宿主负责。
  */
 @Composable
 fun Item(
     modifier: Modifier = Modifier,
-    leading: (@Composable () -> Unit)? = null,
-    supporting: (@Composable () -> Unit)? = null,
+    icon: (@Composable () -> Unit)? = null,
+    iconSize: androidx.compose.ui.unit.Dp = CouiPageDefaults.iconSize,
+    summary: (@Composable () -> Unit)? = null,
     trailing: @Composable () -> Unit = {},
     onClick: (() -> Unit)? = null,
     enabled: Boolean = true,
     dark: Boolean = CouiTheme.isDark,
     contentPadding: androidx.compose.foundation.layout.PaddingValues = androidx.compose.foundation.layout.PaddingValues(
         horizontal = CouiPageDefaults.rowPadding, vertical = CouiPageDefaults.contentPadding),
-    leadingSize: androidx.compose.ui.unit.Dp = CouiPageDefaults.iconSize,
-    headline: @Composable () -> Unit,
+    title: @Composable () -> Unit,
 ) {
     val interaction = if (onClick != null) {
         val source = remember { MutableInteractionSource() }
@@ -142,13 +141,13 @@ fun Item(
             .clickable(source, null, enabled, role = Role.Button, onClick = onClick)
     } else Modifier
     Row(modifier.fillMaxWidth().defaultMinSize(minHeight = CouiPageDefaults.rowMinHeight)
-        .then(interaction).semantics(mergeDescendants = true) {}
+        .then(interaction)
         .padding(contentPadding),
         verticalAlignment = Alignment.CenterVertically) {
-        if (leading != null) Box(Modifier.padding(end = 16.dp).size(leadingSize), contentAlignment = Alignment.Center) { leading() }
+        if (icon != null) Box(Modifier.padding(end = CouiPageDefaults.iconSpacing).size(iconSize), contentAlignment = Alignment.Center) { icon() }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(CouiPageDefaults.summarySpacing)) {
-            headline()
-            supporting?.invoke()
+            title()
+            summary?.invoke()
         }
         trailing()
     }

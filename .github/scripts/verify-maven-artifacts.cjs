@@ -44,7 +44,7 @@ for (const artifact of ['coui', 'coui-material3']) {
   ].every(field => dependency.includes(field))), `${artifact} POM 缺少 Compose BOM 版本导入`);
   const entries = suffix => execFileSync('unzip', ['-Z1', file(suffix)], { encoding: 'utf8' }).split('\n');
   assert(entries('.aar').includes('classes.jar'), `${artifact} AAR 缺少 classes.jar`);
-  assert(entries('-sources.jar').some(name => name.endsWith(core ? '/CouiSlider.kt' : '/CouiMaterial3Style.kt')), `${artifact} 源码包缺少库源码`);
+  assert(entries('-sources.jar').some(name => name.endsWith(core ? '/Slider.kt' : '/CouiMaterial3Style.kt')), `${artifact} 源码包缺少库源码`);
   assert(entries('-javadoc.jar').includes('index.html'), `${artifact} API 文档包没有生成 HTML`);
   for (const suffix of ['-sources.jar', '-javadoc.jar']) {
     for (const notice of ['LICENSE', 'NOTICE', 'TRADEMARKS.md', ...(core ? ['ICON_SOURCES.md', 'coui-skia-LICENSE', 'coui-androidx-LICENSE'] : [])]) {

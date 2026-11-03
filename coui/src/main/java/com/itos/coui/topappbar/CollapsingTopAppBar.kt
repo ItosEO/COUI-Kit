@@ -33,7 +33,7 @@ import kotlin.math.roundToInt
  * dark 只控制本顶栏，搜索槽由宿主传入相同模式或使用共同的局部主题；标题色 alpha 与动画相乘。
  */
 @Composable
-fun CouiCollapsingTopAppBar(
+fun CollapsingTopAppBar(
     modifier: Modifier = Modifier,
     state: CouiCollapsingAppBarState,
     searchState: CouiSearchBarState,
@@ -59,7 +59,7 @@ fun CouiCollapsingTopAppBar(
     val f = (state.offsetPx / (titleHeight - collapsedHeight)).coerceIn(0f, 1f)
     val p = searchState.pageProgress.coerceIn(0f, 1f)
     SideEffect { state.updateSearch(searchState.expanded, searchState.active) }
-    CouiTopAppBar(modifier.fillMaxWidth(), backdrop,
+    TopAppBar(modifier.fillMaxWidth(), backdrop,
         referenceBlurRadius = with(density) { CouiCollapsingAppBarDefaults.referenceBlurRadiusPx.toDp() },
         // HomepageImpl.updateBlurOverlayExtraHeight：展开为零，折叠或搜索编辑时使用页面资源。
         bottomExtension = if (searchState.active || state.collapsedFraction >= 1f)

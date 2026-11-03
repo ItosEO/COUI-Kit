@@ -1,15 +1,15 @@
 # 🎚️滑动选择条
 
-使用 `CouiSlider` 调节音量、亮度等数值。滑条支持连续调节，也可以设置固定的档位。
+使用 `Slider` 调节音量、亮度等数值。滑条支持连续调节，也可以设置固定的档位。
 
 ## 最小调用
 
 页面提供当前值和更新回调：
 
 ~~~kotlin
-import com.itos.coui.slider.CouiSlider
+import com.itos.coui.slider.Slider
 
-CouiSlider(
+Slider(
     value = value,
     onValueChange = onValueChange,
 )
@@ -27,7 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.itos.coui.shape.CouiCapsuleShape
-import com.itos.coui.slider.CouiSlider
+import com.itos.coui.slider.Slider
 import com.itos.coui.slider.CouiSliderDefaults
 
 @Composable
@@ -38,7 +38,7 @@ fun VolumeSlider(
     dark: Boolean,
     accent: Color,
 ) {
-    CouiSlider(
+    Slider(
         modifier = modifier.fillMaxWidth(),
         value = value,
         onValueChange = onValueChange,
@@ -56,7 +56,7 @@ fun VolumeSlider(
 设置 `valueRange` 和 `steps` 可以限制可选档位。例如，在前面的页面中提供一个无参数的 `saveValue` 回调，并在 0 到 4 之间选择整数：
 
 ~~~kotlin
-CouiSlider(
+Slider(
     modifier = Modifier.fillMaxWidth(),
     value = value,
     onValueChange = onValueChange,
@@ -86,4 +86,4 @@ CouiSlider(
 
 `value` 和范围端点必须是有限值，范围不能反向；`steps` 不能是负数或 `Int.MAX_VALUE`。参数不符合要求时会抛出异常。
 
-滑条不需要背景源。更多示例见 [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)，公开参数见 [CouiSlider](../../coui/src/main/java/com/itos/coui/slider/CouiSlider.kt) 和 [Defaults](../../coui/src/main/java/com/itos/coui/slider/CouiSliderDefaults.kt)。
+滑条不需要背景源。更多示例见 [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)，公开参数见 [Slider](../../coui/src/main/java/com/itos/coui/slider/Slider.kt) 和 [Defaults](../../coui/src/main/java/com/itos/coui/slider/CouiSliderDefaults.kt)。

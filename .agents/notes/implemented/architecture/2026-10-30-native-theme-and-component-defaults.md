@@ -12,7 +12,7 @@ Status: implemented
 
 原生主题保留灰白表面、黑白文字和 Theme.COUI 的蓝色强调色。菜单与底栏的额外页面色相染色仅在宿主适配明确提供 tint 时启用；有色 FAB 预设是另一条原厂能力，保留显式颜色和材质/投影的一致性。FAB 默认材质使用主题强调色，默认投影使用 material.firstColor，不自动叠加菜单式染色。Material 映射由 Demo 与使用示例承载，核心不引用 M3 类型。
 
-当前入口为 [CouiTheme](../../../../coui/src/main/java/com/itos/coui/theme/CouiTheme.kt)、[菜单 Defaults](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenuStyle.kt)、[顶栏 Defaults](../../../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButtonDefaults.kt)、[默认 FAB](../../../../coui/src/main/java/com/itos/coui/floatingactionbutton/CouiFab.kt)与[底栏](../../../../coui/src/main/java/com/itos/coui/navigation/CouiBottomBar.kt)。[外观指南](../../../../docs/guide/appearance.md)持有颜色优先级、插槽迁移、宿主桥接和染色契约。
+当前入口为 [CouiTheme](../../../../coui/src/main/java/com/itos/coui/theme/CouiTheme.kt)、[菜单 Defaults](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenuStyle.kt)、[顶栏 Defaults](../../../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButtonDefaults.kt)、[默认 FAB](../../../../coui/src/main/java/com/itos/coui/floatingactionbutton/Fab.kt)与[底栏](../../../../coui/src/main/java/com/itos/coui/navigation/BottomBar.kt)。[外观指南](../../../../docs/guide/appearance.md)持有颜色优先级、插槽迁移、宿主桥接和染色契约。
 
 ## Evidence
 

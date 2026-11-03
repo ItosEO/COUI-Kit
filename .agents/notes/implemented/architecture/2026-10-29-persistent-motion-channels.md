@@ -18,7 +18,7 @@ Status: implemented
 
 [CouiSwitchMotion](../../../../coui/src/main/java/com/itos/coui/switch/CouiSwitchMotion.kt) 持有受控值同步、普通切换、拉伸、颜色进度和提交；内部 [CouiSwitchDrag](../../../../coui/src/main/java/com/itos/coui/switch/CouiSwitchDrag.kt) 持有拖动阈值、双锚点选择及吸附速度。Toggle 与拖动 X/Y 分别使用公共弹簧通道，吸附等待两轴均停止后通知一次完成。保留整数可见位置、浮点切换进度、速度量化、目标限制、近锚点直接完成，以及 CANCEL 不提交、宿主拒绝候选后恢复受控值。公开开关 API、输入装配及加载动画不变。
 
-[CouiCheckbox](../../../../coui/src/main/java/com/itos/coui/checkbox/CouiCheckbox.kt) 用一个线性时钟驱动方向资源的图形组，不为每项属性新增动画对象。外框与底色同曲线但分别绘制，勾线的选中回落独立；填充、trim 和方向笔宽来自对应资源。反向按不可逆 animated-selector 从新方向起点播放。初次显示、禁用与重新启用使用静态目标，保留宿主 Shape 和受控接口。
+[Checkbox](../../../../coui/src/main/java/com/itos/coui/checkbox/Checkbox.kt) 用一个线性时钟驱动方向资源的图形组，不为每项属性新增动画对象。外框与底色同曲线但分别绘制，勾线的选中回落独立；填充、trim 和方向笔宽来自对应资源。反向按不可逆 animated-selector 从新方向起点播放。初次显示、禁用与重新启用使用静态目标，保留宿主 Shape 和受控接口。
 
 ## 原厂与平台依据
 

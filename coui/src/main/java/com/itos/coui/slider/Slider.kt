@@ -54,7 +54,7 @@ import kotlin.math.abs
  * 不采样背景, 不依赖 Oplus SDK; 宿主提供配色、深浅色和轨道 Shape。
  */
 @Composable
-fun CouiSlider(
+fun Slider(
     modifier: Modifier = Modifier,
     value: Float,
     onValueChange: (Float) -> Unit,

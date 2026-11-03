@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 
 /** 包住完整的返回或操作槽位, 放在槽位进出动画之外, 保留内部淡化及原位输入。 */
 @Composable
-fun CouiTopAppBarButtonGroup(
+fun TopAppBarButtonGroup(
     modifier: Modifier = Modifier,
     content: @Composable RowScope.() -> Unit,
 ) {
@@ -44,7 +44,7 @@ fun CouiTopAppBarButtonGroup(
 
 /** 顶栏操作区淡化; 可关闭横向收放, 淡化层始终包含外围投影。 */
 @Composable
-fun CouiTopAppBarActionVisibility(
+fun TopAppBarActionVisibility(
     modifier: Modifier = Modifier,
     visible: Boolean,
     durationMillis: Int = 280,

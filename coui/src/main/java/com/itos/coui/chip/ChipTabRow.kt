@@ -68,7 +68,7 @@ import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.effect.CouiFloatingRenderer
 import com.itos.coui.effect.LocalCouiContourGlowEnabled
 import com.itos.coui.input.isCouiTouchCancelled
-import com.itos.coui.topappbar.CouiTopAppBarActionVisibility
+import com.itos.coui.topappbar.TopAppBarActionVisibility
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.max
@@ -107,7 +107,7 @@ data class CouiChipTabItem(
  */
 @RequiresApi(34)
 @Composable
-fun CouiChipTabRow(
+fun ChipTabRow(
     modifier: Modifier = Modifier,
     items: List<CouiChipTabItem>,
     selectedKey: Any?,
@@ -148,7 +148,7 @@ fun CouiChipTabRow(
         label = "chipTabContentPadding",
     )
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        CouiTopAppBarActionVisibility(visible = showLeadingAction,
+        TopAppBarActionVisibility(visible = showLeadingAction,
             durationMillis = ChipActionVisibilityDuration, easing = FastOutSlowInEasing) {
             Box(Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp)) { leadingAction?.invoke() }
         }
@@ -212,7 +212,7 @@ fun CouiChipTabRow(
             content = {
                 items.forEachIndexed { index, item ->
                     key(item.key) {
-                        CouiChipTab(
+                        ChipTab(
                             modifier = Modifier.onFocusChanged { if (it.isFocused) scroll.reveal(index) },
                             selected = selectedKey == item.key,
                             onClick = {

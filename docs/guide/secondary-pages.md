@@ -1,6 +1,6 @@
 # 在宿主页面中组合 COUI
 
-COUI 组件可以放入现有 Material、Miuix 或自有页面。纯 COUI 应用也可选择 [CouiScaffold](../components/scaffold.md) 处理栏位测量和安全区。
+COUI 组件可以放入现有 Material、Miuix 或自有页面。纯 COUI 应用也可选择 [Scaffold](../components/scaffold.md) 处理栏位测量和安全区。
 
 | 页面需要 | 装配方式 |
 | --- | --- |
@@ -41,9 +41,9 @@ import com.itos.coui.backdrop.rememberCouiBackdrop
 import com.itos.coui.layout.Group
 import com.itos.coui.layout.Item
 import com.itos.coui.layout.CouiPageDefaults
-import com.itos.coui.text.CouiText
+import com.itos.coui.text.Text
 import com.itos.coui.text.CouiTextKind
-import com.itos.coui.topappbar.CouiTopAppBar
+import com.itos.coui.topappbar.TopAppBar
 
 @Composable
 fun MixedPage(
@@ -60,7 +60,7 @@ fun MixedPage(
         modifier = modifier,
         containerColor = background,
         topBar = {
-            CouiTopAppBar(
+            TopAppBar(
                 modifier = Modifier.windowInsetsPadding(
                     WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
                 backdrop = backdrop,
@@ -82,7 +82,7 @@ fun MixedPage(
                 item {
                     Group(colors = colors) {
                         Item(onClick = onOpen) {
-                            CouiText(text = rowTitle, kind = CouiTextKind.PreferenceTitle,
+                            Text(text = rowTitle, kind = CouiTextKind.PreferenceTitle,
                                 color = colors.title)
                         }
                     }
@@ -99,7 +99,7 @@ fun MixedPage(
 
 正文应用并消费宿主给出的 Padding。LazyColumn 使用 `contentPadding`；Column 使用 `verticalScroll` 或 `couiVerticalScroll` 时，将 Padding 放在滚动 Modifier 后，使内容能滚入浮动栏位下方。不要叠加两层纵向滚动。
 
-顶栏负责顶部及自身横向安全区，底栏负责底部安全区；宿主容器返回的占位包含这些实测高度。已消费的部分不再添加第二次。Material 3 的分工见 [Android 官方说明](https://developer.android.com/develop/ui/compose/system/material-insets)，CouiScaffold 的分工见[页面容器](../components/scaffold.md#padding-与系统-insets)。
+顶栏负责顶部及自身横向安全区，底栏负责底部安全区；宿主容器返回的占位包含这些实测高度。已消费的部分不再添加第二次。Material 3 的分工见 [Android 官方说明](https://developer.android.com/develop/ui/compose/system/material-insets)，Scaffold 的分工见[页面容器](../components/scaffold.md#padding-与系统-insets)。
 
 含输入框的页面在滚动容器外使用 `imePadding()`，使键盘打开时实际视口缩小，Foundation 才能处理焦点避让。只增加滚动内容尾部空白不会缩小视口。父级已处理 IME 时沿用其分工，详见 [Insets 消费规则](https://developer.android.com/develop/ui/compose/system/insets-ui)。
 

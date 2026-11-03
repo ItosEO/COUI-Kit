@@ -89,7 +89,7 @@ import kotlin.math.roundToInt
 /** 标题槽位入口。visible 只控制整组淡化, 不改变搜索展收目标或页面查询。 */
 @RequiresApi(34)
 @Composable
-fun CouiTopAppBarSearch(
+fun TopAppBarSearch(
     modifier: Modifier = Modifier,
     state: CouiTopAppBarSearchState,
     style: CouiToolbarStyle = CouiTopAppBarButtonDefaults.style(search = true),
@@ -118,7 +118,7 @@ fun CouiTopAppBarSearch(
             SideEffect {
                 if ((visible && state.motion.expanded) || state.expandedWidth == 0f) state.expandedWidth = targetWidth
             }
-            CouiTopAppBarActionVisibility(visible = visible, animateSize = false) {
+            TopAppBarActionVisibility(visible = visible, animateSize = false) {
 
                 Box(
                     Modifier.then(if (state.motion.expanded) Modifier.clearAndSetSemantics {} else Modifier)
@@ -143,7 +143,7 @@ fun CouiTopAppBarSearch(
                 }
                 val outsets = remember(density) { LayerOutsets(all = (120f / density.density).dp) }
                 overlay.apply {
-                    CouiTopAppBarActionVisibility(
+                    TopAppBarActionVisibility(
                         modifier = Modifier.padding(end = endPadding)
                             .renderInSharedTransitionScopeOverlay(renderInOverlay = { true }, zIndexInOverlay = 1f),
                         visible = visible,
@@ -243,7 +243,7 @@ fun CouiTopAppBarSearch(
 /** 与展开搜索框共用材质。收起尾段仍允许重新按下入口。 */
 @RequiresApi(34)
 @Composable
-fun CouiTopAppBarSearchButton(
+fun TopAppBarSearchButton(
     modifier: Modifier = Modifier,
     state: CouiTopAppBarSearchState,
     style: CouiToolbarStyle = CouiTopAppBarButtonDefaults.style(search = true),
@@ -253,7 +253,7 @@ fun CouiTopAppBarSearchButton(
 ) {
     CompositionLocalProvider(LocalCouiToolbarStyle provides style) {
         val overlay = LocalCouiToolbarOverlay.current
-        CouiTopAppBarSearchAction(
+        TopAppBarSearchAction(
             modifier = modifier.onPlaced {
                 if ((!state.motion.present || (!state.motion.expanded && state.sourceCenter == null))) {
                     state.sourceCenter = checkNotNull(overlay).lookaheadScopeCoordinates(it)
@@ -293,7 +293,7 @@ fun CouiTopAppBarSearchButton(
 /** 退场动作保留原位淡化; 常驻动作连续移动到新布局位置。 */
 @RequiresApi(34)
 @Composable
-fun CouiTopAppBarSearchAction(
+fun TopAppBarSearchAction(
     modifier: Modifier = Modifier,
     state: CouiTopAppBarSearchState,
     visibleWhileSearching: Boolean = false,

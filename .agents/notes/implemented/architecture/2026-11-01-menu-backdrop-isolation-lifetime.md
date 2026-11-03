@@ -24,7 +24,7 @@ ProvideCouiMenuBackdrop 的源覆盖所属窗口内容。若它始终使用 Offs
 
 AndroidX 的 [GraphicsLayer](https://github.com/androidx/androidx/blob/918659e0a6ddfad64eb556fa2b6adf75844cba27/compose/ui/ui-graphics/src/androidMain/kotlin/androidx/compose/ui/graphics/layer/AndroidGraphicsLayer.android.kt) 将 compositingStrategy 交给平台实现；[GraphicsLayerV29](https://github.com/androidx/androidx/blob/918659e0a6ddfad64eb556fa2b6adf75844cba27/compose/ui/ui-graphics/src/androidMain/kotlin/androidx/compose/ui/graphics/layer/GraphicsLayerV29.android.kt) 通过 RenderNode 的合成层开关表达 Offscreen 与 Auto，并保留其他效果要求离屏的条件。因此 Auto 只取消强制隔离，不是绝对无离屏保证。
 
-菜单 Popup 与材质使用相同的可见条件，见 [CouiMenu](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenu.kt) 和 [CouiMenuSubMenu](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenuSubMenu.kt)。[CouiMenuMotion](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenuMotion.kt) 在关闭动画结束后清理 visible。AndroidX [Dialog](https://github.com/androidx/androidx/blob/918659e0a6ddfad64eb556fa2b6adf75844cba27/compose/ui/ui/src/androidMain/kotlin/androidx/compose/ui/window/AndroidDialog.android.kt) 在退出时 dismiss 并释放内容 Composition，不为系统窗口退出动画额外增加固定延迟。
+菜单 Popup 与材质使用相同的可见条件，见 [Menu](../../../../coui/src/main/java/com/itos/coui/menu/Menu.kt) 和 [CouiMenuSubMenu](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenuSubMenu.kt)。[CouiMenuMotion](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenuMotion.kt) 在关闭动画结束后清理 visible。AndroidX [Dialog](https://github.com/androidx/androidx/blob/918659e0a6ddfad64eb556fa2b6adf75844cba27/compose/ui/ui/src/androidMain/kotlin/androidx/compose/ui/window/AndroidDialog.android.kt) 在退出时 dismiss 并释放内容 Composition，不为系统窗口退出动画额外增加固定延迟。
 
 本决定属于公开 Android / Compose 的资源管理，不是新移植的 OEM 算法，也不引用厂商私有 SDK。此前透明卷积和固定绘制指令优化的收益仍归原决定，不与本次源隔离调整混算。
 

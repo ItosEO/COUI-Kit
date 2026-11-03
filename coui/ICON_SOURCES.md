@@ -1,6 +1,6 @@
 # 系统功能图标来源与调用依据
 
-仅收录用户提供的 ColorOS 17 PMX110 17.0.0.115 材料中能够沿调用者追溯的矢量。不是全量图标包，不以存在于 APK 或名字类似作为使用依据。调用记录证明代码/资源链被装配，不宣称每台设备和所有运行条件都执行同一分支。
+图标取自 ColorOS 17 PMX110 17.0.0.115。下表列出原始资源、调用链和校验值。
 
 | CouiIcons | 来源包 / drawable | 实际调用链 | 原始 XML SHA-256 |
 | --- | --- | --- | --- |
@@ -32,7 +32,7 @@
 | Popup | com.android.settings / coui_pop_up_next_normal | Settings Preference style coui_jump_mark → coui_pop_up_next selector | 4577c1f6d328c3dda72aba65d85075410633f914179b4bd377c7a6295bd4bbd3 |
 | Close | com.android.settings / ic_close | Settings identity_check_promo_card.xml / safety_center_qs.xml | bcfe067d988f857ef7524b7a8547d4ad91c387db5ae145eb18aa1771c38c9a5b |
 
-SearchField 使用 coui_search_view_icon_normal 的原始 20dp viewport；它与 Search 是两个原始资源。Back/Next 从原选择器继承 RTL 镜像。保留路径、分组变换、描边和 alpha，功能色交由调用方 tint；Tips 导航态 alpha 由底栏统一控制，避免重复衰减。不是原厂完整 selector 或主题协议。
+SearchField 与 Search 来自不同资源。Back/Next 继承原选择器的 RTL 镜像。矢量保留路径、分组变换、描边和 alpha，功能色由调用方 tint；Tips 导航态 alpha 由底栏控制。
 
 APK SHA-256：
 
@@ -40,4 +40,4 @@ APK SHA-256：
 - com.coloros.alarmclock：231b22b01cee3783259bdf896399308c0b9cd7e279b0ba226d6735f0075a778d
 - com.oplus.tips：556917e2079696cd13fd82c3636949a4a2f5d78e473c3e79c829f9724aea83f9
 
-原厂及 Android 上游权利保留。未检出这些提取资源附带的独立许可；本项目不将其改标为 MPL-2.0，也不授予额外第三方权利。不包含 APK、PNG 预览、整套素材或本机材料路径依赖。
+原厂及 Android 上游权利保留。未检出这些提取资源附带的独立许可；本项目不将其改标为 MPL-2.0，也不授予额外第三方权利。

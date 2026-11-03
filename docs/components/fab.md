@@ -1,6 +1,6 @@
 # ➕FAB
 
-`CouiFab` 适合放置新建、编辑等页面操作，可以单独使用，也可以与底栏一起使用。
+`Fab` 适合放置新建、编辑等页面操作，可以单独使用，也可以与底栏一起使用。
 
 ## 最小调用
 
@@ -13,7 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.effect.CouiFloatingRenderer
-import com.itos.coui.floatingactionbutton.CouiFab
+import com.itos.coui.floatingactionbutton.Fab
 
 @RequiresApi(34)
 @Composable
@@ -24,7 +24,7 @@ fun PageFab(
     content: @Composable () -> Unit,
 ) {
     val renderer = remember { CouiFloatingRenderer.standalone() }
-    CouiFab(modifier = modifier, backdrop = backdrop, renderer = renderer, onClick = onClick, content = content)
+    Fab(modifier = modifier, backdrop = backdrop, renderer = renderer, onClick = onClick, content = content)
 }
 ~~~
 
@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.dp
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.effect.CouiFloatingRenderer
 import com.itos.coui.effect.LocalCouiContourGlowEnabled
-import com.itos.coui.floatingactionbutton.CouiFab
+import com.itos.coui.floatingactionbutton.Fab
 import com.itos.coui.floatingactionbutton.CouiFabColor
 import com.itos.coui.floatingactionbutton.CouiFabDefaults
 import com.itos.coui.shape.CouiShape
@@ -63,7 +63,7 @@ fun PresetFab(
     val color = CouiFabDefaults.containerColor(preset, dark)
     val density = LocalDensity.current.density
     val contour = LocalCouiContourGlowEnabled.current
-    CouiFab(
+    Fab(
         modifier = modifier,
         backdrop = backdrop,
         renderer = renderer,
@@ -93,7 +93,7 @@ val renderer = remember { CouiFloatingRenderer.standalone() }
 val density = LocalDensity.current.density
 val contour = LocalCouiContourGlowEnabled.current
 
-CouiFab(
+Fab(
     backdrop = backdrop,
     renderer = renderer,
     onClick = onClick,
@@ -111,7 +111,7 @@ CouiFab(
 
 启用 M3 适配后，省略材质的 FAB 会向 M3 图标提供主题 `onAccent`。显式材质保持 ambient 内容色；预设或自定义底色可显式设置 `tint`。示例使用 `CouiShape` 创建圆形，也可以传入自己的 Shape。
 
-`CouiFabColor` 和 `CouiFabDefaults` 保留显式的有色预设。使用自定义颜色时，请让材质与阴影共用同一最终颜色。
+有色预设见 `CouiFabColor` 和 `CouiFabDefaults`。
 
 轮廓光由 `LocalCouiContourGlowEnabled` 控制；关闭后，`CouiFabDefaults.shadow` 使用普通有色投影。
 
@@ -121,4 +121,4 @@ CouiFab(
 
 `backdrop` 应覆盖不透明的页面内容，FAB 放在源节点之外。背景源的创建方式见[背景采样](../effects/backdrop.md)。
 
-源码见 [CouiFab](../../coui/src/main/java/com/itos/coui/floatingactionbutton/CouiFab.kt)、[配色](../../coui/src/main/java/com/itos/coui/floatingactionbutton/CouiFabColor.kt)、[Defaults](../../coui/src/main/java/com/itos/coui/floatingactionbutton/CouiFabDefaults.kt)，完整页面见 [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)。
+源码见 [Fab](../../coui/src/main/java/com/itos/coui/floatingactionbutton/Fab.kt)、[配色](../../coui/src/main/java/com/itos/coui/floatingactionbutton/CouiFabColor.kt)、[Defaults](../../coui/src/main/java/com/itos/coui/floatingactionbutton/CouiFabDefaults.kt)，完整页面见 [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)。

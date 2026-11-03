@@ -1,6 +1,6 @@
 # 🧭顶栏与按钮
 
-`CouiTopAppBar` 在页面顶部显示渐进模糊背景。你可以在其中放置标题、操作按钮和搜索框。
+`TopAppBar` 在页面顶部显示渐进模糊背景。你可以在其中放置标题、操作按钮和搜索框。
 
 ## 最小调用
 
@@ -11,9 +11,9 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.itos.coui.backdrop.CouiBackdrop
-import com.itos.coui.topappbar.CouiTopAppBar
-import com.itos.coui.topappbar.CouiTopAppBarButton
-import com.itos.coui.topappbar.CouiTopAppBarButtonGroup
+import com.itos.coui.topappbar.TopAppBar
+import com.itos.coui.topappbar.TopAppBarButton
+import com.itos.coui.topappbar.TopAppBarButtonGroup
 
 @RequiresApi(34)
 @Composable
@@ -23,9 +23,9 @@ fun ToolbarAction(
     onAction: () -> Unit,
     actionContent: @Composable () -> Unit,
 ) {
-    CouiTopAppBar(modifier = modifier, backdrop = backdrop) {
-        CouiTopAppBarButtonGroup {
-            CouiTopAppBarButton(onClick = onAction) {
+    TopAppBar(modifier = modifier, backdrop = backdrop) {
+        TopAppBarButtonGroup {
+            TopAppBarButton(onClick = onAction) {
                 actionContent()
             }
         }
@@ -33,7 +33,7 @@ fun ToolbarAction(
 }
 ~~~
 
-`CouiTopAppBarButton` 默认使用 `CouiTopAppBarButtonDefaults.style()`；`CouiTopAppBarSearchButton` 和 `CouiTopAppBarSearch` 默认使用 `CouiTopAppBarButtonDefaults.style(search = true)`。显式传入 `style` 时覆盖默认值。通用主题规则见[外观与预设](../guide/appearance.md)。
+`TopAppBarButton` 默认使用 `CouiTopAppBarButtonDefaults.style()`；`TopAppBarSearchButton` 和 `TopAppBarSearch` 默认使用 `CouiTopAppBarButtonDefaults.style(search = true)`。显式传入 `style` 时覆盖默认值。通用主题规则见[外观与预设](../guide/appearance.md)。
 
 ## 显示一个简单顶栏
 
@@ -53,9 +53,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.topappbar.CouiToolbarStyle
-import com.itos.coui.topappbar.CouiTopAppBar
-import com.itos.coui.topappbar.CouiTopAppBarButton
-import com.itos.coui.topappbar.CouiTopAppBarButtonGroup
+import com.itos.coui.topappbar.TopAppBar
+import com.itos.coui.topappbar.TopAppBarButton
+import com.itos.coui.topappbar.TopAppBarButtonGroup
 
 @RequiresApi(34)
 @Composable
@@ -67,15 +67,15 @@ fun PageToolbar(
     actionLabel: String,
     onAction: () -> Unit,
 ) {
-    CouiTopAppBar(modifier = modifier.fillMaxWidth(), backdrop = backdrop) {
+    TopAppBar(modifier = modifier.fillMaxWidth(), backdrop = backdrop) {
         Row(
             modifier = Modifier.fillMaxWidth().statusBarsPadding()
                 .heightIn(min = 64.dp).padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(title, Modifier.weight(1f), style = style.textStyle, color = style.contentColor)
-            CouiTopAppBarButtonGroup {
-                CouiTopAppBarButton(onClick = onAction, text = true, style = style) {
+            TopAppBarButtonGroup {
+                TopAppBarButton(onClick = onAction, text = true, style = style) {
                     Text(actionLabel)
                 }
             }
@@ -131,7 +131,7 @@ fun rememberToolbarStyle(
 
 `circleShape` 用于图标按钮，`capsuleShape` 用于文字按钮和搜索框。搜索框的材质配置见[顶栏搜索](search.md#搜索框样式)。
 
-示例让 `contourGlowEnabled` 与阴影工厂使用同一个轮廓状态，修改时请保持一致。
+`contourGlowEnabled` 与阴影工厂应使用同一个轮廓状态。
 
 ## 添加操作按钮
 
@@ -142,11 +142,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 
-CouiTopAppBarButton(onClick = onSettings, style = style) {
+TopAppBarButton(onClick = onSettings, style = style) {
     Icon(Icons.Default.Settings, contentDescription = settingsLabel)
 }
 
-CouiTopAppBarButton(onClick = onReset, text = true, enabled = canReset, style = style) {
+TopAppBarButton(onClick = onReset, text = true, enabled = canReset, style = style) {
     Text(resetLabel)
 }
 ~~~
@@ -155,14 +155,14 @@ CouiTopAppBarButton(onClick = onReset, text = true, enabled = canReset, style = 
 
 ## 显示和隐藏操作
 
-将操作放进 `CouiTopAppBarButtonGroup`。需要显隐动画时，再用 `CouiTopAppBarActionVisibility` 包住按钮：
+将操作放进 `TopAppBarButtonGroup`。需要显隐动画时，再用 `TopAppBarActionVisibility` 包住按钮：
 
 ~~~kotlin
-import com.itos.coui.topappbar.CouiTopAppBarActionVisibility
+import com.itos.coui.topappbar.TopAppBarActionVisibility
 
-CouiTopAppBarButtonGroup {
-    CouiTopAppBarActionVisibility(visible = actionsVisible) {
-        CouiTopAppBarButton(onClick = onSettings, style = style) {
+TopAppBarButtonGroup {
+    TopAppBarActionVisibility(visible = actionsVisible) {
+        TopAppBarButton(onClick = onSettings, style = style) {
             Icon(Icons.Default.Settings, contentDescription = settingsLabel)
         }
     }
@@ -175,15 +175,15 @@ CouiTopAppBarButtonGroup {
 
 ## 版本和 inset
 
-顶栏容器支持库的最低系统版本，顶栏按钮和搜索需要 API 34。按钮组和搜索组件放在 `CouiTopAppBar` 内使用。
+顶栏容器支持库的最低系统版本，顶栏按钮和搜索需要 API 34。按钮组和搜索组件放在 `TopAppBar` 内使用。
 
 每个按钮默认创建独立的 renderer。需要处理创建失败时，可以先创建 `CouiFloatingRenderer.standalone()`，再通过 `renderer` 传入。
 
-M3 模式的 `CouiTopAppBarButton` 使用 `minimumInteractiveComponentSize()`，遵守宿主最小交互尺寸设置。SearchButton 使用固定容器。title 与 buttonGroup 继承宿主文字样式。
+M3 模式的 `TopAppBarButton` 使用 `minimumInteractiveComponentSize()`，遵守宿主最小交互尺寸设置。SearchButton 使用固定容器。title 与 buttonGroup 继承宿主文字样式。
 
 顶栏不消费状态栏 inset，可在顶栏内容或页面根节点添加一次 `statusBarsPadding()`。渐进模糊背景会向下延伸，但不会增加布局高度或触摸范围。
 
-源码见 [CouiTopAppBar](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBar.kt)、[按钮](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButton.kt)、[按钮组与显隐](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButtonGroup.kt)、[按钮预设](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButtonDefaults.kt)，完整页面见 [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)。
+源码见 [TopAppBar](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBar.kt)、[按钮](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBarButton.kt)、[按钮组与显隐](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBarButtonGroup.kt)、[按钮预设](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButtonDefaults.kt)，完整页面见 [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)。
 
 ## 背景参数
 

@@ -57,7 +57,7 @@ Sheet 和独立普通按钮不在当前展示范围。目录中的效果分类�
 
 `DemoApplication` 初始化可选 `CouiMaterial3Style`。开启 Material 配色时，组件在消费处读取宿主主题；关闭时，局部 `CouiTheme` 使用原生外观，Demo 的 M3 内容也映射到 COUI 表面与强调色。`DemoTheme` 为首页和详情提供页面内容色，偏好行直接读取 `CouiTheme` 和 `CouiPageDefaults`。显式 FAB 配色预设继续生效。主题接入见[外观与预设](appearance.md)。
 
-首页和详情页使用公开的 [CouiScaffold](../components/scaffold.md)。容器测量栏位并处理横向安全区，Demo 在容器外处理 IME；正文应用测量所得 Padding。正文 Backdrop 供顶栏和底栏采样，Activity 根部的窗口源供菜单与弹窗使用。源和消费者的分层见[宿主页面接入](secondary-pages.md)。
+首页和详情页使用公开的 [Scaffold](../components/scaffold.md)。容器测量栏位并处理横向安全区，Demo 在容器外处理 IME；正文应用测量所得 Padding。正文 Backdrop 供顶栏和底栏采样，Activity 根部的窗口源供菜单与弹窗使用。源和消费者的分层见[宿主页面接入](secondary-pages.md)。
 
 页面通过标准 Intent 启动、`finish()` 退出，使用当前 ROM 向普通应用提供的 Activity 转场。Demo 不实现系统设置的特权窗口或双栏协议。
 
@@ -74,4 +74,4 @@ Sheet 和独立普通按钮不在当前展示范围。目录中的效果分类�
 | 弹窗与选择器 | [DemoDialogSamples](../../demo/src/main/java/com/itos/coui/demo/DemoDialogSamples.kt)、[DemoPickerSamples](../../demo/src/main/java/com/itos/coui/demo/DemoPickerSamples.kt) |
 | 记录侧滑 | [DemoRecordSamples](../../demo/src/main/java/com/itos/coui/demo/DemoRecordSamples.kt) |
 
-Demo 展示宿主装配，内部行包装和路由不是库 API。接入从[组件目录](../components/README.md)或[效果目录](../effects/README.md)开始。构建结果与设备验收分开记录；当前提交的检查结果见对应 PR。
+Demo 展示宿主装配，内部行包装和路由不是库 API。接入从[组件目录](../components/README.md)或[效果目录](../effects/README.md)开始。

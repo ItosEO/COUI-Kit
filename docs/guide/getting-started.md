@@ -35,13 +35,15 @@ dependencies {
 
 ## 配置页面
 
-纯 COUI 应用可使用 `CouiTheme + CouiScaffold + COUI 组件`，无需添加 Material 3。容器、Padding 和安全区的完整用法见[页面容器](../components/scaffold.md)。已有宿主页面也可以直接放入 COUI 组件。
+纯 COUI 应用可使用 `CouiTheme + Scaffold + COUI 组件`，无需添加 Material 3。容器、Padding 和安全区的完整用法见[页面容器](../components/scaffold.md)。已有宿主页面也可以直接放入 COUI 组件。
 
 组件可以直接使用 COUI 原生默认值，也可以由局部 `CouiTheme` 或显式参数配置。M3 宿主添加同版本的可选 `coui-material3` 模块，并在 `Application.onCreate` 调用 `Coui.initialize(defaultStyle = CouiMaterial3Style())`；完整初始化与模式配置见 [README：接入 Material 3](../../README.md#接入-material-3)。
 
-平台要求按能力分：普通控件跟随库的最低系统；渐进模糊、轮廓和融合要 API 33；底栏、FAB、顶栏按钮/展开式搜索、ChipTab 和普通阴影要 API 34。常驻 `CouiSearchBar` 在 API 31–33 使用普通填色，API 34 起提供浮动材质与融合。调用 API 34 的组件前先判断版本，完整表格见[兼容要求](compatibility.md#效果门槛)。
+平台要求按能力分：普通控件跟随库的最低系统；渐进模糊、轮廓和融合要 API 33；底栏、FAB、顶栏按钮/展开式搜索、ChipTab 和普通阴影要 API 34。常驻 `SearchBar` 在 API 31–33 使用普通填色，API 34 起提供浮动材质与融合。调用 API 34 的组件前先判断版本，完整表格见[兼容要求](compatibility.md#效果门槛)。
 
 ## 显示第一个组件
+
+以下无前缀 API 示例对应当前源码，使用[源码模块接入](#源码模块)或包含该变更的开发版本。上方 `0.0.1-alpha3` 依赖使用带 `Coui` 前缀的组件名，迁移规则见 [CHANGELOG](../../CHANGELOG.md#组件命名迁移)。
 
 在 Compose 页面中加入下面的滑条，拖动时更新 `value`：
 
@@ -53,14 +55,14 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.itos.coui.slider.CouiSlider
+import com.itos.coui.slider.Slider
 
 @Composable
 fun SliderExample(
     modifier: Modifier = Modifier,
 ) {
     var value by rememberSaveable { mutableFloatStateOf(0.4f) }
-    CouiSlider(
+    Slider(
         modifier = modifier.fillMaxWidth(),
         value = value,
         onValueChange = { value = it },
@@ -87,7 +89,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.itos.coui.backdrop.couiBackdrop
 import com.itos.coui.backdrop.rememberCouiBackdrop
-import com.itos.coui.topappbar.CouiTopAppBar
+import com.itos.coui.topappbar.TopAppBar
 
 @Composable
 fun PageContent(
@@ -101,7 +103,7 @@ fun PageContent(
         Column(Modifier.fillMaxSize().couiBackdrop(backdrop).background(background)) {
             content()
         }
-        CouiTopAppBar(
+        TopAppBar(
             modifier = Modifier.align(Alignment.TopCenter).fillMaxWidth(),
             backdrop = backdrop,
         ) {

@@ -1,5 +1,6 @@
 package com.itos.coui.demo
 
+import com.itos.coui.icons.CouiIcons
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -20,28 +21,30 @@ import com.itos.coui.layout.Group
 
 internal data class DemoCatalogEntry(val page: String, val title: Int, val icon: androidx.compose.ui.graphics.vector.ImageVector)
 
+private val CatalogRowMinHeight = 52.dp
+
 internal val DemoComponentGroups = listOf(
     listOf(DemoCatalogEntry("switch", R.string.switch_title, DemoIcons.Switch),
         DemoCatalogEntry("sliders", R.string.slider_title, DemoIcons.Tune),
         DemoCatalogEntry("checkbox", R.string.checkbox_title, DemoIcons.Checkbox)),
     listOf(DemoCatalogEntry("dialogs", R.string.dialog_title, DemoIcons.Dialogs),
-        DemoCatalogEntry("menu", R.string.menu_title, DemoIcons.More)),
+        DemoCatalogEntry("menu", R.string.menu_title, CouiIcons.More)),
     listOf(DemoCatalogEntry("appbar", R.string.catalog_appbar, DemoIcons.Title),
-        DemoCatalogEntry("search", R.string.catalog_search, DemoIcons.Search),
-        DemoCatalogEntry("navigation", R.string.catalog_navigation, DemoIcons.Featured),
-        DemoCatalogEntry("fab", R.string.catalog_fab, DemoIcons.Add)),
-    listOf(DemoCatalogEntry("timepicker", R.string.picker_time_title, DemoIcons.Time),
-        DemoCatalogEntry("countdownpicker", R.string.picker_countdown_title, DemoIcons.Countdown),
+        DemoCatalogEntry("search", R.string.catalog_search, CouiIcons.Search),
+        DemoCatalogEntry("navigation", R.string.catalog_navigation, CouiIcons.Featured),
+        DemoCatalogEntry("fab", R.string.catalog_fab, CouiIcons.Add)),
+    listOf(DemoCatalogEntry("timepicker", R.string.picker_time_title, CouiIcons.Time),
+        DemoCatalogEntry("countdownpicker", R.string.picker_countdown_title, CouiIcons.Countdown),
         DemoCatalogEntry("datepicker", R.string.picker_date_title, DemoIcons.Date),
-        DemoCatalogEntry("calendar", R.string.picker_calendar_title, DemoIcons.Calendar)),
+        DemoCatalogEntry("calendar", R.string.picker_calendar_title, CouiIcons.Calendar)),
     listOf(DemoCatalogEntry("settings", R.string.settings_title, DemoIcons.Tune),
-        DemoCatalogEntry("chip", R.string.chip_tab_title, DemoIcons.Components)),
+        DemoCatalogEntry("chip", R.string.chip_tab_title, CouiIcons.Components)),
 )
 
 internal val DemoEffectGroups = listOf(
-    listOf(DemoCatalogEntry("effect_shadow", R.string.shadow_title, DemoIcons.Featured),
-        DemoCatalogEntry("effect_fusion", R.string.fusion_title, DemoIcons.Add),
-        DemoCatalogEntry("effect_backdrop", R.string.backdrop_title, DemoIcons.Components),
+    listOf(DemoCatalogEntry("effect_shadow", R.string.shadow_title, CouiIcons.Featured),
+        DemoCatalogEntry("effect_fusion", R.string.fusion_title, CouiIcons.Add),
+        DemoCatalogEntry("effect_backdrop", R.string.backdrop_title, CouiIcons.Components),
         DemoCatalogEntry("effect_material", R.string.material_title, DemoIcons.Switch)),
 )
 
@@ -50,11 +53,12 @@ internal fun DemoCatalog(groups: List<List<DemoCatalogEntry>>, open: (String) ->
     groups.forEach { entries -> key(entries.first().page) {
         Group {
             entries.forEachIndexed { index, entry -> key(entry.page) {
-                DemoPreference(Modifier.heightIn(min = CouiPageDefaults.homeRowMinHeight),
+                DemoPreference(Modifier.heightIn(min = CatalogRowMinHeight),
                     title = stringResource(entry.title), enabled = enabled, onClick = { open(entry.page) }, icon = {
                         Icon(entry.icon, null, Modifier.size(CouiPageDefaults.iconSize), tint = catalogIconColor(entry.page))
                     })
-                if (index != entries.lastIndex) Divider(startIndent = 56.dp)
+                if (index != entries.lastIndex) Divider(startIndent =
+                    CouiPageDefaults.rowPadding + CouiPageDefaults.iconSize + CouiPageDefaults.iconSpacing)
             } }
         }
     } }

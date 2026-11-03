@@ -1,5 +1,6 @@
 package com.itos.coui.demo
 
+import com.itos.coui.icons.CouiIcons
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectableGroup
@@ -18,7 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.itos.coui.floatingactionbutton.CouiFabColor
 import com.itos.coui.floatingactionbutton.CouiFabDefaults
-import com.itos.coui.menu.CouiMenu
+import com.itos.coui.menu.Menu
 import com.itos.coui.menu.CouiMenuItem
 import com.itos.coui.menu.couiMenuAnchor
 import com.itos.coui.menu.rememberCouiMenuAnchor
@@ -95,15 +96,15 @@ private fun MenuSample(dark: Boolean) {
         DemoPreference(modifier = Modifier.couiMenuAnchor(anchor),
             title = stringResource(R.string.open_menu), summary = stringResource(R.string.menu_open_summary),
             onClick = { anchor.open { expanded = true } })
-        CouiMenu(expanded = expanded, onDismissRequest = { expanded = false }, anchor = anchor,
+        Menu(expanded = expanded, onDismissRequest = { expanded = false }, anchor = anchor,
             modifier = Modifier.heightIn(max = 320.dp),
             style = demoMenuStyle(dark), headerText = stringResource(R.string.menu_header),
             items = if (longMenu) longLabels.mapIndexed { index, label ->
-                CouiMenuItem(index, label, icon = DemoIcons.Settings, selected = selected == index,
+                CouiMenuItem(index, label, icon = CouiIcons.Settings, selected = selected == index,
                     dividerBefore = index > 0 && index % 3 == 0)
             } else listOf(
-                CouiMenuItem(0, first, icon = DemoIcons.Settings, selected = selected == 0),
-                CouiMenuItem(-1, stringResource(R.string.menu_pinned), icon = DemoIcons.Check, checked = pinned),
+                CouiMenuItem(0, first, icon = CouiIcons.Settings, selected = selected == 0),
+                CouiMenuItem(-1, stringResource(R.string.menu_pinned), icon = CouiIcons.Check, checked = pinned),
                 CouiMenuItem(-2, stringResource(R.string.menu_more), dividerBefore = true,
                     children = listOf(CouiMenuItem(1, second, selected = selected == 1),
                         CouiMenuItem(-3, stringResource(R.string.menu_disabled), enabled = false))),

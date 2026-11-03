@@ -70,6 +70,6 @@ internal val CouiMenuStyle.isDark: Boolean
     get() = dark ?: (colors.surface.luminance() < 0.5f)
 
 internal val LocalCouiMenuStyle = staticCompositionLocalOf<CouiMenuStyle> {
-    error("菜单样式必须由 CouiMenu 提供")
+    error("菜单样式必须由 Menu 提供")
 }
 internal val LocalCouiMenuDiagnostic = staticCompositionLocalOf<((SpotlightDiagnostic) -> Unit)?> { null }

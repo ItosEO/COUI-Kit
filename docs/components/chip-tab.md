@@ -1,15 +1,15 @@
 # 🏷️ChipTab 分类栏
 
-`CouiChipTabRow` 用于横向排列单选分类。分类较多时可以左右滚动，也可以在分类栏前放一个独立按钮。
+`ChipTabRow` 用于横向排列单选分类。分类较多时可以左右滚动，也可以在分类栏前放一个独立按钮。
 
 ## 最小调用
 
 分类项、选中 key、选择回调和背景源由宿主提供：
 
 ~~~kotlin
-import com.itos.coui.chip.CouiChipTabRow
+import com.itos.coui.chip.ChipTabRow
 
-CouiChipTabRow(
+ChipTabRow(
     items = items,
     selectedKey = selectedKey,
     onSelectedKeyChange = onSelectedKeyChange,
@@ -34,7 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.chip.CouiChipTabItem
-import com.itos.coui.chip.CouiChipTabRow
+import com.itos.coui.chip.ChipTabRow
 
 @RequiresApi(34)
 @Composable
@@ -49,7 +49,7 @@ fun Categories(
     )
     var selectedKey by remember { mutableStateOf<Any?>("all") }
 
-    CouiChipTabRow(
+    ChipTabRow(
         modifier = modifier.fillMaxWidth(),
         items = items,
         selectedKey = selectedKey,
@@ -65,22 +65,22 @@ fun Categories(
 
 ## 添加独立动作
 
-使用 `leadingAction` 可以在分类组前添加按钮。例如，将上一节的 `CouiChipTabRow` 替换为下面的代码，点击按钮打开分类管理：
+使用 `leadingAction` 可以在分类组前添加按钮。例如，将上一节的 `ChipTabRow` 替换为下面的代码，点击按钮打开分类管理：
 
 ~~~kotlin
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Icon
-import com.itos.coui.chip.CouiChipTabButton
+import com.itos.coui.chip.ChipTabButton
 
-CouiChipTabRow(
+ChipTabRow(
     modifier = modifier.fillMaxWidth(),
     items = items,
     selectedKey = selectedKey,
     onSelectedKeyChange = { selectedKey = it },
     backdrop = backdrop,
     leadingAction = {
-        CouiChipTabButton(
+        ChipTabButton(
             onClick = onOpenCategories,
             contentDescription = categoriesLabel,
             backdrop = backdrop,
@@ -108,4 +108,4 @@ M3 自动模式仅从 labelLarge 接入字体族，保留 Chip 的原字号、�
 
 需要自定义错误界面时，可以在调用前创建 renderer 并处理创建失败。
 
-源码见 [CouiChipTabRow / CouiChipTabItem](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabRow.kt)、[CouiChipTab / CouiChipTabButton](../../coui/src/main/java/com/itos/coui/chip/CouiChipTab.kt)、[Defaults](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabDefaults.kt)，分类菜单、图标动作和纯色背景见 [DemoChipSamples](../../demo/src/main/java/com/itos/coui/demo/DemoChipSamples.kt)。
+源码见 [ChipTabRow / CouiChipTabItem](../../coui/src/main/java/com/itos/coui/chip/ChipTabRow.kt)、[ChipTab / ChipTabButton](../../coui/src/main/java/com/itos/coui/chip/ChipTab.kt)、[Defaults](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabDefaults.kt)，分类菜单、图标动作和纯色背景见 [DemoChipSamples](../../demo/src/main/java/com/itos/coui/demo/DemoChipSamples.kt)。

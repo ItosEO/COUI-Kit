@@ -12,7 +12,7 @@ Status: implemented
 
 CouiMaterial3Style 在每个组件消费处读取 MaterialTheme，随宿主动态色、动画与嵌套主题更新。LocalCouiDarkTheme 接收宿主模式，缺省使用系统；显式组件 dark/style.dark 优先。任意 M3 色板不提供可靠的模式标记，因此库不猜深浅。组件请求另一模式时默认颜色回退对应 native，tint 透明。局部 CouiTheme 提供自身模式与 native/custom 默认值；局部异模式直接回退 native，不再尝试全局策略；退出恢复外层。它仍使用已选适配器桥接 M3 插槽。
 
-CouiTopAppBar 的 dark 默认同样读取 CouiTheme.isDark，防止只传 gradientColor 的调用在深色主题下使用浅色渐变透明度；显式 dark 继续优先。
+TopAppBar 的 dark 默认同样读取 CouiTheme.isDark，防止只传 gradientColor 的调用在深色主题下使用浅色渐变透明度；显式 dark 继续优先。
 
 统一内容作用域放在 TopAppBarButton、SearchSurface、ChipSurface 和 FAB 的最终样式位置。M3 对部分组件文字样式采用 LocalTextStyle.current.merge 的主线顺序，保留 ambient 属性；完整 CouiTheme 基线直接替换。禁用 alpha 只算一次，内层 Local 与显式子颜色/样式保持优先。只转发的 title、buttonGroup、leadingAction 和 Dialog 自定义正文不建立新样式。BottomBar 仅桥接其内部文字，保留自己的字号、行高与字重。
 

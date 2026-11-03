@@ -18,15 +18,15 @@
 
 | 组件 | 建议覆盖的行为 | 优先级 |
 | --- | --- | --- |
-| CouiSwitch | 点击后回调一次；拖动到另一锚点仅提交一次；CANCEL/父级接管不提交；loading/disabled 拒绝输入；宿主拒绝后回到受控值；RTL | P0 |
-| CouiSlider | 0/1 和非零范围边界；step 吸附与可见 Tick 分离；快速反向；禁用与完成回调；键盘调值和语义 | P0 |
-| CouiAlertDialog / InputDialog | 返回/外点关闭；焦点与 IME 策略；中文 IME 组合区、选区替换；输入过滤；窗口创建/移除；材质缺失时明确失败 | P0 |
-| CouiMenu | 选中/禁用项，关闭回调；长菜单滚动；子菜单交接；快速取消、再次展开；键盘导航 | P1 |
-| CouiCheckbox | 外部整行 toggleable 的单一点击 owner、正确 Checkbox 语义；动画中切换与禁用 | P1 |
-| CouiBottomBar / ChipTab | 选中项合法性、RTL、长项目列表、惯性/回弹中中断、隐藏附件；资源随节点移除而释放 | P1 |
+| Switch | 点击后回调一次；拖动到另一锚点仅提交一次；CANCEL/父级接管不提交；loading/disabled 拒绝输入；宿主拒绝后回到受控值；RTL | P0 |
+| Slider | 0/1 和非零范围边界；step 吸附与可见 Tick 分离；快速反向；禁用与完成回调；键盘调值和语义 | P0 |
+| AlertDialog / InputDialog | 返回/外点关闭；焦点与 IME 策略；中文 IME 组合区、选区替换；输入过滤；窗口创建/移除；材质缺失时明确失败 | P0 |
+| Menu | 选中/禁用项，关闭回调；长菜单滚动；子菜单交接；快速取消、再次展开；键盘导航 | P1 |
+| Checkbox | 外部整行 toggleable 的单一点击 owner、正确 Checkbox 语义；动画中切换与禁用 | P1 |
+| BottomBar / ChipTab | 选中项合法性、RTL、长项目列表、惯性/回弹中中断、隐藏附件；资源随节点移除而释放 | P1 |
 | Backdrop / Effects | 不采样自身、释放后不再使用；不同 API 下显式失败/降级策略；独立 effect 入口 | P1 |
 
-设备集成测试需要覆盖实际前置条件：`CouiChipTabRow` 的 display 刷新率、`CouiDialogWindow` 的 Window 和背景源，以及 `CouiFloatingRenderer` 的 Shader 创建和失败处理。
+设备集成测试需要覆盖实际前置条件：`ChipTabRow` 的 display 刷新率、`CouiDialogWindow` 的 Window 和背景源，以及 `CouiFloatingRenderer` 的 Shader 创建和失败处理。
 
 增加默认参数时，检查省略参数与显式传入同一预设的行为一致，并覆盖自定义参数和独立 Effect 用法。测试预期应来自接口契约或独立证据，不复制生产算法作为预期值。
 

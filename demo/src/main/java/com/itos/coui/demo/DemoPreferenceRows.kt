@@ -1,5 +1,6 @@
 package com.itos.coui.demo
 
+import com.itos.coui.icons.CouiIcons
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,7 +9,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -18,14 +18,13 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.itos.coui.checkbox.CouiCheckbox
+import com.itos.coui.checkbox.Checkbox
 import com.itos.coui.checkbox.CouiCheckboxDefaults
 import com.itos.coui.effect.couiButtonFeedback
-import com.itos.coui.switch.CouiSwitch
+import com.itos.coui.switch.Switch
 import com.itos.coui.switch.CouiSwitchDefaults
-import com.itos.coui.text.CouiText
+import com.itos.coui.text.Text
 import com.itos.coui.text.CouiTextKind
-import com.itos.coui.text.rememberCouiTextStyle
 import androidx.compose.ui.platform.LocalView
 import com.itos.coui.input.CouiHapticFeedback
 import com.itos.coui.input.performCouiHapticFeedback
@@ -48,9 +47,9 @@ internal fun DemoPreference(
     val dark = CouiTheme.isDark
     val colors = CouiPageDefaults.themeColors(dark)
     DemoPreferenceRow(modifier, title, summary, enabled, icon, onClick = onClick) {
-        if (!value.isNullOrEmpty()) BasicText(value, Modifier.widthIn(max = 162.dp).padding(start = 16.dp),
-            style = rememberCouiTextStyle(CouiTextKind.PreferenceValue).copy(
-                color = if (enabled) colors.summary else colors.disabled, textAlign = TextAlign.End),
+        if (!value.isNullOrEmpty()) Text(Modifier.widthIn(max = 162.dp).padding(start = 16.dp),
+            text = value, kind = CouiTextKind.PreferenceValue,
+            color = if (enabled) colors.summary else colors.disabled, textAlign = TextAlign.End,
             maxLines = 2, overflow = TextOverflow.Ellipsis)
         if (showChevron) DemoSettingsArrow(Modifier.padding(start = 4.dp).size(width = 12.dp, height = 24.dp),
             back = false, color = Color(if (dark) 0x4DFFFFFF else 0x42000000))
@@ -80,7 +79,7 @@ internal fun DemoSwitchPreference(
             view.performCouiHapticFeedback(CouiHapticFeedback.Switch, hapticFeedbackEnabled)
             onCheckedChange(target)
         }, title, summary, enabled, icon) {
-        CouiSwitch(Modifier.padding(start = 16.dp), checked, null, dark,
+        Switch(Modifier.padding(start = 16.dp), checked, null, dark,
             CouiSwitchDefaults.colors(colors.accent, dark), enabled, source,
             onDragCheckedChange = onCheckedChange,
             loading = loading, loadingDescription = loadingDescription,
@@ -105,7 +104,7 @@ internal fun DemoCheckboxPreference(
     val source = remember { MutableInteractionSource() }
     DemoPreferenceRow(modifier.couiButtonFeedback(dark, source, enabled, list = true)
         .toggleable(checked, source, null, enabled, Role.Checkbox, onCheckedChange), title, summary, enabled, null, contentPadding) {
-        CouiCheckbox(modifier = Modifier.padding(start = 16.dp).size(24.dp),
+        Checkbox(modifier = Modifier.padding(start = 16.dp).size(24.dp),
             checked = checked, enabled = enabled,
             colors = CouiCheckboxDefaults.colors(colors.accent, dark),
             shape = CouiCheckboxDefaults.shape, borderShape = CouiCheckboxDefaults.borderShape)
@@ -129,7 +128,7 @@ internal fun DemoSelectPreference(
     DemoPreferenceRow(modifier.couiButtonFeedback(dark, source, enabled, list = true)
         .selectable(selected, source, null, enabled, Role.RadioButton, onSelect), title, summary, enabled, icon) {
         Box(Modifier.padding(start = 16.dp).size(24.dp)) {
-            if (selected) Icon(DemoIcons.Check, null, Modifier.fillMaxSize(),
+            if (selected) Icon(CouiIcons.Check, null, Modifier.fillMaxSize(),
                 tint = if (enabled) colors.accent else colors.disabled)
         }
     }
@@ -143,12 +142,12 @@ internal fun DemoPreferenceRow(modifier: Modifier, title: String, summary: Strin
     onClick: (() -> Unit)? = null,
     trailing: @Composable () -> Unit) {
     val colors = CouiPageDefaults.themeColors()
-    Item(modifier, leading = icon, onClick = onClick, enabled = enabled,
-        contentPadding = contentPadding, headline = {
-        CouiText(text = title, kind = CouiTextKind.PreferenceTitle, color = if (enabled) colors.title else colors.disabled,
+    Item(modifier, icon = icon, onClick = onClick, enabled = enabled,
+        contentPadding = contentPadding, title = {
+        Text(text = title, kind = CouiTextKind.PreferenceTitle, color = if (enabled) colors.title else colors.disabled,
             textAlign = TextAlign.Start)
-    }, supporting = summary?.takeIf { it.isNotEmpty() }?.let { text -> @Composable {
-        CouiText(text = text, kind = CouiTextKind.PreferenceSummary, color = if (enabled) colors.summary else colors.disabled,
+    }, summary = summary?.takeIf { it.isNotEmpty() }?.let { text -> @Composable {
+        Text(text = text, kind = CouiTextKind.PreferenceSummary, color = if (enabled) colors.summary else colors.disabled,
             textAlign = TextAlign.Start)
     } }, trailing = trailing)
 }
@@ -156,5 +155,5 @@ internal fun DemoPreferenceRow(modifier: Modifier, title: String, summary: Strin
 /** 原始 VectorDrawable 保留 RTL 镜像与原生 viewport。 */
 @Composable
 internal fun DemoSettingsArrow(modifier: Modifier, back: Boolean, color: Color) {
-    Icon(if (back) DemoIcons.Back else DemoIcons.Next, null, modifier, tint = color)
+    Icon(if (back) CouiIcons.Back else CouiIcons.Next, null, modifier, tint = color)
 }
