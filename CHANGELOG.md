@@ -15,6 +15,7 @@ COUI-Kit 处于早期预览阶段。本文记录公开 API、行为、接入和�
 
 ### 既有接口与行为
 
+- `LocalCouiContentColor` 的缺省值为 `Color.Unspecified`。COUI 文字和图标在消费处解析当前主题前景色；直接读取该 Local 的宿主需处理未指定值。显式文字颜色及图标的不染色语义保留。
 - `CouiColorScheme` 增加独立 `background`，默认沿用 `surface`；原生页面与组件表面分别配色。M3 适配的菜单项和头部标签分别读取 `labelLarge` 与 `bodySmall`。
 - `CouiTopAppBar` 支持背景透明度和全高渐隐曲线，保留显式渐变颜色的 alpha；`dark` 默认跟随 `CouiTheme`。
 - 浮动表面增加双主体入口，复用既有材质、融合和光效。列表按压复用现有反馈入口。

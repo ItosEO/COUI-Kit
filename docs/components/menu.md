@@ -74,7 +74,7 @@ fun MenuButton(
 
 `anchor` 记录按钮上的触点，菜单根据触点和窗口可见范围定位。通过键盘或无障碍服务打开时，没有触点，菜单使用默认锚点。示例中的 Material3 `Button` 和 `Text` 需要由应用声明 Material3 依赖；最小调用不需要该依赖。自定义 `style` 的创建方式见[菜单样式](#菜单样式)。
 
-顶栏按钮与菜单放在同一个 Box 时，可省略 `anchor`，使用 Popup 父布局的范围定位。`rememberCouiMenuAnchor(useTouchPosition = false)` 同样关闭触点定位，使用这个父布局范围，不使用 Modifier 所记录节点的矩形。触点锚点只观察输入，点击仍由按钮或列表项处理。
+顶栏按钮与菜单放在同一个 Box 时，可省略 `anchor`，直接用按钮回调更新 `expanded`。菜单按 Popup 父布局的范围定位，因此 Box 应只包住对应按钮。需要按触点定位时再使用 `rememberCouiMenuAnchor()`；触点锚点只观察输入，点击仍由按钮或列表项处理。
 
 `expanded` 控制菜单显隐。点击菜单项时调用 `onItemClick`；点击外部或按返回键时调用 `onDismissRequest`。需要在选中后关闭菜单时，在 `onItemClick` 中将 `expanded` 设为 `false`，如上例所示。
 

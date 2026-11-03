@@ -1,6 +1,5 @@
 package com.itos.coui.demo
 
-import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Icon
@@ -22,7 +21,7 @@ import com.itos.coui.text.CouiTextKind
 import com.itos.coui.text.rememberCouiTextStyle
 import kotlin.math.roundToInt
 
-/** 按设置预览页的“图示—说明—调节”顺序组织，左右图示采样各自的同一内容。 */
+/** 按设置预览页的“图示—说明—调节”顺序组织，右侧采样自己的原图内容。 */
 @Composable
 internal fun BlurTutorial(dark: Boolean) {
     var radius by rememberSaveable { mutableFloatStateOf(30f) }
@@ -30,9 +29,11 @@ internal fun BlurTutorial(dark: Boolean) {
         Row(Modifier.widthIn(max = 412.dp).heightIn(max = 300.dp).fillMaxWidth().height(280.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             for (blurred in listOf(false, true)) Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                val backdrop = rememberCouiBackdrop()
+                val backdrop = if (blurred) rememberCouiBackdrop() else null
                 Box(Modifier.weight(1f).fillMaxWidth().clip(DemoShapes.card)) {
-                    Column(Modifier.fillMaxSize().couiBackdrop(backdrop).background(MaterialTheme.colorScheme.surfaceBright)
+                    Column(Modifier.fillMaxSize()
+                        .then(if (backdrop != null) Modifier.couiBackdrop(backdrop) else Modifier)
+                        .background(MaterialTheme.colorScheme.surfaceBright)
                         .padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(stringResource(R.string.controls), style = rememberCouiTextStyle(CouiTextKind.PreferenceTitle))
                         listOf(DemoIcons.Switch, DemoIcons.Tune, DemoIcons.Date, DemoIcons.Dialogs).forEachIndexed { index, icon ->
@@ -45,7 +46,7 @@ internal fun BlurTutorial(dark: Boolean) {
                             }
                         }
                     }
-                    if (blurred && Build.VERSION.SDK_INT >= 31) Box(Modifier.matchParentSize().drawCouiBackdrop(backdrop,
+                    if (backdrop != null) Box(Modifier.matchParentSize().drawCouiBackdrop(backdrop,
                         shape = { DemoShapes.card }, effects = { blur(radius) }))
                 }
                 Text(stringResource(if (blurred) R.string.illustration_blurred else R.string.illustration_original),

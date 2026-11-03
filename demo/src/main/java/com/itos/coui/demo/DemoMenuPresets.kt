@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import com.itos.coui.theme.LocalCouiContentColor
+import com.itos.coui.theme.CouiTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -19,8 +20,6 @@ import com.itos.coui.effect.LocalCouiContourGlowEnabled
 import com.itos.coui.menu.CouiMenu
 import com.itos.coui.menu.CouiMenuItem
 import com.itos.coui.menu.CouiMenuStyle
-import com.itos.coui.menu.couiMenuAnchor
-import com.itos.coui.menu.rememberCouiMenuAnchor
 import com.itos.coui.shape.CouiCapsuleShape
 import com.itos.coui.shape.CouiShape
 import com.itos.coui.text.CouiTextKind
@@ -41,26 +40,26 @@ internal fun <T> DemoSettingsOverflowMenu(
     contentDescription: String,
     enabled: Boolean = true,
 ) {
-    val settings = LocalDemoSettingsStyle.current
+    val dark = CouiTheme.isDark
+    val colors = CouiPageDefaults.themeColors(dark)
     val density = LocalDensity.current.density
     val contour = LocalCouiContourGlowEnabled.current
-    val anchor = rememberCouiMenuAnchor(useTouchPosition = false)
-    val show = { anchor.open { onExpandedChange(true) } }
-    Box(modifier.size(48.dp).couiMenuAnchor(anchor), contentAlignment = Alignment.Center) {
+    val show = { onExpandedChange(true) }
+    Box(modifier.size(48.dp), contentAlignment = Alignment.Center) {
         if (Build.VERSION.SDK_INT >= 34) CouiTopAppBarButton(onClick = show, enabled = enabled,
-            style = CouiToolbarStyle(settings.dark, circleShape = CouiShape(20.dp, 2f), capsuleShape = CouiCapsuleShape,
-                contentColor = settings.colors.title, textStyle = rememberCouiTextStyle(CouiTextKind.Toolbar),
-                cursorColor = settings.colors.accent, contourGlowEnabled = contour,
-                material = { CouiTopAppBarButtonDefaults.systemMaterial(settings.dark, it) },
-                shadow = { CouiTopAppBarButtonDefaults.shadow(settings.dark, it, density, contour) })) {
+            style = CouiToolbarStyle(dark, circleShape = CouiShape(20.dp, 2f), capsuleShape = CouiCapsuleShape,
+                contentColor = colors.title, textStyle = rememberCouiTextStyle(CouiTextKind.Toolbar),
+                cursorColor = colors.accent, contourGlowEnabled = contour,
+                material = { CouiTopAppBarButtonDefaults.systemMaterial(dark, it) },
+                shadow = { CouiTopAppBarButtonDefaults.shadow(dark, it, density, contour) })) {
             Icon(DemoIcons.More, contentDescription, Modifier.size(24.dp),
                 tint = LocalCouiContentColor.current)
         } else Box(Modifier.size(40.dp)
             .clickable(remember { MutableInteractionSource() }, null, enabled, role = Role.Button, onClick = show),
             contentAlignment = Alignment.Center) {
-            Icon(DemoIcons.More, contentDescription, tint = settings.colors.title)
+            Icon(DemoIcons.More, contentDescription, tint = colors.title)
         }
-        CouiMenu(expanded = expanded, onDismissRequest = { onExpandedChange(false) }, anchor = anchor,
+        CouiMenu(expanded = expanded, onDismissRequest = { onExpandedChange(false) },
             items = items, style = style, onItemClick = { onItemClick(it); onExpandedChange(false) })
     }
 }

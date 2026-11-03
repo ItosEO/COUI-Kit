@@ -75,7 +75,7 @@ fun AboutRow(
 
 `CouiText.kind` 选择固定的 COUI 排版角色；`rememberCouiTextStyle(kind)` 将同一排版用于 BasicText 或编辑框。这些角色使用系统字体与对应度量，不读取 `CouiTypography` 的普通文字样式。PreferenceTitle 和 PreferenceSummary 默认按逻辑起始边对齐，`textAlign` 可覆盖；`onLineCount` 返回实际行数。
 
-`CouiText.color` 默认读取 `LocalCouiContentColor`。在没有提供该 Local 的独立布局中，应像示例一样显式传入主题颜色。主题和可选 M3 适配的用法见[外观与预设](../guide/appearance.md)。
+`CouiText.color` 省略或为 `Color.Unspecified` 时，先使用已提供的 `LocalCouiContentColor`，再使用当前 `CouiTheme.colorScheme.onSurface`。没有 Theme 或 Provider 也能跟随系统深浅色；显式颜色始终优先。需要区分主文字与辅助文字时，可像示例一样传入各自角色。主题和可选 M3 适配的用法见[外观与预设](../guide/appearance.md)。
 
 ## 页面装配
 

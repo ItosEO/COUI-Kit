@@ -1,12 +1,3 @@
 <resources>
     <string name="switch_title">Switch</string>
-    <string name="switch_sample_toggle">Tap or drag</string>
-    <string name="switch_sample_toggle_summary">This is a switch. Tap to toggle, or drag the thumb to choose a state.</string>
-    <string name="switch_sample_description">Switch with a description</string>
-    <string name="switch_sample_description_summary">The same switch can accompany a title and supporting text.</string>
-    <string name="switch_sample_loading">Loading state</string>
-    <string name="switch_sample_loading_summary">This example simulates waiting. The value changes after completion.</string>
-    <string name="switch_sample_loading_description">Loading</string>
-    <string name="switch_sample_disabled_off">Disabled, off</string>
-    <string name="switch_sample_disabled_on">Disabled, on</string>
 </resources>

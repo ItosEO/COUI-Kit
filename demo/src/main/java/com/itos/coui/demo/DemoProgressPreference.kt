@@ -22,6 +22,7 @@ import com.itos.coui.effect.couiButtonFeedback
 import com.itos.coui.shape.CouiCapsuleShape
 import com.itos.coui.text.CouiTextKind
 import com.itos.coui.text.rememberCouiTextStyle
+import com.itos.coui.theme.CouiTheme
 
 /** 带小型进度操作的列表项；进度、下载/暂停文案与任务生命周期归宿主。 */
 @Composable
@@ -36,21 +37,22 @@ internal fun DemoProgressPreference(
     icon: (@Composable () -> Unit)? = null,
 ) {
     require(progress.isFinite() && progress in 0f..1f)
-    val style = LocalDemoSettingsStyle.current
+    val dark = CouiTheme.isDark
+    val colors = CouiPageDefaults.themeColors(dark)
     val source = remember { MutableInteractionSource() }
     val textStyle = rememberCouiTextStyle(CouiTextKind.Progress).copy(textAlign = TextAlign.Center)
     DemoPreferenceRow(modifier, title, summary, enabled, icon) {
         Box(Modifier.padding(start = 16.dp).widthIn(min = 52.dp).height(28.dp).clip(CouiCapsuleShape)
-            .background(style.colors.accent.copy(alpha = if (style.dark) .3f else .12f))
-            .progressSemantics(progress).couiButtonFeedback(style.dark, source, enabled)
+            .background(colors.accent.copy(alpha = if (dark) .3f else .12f))
+            .progressSemantics(progress).couiButtonFeedback(dark, source, enabled)
             .clickable(source, null, enabled, role = Role.Button, onClick = onAction), contentAlignment = Alignment.Center) {
             Box(Modifier.matchParentSize().drawWithContent {
                 val width = size.width * progress
-                drawRect(if (enabled) style.colors.accent else style.colors.disabled,
+                drawRect(if (enabled) colors.accent else colors.disabled,
                     size = androidx.compose.ui.geometry.Size(width, size.height))
             })
             BasicText(actionText, Modifier.padding(horizontal = 6.dp),
-                style = textStyle.copy(color = style.colors.accent), maxLines = 1)
+                style = textStyle.copy(color = colors.accent), maxLines = 1)
             // 原厂文字在已完成区域和未完成区域使用不同颜色；覆盖层只绘制，不重复朗读。
             Box(Modifier.matchParentSize().drawWithContent {
                 drawContext.canvas.save()

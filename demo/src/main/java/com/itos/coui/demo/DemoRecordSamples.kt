@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
@@ -86,11 +87,17 @@ internal fun RecordSwipeSamples(dark: Boolean) {
         Text(stringResource(R.string.requires_api_33), Modifier.padding(horizontal = 16.dp))
         return
     }
+    val context = LocalContext.current
+    val iconSizePx = with(LocalDensity.current) { 44.dp.roundToPx() }
+    val icon = remember(context, iconSizePx) {
+        context.applicationInfo.loadIcon(context.packageManager).toBitmap(iconSizePx, iconSizePx).asImageBitmap()
+    }
     Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp)) {
         records.forEachIndexed { index, id ->
             key(id) {
                 RecordSample(
                     record = SampleRecords.first { it.id == id },
+                    icon = icon,
                     isLastViewed = lastViewedId == id,
                     isOpen = openId == id,
                     bottomSpacing = if (index == records.lastIndex) 0.dp else 10.dp,
@@ -119,19 +126,15 @@ internal fun RecordSwipeSamples(dark: Boolean) {
 
 @RequiresApi(33)
 @Composable
-private fun RecordSample(record: DemoRecord, isLastViewed: Boolean, isOpen: Boolean, bottomSpacing: Dp,
+private fun RecordSample(record: DemoRecord, icon: ImageBitmap, isLastViewed: Boolean, isOpen: Boolean, bottomSpacing: Dp,
     onOpenChange: (Boolean) -> Unit, onClick: () -> Unit, onDelete: () -> Unit) {
     val density = LocalDensity.current
-    val context = LocalContext.current
-    val iconSizePx = with(density) { 44.dp.roundToPx() }
-    val icon = remember(context, iconSizePx) {
-        context.applicationInfo.loadIcon(context.packageManager).toBitmap(iconSizePx, iconSizePx).asImageBitmap()
-    }
     val scope = rememberCoroutineScope()
     val collapseHeight = remember(record.id) { Animatable(1f) }
     val iconAlpha = remember(record.id) { Animatable(1f) }
     var rowHeightPx by remember(record.id, record.remark) { mutableFloatStateOf(0f) }
-    val rowModifier = if (rowHeightPx > 0f) {
+    val collapsing = collapseHeight.targetValue == 0f
+    val rowModifier = if (collapsing) {
         Modifier.height(with(density) { (rowHeightPx * collapseHeight.value).toDp() })
     } else Modifier
     // 列表项使用稳定 key，背景与遮罩各自持有可变 Shader。
@@ -144,7 +147,7 @@ private fun RecordSample(record: DemoRecord, isLastViewed: Boolean, isOpen: Bool
         return
     }
     Box(Modifier.fillMaxWidth().then(rowModifier).clipToBounds().onSizeChanged {
-        if (collapseHeight.value >= 1f) rowHeightPx = it.height.toFloat()
+        if (!collapsing) rowHeightPx = it.height.toFloat()
     }) {
         Row(Modifier.fillMaxWidth().padding(bottom = bottomSpacing),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {

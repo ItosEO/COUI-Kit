@@ -1,7 +1,6 @@
 package com.itos.coui.switch
 
 import android.graphics.Paint
-import android.view.View
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -54,6 +53,8 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.LiveRegionMode
 import com.itos.coui.input.isCouiTouchCancelled
+import com.itos.coui.input.CouiHapticFeedback
+import com.itos.coui.input.performCouiHapticFeedback
 import com.itos.coui.theme.CouiTheme
 
 @Immutable
@@ -76,7 +77,6 @@ object CouiSwitchDefaults {
     internal const val dragBounce = 0f
     internal const val attachResponse = .4f
     internal const val attachBounce = .2f
-    internal const val hapticFeedbackCode = 302
     fun colors(accent: Color, dark: Boolean) = CouiSwitchColors(accent,
         Color(if (dark) 0x40FFFFFF else 0x29000000), Color.White,
         Color(accent.toArgb() and 0x4DFFFFFF), Color(if (dark) 0x26FFFFFF else 0x14000000),
@@ -122,7 +122,7 @@ fun CouiSwitch(
     var coordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     SideEffect {
         state.onCommit = { target -> if (target != currentChecked) dragCallback?.let { change ->
-            view.performSwitchHapticFeedback(hapticFeedbackEnabled)
+            view.performCouiHapticFeedback(CouiHapticFeedback.Switch, hapticFeedbackEnabled)
             change(target)
         } }
         state.update(checked, interactive)
@@ -209,7 +209,7 @@ fun CouiSwitch(
     val clickInput = if (onCheckedChange != null) Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)
         .toggleable(checked, source, indication = null, enabled = interactive, role = Role.Switch,
             onValueChange = { target -> callback?.let { change ->
-                view.performSwitchHapticFeedback(hapticFeedbackEnabled)
+                view.performCouiHapticFeedback(CouiHapticFeedback.Switch, hapticFeedbackEnabled)
                 change(target)
             } }) else Modifier
     Box(modifier.then(clickInput).then(dragInput).semantics {
@@ -248,11 +248,6 @@ fun CouiSwitch(
             }
         }
     }
-}
-
-/** 保留系统触觉开关与附着门控；不支持 COUI 反馈码时不合成替代波形。 */
-private fun View.performSwitchHapticFeedback(enabled: Boolean) {
-    if (enabled && isAttachedToWindow) performHapticFeedback(CouiSwitchDefaults.hapticFeedbackCode)
 }
 
 /** 静止时复用同一条 Path；只有滑块尺寸变化才重新生成项目平滑轮廓。 */

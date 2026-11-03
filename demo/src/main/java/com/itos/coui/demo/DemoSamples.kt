@@ -1,22 +1,17 @@
 package com.itos.coui.demo
 
-import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -32,30 +27,10 @@ import com.itos.coui.layout.Group
 import kotlin.math.roundToInt
 
 @Composable
-internal fun DemoSection(title: Int, query: String, padded: Boolean = true, content: @Composable ColumnScope.() -> Unit) {
-    val headingText = stringResource(title)
-    val state = rememberSaveableStateHolder()
-    if (query.isNotBlank() && !headingText.contains(query.trim(), ignoreCase = true)) return
-    state.SaveableStateProvider(title) {
-        Group(title = headingText) {
-            if (padded) Column(Modifier.fillMaxWidth(), content = content)
-            else content()
-        }
-    }
-}
-
-@Composable
-private fun DemoCheckboxRow(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit,
-    dark: Boolean, enabled: Boolean = true) {
-    DemoCheckboxPreference(title = label, checked = checked,
-        onCheckedChange = onCheckedChange, enabled = enabled)
-}
-
-@Composable
 internal fun ComponentDetail(page: String, dark: Boolean, onToggleTheme: () -> Unit) {
     when (page) {
         "switch" -> SwitchSample(dark)
-        "sliders" -> SliderSample(dark)
+        "sliders" -> SliderSample()
         "menu" -> {
             Group(title = stringResource(R.string.menu_overflow_preset)) {
                 DemoPreference(title = stringResource(R.string.menu_toolbar_more),
@@ -69,23 +44,23 @@ internal fun ComponentDetail(page: String, dark: Boolean, onToggleTheme: () -> U
     if (page == "checkbox") {
         var checked by rememberSaveable { mutableStateOf(false) }
         Group {
-            DemoCheckboxRow(stringResource(R.string.checkbox_toggle), checked, { checked = it }, dark)
+            DemoCheckboxPreference(title = stringResource(R.string.checkbox_toggle), checked = checked, onCheckedChange = { checked = it })
             Divider()
-            DemoCheckboxRow(stringResource(R.string.checkbox_disabled), true, {}, dark, enabled = false)
+            DemoCheckboxPreference(title = stringResource(R.string.checkbox_disabled), checked = true, onCheckedChange = {}, enabled = false)
             Divider()
-            DemoCheckboxRow(stringResource(R.string.checkbox_disabled_unchecked), false, {}, dark, enabled = false)
+            DemoCheckboxPreference(title = stringResource(R.string.checkbox_disabled_unchecked), checked = false, onCheckedChange = {}, enabled = false)
         }
     }
 }
 
 @Composable
-private fun SliderSample(dark: Boolean) {
+private fun SliderSample() {
     var value by rememberSaveable { mutableFloatStateOf(.4f) }
     var section by rememberSaveable { mutableFloatStateOf(2f) }
     var implicitStep by rememberSaveable { mutableFloatStateOf(5f) }
     var enabled by rememberSaveable { mutableStateOf(true) }
     Group {
-        DemoSwitchRow(stringResource(R.string.enable_controls), enabled, { enabled = it })
+        DemoSwitchPreference(title = stringResource(R.string.enable_controls), checked = enabled, onCheckedChange = { enabled = it })
     }
     Group {
         DemoSliderPreference(title = stringResource(R.string.continuous_slider),
@@ -114,7 +89,7 @@ private fun MenuSample(dark: Boolean) {
     DemoPreference(title = stringResource(R.string.menu_selection_label),
         value = if (longMenu) longLabels[selected] else if (selected == 0) first else second)
     Divider()
-    DemoSwitchRow(stringResource(R.string.scroll_menu), longMenu, { longMenu = it; selected = 0 })
+    DemoSwitchPreference(title = stringResource(R.string.scroll_menu), checked = longMenu, onCheckedChange = { longMenu = it; selected = 0 })
     Divider()
     Box {
         DemoPreference(modifier = Modifier.couiMenuAnchor(anchor),
@@ -141,33 +116,14 @@ private fun MenuSample(dark: Boolean) {
 }
 
 @Composable
-internal fun EffectsDemo(dark: Boolean, query: String, shadowAvailable: Boolean) {
-    DemoSection(R.string.shadow_title, query) {
-        EffectText(stringResource(R.string.shadow_description))
-        if (Build.VERSION.SDK_INT >= 34 && shadowAvailable) {
-            ShadowSamples(dark)
-        } else if (Build.VERSION.SDK_INT < 34) {
-            EffectText(stringResource(R.string.requires_api_34))
-        } else {
-            EffectText(stringResource(R.string.renderer_unavailable), color = MaterialTheme.colorScheme.error)
-        }
-    }
-    val fusionTitle = stringResource(R.string.fusion_title)
-    val fusionState = rememberSaveableStateHolder()
-    if (query.isBlank() || fusionTitle.contains(query.trim(), ignoreCase = true)) {
-        fusionState.SaveableStateProvider(R.string.fusion_title) { RecordSwipeSamples(dark) }
-    }
-    FoundationEffectsDemo(dark, query)
-}
-
-@Composable
-internal fun PresetsDemo(dark: Boolean, query: String, contour: Boolean, onContourChange: (Boolean) -> Unit,
+internal fun PresetsDemo(dark: Boolean, contour: Boolean, onContourChange: (Boolean) -> Unit,
     leftAccessory: Boolean, onLeftAccessoryChange: (Boolean) -> Unit,
     rightAccessory: Boolean, onRightAccessoryChange: (Boolean) -> Unit,
     preset: CouiFabColor, onPresetChange: (CouiFabColor) -> Unit,
     materialTheme: Boolean, onMaterialThemeChange: (Boolean) -> Unit, enabled: Boolean = true) {
-    DemoSection(R.string.presets_title, query, padded = false) {
-        DemoSwitchRow(stringResource(R.string.material_theme_toggle), materialTheme, onMaterialThemeChange, enabled = enabled)
+    Group(title = stringResource(R.string.presets_title)) {
+        DemoSwitchPreference(title = stringResource(R.string.material_theme_toggle), checked = materialTheme,
+            onCheckedChange = onMaterialThemeChange, enabled = enabled)
         Divider()
         Column(Modifier.selectableGroup()) {
             CouiFabColor.entries.forEach { option ->
@@ -177,16 +133,18 @@ internal fun PresetsDemo(dark: Boolean, query: String, contour: Boolean, onConto
                     CouiFabColor.InfraredRemote -> R.string.preset_remote
                     CouiFabColor.Recorder -> R.string.preset_recorder
                 })
-                DemoChoiceRow(label, preset == option, { onPresetChange(option) }, enabled = enabled) {
+                DemoSelectPreference(title = label, selected = preset == option, onSelect = { onPresetChange(option) }, enabled = enabled, icon = {
                     Box(Modifier.size(24.dp).background(CouiFabDefaults.containerColor(option, dark), DemoShapes.capsule))
-                }
+                })
             }
         }
         Divider()
-        DemoSwitchRow(stringResource(R.string.contour_toggle), contour, onContourChange, enabled = enabled)
+        DemoSwitchPreference(title = stringResource(R.string.contour_toggle), checked = contour, onCheckedChange = onContourChange, enabled = enabled)
         Divider()
-        DemoSwitchRow(stringResource(R.string.left_accessory_toggle), leftAccessory, onLeftAccessoryChange, enabled = enabled)
+        DemoSwitchPreference(title = stringResource(R.string.left_accessory_toggle), checked = leftAccessory,
+            onCheckedChange = onLeftAccessoryChange, enabled = enabled)
         Divider()
-        DemoSwitchRow(stringResource(R.string.right_accessory_toggle), rightAccessory, onRightAccessoryChange, enabled = enabled)
+        DemoSwitchPreference(title = stringResource(R.string.right_accessory_toggle), checked = rightAccessory,
+            onCheckedChange = onRightAccessoryChange, enabled = enabled)
     }
 }

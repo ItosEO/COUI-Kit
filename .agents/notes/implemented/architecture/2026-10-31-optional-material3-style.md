@@ -22,7 +22,7 @@ TopAppBarButton 在原 Modifier 位置调用真正的 M3 minimumInteractiveCompo
 
 菜单项与头部标签分别采用 M3 labelLarge 与 bodySmall，与用户指定的 Metric 菜单角色一致；普通内容继续采用 bodyLarge。原生菜单排版按同一基准调整，具体参数只由 CouiTypography 持有。
 
-语义文字的默认颜色读取现有 LocalCouiContentColor，不另立菜单文字角色；页面配色的显式原生工厂也从 CouiPresets 派生。顶栏将显式颜色的 alpha 与既有渐变或动画系数相乘，接口收敛与覆盖规则见[通用 Item 收敛](../simplification/2026-11-03-layout-item-api.md)。
+语义文字继承现有 LocalCouiContentColor，不另立菜单文字角色。该 Local 缺省为 Color.Unspecified，文字、图标和 native 内容作用域在消费处回退到当前 CouiTheme.colorScheme.onSurface。固定黑色无法区分“宿主明确提供黑色”和“未提供”，会让无 Provider 的深色独立布局失去可读性。显式颜色和实际 Local 继续优先，图标显式 Unspecified 仍表示不染色。页面配色的显式原生工厂也从 CouiPresets 派生。顶栏将显式颜色的 alpha 与既有渐变或动画系数相乘，接口收敛与覆盖规则见[通用 Item 收敛](../simplification/2026-11-03-layout-item-api.md)。
 
 Chip 与 Dialog 仅接入相应 M3 字体族，不改 COUI 字号、字重、行距和 fontScale。Dialog 订阅 FontFamily.Resolver 返回的 State，resolved Typeface 同时驱动行距计算、操作区测量和绘制，避免锁住首次 fallback 字体。native 保留原系统字体。
 
@@ -51,4 +51,4 @@ Demo 在 Application 初始化，以局部 CouiTheme 切换 native。关闭 Mate
 
 M3 宿主只需依赖与启动初始化，可继续使用普通 Text/Icon 和原业务调用。代价是两个同版本 artifact 的发行与依赖需要共同核验；自定义 App 模式和嵌套模式须明确提供 Local。公开参数相对顺序保留，不承诺 ABI，所有消费者须重新编译。
 
-本轮只执行差异、Kotlin PSI、引用、脚本语法和 Note 静态检查。真实初始化/Compose 解析断言、重组、最小尺寸测量、异步字体排版、GPU、消费者/R8、Maven 产物和远端发行均未执行；本地 Android 构建与设备操作不在授权内。真实产物断言由已有 CI/用户执行，不以替身或镜像实现冒充运行结果。
+验收覆盖独立宿主的浅深色、显式 Local 与颜色、局部主题覆盖、最小交互尺寸和异步字体。源码核对不能代替 Compose 实际解析、重组或设备绘制；构建、消费者/R8 与 Maven 产物结果按提交记录在 PR。

@@ -39,7 +39,6 @@
     <string name="preset_remote">Infrared remote</string>
     <string name="preset_recorder">Recorder</string>
     <string name="contour_toggle">Contour glow</string>
-    <string name="renderer_unavailable">The renderer could not be initialized. See the error above.</string>
     <string name="implicit_step_value">Stepped, without ticks: %1$d</string>
     <string name="checkbox_disabled_unchecked">Disabled and unchecked</string>
     <string name="continuous_slider">Continuous slider</string>

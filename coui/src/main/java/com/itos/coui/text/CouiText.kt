@@ -8,12 +8,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
-import com.itos.coui.theme.LocalCouiContentColor
+import com.itos.coui.theme.CouiTheme
 import kotlin.math.roundToInt
 
 /** COUI 语义排版预设；宿主可通过 rememberCouiTextStyle 用于 Compose 文本与编辑框。 */
@@ -37,11 +38,11 @@ enum class CouiTextKind(internal val size: Float, internal val family: String, i
 
 /** 系统资源决定排版，组件与语义由 Compose 承载，不继承宿主 M3 Typography。 */
 @Composable
-fun CouiText(modifier: Modifier = Modifier, text: String, kind: CouiTextKind, color: Color = LocalCouiContentColor.current,
+fun CouiText(modifier: Modifier = Modifier, text: String, kind: CouiTextKind, color: Color = Color.Unspecified,
     onLineCount: (Int) -> Unit = {}, textAlign: TextAlign? = null) {
     val style = rememberCouiTextStyle(kind)
     BasicText(text, modifier,
-        style = style.copy(color = color,
+        style = style.copy(color = color.takeOrElse { CouiTheme.contentColor },
             textAlign = textAlign ?: when (kind) {
                 CouiTextKind.PreferenceTitle, CouiTextKind.PreferenceSummary -> TextAlign.Start
                 else -> TextAlign.Center

@@ -61,11 +61,11 @@ private fun ChipTabMaterialSample(dark: Boolean) {
         if (dark) Color.Black else Color.White
     } else MaterialTheme.colorScheme.surfaceBright
     Group {
-        DemoSwitchRow(stringResource(R.string.chip_enable), enabled, { enabled = it })
+        DemoSwitchPreference(title = stringResource(R.string.chip_enable), checked = enabled, onCheckedChange = { enabled = it })
         Divider()
-        DemoSwitchRow(stringResource(R.string.chip_show_icon_button), showIconButton, { showIconButton = it })
+        DemoSwitchPreference(title = stringResource(R.string.chip_show_icon_button), checked = showIconButton, onCheckedChange = { showIconButton = it })
         Divider()
-        DemoSwitchRow(stringResource(R.string.chip_solid_background), solidBackground, { solidBackground = it })
+        DemoSwitchPreference(title = stringResource(R.string.chip_solid_background), checked = solidBackground, onCheckedChange = { solidBackground = it })
     }
     if (renderers == null || (showIconButton && buttonRenderer == null)) {
         val failure = checkNotNull(rendering.exceptionOrNull() ?: buttonResult?.exceptionOrNull())

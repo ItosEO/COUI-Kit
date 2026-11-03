@@ -37,12 +37,13 @@ CI 可通过 KEYSTORE_FILE、KEYSTORE_PASSWORD、KEYSTORE_ALIAS、KEYSTORE_ALIAS
 
 ### 搜索与返回
 
-搜索按目录名称、说明和页面标识筛选可导航条目。清空按钮只清除查询；取消和返回关闭搜索并清除查询。打开结果后，来源 Activity 保留查询和搜索状态，返回时继续显示。
+首页搜索按目录名称、说明和页面标识筛选可导航条目。清空按钮只清除查询；取消和返回关闭搜索并清除查询。打开结果后，首页保留查询和搜索状态，返回时继续显示。
 
-搜索展开及退场期间，原正文保留布局和保存状态，但禁用交互并退出无障碍遍历；结果层独立操作。搜索状态和路由由 Demo 持有，组件用法见[常驻搜索](../components/search-bar.md)。
+首页搜索展开及退场期间，原正文保留布局和保存状态，但禁用交互并退出无障碍遍历。结果层在展开目标为 true 时接受操作；收起目标生效后立即禁用输入和语义，保留退场绘制。搜索状态和路由由 Demo 持有，组件用法见[常驻搜索](../components/search-bar.md)。
 
 ### 主要示例
 
+- 开关页展示整行点击、滑块拖动、加载和禁用；一次点击或拖动只提交一次业务值。
 - 菜单页展示顶栏三点入口、触点锚定、上下箭头行、勾选、子菜单和限高滚动。
 - 弹窗页展示底部、居中、长文、三操作、禁用确认、主题色确认及打开时切换主题。输入型示例用于观察草稿、过滤、计数、清除和取消。
 - 时间、倒计时、日期与月历各有详情页，组合页面控件和确认后提交的弹窗草稿。
@@ -54,7 +55,7 @@ Sheet 和独立普通按钮不在当前展示范围。目录中的效果分类�
 
 ## 主题与页面装配
 
-`DemoApplication` 初始化可选 `CouiMaterial3Style`。开启 Material 配色时，组件在消费处读取宿主主题；关闭时，局部 `CouiTheme` 使用原生外观，Demo 的 M3 内容也映射到 COUI 表面与强调色。显式 FAB 配色预设继续生效。主题接入见[外观与预设](appearance.md)。
+`DemoApplication` 初始化可选 `CouiMaterial3Style`。开启 Material 配色时，组件在消费处读取宿主主题；关闭时，局部 `CouiTheme` 使用原生外观，Demo 的 M3 内容也映射到 COUI 表面与强调色。`DemoTheme` 为首页和详情提供页面内容色，偏好行直接读取 `CouiTheme` 和 `CouiPageDefaults`。显式 FAB 配色预设继续生效。主题接入见[外观与预设](appearance.md)。
 
 首页和详情页使用公开的 [CouiScaffold](../components/scaffold.md)。容器测量栏位并处理横向安全区，Demo 在容器外处理 IME；正文应用测量所得 Padding。正文 Backdrop 供顶栏和底栏采样，Activity 根部的窗口源供菜单与弹窗使用。源和消费者的分层见[宿主页面接入](secondary-pages.md)。
 
@@ -68,7 +69,8 @@ Sheet 和独立普通按钮不在当前展示范围。目录中的效果分类�
 | 目录与查询 | [DemoCatalog](../../demo/src/main/java/com/itos/coui/demo/DemoCatalog.kt) |
 | Activity 导航 | [DemoSecondaryActivity](../../demo/src/main/java/com/itos/coui/demo/DemoSecondaryActivity.kt) |
 | 详情分发与页面容器 | [DemoSecondaryPage](../../demo/src/main/java/com/itos/coui/demo/DemoSecondaryPage.kt)、[DemoSettingsPage](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsPage.kt) |
-| 组件与效果样例 | [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt) |
+| 组件与预设样例 | [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt) |
+| 阴影、模糊与材质 | [DemoShadowSamples](../../demo/src/main/java/com/itos/coui/demo/DemoShadowSamples.kt)、[DemoBlurTutorial](../../demo/src/main/java/com/itos/coui/demo/DemoBlurTutorial.kt)、[DemoVisualEffects](../../demo/src/main/java/com/itos/coui/demo/DemoVisualEffects.kt) |
 | 弹窗与选择器 | [DemoDialogSamples](../../demo/src/main/java/com/itos/coui/demo/DemoDialogSamples.kt)、[DemoPickerSamples](../../demo/src/main/java/com/itos/coui/demo/DemoPickerSamples.kt) |
 | 记录侧滑 | [DemoRecordSamples](../../demo/src/main/java/com/itos/coui/demo/DemoRecordSamples.kt) |
 

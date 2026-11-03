@@ -140,6 +140,6 @@ CouiSwitch(
 
 ## Demo 示例
 
-Demo 的“组件 → 开关”详情页包含普通、加载和禁用的整行示例。
+Demo 的“组件 → 开关”详情页包含普通、加载和禁用的整行示例。可交互行支持整行点击和滑块拖动，两者使用同一个业务回调；拖动达到阈值后取消本次整行点击。加载中的行和禁用行不接受这两种输入。
 
 Demo 示例见 [DemoSettingsSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsSamples.kt)，库入口和配色见 [CouiSwitch / CouiSwitchDefaults](../../coui/src/main/java/com/itos/coui/switch/CouiSwitch.kt)。

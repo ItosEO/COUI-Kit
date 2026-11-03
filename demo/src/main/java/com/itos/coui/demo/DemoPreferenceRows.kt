@@ -3,7 +3,6 @@ package com.itos.coui.demo
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -30,6 +29,7 @@ import com.itos.coui.text.rememberCouiTextStyle
 import androidx.compose.ui.platform.LocalView
 import com.itos.coui.input.CouiHapticFeedback
 import com.itos.coui.input.performCouiHapticFeedback
+import com.itos.coui.theme.CouiTheme
 
 import com.itos.coui.layout.*
 
@@ -45,18 +45,19 @@ internal fun DemoPreference(
     icon: (@Composable () -> Unit)? = null,
     showChevron: Boolean = onClick != null,
 ) {
-    val style = LocalDemoSettingsStyle.current
+    val dark = CouiTheme.isDark
+    val colors = CouiPageDefaults.themeColors(dark)
     DemoPreferenceRow(modifier, title, summary, enabled, icon, onClick = onClick) {
         if (!value.isNullOrEmpty()) BasicText(value, Modifier.widthIn(max = 162.dp).padding(start = 16.dp),
             style = rememberCouiTextStyle(CouiTextKind.PreferenceValue).copy(
-                color = if (enabled) style.colors.summary else style.colors.disabled, textAlign = TextAlign.End),
+                color = if (enabled) colors.summary else colors.disabled, textAlign = TextAlign.End),
             maxLines = 2, overflow = TextOverflow.Ellipsis)
         if (showChevron) DemoSettingsArrow(Modifier.padding(start = 4.dp).size(width = 12.dp, height = 24.dp),
-            back = false, color = Color(if (style.dark) 0x4DFFFFFF else 0x42000000))
+            back = false, color = Color(if (dark) 0x4DFFFFFF else 0x42000000))
     }
 }
 
-/** 整行提交一次；子开关只绘制并共享反馈源，避免两个点击/无障碍节点。 */
+/** 整行负责点击与语义，滑块拖动提交给同一回调；两者共享反馈源。 */
 @Composable
 internal fun DemoSwitchPreference(
     modifier: Modifier = Modifier,
@@ -70,16 +71,18 @@ internal fun DemoSwitchPreference(
     loadingDescription: String? = null,
     hapticFeedbackEnabled: Boolean = true,
 ) {
-    val style = LocalDemoSettingsStyle.current
+    val dark = CouiTheme.isDark
+    val colors = CouiPageDefaults.themeColors(dark)
     val view = LocalView.current
     val source = remember { MutableInteractionSource() }
-    DemoPreferenceRow(modifier.couiButtonFeedback(style.dark, source, enabled && !loading, list = true)
+    DemoPreferenceRow(modifier.couiButtonFeedback(dark, source, enabled && !loading, list = true)
         .toggleable(checked, source, null, enabled && !loading, Role.Switch) { target ->
             view.performCouiHapticFeedback(CouiHapticFeedback.Switch, hapticFeedbackEnabled)
             onCheckedChange(target)
         }, title, summary, enabled, icon) {
-        CouiSwitch(Modifier.padding(start = 16.dp), checked, null, style.dark,
-            CouiSwitchDefaults.colors(style.colors.accent, style.dark), enabled, source,
+        CouiSwitch(Modifier.padding(start = 16.dp), checked, null, dark,
+            CouiSwitchDefaults.colors(colors.accent, dark), enabled, source,
+            onDragCheckedChange = onCheckedChange,
             loading = loading, loadingDescription = loadingDescription,
             hapticFeedbackEnabled = hapticFeedbackEnabled)
     }
@@ -97,13 +100,14 @@ internal fun DemoCheckboxPreference(
     contentPadding: androidx.compose.foundation.layout.PaddingValues = androidx.compose.foundation.layout.PaddingValues(
         horizontal = CouiPageDefaults.rowPadding, vertical = CouiPageDefaults.contentPadding),
 ) {
-    val style = LocalDemoSettingsStyle.current
+    val dark = CouiTheme.isDark
+    val colors = CouiPageDefaults.themeColors(dark)
     val source = remember { MutableInteractionSource() }
-    DemoPreferenceRow(modifier.couiButtonFeedback(style.dark, source, enabled, list = true)
+    DemoPreferenceRow(modifier.couiButtonFeedback(dark, source, enabled, list = true)
         .toggleable(checked, source, null, enabled, Role.Checkbox, onCheckedChange), title, summary, enabled, null, contentPadding) {
         CouiCheckbox(modifier = Modifier.padding(start = 16.dp).size(24.dp),
             checked = checked, enabled = enabled,
-            colors = CouiCheckboxDefaults.colors(style.colors.accent, style.dark),
+            colors = CouiCheckboxDefaults.colors(colors.accent, dark),
             shape = CouiCheckboxDefaults.shape, borderShape = CouiCheckboxDefaults.borderShape)
     }
 }
@@ -119,13 +123,14 @@ internal fun DemoSelectPreference(
     enabled: Boolean = true,
     icon: (@Composable () -> Unit)? = null,
 ) {
-    val style = LocalDemoSettingsStyle.current
+    val dark = CouiTheme.isDark
+    val colors = CouiPageDefaults.themeColors(dark)
     val source = remember { MutableInteractionSource() }
-    DemoPreferenceRow(modifier.couiButtonFeedback(style.dark, source, enabled, list = true)
+    DemoPreferenceRow(modifier.couiButtonFeedback(dark, source, enabled, list = true)
         .selectable(selected, source, null, enabled, Role.RadioButton, onSelect), title, summary, enabled, icon) {
         Box(Modifier.padding(start = 16.dp).size(24.dp)) {
             if (selected) Icon(DemoIcons.Check, null, Modifier.fillMaxSize(),
-                tint = if (enabled) style.colors.accent else style.colors.disabled)
+                tint = if (enabled) colors.accent else colors.disabled)
         }
     }
 }
@@ -137,9 +142,8 @@ internal fun DemoPreferenceRow(modifier: Modifier, title: String, summary: Strin
         horizontal = CouiPageDefaults.rowPadding, vertical = CouiPageDefaults.contentPadding),
     onClick: (() -> Unit)? = null,
     trailing: @Composable () -> Unit) {
-    val style = LocalDemoSettingsStyle.current
-    val colors = style.colors
-    Item(modifier, leading = icon, onClick = onClick, enabled = enabled, dark = style.dark,
+    val colors = CouiPageDefaults.themeColors()
+    Item(modifier, leading = icon, onClick = onClick, enabled = enabled,
         contentPadding = contentPadding, headline = {
         CouiText(text = title, kind = CouiTextKind.PreferenceTitle, color = if (enabled) colors.title else colors.disabled,
             textAlign = TextAlign.Start)

@@ -2,6 +2,8 @@
 
 Status: implemented
 
+私有 M3 配置开关、同页标题筛选和分组保存层由[目录式 Demo](2026-11-01-demo-catalog-and-system-icons.md)部分取代。下文保留原 gallery 选择的理由；M3 语义、业务 owner 和背景分层继续有效。
+
 ## Problem
 
 Demo 将设置开关都画成复选框，预设选择缺少单选语义，M3 导航通过禁用按钮表示当前页。展示虽已包含主要组件，但独立效果、公开预设和若干组件状态缺少可观察入口。

@@ -16,7 +16,7 @@ Demo 搜索隐藏正文后，目录与预设仍能经键盘操作；Slider/TextF
 
 仅由标准 verticalScroll 的 ContentInViewNode 处理焦点和视口变化；外侧输入节点使用零位移 BringIntoViewSpec，避免两个节点争用同一个滚动会话。公开入口末尾提供 Foundation 风格的可选 MutableInteractionSource，拖动交互从此参数观察；ScrollState.interactionSource 只有只读公开接口，不强转为内部可写实现。普通位置和 isScrollInProgress 仍从真实 ScrollState 观察。
 
-Demo 将 search.active 对应的 enabled 传到原正文实际交互控件，覆盖退出动画；清理正文语义只负责可访问树，不代替输入禁用。Slider 和输入框在自身节点关联标题，保留原进度/编辑动作。进度自然完成时退出 running。
+Demo 将 search.active 对应的 enabled 传到原正文实际交互控件，覆盖退出动画。首页与搜索详情的结果按宿主展开目标门控条目输入和语义；首页独立结果层也禁用滚动。收起目标生效后只保留退场绘制，动画存活不代表仍可输入。清理语义只负责可访问树，不代替实际控件的 enabled。Slider 和输入框在自身节点关联标题，保留原进度/编辑动作。进度自然完成时退出 running。
 
 进度按钮只从第一份文字提供名称，白色覆盖文字用 clearAndSetSemantics 清除重复语义；保留现有裁剪、进度范围和点击动作。
 

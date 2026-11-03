@@ -2,6 +2,8 @@
 
 Status: implemented
 
+下文“尾部不提交拖动”的 Demo 开关装配由[整行开关输入](../bug-fix/2026-11-03-switch-row-drag.md)部分取代。Item 的内容槽、可选点击与宿主选择语义保持不变。
+
 ## Problem
 
 普通设置行需要嵌套点击组件与另一个公开排版组件，信息行和可点击行因此走不同入口。独立图示组件只封装标准布局约束，也增加了公开维护面。
@@ -14,7 +16,7 @@ Status: implemented
 
 Demo 的普通跳转使用 Item.onClick；开关、复选与单选行使用外层语义，尾部不另提交点击或拖动。Popup 行要在展开时保持反馈，因此使用同一个外部点击与反馈源。滑条、输入、步进和进度保持各自事件。图示直接组合 Box、Row 与 Modifier。
 
-页面配色从 CouiPresets 派生，CouiText 的默认颜色读取 LocalCouiContentColor。菜单排版由 typography.menuItem 持有。couiButtonFeedback 为模式和 enabled 提供默认值，交互源仍由调用方传入。
+页面配色从 CouiPresets 派生，CouiText 的默认颜色读取 LocalCouiContentColor；未提供内容色时在消费处读取当前主题前景色。菜单排版由 typography.menuItem 持有。couiButtonFeedback 为模式和 enabled 提供默认值，交互源仍由调用方传入。
 
 顶栏显式颜色的 alpha 与渐变、折叠和搜索动画相乘；搜索槽的模式由宿主传入或共同主题提供。这些调整保留原反馈、模糊与融合算法。
 

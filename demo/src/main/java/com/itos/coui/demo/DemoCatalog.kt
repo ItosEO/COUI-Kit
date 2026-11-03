@@ -61,7 +61,7 @@ internal fun DemoCatalog(groups: List<List<DemoCatalogEntry>>, open: (String) ->
 }
 
 @Composable
-internal fun DemoCatalogSearch(query: String, open: (String) -> Unit) {
+internal fun DemoCatalogSearch(query: String, enabled: Boolean = true, open: (String) -> Unit) {
     val filtered = (DemoComponentGroups + DemoEffectGroups).flatten().filter {
         val needle = query.trim()
         stringResource(it.title).contains(needle, ignoreCase = true) ||
@@ -70,7 +70,7 @@ internal fun DemoCatalogSearch(query: String, open: (String) -> Unit) {
     }
     if (filtered.isEmpty()) Text(stringResource(R.string.no_matches), Modifier.padding(32.dp),
         color = MaterialTheme.colorScheme.onSurfaceVariant)
-    else DemoCatalog(listOf(filtered), open)
+    else DemoCatalog(listOf(filtered), open, enabled = enabled)
 }
 
 /** 目录图标由 Demo 配色，几何使用随 Demo 打包的 ColorOS 原始矢量。 */

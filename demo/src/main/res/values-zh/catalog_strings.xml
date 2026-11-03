@@ -3,7 +3,6 @@
     <string name="menu_overflow_preset_summary">点击右上角三点打开菜单；它与下面的列表项预设使用同一个菜单组件。</string>
     <string name="sample_press_count">已点击示例 %1$d 次</string>
     <string name="sample_click">点击示例</string>
-    <string name="intro_buttons">这是一个按钮！点一下，试试确认操作时的反馈。</string>
     <string name="intro_switch">这是一个开关！轻点或拖动，就能开启和关闭；加载时请等它转完。</string>
     <string name="intro_sliders">这是一个滑动条！向左或向右拖动，看看数值怎样变化。</string>
     <string name="intro_checkbox">这是一个复选框！可以只选一项，也可以同时选中好几项。</string>

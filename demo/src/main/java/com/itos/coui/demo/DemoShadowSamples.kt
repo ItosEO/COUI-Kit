@@ -67,7 +67,7 @@ internal fun ShadowSamples(dark: Boolean) {
     }
     DemoSliderPreference(title = stringResource(R.string.shadow_elevation),
         value = elevation, onValueChange = { elevation = it }, valueRange = 0f..200f, valueText = elevation.toInt().toString())
-    DemoSwitchRow(stringResource(R.string.low_level_shadow), lowLevel, { lowLevel = it })
+    DemoSwitchPreference(title = stringResource(R.string.low_level_shadow), checked = lowLevel, onCheckedChange = { lowLevel = it })
     val style = CouiShadowDefaults.menu(dark).copy(elevation = elevation.dp)
     val shape = DemoShapes.couiCapsule
     val shadow = if (lowLevel) Modifier.drawBehind {

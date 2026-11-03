@@ -6,6 +6,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -63,7 +64,8 @@ private data class CouiThemeValues(val dark: Boolean, val colors: CouiColorSchem
 private val LocalCouiTheme = staticCompositionLocalOf<CouiThemeValues?> { null }
 /** 宿主已知的主题模式；嵌套 MaterialTheme 改变模式时也应在同一作用域提供。 */
 val LocalCouiDarkTheme = staticCompositionLocalOf<Boolean?> { null }
-val LocalCouiContentColor = staticCompositionLocalOf { Color(0xE6000000) }
+/** Unspecified 表示没有提供内容色，组件在消费处读取当前主题。 */
+val LocalCouiContentColor = staticCompositionLocalOf { Color.Unspecified }
 val LocalCouiTextStyle = staticCompositionLocalOf { CouiTypography().body }
 
 object CouiTheme {
@@ -71,6 +73,8 @@ object CouiTheme {
         @Composable get() = LocalCouiDarkTheme.current ?: isSystemInDarkTheme()
     val colorScheme: CouiColorScheme
         @Composable get() = colorSchemeFor(isDark)
+    internal val contentColor: Color
+        @Composable get() = LocalCouiContentColor.current.takeOrElse { colorScheme.onSurface }
     val typography: CouiTypography
         @Composable get() = LocalCouiTheme.current?.typography ?: Coui.defaultStyle.themeDefaults(isDark).typography
 

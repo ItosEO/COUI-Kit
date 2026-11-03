@@ -12,7 +12,6 @@ import androidx.compose.foundation.selection.selectableGroup
 import com.itos.coui.scroll.couiVerticalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -79,7 +78,7 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
     // 源 Activity 在窗口转场中仍可见，导航不拆掉结果行及其按压退场；返回时保留查询。
     val open: (String) -> Unit = openPage
     BackHandler(searching) { searching = false; query = "" }
-    CompositionLocalProvider(LocalCouiContourGlowEnabled provides contour, LocalContentColor provides colors.onBackground) {
+    CompositionLocalProvider(LocalCouiContourGlowEnabled provides contour) {
         run {
             val contentScroll = scrolls[page]
             val header = headers[page]
@@ -131,7 +130,7 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
                         when (page) {
                             0 -> DemoCatalog(DemoComponentGroups, open, enabled = contentEnabled)
                             1 -> DemoCatalog(DemoEffectGroups, open, enabled = contentEnabled)
-                            else -> PresetsDemo(dark, "", contour, preferences::contour, leftAccessory, { leftAccessory = it },
+                            else -> PresetsDemo(dark, contour, preferences::contour, leftAccessory, { leftAccessory = it },
                                 rightAccessory, { rightAccessory = it },
                                 preset, { preset = it }, preferences.materialTheme, preferences::materialTheme,
                                 enabled = contentEnabled)
@@ -142,9 +141,10 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
                             alpha = search.resultsAlpha
                             translationY = resultOffset * (1f - search.resultsAlpha)
                         }
-                            .background(colors.background).couiVerticalScroll(rememberScrollState())
+                            .then(if (searching) Modifier else Modifier.clearAndSetSemantics {})
+                            .background(colors.background).couiVerticalScroll(rememberScrollState(), enabled = searching)
                             .padding(contentPadding).consumeWindowInsets(innerPadding).padding(bottom = 16.dp)) {
-                            DemoCatalogSearch(query, open)
+                            DemoCatalogSearch(query, enabled = searching, open = open)
                         }
                     }
                 }

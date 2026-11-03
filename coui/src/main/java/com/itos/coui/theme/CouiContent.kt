@@ -34,7 +34,7 @@ internal fun CouiText(
     maxLines: Int = Int.MAX_VALUE,
     style: TextStyle = LocalCouiTextStyle.current,
 ) {
-    val contentColor = if (color.isSpecified) color else if (style.color.isSpecified) style.color else LocalCouiContentColor.current
+    val contentColor = if (color.isSpecified) color else if (style.color.isSpecified) style.color else CouiTheme.contentColor
     BasicText(text, modifier, style.merge(TextStyle(color = contentColor, fontSize = fontSize,
         fontWeight = fontWeight, textAlign = textAlign ?: TextAlign.Unspecified, lineHeight = lineHeight)),
         overflow = overflow, softWrap = softWrap, maxLines = maxLines)
@@ -42,13 +42,13 @@ internal fun CouiText(
 
 @Composable
 internal fun CouiIcon(modifier: Modifier = Modifier, imageVector: ImageVector, contentDescription: String?,
-    tint: Color = LocalCouiContentColor.current) {
+    tint: Color = CouiTheme.contentColor) {
     CouiIcon(modifier, rememberVectorPainter(imageVector), contentDescription, tint)
 }
 
 @Composable
 internal fun CouiIcon(modifier: Modifier = Modifier, painter: Painter, contentDescription: String?,
-    tint: Color = LocalCouiContentColor.current) {
+    tint: Color = CouiTheme.contentColor) {
     // Image 的默认图片语义与 M3 Icon 不同，装饰图标不建立额外语义节点。
     val semantics = if (contentDescription == null) Modifier else Modifier.semantics {
         this.contentDescription = contentDescription

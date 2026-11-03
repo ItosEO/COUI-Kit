@@ -3,7 +3,6 @@
     <string name="menu_overflow_preset_summary">Tap the three dots in the top right. This preset uses the same menu component.</string>
     <string name="sample_press_count">Sample presses: %1$d</string>
     <string name="sample_click">Activate sample</string>
-    <string name="intro_buttons">This is a button! Tap it to try the feedback.</string>
     <string name="intro_switch">This is a switch! Tap or drag it to turn it on and off. A loading switch waits for the action to finish.</string>
     <string name="intro_sliders">This is a slider! Drag left or right and watch the value change.</string>
     <string name="intro_checkbox">This is a checkbox! Choose one option or several at once.</string>

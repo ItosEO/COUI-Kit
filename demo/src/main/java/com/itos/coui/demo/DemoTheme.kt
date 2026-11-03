@@ -1,5 +1,6 @@
 package com.itos.coui.demo
 
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -20,11 +21,6 @@ import com.kyant.capsule.ContinuousRoundedRectangle
 import com.itos.coui.theme.CouiTheme
 import com.itos.coui.theme.CouiPresets
 import com.itos.coui.theme.LocalCouiDarkTheme
-
-internal data class DemoSettingsStyle(val dark: Boolean, val colors: com.itos.coui.layout.CouiPageColors)
-internal val LocalDemoSettingsStyle = androidx.compose.runtime.staticCompositionLocalOf {
-    DemoSettingsStyle(false, com.itos.coui.layout.CouiPageDefaults.colors(androidx.compose.ui.graphics.Color(0xFF0080FF), false))
-}
 
 internal object DemoShapes {
     val contentCard = CouiShape(20.dp)
@@ -74,12 +70,9 @@ internal fun DemoTheme(dark: Boolean, materialTheme: Boolean = true, content: @C
     }
     val currentContent by rememberUpdatedState(content)
     // 切换局部外观时移动同一内容树，保留页面状态与 renderer 的生命周期。
-    val scopedContent = remember { movableContentOf {
-        val settings = com.itos.coui.layout.CouiPageDefaults.themeColors()
-        CompositionLocalProvider(LocalDemoSettingsStyle provides DemoSettingsStyle(CouiTheme.isDark, settings)) { currentContent() }
-    } }
+    val scopedContent = remember { movableContentOf { currentContent() } }
     MaterialTheme(colorScheme = colors) {
-        CompositionLocalProvider(LocalCouiDarkTheme provides dark) {
+        CompositionLocalProvider(LocalCouiDarkTheme provides dark, LocalContentColor provides colors.onBackground) {
             if (materialTheme) scopedContent()
             else CouiTheme(darkTheme = dark, content = scopedContent)
         }

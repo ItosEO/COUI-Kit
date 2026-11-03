@@ -39,7 +39,6 @@
     <string name="preset_remote">红外遥控</string>
     <string name="preset_recorder">录音</string>
     <string name="contour_toggle">轮廓光</string>
-    <string name="renderer_unavailable">渲染器未能初始化，请查看页面上方的错误信息。</string>
     <string name="implicit_step_value">隐藏点位的步进值：%1$d</string>
     <string name="checkbox_disabled_unchecked">未选中且禁用</string>
     <string name="continuous_slider">连续滑动选择条</string>

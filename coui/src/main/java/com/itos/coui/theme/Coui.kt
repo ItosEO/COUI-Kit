@@ -53,7 +53,7 @@ internal object NativeCouiStyle : CouiStyle {
     @Composable
     override fun ProvideContent(color: Color, textStyle: TextStyle?, mergeTextStyle: Boolean, content: @Composable () -> Unit) {
         CompositionLocalProvider(
-            LocalCouiContentColor provides if (color.isSpecified) color else LocalCouiContentColor.current,
+            LocalCouiContentColor provides if (color.isSpecified) color else CouiTheme.contentColor,
             LocalCouiTextStyle provides if (mergeTextStyle) LocalCouiTextStyle.current.merge(textStyle) else textStyle ?: TextStyle.Default,
             content = content,
         )
