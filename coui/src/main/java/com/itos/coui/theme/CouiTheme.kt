@@ -26,14 +26,16 @@ data class CouiColorScheme(
     val menuSurface: Color = container,
     val checkboxAccent: Color = accent,
     val menuCheckboxAccent: Color = accentOnSurface,
+    /** 页面底色与弹窗等组件的 surface 分开；自定义色板缺省沿用 surface。 */
+    val background: Color = surface,
 )
 
 /** Theme.COUI 的蓝色强调色与中性表面；不读取壁纸动态色。 */
 object CouiPresets {
     val Light = CouiColorScheme(Color(0xFF0080FF), Color.White, Color.White, Color.White,
-        Color(0xE6000000), Color(0x8A000000), Color(0x1F000000))
+        Color(0xE6000000), Color(0x8A000000), Color(0x1F000000), background = Color(0xFFF0F1F2))
     val Dark = CouiColorScheme(Color(0xFF1A8CFF), Color.White, Color(0xFF1E1E1E), Color(0xFF333333),
-        Color(0xE6FFFFFF), Color(0x8AFFFFFF), Color(0x33FFFFFF), Color(0xFF5C9DFF))
+        Color(0xE6FFFFFF), Color(0x8AFFFFFF), Color(0x33FFFFFF), Color(0xFF5C9DFF), background = Color.Black)
 }
 
 /** 普通内容预设及可选字体族；Dialog 保留字号与行距，M3 仅适配字体族，native 保留系统字体。 */
@@ -42,9 +44,10 @@ data class CouiTypography(
     val body: TextStyle = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 16.sp, fontWeight = FontWeight.Normal,
         platformStyle = PlatformTextStyle(includeFontPadding = true)),
     val label: TextStyle = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 12.sp,
-        fontWeight = FontWeight.Medium, letterSpacing = 0.sp,
+        fontWeight = FontWeight.Normal, lineHeight = 16.sp, letterSpacing = 0.4.sp,
         platformStyle = PlatformTextStyle(includeFontPadding = true)),
-    val menuItem: TextStyle = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 15.sp, fontWeight = FontWeight.Normal,
+    val menuItem: TextStyle = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 14.sp,
+        fontWeight = FontWeight.Medium, lineHeight = 20.sp, letterSpacing = 0.1.sp,
         platformStyle = PlatformTextStyle(includeFontPadding = true)),
     val chipLabelFontFamily: FontFamily? = null,
     val dialogTitleFontFamily: FontFamily? = null,

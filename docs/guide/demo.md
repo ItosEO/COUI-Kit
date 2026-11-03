@@ -38,7 +38,7 @@ CI 可通过 KEYSTORE_FILE、KEYSTORE_PASSWORD、KEYSTORE_ALIAS、KEYSTORE_ALIAS
 - 设置页包含主题、显示预览、依赖开关、单选子页、隐私与还原确认。主题及轮廓选项在 Activity 之间共享，滚动与局部输入各自恢复。
 - 预设页保留原 dock 附件、轮廓与 FAB 配色，不保留已经移除的首页顶栏按钮开关。底栏布局保留，配色作用于右侧附件；首页不再额外悬浮加号。
 
-Demo 沿用主线 DemoApplication 的 `Coui.initialize(CouiMaterial3Style())`。默认值在组件消费处解析；预设页通过局部 `CouiTheme` 切换原生外观，M3 插槽颜色由适配器桥接，显式颜色继续优先。
+Demo 在 DemoApplication 调用 `Coui.initialize(CouiMaterial3Style())`。默认值在组件消费处解析。关闭“使用 Material 主题配色”时，局部 `CouiTheme` 使用原生外观，Demo 的 M3 内容与背景也使用 COUI 中性表面和蓝色强调色；菜单与底栏不额外叠加页面染色。显式 FAB 配色预设继续生效。
 
 首页和详情页使用 Demo 自己的 Material 3 Scaffold，正文采样源供顶栏和底栏消费，Activity 根部提供菜单与弹窗的窗口采样源。分组和行布局直接使用 `com.itos.coui.layout` 的公开组件，安全区和返回处理由 Demo 管理。
 

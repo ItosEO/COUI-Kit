@@ -91,7 +91,7 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
                 .nestedScroll(header.nestedScrollConnection), containerColor = background,
                 contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom), topBar = {
                     CouiCollapsingTopAppBar(state = header, searchState = search, title = titles[page],
-                        color = colors.onSurface, backdrop = backdrop, backgroundColor = colors.background, dark = dark) {
+                        color = colors.onSurface, backdrop = backdrop, backgroundColor = background, dark = dark) {
                         CouiSearchBar(state = search, query = query, onQueryChange = { query = it },
                             onExpandedChange = { searching = it; if (!it) query = "" },
                             placeholder = stringResource(R.string.catalog_search_hint),
@@ -110,7 +110,7 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
                                 rightIcon = DemoIcons.Add, rightDescription = stringResource(R.string.catalog_fab),
                                 leftVisible = leftAccessory, rightVisible = rightAccessory,
                                 onLeftClick = onToggleTheme, onRightClick = { openPage("fab") }, rightContainerColor = color,
-                                dark = dark, lightColor = Color.White, themeTint = MaterialTheme.colorScheme.surface,
+                                dark = dark, lightColor = Color.White,
                                 circleShape = DemoShapes.couiCircle, capsuleShape = DemoShapes.couiCapsule, onSelection = selectPage,
                             )
                         }

@@ -86,7 +86,7 @@ internal fun ChromeDetail(page: String, dark: Boolean, open: (String) -> Unit) {
                             leftVisible = true, rightVisible = true,
                             leftDescription = stringResource(R.string.toggle_theme), rightDescription = stringResource(R.string.sample_click),
                             onLeftClick = { clicks++ }, onRightClick = { clicks++ }, rightContainerColor = com.itos.coui.theme.CouiTheme.colorScheme.accent,
-                            dark = dark, lightColor = Color.White, themeTint = MaterialTheme.colorScheme.background,
+                            dark = dark, lightColor = Color.White,
                             circleShape = DemoShapes.couiCircle, capsuleShape = DemoShapes.couiCapsule, onSelection = { selected = it })
                     }
                     "fab" -> if (Build.VERSION.SDK_INT >= 34 && renderer != null) {

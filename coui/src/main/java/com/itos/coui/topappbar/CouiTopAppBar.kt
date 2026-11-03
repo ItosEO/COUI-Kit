@@ -32,6 +32,7 @@ import com.itos.coui.backdrop.drawCouiBackdrop
 import com.itos.coui.backdrop.rememberCouiBackdrop
 import com.itos.coui.effect.CouiCoverageBlurEffect
 import com.itos.coui.effect.drawCouiGradientBackdrop
+import com.itos.coui.theme.CouiTheme
 
 internal val LocalCouiToolbarBackdrop = staticCompositionLocalOf<CouiBackdrop?> { null }
 internal val LocalCouiToolbarOverlay = staticCompositionLocalOf<SharedTransitionScope?> { null }
@@ -59,7 +60,7 @@ private val FadeColors = LongArray(FadeStopCount) { index ->
 /**
  * 背景从标题栏顶部开始并向下延伸，不改变布局或触摸高度。
  * gradientSpeed 为 null 时保留项目固定渐隐；正值选择全高原厂幂曲线。
- * gradientColor 非透明时叠加原厂主题背景渐变，dark 选择对应透明度分支。
+ * gradientColor 非透明时叠加原厂主题背景渐变，dark 默认跟随当前主题并选择对应透明度分支。
  */
 @Composable
 fun CouiTopAppBar(
@@ -71,7 +72,7 @@ fun CouiTopAppBar(
     backgroundAlpha: Float = 1f,
     gradientSpeed: Float? = null,
     gradientColor: Color = Color.Transparent,
-    dark: Boolean = false,
+    dark: Boolean = CouiTheme.isDark,
     content: @Composable () -> Unit,
 ) {
     val density = LocalDensity.current.density

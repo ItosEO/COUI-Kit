@@ -57,7 +57,7 @@ object CouiPageDefaults {
     @Composable
     fun themeColors(dark: Boolean = CouiTheme.isDark): CouiPageColors {
         val theme = CouiTheme.colorSchemeFor(dark)
-        return CouiPageColors(theme.surface, theme.container, theme.onSurface,
+        return CouiPageColors(theme.background, theme.container, theme.onSurface,
             theme.onSurfaceVariant, theme.onSurface.copy(alpha = .3f), theme.accent, theme.outlineVariant)
     }
     fun colors(accent: Color, dark: Boolean) = CouiPageColors(
