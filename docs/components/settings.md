@@ -87,6 +87,6 @@ CouiItem 复用 `couiButtonFeedback` 的 list 分支：短 UP/CANCEL 达到最�
 
 PR 开发阶段的 CouiScaffold 已移除，不保留重命名包装或兼容别名。保留自己的页面容器，将配色覆盖转为上述组件参数或既有 CouiTheme；需要背景材质时显式装配现有 Backdrop 接口。此前临时的 CouiSettingsPage、各类 Preference 业务包装也不是库 API。
 
-完整路由、搜索结果与业务行由宿主实现；当前 PR 不提供完整二级页 Demo，不依赖尚未提供的 Demo 文件。布局和反馈依据目标 Settings 17 的实际消费者，保留项目批准的平滑圆角与公共效果。跨设备字体、IME、RTL、TalkBack 和动画中段仍需实际验收。
+完整路由、搜索结果与业务行由宿主实现。实际组合见[二级页宿主](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsPage.kt)、[设置列表示例](../../demo/src/main/java/com/itos/coui/demo/DemoListSamples.kt)和 [Demo 指南](../guide/demo.md)。布局和反馈依据目标 Settings 17 的实际消费者，保留项目批准的平滑圆角与公共效果。跨设备字体、IME、RTL、TalkBack 和动画中段仍需实际验收。
 
 [公开布局与 Defaults](../../coui/src/main/java/com/itos/coui/layout/CouiPageComponents.kt)、[图示](../../coui/src/main/java/com/itos/coui/layout/CouiIllustration.kt)。

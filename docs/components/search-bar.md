@@ -43,7 +43,7 @@ state 保持稳定；不要用 expanded 作为 remember 的重建 key。背景�
 
 API 34 起启用项目材质与双主体融合；较低平台保留明确的普通填色、输入、宽度/取消动画与反馈路径，不声称等同于 GPU 融球。Shader 创建错误向上传播，不吞掉构造失败。原厂字体与主题覆盖取决于宿主设备，公开 Compose 的焦点和 IME 承载仍需设备对照。
 
-[公开组件](../../coui/src/main/java/com/itos/coui/search/CouiSearchBar.kt)、[状态](../../coui/src/main/java/com/itos/coui/search/CouiSearchBarState.kt)、[Defaults](../../coui/src/main/java/com/itos/coui/search/CouiSearchBarDefaults.kt)、完整 Demo 装配（完整 Demo 在后续重构批次提供）。
+[公开组件](../../coui/src/main/java/com/itos/coui/search/CouiSearchBar.kt)、[状态](../../coui/src/main/java/com/itos/coui/search/CouiSearchBarState.kt)、[Defaults](../../coui/src/main/java/com/itos/coui/search/CouiSearchBarDefaults.kt)、[完整 Demo 装配](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)。
 
 搜索与取消都接入项目 OpaqueMedium2 跟手光，并在实际材质后、内容前绘制。光源随各自局部坐标和形变映射；输入观察不消费编辑或取消操作。API 33 普通填色分支也绘制支持的跟手光；低版本仍按原平台边界处理。
 

@@ -129,4 +129,4 @@ canScroll 读取实际列表是否存在滚动范围；短内容停止滚动后�
 
 省略标题 color 时按实际 dark 从 CouiTheme 解析，显式色值优先；标题透明度仍归折叠及搜索动画。常驻搜索使用 CouiSearchBarDefaults.colors，分组使用自己的显式 colors 或当前主题。不存在隐式页面配色作用域。搜索材质与低平台填色的边界见[搜索配色](search-bar.md#主题与显式配色)。
 
-[组件](../../coui/src/main/java/com/itos/coui/topappbar/CouiCollapsingTopAppBar.kt)、[状态与 Defaults](../../coui/src/main/java/com/itos/coui/topappbar/CouiCollapsingAppBarState.kt)。文档片段不等于已执行设备验收，当前 PR 尚无完整二级页 Demo。
+[组件](../../coui/src/main/java/com/itos/coui/topappbar/CouiCollapsingTopAppBar.kt)、[状态与 Defaults](../../coui/src/main/java/com/itos/coui/topappbar/CouiCollapsingAppBarState.kt)、[首页 Demo 装配](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)。文档片段与 Demo 装配不等于已执行设备验收。
