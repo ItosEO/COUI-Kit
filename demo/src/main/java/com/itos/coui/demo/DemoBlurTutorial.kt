@@ -20,13 +20,12 @@ import com.itos.coui.backdrop.rememberCouiBackdrop
 import com.itos.coui.layout.*
 import com.itos.coui.text.CouiTextKind
 import com.itos.coui.text.rememberCouiTextStyle
-import com.itos.coui.topappbar.CouiTopAppBarDefaults
 import kotlin.math.roundToInt
 
 /** 按设置预览页的“图示—说明—调节”顺序组织，左右图示采样各自的同一内容。 */
 @Composable
 internal fun BlurTutorial(dark: Boolean) {
-    var radius by rememberSaveable { mutableFloatStateOf(CouiTopAppBarDefaults.referenceBlurRadiusPx) }
+    var radius by rememberSaveable { mutableFloatStateOf(30f) }
     CouiIllustration(Modifier.padding(top = 16.dp)) {
         Row(Modifier.fillMaxWidth().height(280.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             for (blurred in listOf(false, true)) Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
