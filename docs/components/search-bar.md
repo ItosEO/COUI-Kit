@@ -65,7 +65,7 @@ CouiSearchBar(
 | API 33 | 普通填色及支持的跟手光 |
 | API 34+ | 背景模糊材质、双主体融合、轮廓和投影 |
 
-API 34+ 使用项目选定的 `TYPE_FRAMEWORK_TOP_BAR_BLUR` 材质，区别于原厂零半径的 `TYPE_FRAMEWORK_TOP_BAR` 分支。低平台填色不提供相同的融合效果。Shader 创建失败会向上传播，由宿主处理错误。
+API 34+ 使用项目选定的 `TYPE_FRAMEWORK_TOP_BAR_BLUR` 材质，区别于原厂零半径的 `TYPE_FRAMEWORK_TOP_BAR` 分支。低平台填色不提供相同的融合效果。Shader 在组件内部创建；创建失败会使当前组合失败，不自动回退到普通填色。
 
 在 `CouiTopAppBar` 中，搜索读取顶栏提供的渐进背景；独立使用时读取显式 `backdrop`。源不能包含搜索自身。双主体绘制复用[浮动表面](../effects/floating-surfaces.md)，每个搜索实例分别持有 renderer 和内容层。
 
