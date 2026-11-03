@@ -25,7 +25,11 @@ Column(Modifier.fillMaxSize().couiVerticalScroll(scroll, overscrollEffect = edge
 
 ## 状态和输入
 
-每个容器分别 remember，一个 effect 不能用于两个布局节点。拖动在正常滚动及祖先消费后处理剩余位移；长、短和空内容都使用 Foundation 的触摸阈值、速度跟踪、多指切换及完整 nested scroll 分发，不另写短页手势。零滚动范围时保留 verticalScroll 的测量与 ScrollState，使用不移动内容的 Foundation scrollable 接收输入，避免零范围的 overscroll 分发门控，不修改宿主的滚动范围。回弹绘制节点始终挂在同一外层位置，输入通过 withoutVisualEffect 包装只分发事件；首次测量、长短内容互换均不转移绘制节点归属。容器须占满可交互视口，留白区域同样可以起手。反向拖动先按 RecyclerView 的反向阻尼恢复边界，再交还跨边界的剩余输入。
+每个容器分别 remember，一个 effect 不能用于两个布局节点。拖动在正常滚动及祖先消费后处理剩余位移；长、短和空内容共用同一个 Foundation scrollable 输入节点，触摸阈值、速度跟踪、多指切换及完整 nested scroll 分发均由 Foundation 处理。输入节点将滚动操作委托给宿主的真实 ScrollState，共用同一滚动互斥；内容范围跨过零不会替换输入节点，也不修改真实滚动范围。内侧 verticalScroll 负责测量、位置、范围语义和焦点滚入可见区，外侧不重复启动焦点及视口缩小动画。
+
+ScrollState.value、maxValue、isScrollInProgress、scrollTo、animateScrollTo 和 stopScroll 继续操作同一状态。需要观察手指拖动时，在宿主 remember 一个 MutableInteractionSource，传给 couiVerticalScroll 的 interactionSource 参数，再通过该对象的 collectIsDraggedAsState 观察；拖动通知不发送到 ScrollState.interactionSource。交互源可以省略，不影响手势处理。
+
+回弹绘制节点始终挂在同一外层位置，scrollable 只负责事件分发；首次测量和长短内容互换均不转移绘制节点归属。容器须占满可交互视口，留白区域同样可以起手。反向拖动先按 RecyclerView 的反向阻尼恢复边界，再交还跨边界的剩余输入。
 
 松手和取消恢复边界；再次 DOWN 同时取消高速反向运动及回弹帧任务，未达到拖动阈值的 UP 也恢复回弹。高速同向释放保留原厂初速度，高速反向释放先回到边界，再交还内容。边缘完全吸收纵向速度时仍向滚动父链分发一次零纵向速度的 fling，父级可以完成自身的停止处理。禁用会移除效果节点并复位，节点移除停止帧任务。位置只属于局部运动，不保存为业务滚动值。
 

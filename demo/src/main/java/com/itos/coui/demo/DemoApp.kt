@@ -29,6 +29,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import com.itos.coui.effect.CouiFloatingRenderer
 import com.itos.coui.backdrop.couiBackdrop
@@ -118,8 +119,10 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
                 Box(Modifier.fillMaxSize().couiBackdrop(backdrop).background(background)) {
                 pageState.SaveableStateProvider(page) {
                 val contentPadding = remember(header, innerPadding, density) { header.contentPadding(innerPadding, density) }
+                val contentEnabled = !search.active
                     Column(Modifier.fillMaxSize().graphicsLayer { alpha = search.contentAlpha }
-                        .couiVerticalScroll(contentScroll, enabled = !search.active)
+                        .then(if (contentEnabled) Modifier else Modifier.clearAndSetSemantics {})
+                        .couiVerticalScroll(contentScroll, enabled = contentEnabled)
                         .padding(contentPadding).consumeWindowInsets(innerPadding)
                         .padding(bottom = 16.dp)) {
                         rendering?.exceptionOrNull()?.let { failure ->
@@ -127,11 +130,12 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
                                 Modifier.padding(32.dp), color = colors.error)
                         }
                         when (page) {
-                            0 -> DemoCatalog(DemoComponentGroups, open)
-                            1 -> DemoCatalog(DemoEffectGroups, open)
+                            0 -> DemoCatalog(DemoComponentGroups, open, enabled = contentEnabled)
+                            1 -> DemoCatalog(DemoEffectGroups, open, enabled = contentEnabled)
                             else -> PresetsDemo(dark, "", contour, preferences::contour, leftAccessory, { leftAccessory = it },
                                 rightAccessory, { rightAccessory = it },
-                                preset, { preset = it }, preferences.materialTheme, preferences::materialTheme)
+                                preset, { preset = it }, preferences.materialTheme, preferences::materialTheme,
+                                enabled = contentEnabled)
                         }
                     }
                     if (search.active) {

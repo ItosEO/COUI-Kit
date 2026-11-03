@@ -2,10 +2,14 @@
 
 COUI-Kit 处于早期预览阶段。本文记录公开 API、行为、接入和兼容要求的变化。日期以提交合并时间为准；版本归档以真实 Git Tag 和发行产物为准。
 
-## 未发布（PR #15）
+## 未发布（PR #16，整合 PR #15）
 
 以下迁移只针对 PR 开发分支中的临时接口，不表示已合入 main 或进入现有发行版本。
 
+- couiVerticalScroll 的长、短和空内容使用同一个 Foundation 输入节点，范围跨过零时不再取消当前拖动。需要观察 DragInteraction 时，传入末尾可选 interactionSource；ScrollState 继续提供真实位置、范围、滚动互斥与 isScrollInProgress，其只读 interactionSource 不作为该入口的拖动事件源。见[边界回弹](docs/effects/overscroll.md)。
+- 搜索活动期间，Demo 原目录与预设同时停止子控件输入和语义访问，保留布局与保存状态；滑条和输入框关联自身标题，进度示例在自然完成时退出运行状态。
+- CouiDivider 默认厚度至少为一个物理像素，布局与填色使用同一高度，继续服从宿主 Modifier 约束。
+- Wallpaper 复用 Personalise 的不可变矢量；核心源码和 API 文档归档附带 ICON_SOURCES.md，保留现有第三方权利声明。
 - 移除 CouiScaffold（曾名 CouiSettingsScaffold）及其专用页面测量、padding 与配色作用域。保留宿主已有 Scaffold、主题和导航；模糊材质按需组合原有 Backdrop 接口，不增加替代页面包装器。
 - CouiGroup 增加显式 colors，CouiItem 增加 dark，CouiDivider / CouiFooter 增加 color；默认值在消费处读取 CouiTheme。Group 配色仅作用于自身卡片、标题和 footer，不隐式改变其内容槽。原页面级 colors/dark 改为组件参数或既有局部主题，见[宿主页面接入](docs/guide/secondary-pages.md)。
 - PR #15 布局族公开命名简化：包名 `com.itos.coui.settings` → `com.itos.coui.layout`；`CouiSettingsGroup/Item/Divider/Footer/Illustration` → `CouiGroup/Item/Divider/Footer/Illustration`；`CouiSettingsColors/Defaults` → `CouiPageColors/Defaults`。这些入口尚未合入 main，不保留旧名称别名。

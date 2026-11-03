@@ -163,9 +163,9 @@ internal fun PresetsDemo(dark: Boolean, query: String, contour: Boolean, onConto
     leftAccessory: Boolean, onLeftAccessoryChange: (Boolean) -> Unit,
     rightAccessory: Boolean, onRightAccessoryChange: (Boolean) -> Unit,
     preset: CouiFabColor, onPresetChange: (CouiFabColor) -> Unit,
-    materialTheme: Boolean, onMaterialThemeChange: (Boolean) -> Unit) {
+    materialTheme: Boolean, onMaterialThemeChange: (Boolean) -> Unit, enabled: Boolean = true) {
     DemoSection(R.string.presets_title, query, padded = false) {
-        DemoSwitchRow(stringResource(R.string.material_theme_toggle), materialTheme, onMaterialThemeChange)
+        DemoSwitchRow(stringResource(R.string.material_theme_toggle), materialTheme, onMaterialThemeChange, enabled = enabled)
         CouiDivider()
         Column(Modifier.selectableGroup()) {
             CouiFabColor.entries.forEach { option ->
@@ -175,16 +175,16 @@ internal fun PresetsDemo(dark: Boolean, query: String, contour: Boolean, onConto
                     CouiFabColor.InfraredRemote -> R.string.preset_remote
                     CouiFabColor.Recorder -> R.string.preset_recorder
                 })
-                DemoChoiceRow(label, preset == option, { onPresetChange(option) }) {
+                DemoChoiceRow(label, preset == option, { onPresetChange(option) }, enabled = enabled) {
                     Box(Modifier.size(24.dp).background(CouiFabDefaults.containerColor(option, dark), DemoShapes.capsule))
                 }
             }
         }
         CouiDivider()
-        DemoSwitchRow(stringResource(R.string.contour_toggle), contour, onContourChange)
+        DemoSwitchRow(stringResource(R.string.contour_toggle), contour, onContourChange, enabled = enabled)
         CouiDivider()
-        DemoSwitchRow(stringResource(R.string.left_accessory_toggle), leftAccessory, onLeftAccessoryChange)
+        DemoSwitchRow(stringResource(R.string.left_accessory_toggle), leftAccessory, onLeftAccessoryChange, enabled = enabled)
         CouiDivider()
-        DemoSwitchRow(stringResource(R.string.right_accessory_toggle), rightAccessory, onRightAccessoryChange)
+        DemoSwitchRow(stringResource(R.string.right_accessory_toggle), rightAccessory, onRightAccessoryChange, enabled = enabled)
     }
 }

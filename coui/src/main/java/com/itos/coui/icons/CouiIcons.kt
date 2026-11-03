@@ -202,19 +202,8 @@ object CouiIcons {
         }.build()
     }
 
-    /** com.android.settings:drawable/settings_wallpaper_ic。 */
-    val Wallpaper: ImageVector by lazy {
-        ImageVector.Builder("COUI.Wallpaper", 24.dp, 24.dp, 24f, 24f, autoMirror = false).apply {
-            addPath(PathParser().parsePathString("M19.6,4C18.716,4 18,4.716 18,5.6V18.4C18,19.284 18.716,20 19.6,20H21.3C21.687,20 22,19.687 22,19.3V4.7C22,4.313 21.687,4 21.3,4H19.6ZM4.4,20C5.284,20 6,19.284 6,18.4V5.6C6,4.716 5.284,4 4.4,4H2.7C2.313,4 2,4.313 2,4.7V19.3C2,19.687 2.313,20 2.7,20H4.4Z").toNodes(),
-                fill = SolidColor(Color(0xFF000000)), fillAlpha = 0.4000000059604645f, stroke = null, strokeAlpha = 0.4000000059604645f,
-                strokeLineWidth = 0f, strokeLineCap = StrokeCap.Butt, strokeLineJoin = StrokeJoin.Miter,
-                pathFillType = PathFillType.NonZero)
-            addPath(PathParser().parsePathString("M15.2,2C16.194,2 17,2.806 17,3.8V20.2C17,21.194 16.194,22 15.2,22H8.8C7.806,22 7,21.194 7,20.2V3.8C7,2.806 7.806,2 8.8,2H15.2ZM10.555,19.684C10.281,19.684 10.059,19.887 10.059,20.138C10.059,20.389 10.281,20.593 10.555,20.593H13.446C13.72,20.593 13.942,20.389 13.942,20.138C13.942,19.887 13.72,19.684 13.446,19.684H10.555ZM11.999,3.41C11.598,3.41 11.273,3.736 11.273,4.138C11.274,4.539 11.598,4.864 11.999,4.864C12.4,4.864 12.724,4.539 12.725,4.138C12.725,3.736 12.4,3.41 11.999,3.41Z").toNodes(),
-                fill = SolidColor(Color(0xFF000000)), fillAlpha = 1f, stroke = null, strokeAlpha = 1f,
-                strokeLineWidth = 0f, strokeLineCap = StrokeCap.Butt, strokeLineJoin = StrokeJoin.Miter,
-                pathFillType = PathFillType.NonZero)
-        }.build()
-    }
+    /** com.android.settings:drawable/settings_wallpaper_ic；与 Personalise 共用同形矢量。 */
+    val Wallpaper: ImageVector get() = Personalise
 
     /** com.coloros.alarmclock:drawable/alarm_clock_icon_small。 */
     val Time: ImageVector by lazy {

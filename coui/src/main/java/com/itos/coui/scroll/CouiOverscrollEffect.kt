@@ -4,13 +4,14 @@ import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.overscroll
-import androidx.compose.foundation.withoutVisualEffect
 import android.view.View
 import android.view.ViewConfiguration
 import android.os.SystemClock
+import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import com.itos.coui.input.CouiHapticFeedback
 import com.itos.coui.input.isCouiTouchCancelled
 import com.itos.coui.input.performCouiHapticFeedback
@@ -261,7 +262,7 @@ class CouiOverscrollEffect internal constructor(private val scope: CoroutineScop
     }
 }
 
-/** 短内容、空内容同样响应越界拖动；关闭时向 verticalScroll 显式传 null。 */
+/** 记住容器独占的回弹；空页和短页通过 couiVerticalScroll 接收完整输入。 */
 @Composable
 fun rememberCouiOverscrollEffect(hapticFeedbackEnabled: Boolean = true): CouiOverscrollEffect {
     val scope = rememberCoroutineScope()
@@ -277,26 +278,36 @@ fun rememberCouiOverscrollEffect(hapticFeedbackEnabled: Boolean = true): CouiOve
 }
 
 
-/** 二级页纵向滚动入口；空页和短页同样有 COUI 回弹，不安装平台 OverscrollEffect。 */
+/**
+ * 二级页纵向滚动入口；空页和短页同样有 COUI 回弹，不安装平台 OverscrollEffect。
+ * state 持有真实位置、范围、滚动互斥及 isScrollInProgress；拖动通知由 interactionSource 提供，
+ * 不发送到 state.interactionSource。焦点滚动与视口变化继续由标准 verticalScroll 处理。
+ */
 @Composable
 fun Modifier.couiVerticalScroll(
     state: ScrollState,
     enabled: Boolean = true,
     overscrollEffect: CouiOverscrollEffect? = rememberCouiOverscrollEffect(),
+    interactionSource: MutableInteractionSource? = null,
 ): Modifier {
-    val short = state.maxValue == 0
-    // 首次测量前 maxValue 尚未确定。绘制节点始终由同一个外层位置持有，不能在长/短页
-    // 切换时从 Foundation 迁到手动节点；新节点若遇到旧 owner 尚未 detach 会放弃挂载。
     val visual = if (enabled && overscrollEffect != null) Modifier.overscroll(overscrollEffect) else Modifier
-    val scrollEvents = remember(overscrollEffect) { overscrollEffect?.withoutVisualEffect() }
     val flingBehavior = rememberCouiScrollFlingBehavior(overscrollEffect)
-    // 零范围 ScrollState 会关闭 overscroll 分发。无内容位移的 Foundation state 只负责
-    // 短页手势、速度、多指和完整 nested scroll；不伪造 ScrollState 的可滚动范围。
-    val shortContent = rememberScrollableState { 0f }
-    val input = if (short) Modifier.scrollable(shortContent, Orientation.Vertical,
-        overscrollEffect = scrollEvents, enabled = enabled, reverseDirection = true,
-        flingBehavior = flingBehavior) else Modifier
-    return then(visual).then(input).verticalScroll(state,
-        flingBehavior = flingBehavior,
-        overscrollEffect = if (enabled && !short) scrollEvents else null, enabled = enabled && !short)
+    // Foundation 的 canScroll=true 允许分发但不保证消费；边界运动在零内容范围时仍可消费。
+    // 只开放输入门控，其余操作直接委托真实 state，共用同一互斥，不另建滚动状态。
+    val inputState = remember(state) {
+        object : ScrollableState by state {
+            override val canScrollForward = true
+            override val canScrollBackward = true
+        }
+    }
+    return then(visual).scrollable(inputState, Orientation.Vertical,
+        overscrollEffect = overscrollEffect, enabled = enabled, reverseDirection = true,
+        flingBehavior = flingBehavior, interactionSource = interactionSource,
+        bringIntoViewSpec = InputOnlyBringIntoViewSpec)
+        .verticalScroll(state, flingBehavior = flingBehavior, overscrollEffect = null, enabled = false)
+}
+
+// 内侧 verticalScroll 持有唯一的焦点/视口自动滚动，外侧只承接输入与标准滚动动作。
+private object InputOnlyBringIntoViewSpec : BringIntoViewSpec {
+    override fun calculateScrollDistance(offset: Float, size: Float, containerSize: Float): Float = 0f
 }

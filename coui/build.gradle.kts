@@ -87,6 +87,7 @@ tasks.withType<Jar>().configureEach {
         into("META-INF/coui")
     }
     from(rootProject.files(
+        layout.projectDirectory.file("ICON_SOURCES.md"),
         layout.projectDirectory.file("src/main/resources/META-INF/coui-skia-LICENSE"),
         layout.projectDirectory.file("src/main/resources/META-INF/coui-androidx-LICENSE"),
     )) {

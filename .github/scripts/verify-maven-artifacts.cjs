@@ -47,7 +47,7 @@ for (const artifact of ['coui', 'coui-material3']) {
   assert(entries('-sources.jar').some(name => name.endsWith(core ? '/CouiSlider.kt' : '/CouiMaterial3Style.kt')), `${artifact} 源码包缺少库源码`);
   assert(entries('-javadoc.jar').includes('index.html'), `${artifact} API 文档包没有生成 HTML`);
   for (const suffix of ['-sources.jar', '-javadoc.jar']) {
-    for (const notice of ['LICENSE', 'NOTICE', 'TRADEMARKS.md', ...(core ? ['coui-skia-LICENSE', 'coui-androidx-LICENSE'] : [])]) {
+    for (const notice of ['LICENSE', 'NOTICE', 'TRADEMARKS.md', ...(core ? ['ICON_SOURCES.md', 'coui-skia-LICENSE', 'coui-androidx-LICENSE'] : [])]) {
       assert(entries(suffix).includes(`META-INF/coui/${notice}`), `${artifact} ${suffix} 缺少声明: ${notice}`);
     }
   }

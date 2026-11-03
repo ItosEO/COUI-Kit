@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -110,14 +111,17 @@ fun CouiItem(
         .semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, content = content)
 }
 
-/** 卡片内部的细分隔。按真实分组使用，不在相邻独立卡片之间添加线。 */
+/** 卡片内部的细分隔。默认至少一个物理像素，实际高度服从宿主约束。 */
 @Composable
 fun CouiDivider(modifier: Modifier = Modifier,
     startIndent: androidx.compose.ui.unit.Dp = CouiPageDefaults.rowPadding,
     endIndent: androidx.compose.ui.unit.Dp = CouiPageDefaults.rowPadding,
     color: Color = CouiTheme.colorScheme.outlineVariant) {
+    val thickness = with(LocalDensity.current) {
+        CouiPageDefaults.dividerHeight.roundToPx().coerceAtLeast(1).toDp()
+    }
     Box(modifier.fillMaxWidth().padding(start = startIndent, end = endIndent)
-        .height(CouiPageDefaults.dividerHeight)
+        .height(thickness)
         .background(color))
 }
 

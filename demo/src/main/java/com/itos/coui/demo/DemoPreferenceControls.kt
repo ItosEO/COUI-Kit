@@ -97,7 +97,8 @@ internal fun DemoSliderPreference(
         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically) {
             leading?.invoke()
-            CouiSlider(Modifier.weight(1f), value, onValueChange, dark = style.dark, enabled = enabled,
+            CouiSlider(Modifier.weight(1f).semantics { contentDescription = title }, value, onValueChange,
+                dark = style.dark, enabled = enabled,
                 colors = CouiSliderDefaults.colors(style.colors.accent, style.dark, enabled), shape = CouiCapsuleShape,
                 valueRange = valueRange, steps = steps, showTickMarks = showTickMarks)
             trailing?.invoke()
@@ -120,7 +121,8 @@ internal fun DemoInputPreference(
     Column(modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)) {
         BasicText(title, style = rememberCouiTextStyle(CouiTextKind.PreferenceTitle).copy(color = style.colors.title))
-        BasicTextField(value, onValueChange, Modifier.fillMaxWidth(), singleLine = true, enabled = enabled,
+        BasicTextField(value, onValueChange, Modifier.fillMaxWidth().semantics { contentDescription = title },
+            singleLine = true, enabled = enabled,
             textStyle = rememberCouiTextStyle(CouiTextKind.Body).copy(color = if (enabled) style.colors.title else style.colors.disabled),
             cursorBrush = SolidColor(style.colors.accent), decorationBox = { field ->
                 Box { if (value.isEmpty()) BasicText(placeholder,

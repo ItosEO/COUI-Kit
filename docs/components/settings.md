@@ -73,7 +73,7 @@ Group 根据是否有标题选用 Defaults 中的默认顶部留白；`modifier.
 
 开关、复选、滑条和菜单可选用已有 [CouiSwitch](switch.md)、[CouiCheckbox](checkbox.md)、[CouiSlider](slider.md)、[CouiMenu](menu.md)，也可混用其他设计的控件。尾部控件独立操作时不要再包整行点击；选择整行交互时使用相应 toggleable/selectable 语义和唯一业务 owner，尾部控件不重复提交。开关拖动仍经 onDragCheckedChange 提交到同一受控值。程序赋值不额外触发触觉。
 
-分隔线只用于同组内容，带图标时调整 startIndent 对齐标题；不要在独立卡片之间统一加线。图示使用 CouiIllustration，不塞入普通点击行。
+CouiDivider 将 Defaults 中的厚度按当前密度换算并取整，默认至少一个物理像素，分隔线本体的占位与填色高度一致。宿主的 Modifier.height / heightIn 与父级约束仍决定实际高度。分隔线只用于同组内容，带图标时调整 startIndent 对齐标题；不要在独立卡片之间统一加线。图示使用 CouiIllustration，不塞入普通点击行。
 
 ## 反馈、滚动与背景采样
 

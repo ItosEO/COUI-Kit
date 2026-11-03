@@ -27,7 +27,10 @@ internal fun ListSamples(dark: Boolean, open: (String) -> Unit) {
     var progress by rememberSaveable { mutableFloatStateOf(.35f) }
     var running by rememberSaveable { mutableStateOf(false) }
     val backdrop = rememberCouiWindowBackdrop()
-    LaunchedEffect(running) { while (running && progress < 1f) { delay(250); progress = (progress + .02f).coerceAtMost(1f) } }
+    LaunchedEffect(running) {
+        while (running && progress < 1f) { delay(250); progress = (progress + .02f).coerceAtMost(1f) }
+        if (progress >= 1f) running = false
+    }
     CouiGroup(title = stringResource(R.string.list_item_info)) {
         DemoPreference(title = stringResource(R.string.app_name), value = "ColorOS 17", icon = { Icon(DemoIcons.Info, null) })
         CouiDivider(startIndent = 56.dp)

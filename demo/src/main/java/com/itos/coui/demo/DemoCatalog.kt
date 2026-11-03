@@ -46,12 +46,12 @@ internal val DemoEffectGroups = listOf(
 )
 
 @Composable
-internal fun DemoCatalog(groups: List<List<DemoCatalogEntry>>, open: (String) -> Unit) {
+internal fun DemoCatalog(groups: List<List<DemoCatalogEntry>>, open: (String) -> Unit, enabled: Boolean = true) {
     groups.forEach { entries -> key(entries.first().page) {
         CouiGroup {
             entries.forEachIndexed { index, entry -> key(entry.page) {
                 DemoPreference(Modifier.heightIn(min = CouiPageDefaults.homeRowMinHeight),
-                    title = stringResource(entry.title), onClick = { open(entry.page) }, icon = {
+                    title = stringResource(entry.title), enabled = enabled, onClick = { open(entry.page) }, icon = {
                         Icon(entry.icon, null, Modifier.size(CouiPageDefaults.iconSize), tint = catalogIconColor(entry.page))
                     })
                 if (index != entries.lastIndex) CouiDivider(startIndent = 56.dp)
