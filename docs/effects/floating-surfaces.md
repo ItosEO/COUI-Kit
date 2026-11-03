@@ -29,28 +29,36 @@ val surfaceModifier = Modifier.couiFloatingSurface(
 
 此 Modifier 绑定传入的 renderer、内容层和当前坐标，只能挂到该节点。第二个节点须单独装配；可复用 material、shadow 等不可变配置。它不改变测量，内容路径、投影溢出和材质 patch 各按原有层序绘制，不能再用外层 clip 一并裁掉投影。
 
-## 单主体与三主体
+## 选择主体数量
 
-- CouiFloatingRenderer.standalone() 配合 couiFloatingSurface，仅创建单主体链路。
-- CouiFloatingRenderer() 配合 couiFloatingSurfaces，固定三个主体；各列表数量与主体顺序一致。material 的 index 分别对应中间菜单与两侧附件，规则见公开声明。
-- 不跨节点共享 renderer，也不把一个单主体塞入三主体入口来代替独立按钮。
+| renderer 工厂 | Modifier | 用途 |
+| --- | --- | --- |
+| `standalone()` | `couiFloatingSurface` | 独立按钮或 FAB |
+| `pair()` | `couiFloatingPair` | 两个相互融合的表面，例如搜索与取消 |
+| `CouiFloatingRenderer()` | `couiFloatingSurfaces` | 固定三个主体，例如底栏与两侧附件 |
 
-CouiFloatingSurface 的 bounds 使用当前绘制节点中的未缩放像素坐标，scaleX / scaleY 单独传入，alpha 与 visible 表达当前主体状态。宿主负责把窗口或布局坐标映射到该节点，不把缩放预先写入 bounds。
+不要用虚构的空主体凑数量。各配置列表与 `surfaces` 返回值须具有相同数量和顺序。双主体的 `material.index` 依次为 1、2；三主体的菜单为 1，两侧附件为 2。
 
-CouiFloatingShadow 的长度是像素；material 字段的单位按声明区分，带 Dp 后缀的参数不能与像素混用。预设优先从组件 Defaults 获取。
+双主体的 `drawOrder` 使用列表下标 0、1，只改变同一 Z 分组内的顺序。例如 `listOf(1, 0)` 先画第二项、后画第一项；它与 `material.index` 的编号不同。
 
-## 合成与生命周期
+## 几何与绘制
 
-`foregroundComposition` 由单主体 `couiFloatingSurface` 和双主体 `couiFloatingPair` 提供，控制材质和光晕的前景表达；三主体 `couiFloatingSurfaces` 保留完整 destination 合成。启用前景合成时，效果以 SrcOver 叠到已绘制页面，Backdrop 源必须覆盖不透明 SDR 页面。`beforeContent` 在材质之后、内容之前执行，接收只读使用的缓存裁剪 Path；坐标仍为节点本地坐标，变换与裁剪归调用方。
+`CouiFloatingSurface.bounds` 使用当前绘制节点中的未缩放像素坐标。缩放单独通过 `scaleX` / `scaleY` 传入，`alpha` 与 `visible` 表达主体状态。宿主负责窗口或布局坐标到节点坐标的转换，并让内容录制与几何对应同一帧。
 
-内容录制、背景采样与效果节点分层。主题、轮廓状态、几何和位置变化应进入当前绘制，资源随节点管理；错误与平台检查见[背景采样](backdrop.md#资源与失败处理)。
+`CouiFloatingShadow` 的长度使用像素；material 字段的单位以公开声明为准，带 Dp 后缀的参数使用 dp。固定预设从所属组件 Defaults 获取。
+
+单主体和双主体支持 `foregroundComposition`。启用时，材质与光晕只输出前景，以 SrcOver 叠到已绘制页面；Backdrop 必须覆盖不透明 SDR 页面。三主体保留完整 destination 合成。
+
+`beforeContent` 在对应材质之后、内容之前绘制。双主体回调另接收列表下标。回调坐标属于当前绘制节点，缓存 Path 描述未缩放主体的局部轮廓；调用方负责位移、缩放和裁剪，不得修改该 Path。完整双主体装配见 [CouiSearchBar](../../coui/src/main/java/com/itos/coui/search/CouiSearchBar.kt)。
+
+## 资源与错误
+
+每个独立绘制节点持有自己的 renderer、内容层和采样坐标，不跨节点共享可变资源。material、shadow 等不可变配置可以复用。主题、轮廓、几何和位置变化应更新当前节点，录制层随节点释放。
+
+平台门槛及创建失败的处理见[背景采样](backdrop.md#资源与失败处理)。
 
 ## 公开入口
 
-[renderer、配置与 Modifier](../../coui/src/main/java/com/itos/coui/effect/CouiFloatingSurfaces.kt)、[CouiFloatingSurface](../../coui/src/main/java/com/itos/coui/effect/CouiFloatingGeometry.kt)。横向同色双主体融合是[另一条公开算法](metaball.md)，不替代本页的多层材质。
+[renderer、配置与 Modifier](../../coui/src/main/java/com/itos/coui/effect/CouiFloatingSurfaces.kt) · [几何](../../coui/src/main/java/com/itos/coui/effect/CouiFloatingGeometry.kt)
 
-## 双主体与绘制阶段
-
-搜索与取消使用 CouiFloatingRenderer.pair() 及 Modifier.couiFloatingPair。materials、shadows、shapes、contentLayers 均为两项，材质 index 按 1、2 排列；drawOrder 是这两个下标的排列，仅改变同一 Z 分组内的绘制顺序。三主体入口保留原来的 Z 排序，不因双主体的显式顺序改变。surfaces 返回同一帧的两个节点，几何与内容必须一致。`beforeContent` 在各材质之后、对应内容之前执行，接收节点下标与缓存裁剪 Path；不得修改 Path。双主体可将 `foregroundComposition` 设为 true；三主体入口不提供该选项。
-
-这条入口复用现有融合和光效，不增加假节点。每个独立绘制组件持有自己的 renderer 和内容层；不得跨搜索实例共享可变资源。
+只需要同色背景及内容遮罩时，参见[横向双主体融合](metaball.md)。

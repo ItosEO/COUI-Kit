@@ -74,6 +74,8 @@ fun MenuButton(
 
 `anchor` 记录按钮上的触点，菜单根据触点和窗口可见范围定位。通过键盘或无障碍服务打开时，没有触点，菜单使用默认锚点。示例中的 Material3 `Button` 和 `Text` 需要由应用声明 Material3 依赖；最小调用不需要该依赖。自定义 `style` 的创建方式见[菜单样式](#菜单样式)。
 
+顶栏按钮与菜单放在同一个 Box 时，可省略 `anchor`，使用 Popup 父布局的范围定位。`rememberCouiMenuAnchor(useTouchPosition = false)` 同样关闭触点定位，使用这个父布局范围，不使用 Modifier 所记录节点的矩形。触点锚点只观察输入，点击仍由按钮或列表项处理。
+
 `expanded` 控制菜单显隐。点击菜单项时调用 `onItemClick`；点击外部或按返回键时调用 `onDismissRequest`。需要在选中后关闭菜单时，在 `onItemClick` 中将 `expanded` 设为 `false`，如上例所示。
 
 ## 添加勾选和子菜单
@@ -212,5 +214,3 @@ API 33 以下的菜单模糊效果与较新系统不同，见[兼容要求](../g
 标题字体默认来自 `CouiTheme.typography.label`。修改主题的 `label` 或显式传入 `CouiMenuStyle.headerTextStyle` 可以调整字体、字号、字重和行距。标题颜色、对齐和最多两行由菜单控制。
 
 源码见 [CouiMenu / CouiMenuItem](../../coui/src/main/java/com/itos/coui/menu/CouiMenu.kt)、[样式](../../coui/src/main/java/com/itos/coui/menu/CouiMenuStyle.kt)、[触点锚点](../../coui/src/main/java/com/itos/coui/menu/CouiMenuAnchor.kt)，选中、勾选、子菜单和限高示例见 [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)。
-
-顶栏三点入口可用 rememberCouiMenuAnchor(useTouchPosition = false)，保持完整按钮布局锚点；设置行默认捕获触点。两者只观察，不接管点击 owner。

@@ -2,37 +2,37 @@
 
 Status: implemented
 
-“不提供 Scaffold”的决定由[可选轻量页面容器](2026-11-03-optional-coui-scaffold.md)部分取代。以下保留当时的移除理由；组件独立使用、主题与采样不绑定页面、导航和业务归宿主的边界继续有效。
+本篇“不提供 Scaffold”的选择由[可选轻量页面容器](2026-11-03-optional-coui-scaffold.md)部分取代。组件独立使用、主题与采样分离、导航和业务由宿主持有的决定继续有效。
 
 ## Problem
 
-组件库应兼容宿主已有设计体系，调用方可以只使用单个 COUI 组件。PR #15 的 CouiScaffold 将页面测量、安全区、背景采样和局部配色集中到一个库内页面容器，使组件装配被误认为必须采用整套页面框架。
+初始 CouiScaffold 同时承担页面测量、安全区、背景采样和局部配色，容易使调用方把 COUI 组件视为整套页面框架的一部分。已有 Material、Miuix 或自有布局的应用应能只取用一个 COUI 控件。
 
 ## Decision
 
-移除 CouiScaffold 及其专用的 PageContentPadding、PageSlot、PageStyle、LocalPageStyle 和 pageStyle。库不提供替代的 Scaffold、页面包装器或新的全局 Provider。页面布局、导航、安全区分工、返回分发和业务状态归宿主。
+独立组件通过现有 CouiTheme 与显式参数解析外观。Group 的配色只作用于自身卡片、标题和说明，不隐式改变内容槽中的其他设计组件。导航、业务状态、返回分发和页面容器选择归宿主。
 
-Group、Item、Divider、Footer 提供局部分组与行装配。最初为减少宿主重复排版而独立公开的行布局与图示入口，由[通用 Item 收敛](../simplification/2026-11-03-layout-item-api.md)部分替代：行布局并入 Item，图示回到宿主。默认外观在消费处读取现有 CouiTheme；需要覆盖时使用所属组件的显式颜色或 dark 参数。分组的配色只作用于自身标题、卡片和说明，不隐式改变任意内容槽内的 Material、Miuix 或宿主组件。
+背景采样使用现有 rememberCouiBackdrop、couiBackdrop 和 ProvideCouiMenuBackdrop。普通分组、行和文字不创建源；模糊材质显式接入正文源，菜单和弹窗按需使用窗口源。消费者不能录入自身采样源，正文源也不能代替需要完整窗口的来源。
 
-背景采样继续使用现有 rememberCouiBackdrop、Modifier.couiBackdrop 和 ProvideCouiMenuBackdrop。纯分组、设置行、文字和图示不创建采样源。使用模糊材质的宿主显式指定正文源；菜单/弹窗的窗口源按需单独安装，不能用正文源替代完整窗口，也不能将采样消费者录入它自己的源。
+### 已被部分取代的页面选择
 
-保留既有 COUI 物理、搜索、折叠标题、材质、光效和节点资源所有权；不因删除页面容器而修改其算法或增加新的兼容状态机。Material 3 Scaffold 仅作为应用层用法示例，核心库不增加 Material 3 或 Miuix 依赖。
+本篇移除初始 CouiScaffold 及 PageContentPadding、PageSlot、PageStyle、LocalPageStyle 和 pageStyle，选择由宿主完成通用页面布局，不另提供同职能容器。理由是页面测量、配色作用域和采样被绑定，而当时已有基础接口能表达 COUI 特有能力。
 
-## Existing-note audit
+[可选轻量页面容器](2026-11-03-optional-coui-scaffold.md)恢复通用栏位测量与 Insets 处理，接管“不提供容器”这一部分。旧页面配色作用域和隐式采样不恢复。
 
-- [二级页面组件](../feature/2026-11-01-secondary-page-primitives.md)：部分取代。原页面容器与页面配色作用域决定由本篇替代，其余组件与原厂依据保留。
-- [二级页修复复核](../bug-fix/2026-11-02-secondary-page-review-fixes.md)：部分取代。Scaffold 稳定 padding 的优化随容器删除，其余已修复输入、绘制与物理问题保留。
-- [模块边界](2026-10-21-coui-module-boundary.md)与[可选 Material 3 适配](2026-10-31-optional-material3-style.md)：沿用组件按需使用、业务由宿主持有及消费处解析主题的规则。
+独立行布局与图示曾用于减少宿主重复排版；[通用 Item](../simplification/2026-11-03-layout-item-api.md)将行内容槽并入 Item，图示由宿主组合。Group、Item、Divider、Footer 仍可独立使用。
+
+COUI 物理、搜索、折叠标题、材质和光效的算法及资源规则沿用各自实现。应用层示例可以使用 M3 Scaffold，核心不因此增加 Material 3 或 Miuix 依赖。
 
 ## Alternatives considered
 
-- 保留可选 CouiScaffold 可以减少整页示例的装配代码，但仍维护一套通用页面测量与配色作用域。现有基础接口已覆盖 COUI 特有职责，不保留该入口。
-- 将 Scaffold 改名为 Page 或 Layout 并保留实现，仍然接管宿主页面，不能解决职责问题。
-- 新建页面主题 Provider 可解除颜色与 Scaffold 的绑定，但会与已有 CouiTheme 重复；采用现有主题和组件参数。
-- 删除全部局部布局组件会使调用方重复编写 COUI 分组、行排版和反馈，超出本次目标；保留有明确视觉与交互职责的独立组件。
+- 保留初始可选 Scaffold 能缩短整页装配，但继续绑定通用测量与页面配色，选择移除该版本。
+- 只将 Scaffold 改名为 Page 或 Layout 能保留调用形态，但职责不变，不能解除页面依赖。
+- 新建页面主题 Provider 能单独提供颜色，但与 CouiTheme 重复，采用现有主题和组件参数。
+- 删除全部局部布局可进一步缩小接口，却使宿主重复编写分组、排版和反馈，保留有视觉与交互职责的组件。
 
 ## Consequences
 
-宿主可以将 COUI 组件放进 Material、Miuix 或自有布局，不需要替换页面骨架。代价是调用方负责页面 padding、滚动容器与采样源的正确组合；这些契约由普通使用文档说明。
+宿主可在已有布局中组合 COUI 控件；代价是显式处理滚动、Padding 和采样的关系。接入步骤由[宿主页面指南](../../../../docs/guide/secondary-pages.md)持有。
 
-此决定仅改变宿主装配与配色入口，不代表已经完成各设备、各设计体系的动态兼容验收。CI、源码复核、采样与状态所有权检查的实际结果写入 PR；不以编译通过替代 IME、RTL、TalkBack、模糊和动画中段的设备检查。
+本篇部分替代[二级页组件](../feature/2026-11-01-secondary-page-primitives.md)的早期容器选择和[输入修复记录](../bug-fix/2026-11-02-secondary-page-review-fixes.md)中的旧容器优化，沿用[模块边界](2026-10-21-coui-module-boundary.md)与[可选 M3 策略](2026-10-31-optional-material3-style.md)。这些关系不表示各宿主和设备的动态兼容已经验收。

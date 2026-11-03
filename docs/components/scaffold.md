@@ -1,6 +1,6 @@
-# CouiScaffold 页面容器
+# 页面容器
 
-纯 COUI 页面可以用 `CouiTheme + CouiScaffold` 放置顶栏、底栏和正文，只需依赖核心 `coui`。容器使用 Compose UI / Foundation，不依赖 Material 3。
+`CouiScaffold` 测量顶栏、底栏并向正文提供 Padding。它使用 Compose UI / Foundation，纯 COUI 页面只需依赖核心 `coui`。
 
 ## 带模糊顶栏的列表
 
@@ -70,7 +70,7 @@ fun NativePage(
 }
 ```
 
-正文先绘制，顶栏和底栏再覆盖在正文上。需要背景采样时，像示例一样让正文源使用 `fillMaxSize()` 并绘制底色，使滚动内容能进入模糊栏位下方。只有使用模糊材质时才需要示例中的 Backdrop；普通页面可直接提供正文。采样契约见[背景采样](../effects/backdrop.md)。
+正文先绘制，顶栏和底栏再覆盖在正文上。需要背景采样时，像示例一样让正文源使用 `fillMaxSize()` 并绘制底色，使滚动内容能进入模糊栏位下方。只有使用模糊材质时才需要示例中的 Backdrop；普通页面可直接提供正文。采样规则见[背景采样](../effects/backdrop.md)。
 
 ## Padding 与系统 Insets
 

@@ -39,7 +39,7 @@ dependencies {
 
 组件可以直接使用 COUI 原生默认值，也可以由局部 `CouiTheme` 或显式参数配置。M3 宿主添加同版本的可选 `coui-material3` 模块，并在 `Application.onCreate` 调用 `Coui.initialize(defaultStyle = CouiMaterial3Style())`；完整初始化与模式配置见 [README：接入 Material 3](../../README.md#接入-material-3)。
 
-平台要求按能力分：普通控件跟随库的最低系统；渐进模糊、轮廓和融合要 API 33；底栏、FAB、顶栏按钮/搜索、ChipTab 和普通阴影要 API 34。调用 API 34 的组件前先判断版本，完整表格见[兼容要求](compatibility.md#效果门槛)。
+平台要求按能力分：普通控件跟随库的最低系统；渐进模糊、轮廓和融合要 API 33；底栏、FAB、顶栏按钮/展开式搜索、ChipTab 和普通阴影要 API 34。常驻 `CouiSearchBar` 在 API 31–33 使用普通填色，API 34 起提供浮动材质与融合。调用 API 34 的组件前先判断版本，完整表格见[兼容要求](compatibility.md#效果门槛)。
 
 ## 显示第一个组件
 

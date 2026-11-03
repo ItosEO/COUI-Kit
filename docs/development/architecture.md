@@ -14,17 +14,13 @@ coui 持有通用 COUI 组件、原生主题与固定预设、效果、背景采
 
 demo 只消费公开 API，负责页面、主题和示例交互；示例不读取或删除真实记录。不能为演示公开内部状态，也不能让库引用 demo、外部业务模块、宿主日志框架或第三方 Backdrop。
 
-## 可独立取用与混搭
+## 页面与独立组件
 
-COUI-Kit 是组件与风格能力库，不是要求整套替换宿主页面的框架。调用方可以只使用一个 COUI 控件，或把 COUI 与 Material、Miuix、自有设计放在同一页面。参考其他库时吸收具体经验，不以复制其组件目录、页面框架和主题层为目标。
+宿主选择页面容器。可选 CouiScaffold 负责栏位测量、正文 Padding、安全区和默认背景，其他组件不依赖它。导航、返回栈、业务状态、滚动与采样由宿主组合；核心不增加专用设置页或页面管理层。
 
-- 页面容器由宿主选择。可选 CouiScaffold 使用 Foundation 处理栏位测量、正文 Padding、系统安全区和主题默认背景；其他 COUI 组件不依赖它。导航、返回栈和业务状态仍归宿主，不提供 CouiSettingsScaffold 或新的页面管理层。
-- 组件通过现有 CouiTheme 与显式参数解析外观，不以新页面 Provider 作为使用前提。除宿主主动选择的主题/适配契约外，不隐式改变内容槽中其他设计组件的配色或状态。
-- 普通分组、行布局和文字不创建背景采样层；图示由宿主组合 Box 与 Modifier。模糊材质使用现有 Backdrop 显式接入，窗口源按需提供，不与页面测量绑定。
-- 分组与行布局入口为 Group、Item、Divider、Footer。Item 统一行内容槽与可选点击；onClick 为空时不安装点击或反馈，宿主自行管理 toggleable/selectable 与尾部控件，库不扩展开关行、菜单行等业务组件。
-- 有明确几何或交互协作的局部组件可以共享所需作用域，例如顶栏按钮的背景与搜索转场；这种局部契约不扩大为全页或全应用依赖。
+Group、Item、Divider、Footer 处理局部分组和行布局。Item.onClick 为空时只排列内容；选择、开关或独立尾部操作由宿主提供。普通布局和文字不创建背景源。默认外观读取现有 CouiTheme，显式配色只作用于声明的组件区域，不隐式改写任意内容槽。
 
-这一边界保留有实际职责的布局组件。页面容器不创建背景源或页面主题 Provider，不因容器变更修改已有原厂算法。当前决定与取舍见[可选轻量页面容器](../../.agents/notes/implemented/architecture/2026-11-03-optional-coui-scaffold.md)及[宿主页面所有权](../../.agents/notes/implemented/architecture/2026-11-03-host-owned-page-layout.md)。
+局部几何与交互可共享必要作用域，例如顶栏按钮的渐进背景和搜索转场；这种关系不扩大为全页依赖。当前取舍见[可选轻量页面容器](../../.agents/notes/implemented/architecture/2026-11-03-optional-coui-scaffold.md)和[宿主页面所有权](../../.agents/notes/implemented/architecture/2026-11-03-host-owned-page-layout.md)。
 
 ## 库内职责
 
@@ -53,7 +49,7 @@ COUI-Kit 是组件与风格能力库，不是要求整套替换宿主页面的�
 
 展示范围见 [Demo 指南](../guide/demo.md)。Demo 独立维护 M3 语义、页面与卡片层级和 G2 形状；设置开关、单选与复选分别使用相应语义，整行交互时子控件不重复点击。数值滑条使用 CouiSlider。
 
-Material 导航在横屏使用侧栏，COUI 使用底栏。切页和搜索筛选保留示例状态。
+首页使用底部导航，API 34 以下使用普通底栏。目录搜索负责筛选可导航条目，详情由独立 Activity 展示；切页和搜索期间保留相应页面状态。
 
 ## 依据
 

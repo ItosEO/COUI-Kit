@@ -185,6 +185,10 @@ M3 模式的 `CouiTopAppBarButton` 使用 `minimumInteractiveComponentSize()`，
 
 源码见 [CouiTopAppBar](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBar.kt)、[按钮](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButton.kt)、[按钮组与显隐](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButtonGroup.kt)、[按钮预设](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButtonDefaults.kt)，完整页面见 [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)。
 
-## 设置式折叠背景
+## 背景参数
 
-CouiTopAppBar 的 `backgroundAlpha` 只控制背景，不改变标题和触摸布局。`gradientColor` 自身的 alpha 保留，并与渐变曲线和背景图层 alpha 相乘；显式透明度不会被渐隐曲线覆盖。`gradientSpeed` 留空时保留原固定渐隐，正值选择全高幂曲线；`gradientColor` 非透明时按 `dark` 选择对应页面背景渐变，`dark` 默认跟随当前 CouiTheme。默认与显式 `referenceBlurRadius` 均按 dp 解释，通用顶栏保留已有按 density 装配的强度。新首页可直接组合 [CouiCollapsingTopAppBar](collapsing-app-bar.md)，它保留标题颜色 alpha，并将其与折叠和搜索内容动画系数相乘；它在消费处传入 Settings 的固定引擎像素半径。普通二级页继续使用原顶栏。
+`backgroundAlpha` 只控制背景透明度。`gradientColor` 的 alpha 与渐变曲线及背景图层透明度相乘；`dark` 决定背景渐变的深浅色分支，默认读取 `CouiTheme.isDark`。
+
+API 33 起，`gradientSpeed = null` 使用固定长度渐隐，正值选择全高幂曲线。`referenceBlurRadius` 按 dp 解释；需要固定引擎像素半径时，在消费处按当前 density 换算。API 31–32 的平台分层路径仍使用自身固定模糊参数。
+
+需要大标题与常驻搜索联动时，使用[折叠顶栏](collapsing-app-bar.md)。

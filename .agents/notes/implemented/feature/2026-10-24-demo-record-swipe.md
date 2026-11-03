@@ -28,9 +28,9 @@ DemoRecordMetaball 的背景与内容遮罩使用同一几何、各自独立的 
 
 Demo 可以观察真实触摸驱动的融合，示例删除仅影响页面状态。接口使用方法见 DemoRecordSamples、DemoRecordSwipeRow 和 DemoRecordMetaball；这些文件不构成库的公开 API。旧系统不创建 RuntimeShader。
 
-源码对照覆盖 Metric 的默认圆角、卡片排版、手势、固定宽度、背景/遮罩几何与删除生命周期。Demo 的样例数据和预览入口由宿主独立维护；后续 Metric 列表变化需要显式对照，不建立跨工程源码或构建依赖。临时检查器不加入仓库。
+源码对照覆盖 Metric 的默认圆角、卡片排版、手势、固定宽度、背景/遮罩几何与删除生命周期。Demo 的样例数据和预览入口独立维护；Metric 列表变化需要显式对照，不建立跨工程源码或构建依赖。
 
-Android 构建、Preview、设备触摸、TalkBack 与 GPU 视觉结果由用户验证；PSI 不执行 Android 类型编译，静态检查不能证明原厂效果验收。
+设备触摸、TalkBack 与 GPU 结果仍需动态验证。语法与源码检查不执行 Android 类型编译，也不能证明原厂效果等价；实际 CI 和其他检查结果由 PR 记录。
 
 ## Existing-note audit
 

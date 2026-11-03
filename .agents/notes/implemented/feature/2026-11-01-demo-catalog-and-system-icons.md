@@ -1,39 +1,33 @@
-# Agent Note: 设置式 Demo 与可追溯系统图标子集
+# Agent Note: 目录式 Demo 与系统图标子集
 
 Status: implemented
 
 ## Problem
 
-完整开发树混有尚未投稿的 Sheet、普通按钮和历史反射对照，不能直接覆盖最新主线。Demo 要保留组件/效果/预设三页及原 dock，并将具体组件组织成真实二级页面；图标需要确认实际消费者，不能仅凭提取索引的名称选用。
+组件和效果需要在完整页面中展示。目录、详情、受控状态与系统图标应各有明确归属，避免把 Demo 业务变成库接口，也避免只按 APK 中的资源名称选图标。
 
 ## Decision
 
-Demo 消费公开的选择器与独立布局组件，组件/效果首页只登记目录，详情由普通 Activity 装配。标准 Intent 启动和 finish 交由当前 ROM 决定转场；不注册厂商白名单或复制 OEM 窗口协议。来源页查询、导航行和反馈在转场时保留，返回恢复原状态；dock 及 renderer 位于稳定作用域。
+Demo 保留组件、效果、预设三页与底栏，组件和效果由目录进入普通 Activity。标准 Intent 和 finish 使用当前 ROM 的应用转场；查询、来源行与反馈在转场时保留，底栏和 renderer 位于稳定组合位置。导航、草稿、偏好和业务回调只存在于 Demo。
 
-DemoApp 与 DemoSettingsPage 使用[可选 CouiScaffold](../architecture/2026-11-03-optional-coui-scaffold.md)，沿用[宿主页面所有权](../architecture/2026-11-03-host-owned-page-layout.md)的独立主题与采样边界。正文源显式录制完整视口，顶栏和底栏不录入其消费的正文源。DemoHostActivity 提供菜单/弹窗窗口源。横向安全区由容器消费，顶部由顶栏处理，底部由底栏或 Scaffold 处理；滚动内容应用并消费测量所得 padding，IME 在容器外侧消费。分组使用 Group 的默认留白，不恢复已移除的 topSpacing 参数。
+DemoApp 与 DemoSettingsPage 使用[可选 CouiScaffold](../architecture/2026-11-03-optional-coui-scaffold.md)。正文源录制完整视口，顶栏与底栏不录入自身消费的源；DemoHostActivity 提供菜单和弹窗的窗口源。容器负责横向安全区，栏位负责对应纵向 Insets，IME 在容器外消费。独立组件与主题、采样的关系沿用[宿主页面所有权](../architecture/2026-11-03-host-owned-page-layout.md)。
 
-保留主线 DemoApplication 的 Coui.initialize(CouiMaterial3Style()) 与可选模块依赖，不恢复根部手工色板映射。预设页控制局部原生/M3 外观，movableContentOf 保留同一页面状态树；各 Activity 共享偏好和实际深浅模式。组件默认配色在消费处解析，显式样式取最终 COUI 角色，菜单填写明确模式，不猜表面亮度。
+Application 初始化 CouiMaterial3Style；局部 CouiTheme 切换原生外观，movableContentOf 保留同一内容树。Activity 共享偏好与实际模式，颜色在消费处解析；显式样式取最终 COUI 角色，菜单使用明确模式。依据见[可选主题策略](../architecture/2026-10-31-optional-material3-style.md)。
 
-CouiIcons 只收录 Settings、Tips 和 Clock 中已沿资源/代码调用者追溯的 27 个原始矢量。SearchField 与 Search 是不同原始资源；Tips 分类和精选分别保留真实普通/选中路径，预设复用 Settings 个性化图标并由 dock 表达选择。滑条、搜索、菜单、返回、日期、时间与倒计时按用途分配；不再用 SystemUI 的“水”设备开关表示效果页。几何转换保留分组、裁剪、描边和 alpha，RTL 从原选择器继承；功能 tint 由消费者提供，导航 alpha 统一归底栏。
+图标表登记 27 个 Settings、Tips 和 Clock 资源入口及实际调用链。SearchField 与 Search 来自不同资源；Tips 的分类和精选保留普通/选中态。Demo 的预设使用个性化图标，由底栏表达选择。颜色、点击热区和无障碍说明归消费者，几何保存在不可变 ImageVector 中。
 
-完整来源、原始 XML/APK 哈希及调用链见 [ICON_SOURCES](../../../../coui/ICON_SOURCES.md)，Demo 分配见[图标说明](../../../../demo/ICON_SOURCES.md)。源码不包含原 APK、全量提取图标、PNG 预览、本机材料路径、密钥或映射文件；第三方权利不改标为 MPL。
+转换范围包括路径、分组、裁剪、描边、alpha 和所记录的 RTL 选择。导航 alpha 由底栏统一控制。原始 XML/APK 哈希及转换范围由 [ICON_SOURCES](../../../../coui/ICON_SOURCES.md)维护，Demo 用途见[图标分配](../../../../demo/ICON_SOURCES.md)；来源 App 的调用证据不代表 Demo 是同一官方页面。
 
-Sheet、闹钟/倒计时编辑面板、独立普通按钮及临时原版反射对照不进入本批。记录侧滑等既有业务示例仍在 Demo，不加入库。
-
-## Existing-note audit
-
-- [独立 Demo](../architecture/2026-10-23-standalone-coui-demo.md)：保留独立宿主与公开 API 边界，本篇更新示例组织。
-- [可选主题策略](../architecture/2026-10-31-optional-material3-style.md)：直接沿用初始化、局部覆盖与内容桥接，不复制适配模块实现。
-- [二级页面](2026-11-01-secondary-page-primitives.md)与[选择器](2026-11-01-coui-pickers.md)：消费其公开能力；完整路由、草稿、字符串和偏好始终归 Demo。
-- [宿主页面所有权](../architecture/2026-11-03-host-owned-page-layout.md)：沿用页面由宿主管理的决定，示例迁移到通用布局名称和显式背景源。
-- 活跃 proposed/rejected 无同范围提案；旧本地研究保留在开发树，不将其路径或全部历史 Notes 复制进投稿。
+源码不包含原 APK、全量提取素材、预览图、本机路径或密钥。第三方权利不改标为 MPL。来源表是研究记录，目标材料的复核缺口见[输入连续性记录](../bug-fix/2026-11-03-page-input-continuity.md#consequences)。
 
 ## Alternatives considered
 
-- 直接上传完整开发树最省拆分工作，但会回退最新主线并带入未授权的 Sheet 和其他开发项，按三批能力边界组织。
-- 只凭图标资源名称筛选更快，但 APK 可能包含未使用资源和通用依赖；选用能提供具体调用者的子集，并明确源码证据不能证明所有设备的运行分支。
-- 把每种设置行和三点菜单公开为新组件可减少示例代码，但只增加转发层，保留为 internal 宿主组合。
+- 整体迁入开发树最省拆分工作，但会混入未纳入范围的 Sheet、普通按钮、反射对照及历史变动，按组件与 Demo 的实际范围整理。
+- 只按资源名称选图标更快，但 APK 可能含未使用资源和通用依赖，采用有调用记录的子集并保留证据限制。
+- 公开各类设置行和三点菜单能缩短示例，但这些主要是参数转发与业务组合，保留为 Demo 内部实现。
 
 ## Consequences
 
-目录、详情与公共库职责分离，可独立审阅；图标只有一份不可变 ImageVector，减少重复资源。代价是维护真实 Activity 的状态与生命周期，以及受限图标子集的来源表。构建、签名和静态核对不能证明像素、动画中段、IME、RTL、TalkBack、预测返回或性能等价，设备交互仍需针对性验收。
+目录、详情和库的职责可分别维护。代价是处理 Activity 状态、资源生命周期和图标来源。Sheet、闹钟/倒计时编辑面板、独立普通按钮及原版反射对照不属于当前示例；记录侧滑等业务演示继续留在 Demo。
+
+本篇沿用[独立工程](../architecture/2026-10-23-standalone-coui-demo.md)，消费[二级页组件](2026-11-01-secondary-page-primitives.md)与[选择器](2026-11-01-coui-pickers.md)的公开能力。构建及静态检查不证明像素、动画中段、IME、RTL、TalkBack、预测返回或性能等价，实际结果按提交记录在 PR。

@@ -1,54 +1,76 @@
-# 常驻搜索与分裂取消胶囊
+# 常驻搜索
 
-CouiSearchBar 对应 SettingsSearchBar 的 instant-search 分支：普通状态是一条常驻搜索胶囊，进入后收窄输入背景，分裂出独立取消胶囊。它与[便签式顶栏搜索](search.md)是不同组件；麦克风属于宿主功能，本组件不装配或保留其占位。
+`CouiSearchBar` 显示常驻搜索胶囊，展开后缩窄输入区并显示独立取消按钮。它适用于 Settings 式搜索；从顶栏按钮展开的搜索见[顶栏搜索](search.md)。
 
 ## 基本用法
 
-以下片段位于宿主 Composable 内。expanded、query 和对应更新函数由宿主持有；backdrop 是页面内容源，不能包含当前搜索。label、cancel、clearLabel 来自宿主资源，dark 为宿主主题。
+以下片段位于宿主 Composable 中。宿主持有 `query`、`expanded` 及更新回调，文案来自应用资源。`backdrop` 是不包含搜索自身的页面内容源，装配方法见[背景采样](../effects/backdrop.md)。
 
 ```kotlin
+import androidx.activity.compose.BackHandler
 import com.itos.coui.search.CouiSearchBar
 import com.itos.coui.search.rememberCouiSearchBarState
 
 val search = rememberCouiSearchBarState(expanded)
+BackHandler(enabled = expanded) { updateExpanded(false) }
 CouiSearchBar(
     state = search,
     query = query,
     onQueryChange = updateQuery,
     onExpandedChange = updateExpanded,
-    placeholder = label,
-    cancelText = cancel,
+    placeholder = searchLabel,
+    cancelText = cancelLabel,
     clearDescription = clearLabel,
-    dark = dark,
     backdrop = backdrop,
     onSearch = submitSearch,
 )
 ```
 
-state 保持稳定；不要用 expanded 作为 remember 的重建 key。背景宽度、取消胶囊、页面和结果分别持有弹簧通道，运行中反向保留当前速度。宽度与取消的原厂目标重定向路径已确认；页面与结果保留当前共享弹簧适配。候选 HomepageImpl 会先调用 setStartValue，但所用 OEM 动画类的运行中 setter 语义及默认阈值尚缺实现材料，页面与结果的快速反向不能据此声称原厂等价。
+示例中的 BackHandler 来自 `androidx.activity:activity-compose`，宿主需声明相应依赖；已有返回分发器也可承担同一职责。
 
-查询、结果筛选、展开目标和导航始终归宿主。输入变化与 IME 提交不能直接调用取消或导航；结果点击才执行导航。清空只提交空查询；取消释放搜索自身的焦点及 IME，并请求 onExpandedChange(false)，是否同时清空查询由宿主决定。初始收起及搜索已经失焦时，组件不清理其他输入框的焦点或键盘。宿主拒绝关闭回调时保留展开和查询，搜索不会立即抢回焦点；用户仍可点击输入框继续编辑。IME 搜索先隐藏键盘，再调用 onSearch。展开时仅在请求焦点成功后显示键盘；宿主拒绝转移焦点时，不显示其他输入框的键盘。
+保持 `state` 的组合位置稳定，不要用 `expanded` 作为重建它的 key。需要配置恢复时，宿主用 `rememberSaveable` 保存查询和展开目标，动画中间值无需保存。
 
-在 CouiTopAppBar 内，搜索采样其作用域提供的渐进背景，包含随滚动显现的背景处理，但排除标题和搜索自身；独立使用时采样显式 backdrop。搜索材质仍使用所属预设，不能用整块原始页面回填覆盖顶栏背景。设置式整页结果可按 CouiCollapsingAppBarDefaults.resultsStartOffset 及 resultsAlpha 装配原厂进入位移，不能将结果退场的响应时间与标题淡入合并。
+## 状态与事件
 
-普通状态的整条搜索承担入口语义，输入在展开时才可编辑。展开时图标、文字和清除按钮由输入的 decorationBox 排版，真实输入覆盖完整胶囊；清除与取消仍保留独立操作语义。展开后使用 Activity Compose 的 BackHandler 或宿主返回分发器关闭搜索；没有展开时释放拦截，保留 Activity/系统返回。输入由 query / onQueryChange 直接受控；输入变化只发布查询，清除图标的出现和重绘不改变展开目标。弹簧在创建 rememberCouiSearchBarState 的组合退出时释放；仅隐藏搜索节点而保留 state 时，各通道继续供标题和结果消费。输入、图层和局部触摸效果随各自搜索节点释放，不会对宿主整个焦点树调用清理。查询与展开可用 rememberSaveable 恢复，动画中间值不持久化。
+| 操作 | 组件行为 | 宿主职责 |
+| --- | --- | --- |
+| 点击收起的搜索 | 请求 `onExpandedChange(true)` | 接受展开目标后回传给 state |
+| 编辑输入 | 调用 `onQueryChange` | 更新查询、筛选结果 |
+| 清空 | 请求空查询，保持展开 | 更新查询 |
+| 取消 | 释放搜索自身的焦点与 IME，再请求关闭 | 决定是否关闭及清空查询 |
+| IME 搜索 | 隐藏键盘后调用 `onSearch` | 执行查询或其他业务 |
+| 系统返回 | 由宿主的返回处理器响应 | 展开时关闭搜索，关闭后释放拦截 |
 
-## 折叠标题与页面装配
+展开时，组件在成功取得焦点后显示键盘。初始收起或已经失焦时，不清理其他输入框的焦点。宿主拒绝关闭请求时，查询与展开状态保持；搜索不会因失焦立即抢回输入，用户可再次点击编辑。
 
-设置首页使用[折叠顶栏](collapsing-app-bar.md)组合它。将同一个 search state 传给 CouiCollapsingTopAppBar 和 CouiSearchBar。宿主主内容可使用 search.contentAlpha，结果使用 search.resultsAlpha；结果内容、空态和业务路径由宿主提供。进入搜索时主内容应停止输入，并由结果层覆盖，不能只设置 alpha 留下不可见点击区。
+查询、搜索结果和导航由宿主持有。组件不提供麦克风功能或占位，也不在输入变化时启动导航。
 
-形状使用项目平滑胶囊，材质、轮廓、投影及双主体融合复用[浮动表面](../effects/floating-surfaces.md)。按本项目的模糊要求选择原厂 TYPE_FRAMEWORK_TOP_BAR_BLUR，保留顶栏混色和 CAPSULE_1 描边；该预设有真实背景模糊，与原厂默认 TYPE_FRAMEWORK_TOP_BAR 的零半径分支有区别。不能把后者的材质混色称为模糊。shadowProgress 可传入折叠顶栏的 collapsedFraction；不传时普通搜索没有滚动投影，进入搜索按原曲线显现投影。每个搜索实例持有独立 renderer 和内容层。搜索与取消均保留原厂 extension，保证融合区域进入材质绘制范围。固定输入边界复用旧搜索的 BringIntoView 处理，限制祖先重定位，输入内部光标滚动仍保留。
+## 与页面内容联动
 
-材质索引保持搜索 1、取消 2；同一高度的绘制顺序则是取消在下、搜索在上，与原厂两次 bringChildToFront 顺序一致。收合时，搜索的整层材质遮盖取消背景和内容。取消文字保留随进度变化的透明度及原厂内容模糊，不把整个搜索文字一起模糊。双主体通过公共浮动后端只输出前景，以 SrcOver 叠到已有顶栏；材质外沿和外光晕不再回填整块 destination，避免擦掉渐进背景和投影。
+同一个 state 可同时传给 [CouiCollapsingTopAppBar](collapsing-app-bar.md) 和搜索组件。`contentAlpha` 用于原页面内容，`resultsAlpha` 用于结果；两者使用各自的动画通道。`active` 包含展开及退场过程。
 
-API 34 起启用项目材质与双主体融合；较低平台保留明确的普通填色、输入、宽度/取消动画与反馈路径，不声称等同于 GPU 融球。Shader 创建错误向上传播，不吞掉构造失败。原厂字体与主题覆盖取决于宿主设备，公开 Compose 的焦点和 IME 承载仍需设备对照。
+搜索活动期间，宿主应禁用原正文的滚动和交互，并将其移出无障碍遍历。透明度本身不会禁用点击、键盘或焦点。保留正文组合可以保留滚动与示例状态。结果放在上层，并以 `search.expanded` 控制输入：关闭请求被接受后，立即禁用结果的滚动、点击和焦点，退出无障碍遍历，同时按 `active` 保留退场绘制。完整装配见[折叠顶栏](collapsing-app-bar.md)。
 
-[公开组件](../../coui/src/main/java/com/itos/coui/search/CouiSearchBar.kt)、[状态](../../coui/src/main/java/com/itos/coui/search/CouiSearchBarState.kt)、[Defaults](../../coui/src/main/java/com/itos/coui/search/CouiSearchBarDefaults.kt)、[完整 Demo 装配](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)。
+动画随创建 state 的组合释放。只移除搜索节点而保留 state 时，动画仍可供标题和结果读取；输入、内容图层和触摸效果随搜索节点释放。固定搜索输入限制祖先重定位，字段内部的光标滚动仍由 Foundation 处理。
 
-搜索与取消都接入项目 OpaqueMedium2 跟手光，并在实际材质后、内容前绘制。光源随各自局部坐标和形变映射；输入观察不消费编辑或取消操作。API 33 普通填色分支也绘制支持的跟手光；低版本仍按原平台边界处理。
+## 外观与平台
 
-搜索主体与取消胶囊各自持有随节点释放的 Touch/Press 通道。同一触摸的形变与按压按缩放增量相加，取消胶囊独立的展开缩放再与其相乘；材质、光效、内容、触摸命中与无障碍边界消费同一组几何。两条平台绘制路径都保留位移和缩放；输入节点同样将搜索放在取消上方，展开中途不会让下层取消截获搜索范围内的点击。
+`shadowProgress` 可接收折叠顶栏的 `collapsedFraction`。默认值不添加滚动投影；展开时使用搜索自身的投影动画。
 
-## 主题与显式配色
+`CouiSearchBarDefaults.colors(dark)` 读取当前主题。`foreground`、`secondary`、`clear` 分别控制文字、图标等次要内容和清除操作；通过 `copy` 覆盖颜色。`fallbackBackground` 仅作用于 API 31–33 的普通背景。
 
-`CouiSearchBarDefaults.colors` 在消费处读取 `CouiTheme`，跟随原生或可选 M3 策略。`foreground`、`secondary`、`clear` 控制文字、图标和清除操作，显式值优先。`fallbackBackground` 仅用于 API 31–33 的普通填色分支；API 34 起保留所属的原厂模糊材质、混色、轮廓与融合，不使用该填色覆盖材质。可通过 `copy` 覆盖需要的颜色角色。
+| 平台 | 绘制 |
+| --- | --- |
+| API 31–32 | 普通填色、输入和宽度/取消动画 |
+| API 33 | 普通填色及支持的跟手光 |
+| API 34+ | 背景模糊材质、双主体融合、轮廓和投影 |
+
+API 34+ 使用项目选定的 `TYPE_FRAMEWORK_TOP_BAR_BLUR` 材质，区别于原厂零半径的 `TYPE_FRAMEWORK_TOP_BAR` 分支。低平台填色不提供相同的融合效果。Shader 创建失败会向上传播，由宿主处理错误。
+
+在 `CouiTopAppBar` 中，搜索读取顶栏提供的渐进背景；独立使用时读取显式 `backdrop`。源不能包含搜索自身。双主体绘制复用[浮动表面](../effects/floating-surfaces.md)，每个搜索实例分别持有 renderer 和内容层。
+
+## 实现依据
+
+组件对应 Settings 17 的 instant-search 分支。宽度、取消、页面和结果分别使用动画通道；页面与结果的 OEM 运行中 `setStartValue` 语义及默认阈值仍缺同源实现材料，因此快速反向尚不能认定为原厂等价。原始材料哈希、平台适配和待验证行为见[输入与共享效果记录](../../.agents/notes/implemented/bug-fix/2026-11-02-secondary-page-review-fixes.md)。
+
+[组件](../../coui/src/main/java/com/itos/coui/search/CouiSearchBar.kt) · [状态](../../coui/src/main/java/com/itos/coui/search/CouiSearchBarState.kt) · [Defaults](../../coui/src/main/java/com/itos/coui/search/CouiSearchBarDefaults.kt) · [首页 Demo](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)

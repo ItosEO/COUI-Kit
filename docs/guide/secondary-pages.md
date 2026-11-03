@@ -1,24 +1,19 @@
 # 在宿主页面中组合 COUI
 
-纯 COUI 应用可以使用可选的 [CouiScaffold](../components/scaffold.md)，统一栏位测量、正文 Padding 和安全区，无需 Material 3。已有应用可以继续使用自己的 Scaffold、主题和导航，只放入所需 COUI 控件。
+COUI 组件可以放入现有 Material、Miuix 或自有页面。纯 COUI 应用也可选择 [CouiScaffold](../components/scaffold.md) 处理栏位测量和安全区。
 
-## 先决定需要哪一层
-
-| 需要的能力 | 使用方式 |
+| 页面需要 | 装配方式 |
 | --- | --- |
-| 纯 COUI 页面容器 | 使用 CouiScaffold；主题、采样和滚动仍分别组合 |
-| 一行内容或一个控件 | 直接放入现有布局，不安装页面容器或背景 Provider |
-| 分组、说明 | 组合 `Group`、`Footer`；图示由宿主使用普通布局和 Modifier 绘制 |
-| COUI 点击反馈 | 普通跳转使用 `Item.onClick`；选择行由宿主提供 toggleable/selectable 和反馈 |
-| COUI 惯性与回弹 | 在实际滚动容器上显式使用 couiVerticalScroll |
-| 模糊顶栏、底栏或 FAB | 由宿主录制正文 Backdrop，浮动组件位于该源之外 |
-| 材质菜单或弹窗 | 按需安装既有窗口采样 Provider，不改变页面测量 |
+| 普通分组与控件 | 直接放入已有布局，见[分组与行布局](../components/settings.md) |
+| COUI 惯性与回弹 | 在实际滚动容器使用 [couiVerticalScroll](../effects/overscroll.md) |
+| 模糊顶栏、底栏或 FAB | 录制正文 Backdrop，将消费者放在源之外 |
+| 材质菜单或弹窗 | 按需提供窗口背景源 |
 
-独立行布局与配色见[分组与行布局](../components/settings.md)。默认值来自现有 CouiTheme，显式参数优先；混搭不要求把全局主题换成 COUI。可选 M3 适配与宿主字体规则见[外观与预设](appearance.md)。
+配色来自组件参数或当前 `CouiTheme`。M3 适配是可选依赖，接入方法见[外观与预设](appearance.md)。
 
-## 使用已有 Scaffold 和模糊顶栏
+## 使用已有 Scaffold
 
-下面是应用层 Material 3 Scaffold 的装配示例。应用需自行声明 Material 3 依赖并使用自己的 MaterialTheme；核心 coui 不依赖 Material 3。文案来自宿主资源，onOpen 执行业务导航。
+下面的应用层示例使用 Material 3 Scaffold。宿主需自行依赖 Material 3 并提供 MaterialTheme；文案和导航回调由宿主传入。
 
 ```kotlin
 import androidx.compose.foundation.background
@@ -98,17 +93,23 @@ fun MixedPage(
 }
 ```
 
-这里只有需要材质的顶栏要求 Backdrop；仅使用 Group、Item 或普通文字时省略采样源即可。使用其他 Scaffold 或自有布局时保留其原有测量规则，按相同源与消费者关系装配，不复制此例的 Material 依赖到核心库。
+仅使用 Group、Item 或普通控件时，不需要示例中的 Backdrop。使用其他页面容器时，保留相同的源与消费者关系。
 
-内容应用并消费宿主传入的顶栏、底栏和系统栏 padding。使用 LazyColumn 时将其传为 contentPadding；使用 Column 加 verticalScroll/couiVerticalScroll 时，这些 padding 放在滚动内容侧，保留浮动表面下方的采样视口。顶栏处理顶部及自身横向安全区；带底栏时由该底栏处理其底部安全区。不要对已消费部分重复添加系统 inset。Material 3 的规则见 [Android 官方说明](https://developer.android.com/develop/ui/compose/system/material-insets)。
+## Padding、Insets 与滚动
 
-含输入框的页面另需处理 IME：将 imePadding 放在实际滚动容器之前，使键盘打开时缩小其真实视口，Foundation 才能将焦点滚入可见区。Demo 在 Scaffold 外侧使用 imePadding，先消费 IME；Scaffold 再计算剩余安全区，不重复加入键盘高度。仅在滚动内容尾部增加键盘空白不会缩小视口，不能替代焦点避让。已有宿主完成 IME 避让时继续沿用其处理，见 [Insets 消费规则](https://developer.android.com/develop/ui/compose/system/insets-ui)。
+正文应用并消费宿主给出的 Padding。LazyColumn 使用 `contentPadding`；Column 使用 `verticalScroll` 或 `couiVerticalScroll` 时，将 Padding 放在滚动 Modifier 后，使内容能滚入浮动栏位下方。不要叠加两层纵向滚动。
 
-折叠顶栏仍通过 state.contentPadding 修正正文顶部，保留底部视口，具体见[折叠顶栏](../components/collapsing-app-bar.md)。自定义宿主必须回传顶栏实测占位，不以固定高度代替；这是局部组件的布局契约，不要求库内 Scaffold。
+顶栏负责顶部及自身横向安全区，底栏负责底部安全区；宿主容器返回的占位包含这些实测高度。已消费的部分不再添加第二次。Material 3 的分工见 [Android 官方说明](https://developer.android.com/develop/ui/compose/system/material-insets)，CouiScaffold 的分工见[页面容器](../components/scaffold.md#padding-与系统-insets)。
 
-## 按需提供窗口背景
+含输入框的页面在滚动容器外使用 `imePadding()`，使键盘打开时实际视口缩小，Foundation 才能处理焦点避让。只增加滚动内容尾部空白不会缩小视口。父级已处理 IME 时沿用其分工，详见 [Insets 消费规则](https://developer.android.com/develop/ui/compose/system/insets-ui)。
 
-正文源只包含正文。菜单或材质弹窗需要包含顶栏等已绘制内容的完整窗口源时，使用现有 Provider。以下是宿主 Composable 内的结构片段，注释处放入已有页面和浮层调用：
+折叠顶栏还需用 `state.contentPadding` 补偿正文顶部，并用宿主原始 Padding 消费 Insets，见[折叠顶栏](../components/collapsing-app-bar.md)。该状态接收普通 PaddingValues，不依赖特定 Scaffold。
+
+## 正文源与窗口源
+
+正文源覆盖完整视口和不透明底色，供顶栏、底栏等浮动组件采样。将源挂在应用滚动 Padding 之前的位置，避免栏位下方出现未录制区域。消费者不能被录入自身采样的源。
+
+菜单或材质弹窗需要包含顶栏的完整窗口背景时，可在宿主 Composable 中使用以下结构：
 
 ```kotlin
 import androidx.compose.foundation.layout.Box
@@ -118,28 +119,18 @@ import com.itos.coui.menu.ProvideCouiMenuBackdrop
 
 ProvideCouiMenuBackdrop { windowSource ->
     Box(Modifier.fillMaxSize().then(windowSource)) {
-        // 原有 Scaffold 或页面布局；其正文 Backdrop 保持独立。
-        // 菜单/弹窗使用本 Provider 的窗口源，并按各自契约位于独立浮层中。
+        // 原有页面；正文 Backdrop 保持独立。
+        // 菜单与弹窗按各自接口使用窗口源，在独立浮层中绘制。
     }
 }
 ```
 
-默认入口保留其已有隔离规则。不要为了省去一次显式装配就引入新的页面 Provider，也不要默认给每页同时安装两份源。`rememberCouiWindowBackdrop()` 只读取最近已提供的窗口源；未提供时为 null，不会自行创建源。每个源只挂一个实际节点，每个绘制节点单独持有可变 renderer。详细规则见[背景采样](../effects/backdrop.md)、[菜单](../components/menu.md)和[弹窗](../components/dialog.md)。
+`rememberCouiWindowBackdrop()` 读取最近提供的窗口源，未提供时返回 null。只在有相应消费者时安装窗口源；每个源挂到一个实际节点，每个绘制节点持有独立可变 renderer。资源和失败处理见[背景采样](../effects/backdrop.md)，具体消费见[菜单](../components/menu.md)与[弹窗](../components/dialog.md)。
 
-## 状态、导航与返回
+## 状态与导航
 
-保留宿主已有的 Navigation、单 Activity 或多 Activity 方案。查询、搜索结果、返回栈、页面身份与受控设置值均由宿主持有，COUI 不注册业务路由或直接启动 Activity。
+查询、结果、返回栈、页面身份和受控设置值由宿主持有。单 Activity 应用可沿用 Compose 导航；多 Activity 应用可使用标准 Intent 与 `finish()`。普通、不透明 Activity 在未指定自定义动画时使用 ROM 提供的默认转场，不保证系统设置的特权动画或双栏协议。
 
-只有宿主选择使用当前 ROM 默认 Activity 转场时，才用普通、不透明的 ComponentActivity，并通过标准 Intent 启动、finish 退出；不传自定义 ActivityOptions，不覆盖窗口动画。这个方案得到第三方应用可用的系统默认转场，不保证系统设置的特权动画或双栏协议。单 Activity 应用继续使用自己的 Compose 导航与转场，不必为使用 COUI 组件重构页面。
+搜索展开或有未保存变更时，由宿主安装局部返回处理器，状态关闭后释放拦截。切页时，把持续存在的底栏、renderer 和反馈节点留在稳定组合位置，只替换页面内容。
 
-搜索展开、编辑或未保存变更需要局部拦截返回时，由宿主安装处理器；状态关闭后释放拦截。弹窗自己的返回仍由弹窗处理。
-
-切页时，持续显示的 dock、renderer 与反馈节点留在宿主的稳定作用域中，只对真正替换的页面内容设置 key。不要通过延迟业务回调掩盖错误的资源销毁时机。
-
-Demo 使用普通 Activity 导航，首页和详情页采用 CouiScaffold。完整示例见 [MainActivity](../../demo/src/main/java/com/itos/coui/demo/MainActivity.kt)、[二级 Activity](../../demo/src/main/java/com/itos/coui/demo/DemoSecondaryActivity.kt)和 [DemoSettingsPage](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsPage.kt)。导航和示例业务由 Demo 装配。
-
-## 回弹与更多菜单
-
-需要 COUI 正常惯性及同帧触边交接时使用 [couiVerticalScroll](../effects/overscroll.md)。短页/空页占满交互视口；标题和 dock 不随正文越界位移移动。每个容器独立 remember effect，传 null 可关闭边缘效果。不需要 COUI 物理的页面保留原滚动容器，不叠加两层滚动或两套回弹。
-
-三点菜单用现有 CouiTopAppBarButton、按钮锚点和 CouiMenu 组合；列表菜单使用行布局与触点锚点。库不为具体业务再增加三点菜单或 Popup 行包装。示例和公开入口见[菜单](../components/menu.md)。
+Demo 使用普通 Activity 导航。完整装配见 [MainActivity](../../demo/src/main/java/com/itos/coui/demo/MainActivity.kt)、[DemoSecondaryActivity](../../demo/src/main/java/com/itos/coui/demo/DemoSecondaryActivity.kt)和 [DemoSettingsPage](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsPage.kt)。这些路由和行包装属于 Demo，库使用者直接消费公开组件。

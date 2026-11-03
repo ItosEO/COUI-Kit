@@ -2,23 +2,25 @@
 
 COUI-Kit 处于早期预览阶段。本文记录公开 API、行为、接入和兼容要求的变化。日期以提交合并时间为准；版本归档以真实 Git Tag 和发行产物为准。
 
-## 未发布（PR #16，整合 PR #15）
+## 未发布
 
-以下迁移只针对 PR 开发分支中的临时接口，不表示已合入 main 或进入现有发行版本。
+### 新增
 
-- couiVerticalScroll 的长、短和空内容使用同一个 Foundation 输入节点，范围跨过零时不再取消当前拖动。需要观察 DragInteraction 时，传入末尾可选 interactionSource；ScrollState 继续提供真实位置、范围、滚动互斥与 isScrollInProgress，其只读 interactionSource 不作为该入口的拖动事件源。见[边界回弹](docs/effects/overscroll.md)。
-- 搜索活动期间，Demo 原目录与预设同时停止子控件输入和语义访问，保留布局与保存状态；滑条和输入框关联自身标题，进度示例在自然完成时退出运行状态，其双色文字只提供一份操作语义。
-- Demo 二级页在滚动容器外消费 IME，键盘打开时缩小真实视口，让 Foundation 处理输入焦点避让；系统栏和顶栏 padding 仍归滚动内容。
-- CouiDivider 默认厚度至少为一个物理像素，布局与填色使用同一高度，继续服从宿主 Modifier 约束。
-- Wallpaper 复用 Personalise 的不可变矢量；核心源码和 API 文档归档附带 ICON_SOURCES.md，保留现有第三方权利声明。
-- 提供可选的轻量 CouiScaffold，基于 Compose UI / Foundation 测量顶栏、底栏并返回正文 Padding，处理横向安全区和缺少栏位时的纵向 Insets，默认读取 COUI 页面背景。核心不依赖 Material 3，所有组件可独立使用。旧临时容器的 colors/dark、页面配色作用域和隐式背景源不恢复；主题使用 CouiTheme，采样显式组合已有 Backdrop。Demo 首页和详情页改用此容器；不提供 CouiSettingsScaffold。见[页面容器](docs/components/scaffold.md)。
-- Group 增加显式 colors，Item 增加 dark，Divider / Footer 增加 color；默认值在消费处读取 CouiTheme。Group 配色仅作用于自身卡片、标题和说明，不隐式改变其内容槽。CouiPageDefaults.colors 从对应原生浅色/深色预设派生并应用强调色。
-- PR #15 布局族公开命名简化：包名 `com.itos.coui.settings` → `com.itos.coui.layout`；`CouiSettingsGroup/Item/Divider/Footer/Illustration` → `CouiGroup/Item/Divider/Footer/Illustration`；`CouiSettingsColors/Defaults` → `CouiPageColors/Defaults`。这些入口尚未合入 main，不保留旧名称别名。
-- PR #16 进一步简化布局入口：包名继续为 `com.itos.coui.layout`；`CouiGroup/Item/Divider/Footer` 改为 `Group/Item/Divider/Footer`，`CouiPageColors/Defaults` 保留原名。移除 `CouiPreferenceLayout`，其 leading/headline/supporting/trailing、contentPadding 和 leadingSize 由 `Item` 提供；移除 `CouiIllustration`，图示由宿主布局与 Modifier 组合。`Item.onClick` 可省略；省略时不创建点击、按钮语义或反馈。普通跳转使用 `Item.onClick`，选择行由宿主提供 toggleable/selectable 和反馈。未发布的 PR 接口不保留兼容别名。
-- CouiSearchBarColors 的 background 更名为 fallbackBackground，仅负责 API 31–33 的普通填色；API 34 起继续使用所属模糊材质，文字、图标与清除颜色仍可显式覆盖。
-- Group 按标题选择默认顶部留白；额外外部留白使用 Modifier.padding，不会抵消内部默认留白。需要完全自定组间距时，由宿主组合标题、卡片与内容。Item 的默认行高继续服从外部 Modifier 与父级约束。
-- CouiText.color 默认读取 LocalCouiContentColor.current，kind 仍必填；CouiTextKind 移除未使用的 Menu 角色及没有消费者的 Title、Message、Button、Input、Counter 角色。弹窗使用已有 Dialog 组件内部排版，自定义文字使用 Compose TextStyle。设置页、搜索与页面标题角色及 onLineCount 回调保留。couiButtonFeedback 的 dark 默认读取 CouiTheme.isDark，enabled 默认 true，interactionSource 仍必填。接入说明见[分组与行布局](docs/components/settings.md)。
-- CouiTopAppBar 的渐变保留 gradientColor.alpha；折叠顶栏保留标题颜色 alpha，并与既有动画系数相乘。折叠顶栏的 dark 仅控制本组件，搜索内容槽使用宿主显式传入的模式或共同局部主题。
+- `Group`、`Item`、`Divider` 和 `Footer` 提供可独立组合的设置式布局；`Item` 支持内容槽和可选整行点击。
+- 可选 `CouiScaffold` 提供栏位测量、正文 Padding 和系统安全区处理，核心无需 Material 3。采样、滚动、导航与主题由宿主分别组合。
+- `CouiCollapsingTopAppBar`、`CouiSearchBar` 和相应状态提供折叠标题及常驻搜索；与既有顶栏搜索分别使用。
+- `couiVerticalScroll` 提供 COUI 纵向惯性与边界回弹，支持短内容和空内容。拖动事件由可选 `interactionSource` 提供，位置与范围继续使用 `ScrollState`。
+- `CouiText` 与 `rememberCouiTextStyle` 提供固定 COUI 排版角色；`CouiIcons` 提供系统功能矢量子集，来源与权利说明随源码和 API 文档归档分发。
+- Demo 使用目录和独立 Activity 组织详情，提供目录搜索、共享外观偏好及完整页面装配示例。
+
+### 既有接口与行为
+
+- `CouiColorScheme` 增加独立 `background`，默认沿用 `surface`；原生页面与组件表面分别配色。M3 适配的菜单项和头部标签分别读取 `labelLarge` 与 `bodySmall`。
+- `CouiTopAppBar` 支持背景透明度和全高渐隐曲线，保留显式渐变颜色的 alpha；`dark` 默认跟随 `CouiTheme`。
+- 浮动表面增加双主体入口，复用既有材质、融合和光效。列表按压复用现有反馈入口。
+- ChipTab 与纵向滚动共享物理内核，各实例的动画等级独立决定摩擦参数。
+
+开发分支中临时布局名称及搜索配色参数的迁移说明见 [PR #16](https://github.com/ItosEO/COUI-Kit/pull/16)。以上内容尚未进入发行版本。
 
 ## [0.0.1-alpha3] - 2026-11-01
 

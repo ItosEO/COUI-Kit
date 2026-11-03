@@ -6,9 +6,7 @@ Status: implemented
 
 折叠顶栏会减少滚动内容的顶部 padding。正文只比视口稍高时，同一次拖动就能使 ScrollState.maxValue 从正数变为零。按范围插入短页 scrollable 并禁用原 verticalScroll 会重置 Foundation 的 DragGestureNode，新节点没有原 DOWN，当前拖动因此中断。独立宿主在手势中增减内容也有同一问题。
 
-真实 Demo 另有三个消费者遗漏：搜索只隐藏正文和关闭滚动，目录及预设仍可经键盘操作；新 Slider/TextField 包装器没有把标题关联到实际语义节点；进度到达终点后仍保持运行状态。Divider 直接使用小数 dp 高度，在低密度下取整为零。
-
-第一轮独立复核又确认进度按钮的双色绘制保留了两份相同 Text 语义，drawWithContent 的裁剪不会移除其中一份，按钮合并后重复朗读操作文案。
+Demo 搜索隐藏正文后，目录与预设仍能经键盘操作；Slider/TextField 的标题未关联到控件语义。进度到达终点后仍处于运行状态，双色文字还产生两份相同语义。Divider 的小数 dp 高度在低密度下取整为零。
 
 二级页把 IME 高度作为滚动内容尾部 padding，实际视口没有缩小。输入框在键盘覆盖区域但仍在原视口内时，Foundation 不会触发焦点避让，新增尾部空白也不会改变该输入框的位置。
 
@@ -26,13 +24,9 @@ Demo 将 search.active 对应的 enabled 传到原正文实际交互控件，覆
 
 Divider 在消费处将默认厚度解析为至少一个物理像素，再用于现有布局和填色，保留外部约束优先。Wallpaper 直接复用 Personalise。图标来源表随既有源码/API 文档归档分发，并沿用现有产物检查。
 
-## Existing-note audit
+## 与既有决定的关系
 
-- [二级页输入修复](2026-11-02-secondary-page-review-fixes.md)：部分取代。仅替代按长短页切换输入节点的装配，其余物理、焦点和绘制修复继续保留。
-- [二级页组件](../feature/2026-11-01-secondary-page-primitives.md)：部分重叠，沿用独立组件和已有物理算法，不新增页面容器。
-- [设置式 Demo 与系统图标](../feature/2026-11-01-demo-catalog-and-system-icons.md)：部分重叠，补齐实际消费者的输入/标签与来源归档，不改变目录和 Activity 方案。
-- [宿主页面所有权](../architecture/2026-11-03-host-owned-page-layout.md)：沿用，页面输入门控仍由 Demo/宿主负责。
-- 活跃 proposed/rejected 中没有同范围提案。
+本篇替代[输入交接记录](2026-11-02-secondary-page-review-fixes.md)中按长短页切换节点的装配，保留其物理、焦点和绘制决定。[二级页组件](../feature/2026-11-01-secondary-page-primitives.md)提供局部能力，[设置式 Demo](../feature/2026-11-01-demo-catalog-and-system-icons.md)持有目录和 Activity，[宿主页面所有权](../architecture/2026-11-03-host-owned-page-layout.md)保留输入门控与业务归属。
 
 ## Alternatives considered
 
@@ -43,17 +37,15 @@ Divider 在消费处将默认厚度解析为至少一个物理像素，再用于
 - 强转 ScrollState.interactionSource 可保留原流，但依赖公开接口没有保证的内部实现。提供可选交互源并记录未发布入口的接入差异。
 - 将所有 innerPadding 移到滚动容器外可直接避让 IME，但会连同顶栏占位一起缩小采样视口；只在外侧消费 IME，保留其他 padding 的原职责。
 
-## Verification
+## Evidence
 
-核对固定 AndroidX Foundation/UI 1.13.0-alpha02 source jar 的 ScrollableState、ScrollingLogic、ContentInViewNode 和语义合并调用链：canScroll=true 允许分发而不保证消费；所有滚动方法仍直接委托真实状态。范围不再参与输入节点身份或 enabled；没有自定义 nested dispatcher，父 pre/post scroll/fling 继续由 Foundation 分发。外侧零距离 BringIntoViewSpec 将内层算出的目标矩形继续交给祖先，不截断请求。
+AndroidX Foundation/UI 1.13.0-alpha02 官方 source jar 的 ScrollableState、ScrollingLogic 与 ContentInViewNode 表明：canScroll=true 允许分发而不保证消费；所有滚动方法仍直接委托真实状态。范围不再参与输入节点身份或 enabled；没有自定义 nested dispatcher，父 pre/post scroll/fling 继续由 Foundation 分发。外侧零距离 BringIntoViewSpec 将内层算出的目标矩形继续交给祖先，不截断请求。
 
-逐个核对 Demo 目录、预设和搜索结果调用点，确认禁用值到达实际交互 Modifier，搜索结果保留启用；Slider/TextField 的标题语义附着于实际控件，没有清除范围和编辑动作。进度循环正常完成后将 running 置为 false，现有按钮下一次点击先归零再启动。
-
-双色按钮在进度 0、部分完成及 1 时均保留第一份文字，只有白色视觉副本被清除语义。该复核依据 BasicText 与 clickable 的语义合并路径，尚未把源码检查表述为 TalkBack 设备验证。
+BasicText 的绘制裁剪不移除语义。进度为 0、部分完成或 1 时，按钮都保留第一份文字；白色副本只承担绘制，因此清除该副本语义不会删除按钮名称和动作。实际 TalkBack 行为仍需设备检查。
 
 IME 几何反例：原视口高 900px、输入框位于 y=700px，键盘顶部为 600px；只添加内容尾部 padding 时，焦点仍被视为处于 900px 视口内。外侧 imePadding 将视口缩到 600px，内侧 ContentInViewNode 的标准尺寸变化路径才能启动避让。同步核对 [Android 官方 Insets 消费说明](https://developer.android.com/develop/ui/compose/system/insets-ui)，普通宿主文档明确区分 IME 与系统栏占位。
 
-默认 0.33dp 在 density 0.75、1、1.5 时原来取整为零，现在均为一个物理像素；density 2、3、6 分别保持 1、1、2 像素。候选 Settings 的 COUIRecyclerView 绘制同样使用 Math.max(1, mDividerStrokeWidth)，只用来佐证最小线宽，不能证明目标哈希的全部布局。没有运行本地 Android 构建或设备测试；静态格式、Note 结构检查以及两轮独立 Review、既有 PR CI 的实际结果记录在本轮 PR 评论。
+默认 0.33dp 在 density 0.75、1、1.5 时原来取整为零，现在均为一个物理像素；density 2、3、6 分别保持 1、1、2 像素。候选 Settings 的 COUIRecyclerView 绘制同样使用 Math.max(1, mDividerStrokeWidth)，只用来佐证最小线宽，不能证明目标哈希的全部布局。此反例是像素取整核对，不是设备布局测试；实际检查结果由 PR 按提交记录。
 
 ## Consequences
 

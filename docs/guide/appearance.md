@@ -54,7 +54,7 @@ CouiTheme(darkTheme = dark, colorScheme = colors) {
 
 Chip 从 `labelLarge` 取字体族。Dialog 从 `titleLarge`、`bodyMedium`、`labelLarge`、`bodyLarge`、`labelSmall` 分别取得标题、正文、按钮、输入与计数字体族。两者的字号、字重和排版由组件控制；未启用 M3 适配时使用系统字体策略。
 
-`CouiText` 的 `kind` 必填；省略 `color` 时使用 `LocalCouiContentColor.current`，显式颜色优先。菜单项的字号、字重与字体族统一由 `CouiTheme.typography.menuItem` 提供。
+`com.itos.coui.text.CouiText` 提供固定 COUI 排版角色，`kind` 必填。它的 `color` 默认读取 `LocalCouiContentColor`；没有提供该 Local 的独立布局需显式传色，详见[分组与行布局](../components/settings.md#配色与文字)。菜单项则读取 `CouiTheme.typography.menuItem` 的字号、字重与字体族。
 
 ## 菜单、底栏与 FAB 的染色
 
@@ -68,7 +68,7 @@ Chip 从 `labelLarge` 取字体族。Dialog 从 `titleLarge`、`bodyMedium`、`l
 
 启用 M3 策略后，顶栏按钮、搜索表面、Chip 和 FAB 的内容插槽提供对应的 M3 内容 Local，普通 M3 `Text`、`Icon` 可直接继承。组件部分 TextStyle 按 M3 `ProvideTextStyle` 顺序与宿主 ambient 合并；`CouiTheme` 的完整基线替换外层样式。子 Text 的显式颜色/样式、Icon tint 和内层 Local 优先。
 
-仅转发的顶栏 title、buttonGroup、Chip leadingAction 和 Dialog 自定义正文不会被强设新样式。BottomBar 自有文字继承宿主 ambient 字体属性，同时保留自己的字号、行高与字重。内部 `CouiText`、`CouiIcon`、`ProvideCouiTextStyle` 不作为公共组件。
+仅转发的顶栏 title、buttonGroup、Chip leadingAction 和 Dialog 自定义正文不会被强设新样式。BottomBar 自有文字继承宿主 ambient 字体属性，同时保留自己的字号、行高与字重。`com.itos.coui.theme` 包中的同名文字辅助函数、`CouiIcon` 和 `ProvideCouiTextStyle` 是内部实现，与公开的 `com.itos.coui.text.CouiText` 区分。
 
 顶栏按钮的 M3 路径使用 `minimumInteractiveComponentSize()`，遵守宿主尺寸 Local 与 alignment lines；原生策略使用组件的最小布局尺寸。搜索按钮使用固定容器，不受该 Local 控制。
 
