@@ -35,6 +35,8 @@ dependencies {
 
 ## 配置页面
 
+纯 COUI 应用可使用 `CouiTheme + CouiScaffold + COUI 组件`，无需添加 Material 3。容器、Padding 和安全区的完整用法见[页面容器](../components/scaffold.md)。已有宿主页面也可以直接放入 COUI 组件。
+
 组件可以直接使用 COUI 原生默认值，也可以由局部 `CouiTheme` 或显式参数配置。M3 宿主添加同版本的可选 `coui-material3` 模块，并在 `Application.onCreate` 调用 `Coui.initialize(defaultStyle = CouiMaterial3Style())`；完整初始化与模式配置见 [README：接入 Material 3](../../README.md#接入-material-3)。
 
 平台要求按能力分：普通控件跟随库的最低系统；渐进模糊、轮廓和融合要 API 33；底栏、FAB、顶栏按钮/搜索、ChipTab 和普通阴影要 API 34。调用 API 34 的组件前先判断版本，完整表格见[兼容要求](compatibility.md#效果门槛)。

@@ -1,11 +1,12 @@
 # 在宿主页面中组合 COUI
 
-COUI-Kit 是可按需取用的组件与视觉效果库，不提供独立 Scaffold，也不要求替换宿主主题、导航或页面结构。可以只放入一个 COUI 控件，也可以与 Material、Miuix 或自己的组件混用。
+纯 COUI 应用可以使用可选的 [CouiScaffold](../components/scaffold.md)，统一栏位测量、正文 Padding 和安全区，无需 Material 3。已有应用可以继续使用自己的 Scaffold、主题和导航，只放入所需 COUI 控件。
 
 ## 先决定需要哪一层
 
 | 需要的能力 | 使用方式 |
 | --- | --- |
+| 纯 COUI 页面容器 | 使用 CouiScaffold；主题、采样和滚动仍分别组合 |
 | 一行内容或一个控件 | 直接放入现有布局，不安装页面容器或背景 Provider |
 | 分组、说明 | 组合 `Group`、`Footer`；图示由宿主使用普通布局和 Modifier 绘制 |
 | COUI 点击反馈 | 普通跳转使用 `Item.onClick`；选择行由宿主提供 toggleable/selectable 和反馈 |
@@ -135,16 +136,10 @@ ProvideCouiMenuBackdrop { windowSource ->
 
 切页时，持续显示的 dock、renderer 与反馈节点留在宿主的稳定作用域中，只对真正替换的页面内容设置 key。不要通过延迟业务回调掩盖错误的资源销毁时机。
 
-Demo 使用普通 Activity 导航，页面由应用层 Material 3 Scaffold 装配。完整示例见 [MainActivity](../../demo/src/main/java/com/itos/coui/demo/MainActivity.kt)、[二级 Activity](../../demo/src/main/java/com/itos/coui/demo/DemoSecondaryActivity.kt)和 [DemoSettingsPage](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsPage.kt)；这些装配属于 Demo，不是库 API。
+Demo 使用普通 Activity 导航，首页和详情页采用 CouiScaffold。完整示例见 [MainActivity](../../demo/src/main/java/com/itos/coui/demo/MainActivity.kt)、[二级 Activity](../../demo/src/main/java/com/itos/coui/demo/DemoSecondaryActivity.kt)和 [DemoSettingsPage](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsPage.kt)。导航和示例业务由 Demo 装配。
 
 ## 回弹与更多菜单
 
 需要 COUI 正常惯性及同帧触边交接时使用 [couiVerticalScroll](../effects/overscroll.md)。短页/空页占满交互视口；标题和 dock 不随正文越界位移移动。每个容器独立 remember effect，传 null 可关闭边缘效果。不需要 COUI 物理的页面保留原滚动容器，不叠加两层滚动或两套回弹。
 
 三点菜单用现有 CouiTopAppBarButton、按钮锚点和 CouiMenu 组合；列表菜单使用行布局与触点锚点。库不为具体业务再增加三点菜单或 Popup 行包装。示例和公开入口见[菜单](../components/menu.md)。
-
-## 从 PR 临时容器迁移
-
-移除 CouiScaffold 后，使用宿主已有容器，按上文显式接入所需采样能力。原来的 colors/dark 不再经隐藏页面作用域传给整页；使用既有 CouiTheme 局部覆盖，或分别传 `Group.colors`、`Item.dark`、`Divider.color`、`Footer.color`。`Group` 的内容槽保留其自己的主题。
-
-COUI 的组件形状、排版、材质和交互具有独立职责。其他库可以作为研究参考，但其页面、导航和主题框架不是 COUI-Kit 必须复制的架构。

@@ -8,26 +8,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import com.itos.coui.scroll.couiVerticalScroll
 import com.itos.coui.scroll.CouiOverscrollEffect
 import com.itos.coui.scroll.rememberCouiOverscrollEffect
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import com.itos.coui.backdrop.couiBackdrop
 import com.itos.coui.backdrop.rememberCouiBackdrop
 import com.itos.coui.theme.LocalCouiContentColor
@@ -78,10 +72,9 @@ internal fun DemoSettingsPage(
     val density = LocalDensity.current.density
     val contour = LocalCouiContourGlowEnabled.current
     val backdrop = rememberCouiBackdrop()
-    Scaffold(modifier = modifier.fillMaxSize().imePadding()
-        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
+    CouiScaffold(modifier = modifier.fillMaxSize().imePadding(),
         containerColor = colors.background,
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom), topBar = {
+        topBar = {
                 CouiTopAppBar(Modifier.fillMaxWidth(), backdrop) {
                     Row(Modifier.fillMaxWidth().statusBarsPadding().height(CouiPageDefaults.toolbarHeight)
                         .padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {

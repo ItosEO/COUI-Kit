@@ -14,7 +14,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -43,6 +42,7 @@ import com.itos.coui.navigation.CouiNavigationItem
 import com.itos.coui.search.CouiSearchBar
 import com.itos.coui.search.rememberCouiSearchBarState
 import com.itos.coui.layout.CouiPageDefaults
+import com.itos.coui.layout.CouiScaffold
 import com.itos.coui.topappbar.CouiCollapsingTopAppBar
 import com.itos.coui.topappbar.CouiCollapsingAppBarDefaults
 import com.itos.coui.topappbar.rememberCouiCollapsingAppBarState
@@ -86,10 +86,9 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
             val search = rememberCouiSearchBarState(searching)
             val density = LocalDensity.current
             val resultOffset = with(LocalDensity.current) { CouiCollapsingAppBarDefaults.resultsStartOffset.toPx() }
-            Scaffold(modifier = Modifier.fillMaxSize().imePadding()
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+            CouiScaffold(modifier = Modifier.fillMaxSize().imePadding()
                 .nestedScroll(header.nestedScrollConnection), containerColor = background,
-                contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom), topBar = {
+                topBar = {
                     CouiCollapsingTopAppBar(state = header, searchState = search, title = titles[page],
                         color = colors.onSurface, backdrop = backdrop, backgroundColor = background, dark = dark) {
                         CouiSearchBar(state = search, query = query, onQueryChange = { query = it },

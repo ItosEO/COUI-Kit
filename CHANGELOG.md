@@ -11,7 +11,7 @@ COUI-Kit 处于早期预览阶段。本文记录公开 API、行为、接入和�
 - Demo 二级页在滚动容器外消费 IME，键盘打开时缩小真实视口，让 Foundation 处理输入焦点避让；系统栏和顶栏 padding 仍归滚动内容。
 - CouiDivider 默认厚度至少为一个物理像素，布局与填色使用同一高度，继续服从宿主 Modifier 约束。
 - Wallpaper 复用 Personalise 的不可变矢量；核心源码和 API 文档归档附带 ICON_SOURCES.md，保留现有第三方权利声明。
-- 移除 CouiScaffold（曾名 CouiSettingsScaffold）及其专用页面测量、padding 与配色作用域。保留宿主已有 Scaffold、主题和导航；模糊材质按需组合原有 Backdrop 接口，不增加替代页面包装器。
+- 提供可选的轻量 CouiScaffold，基于 Compose UI / Foundation 测量顶栏、底栏并返回正文 Padding，处理横向安全区和缺少栏位时的纵向 Insets，默认读取 COUI 页面背景。核心不依赖 Material 3，所有组件可独立使用。旧临时容器的 colors/dark、页面配色作用域和隐式背景源不恢复；主题使用 CouiTheme，采样显式组合已有 Backdrop。Demo 首页和详情页改用此容器；不提供 CouiSettingsScaffold。见[页面容器](docs/components/scaffold.md)。
 - Group 增加显式 colors，Item 增加 dark，Divider / Footer 增加 color；默认值在消费处读取 CouiTheme。Group 配色仅作用于自身卡片、标题和说明，不隐式改变其内容槽。CouiPageDefaults.colors 从对应原生浅色/深色预设派生并应用强调色。
 - PR #15 布局族公开命名简化：包名 `com.itos.coui.settings` → `com.itos.coui.layout`；`CouiSettingsGroup/Item/Divider/Footer/Illustration` → `CouiGroup/Item/Divider/Footer/Illustration`；`CouiSettingsColors/Defaults` → `CouiPageColors/Defaults`。这些入口尚未合入 main，不保留旧名称别名。
 - PR #16 进一步简化布局入口：包名继续为 `com.itos.coui.layout`；`CouiGroup/Item/Divider/Footer` 改为 `Group/Item/Divider/Footer`，`CouiPageColors/Defaults` 保留原名。移除 `CouiPreferenceLayout`，其 leading/headline/supporting/trailing、contentPadding 和 leadingSize 由 `Item` 提供；移除 `CouiIllustration`，图示由宿主布局与 Modifier 组合。`Item.onClick` 可省略；省略时不创建点击、按钮语义或反馈。普通跳转使用 `Item.onClick`，选择行由宿主提供 toggleable/selectable 和反馈。未发布的 PR 接口不保留兼容别名。

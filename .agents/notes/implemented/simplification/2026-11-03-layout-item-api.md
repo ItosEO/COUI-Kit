@@ -8,7 +8,7 @@ Status: implemented
 
 ## Decision
 
-布局包只保留 Group、Item、Divider、Footer 四个组件名称，CouiPageColors 与 CouiPageDefaults 保持原名。Item 合并 leading、headline、supporting、trailing、内边距和图标尺寸；沿用现有默认几何，不提供旧公开名称的兼容包装。Group 保留标题、圆角背景、说明与自由内容，不引入 item DSL。
+分组与行组件采用 Group、Item、Divider、Footer 四个名称，CouiPageColors 与 CouiPageDefaults 保持原名。Item 合并 leading、headline、supporting、trailing、内边距和图标尺寸；沿用现有默认几何，不提供旧公开名称的兼容包装。Group 保留标题、圆角背景、说明与自由内容，不引入 item DSL。通用页面容器由[可选 CouiScaffold](../architecture/2026-11-03-optional-coui-scaffold.md)单独定义，不改变这些组件的独立性。
 
 Item 仅在 onClick 非空时安装点击、按钮语义和 COUI 反馈，并共用一个交互源。onClick 为空时只布局内容，enabled 不跨内容槽禁用子控件或统一降低透明度。整行 toggleable/selectable 和对应反馈由宿主负责，尾部独立操作由子控件负责；不新增 SwitchItem、CheckboxItem 或 MenuItem。
 

@@ -18,19 +18,20 @@ demo 只消费公开 API，负责页面、主题和示例交互；示例不读�
 
 COUI-Kit 是组件与风格能力库，不是要求整套替换宿主页面的框架。调用方可以只使用一个 COUI 控件，或把 COUI 与 Material、Miuix、自有设计放在同一页面。参考其他库时吸收具体经验，不以复制其组件目录、页面框架和主题层为目标。
 
-- 页面 Scaffold、导航、返回栈、安全区分工和业务状态由宿主选择；库不另设 Scaffold 或只改名字的页面包装器。
+- 页面容器由宿主选择。可选 CouiScaffold 使用 Foundation 处理栏位测量、正文 Padding、系统安全区和主题默认背景；其他 COUI 组件不依赖它。导航、返回栈和业务状态仍归宿主，不提供 CouiSettingsScaffold 或新的页面管理层。
 - 组件通过现有 CouiTheme 与显式参数解析外观，不以新页面 Provider 作为使用前提。除宿主主动选择的主题/适配契约外，不隐式改变内容槽中其他设计组件的配色或状态。
 - 普通分组、行布局和文字不创建背景采样层；图示由宿主组合 Box 与 Modifier。模糊材质使用现有 Backdrop 显式接入，窗口源按需提供，不与页面测量绑定。
-- 布局入口为 Group、Item、Divider、Footer。Item 统一行内容槽与可选点击；onClick 为空时不安装点击或反馈，宿主自行管理 toggleable/selectable 与尾部控件，库不扩展开关行、菜单行等业务组件。
+- 分组与行布局入口为 Group、Item、Divider、Footer。Item 统一行内容槽与可选点击；onClick 为空时不安装点击或反馈，宿主自行管理 toggleable/selectable 与尾部控件，库不扩展开关行、菜单行等业务组件。
 - 有明确几何或交互协作的局部组件可以共享所需作用域，例如顶栏按钮的背景与搜索转场；这种局部契约不扩大为全页或全应用依赖。
 
-这一边界不要求删掉有实际职责的局部布局，也不允许用近似效果替换已经批准的原厂算法。当前决定与取舍见[宿主页面所有权](../../.agents/notes/implemented/architecture/2026-11-03-host-owned-page-layout.md)。
+这一边界保留有实际职责的布局组件。页面容器不创建背景源或页面主题 Provider，不因容器变更修改已有原厂算法。当前决定与取舍见[可选轻量页面容器](../../.agents/notes/implemented/architecture/2026-11-03-optional-coui-scaffold.md)及[宿主页面所有权](../../.agents/notes/implemented/architecture/2026-11-03-host-owned-page-layout.md)。
 
 ## 库内职责
 
 | 包 | 职责 |
 | --- | --- |
-| layout、topappbar、search、navigation、floatingactionbutton、menu、slider、checkbox、switch、chip、dialog、picker、text | 局部组件的布局、状态装配、语义与公开 Defaults |
+| layout | 可选页面容器、分组与行布局，不持有业务状态或背景源 |
+| topappbar、search、navigation、floatingactionbutton、menu、slider、checkbox、switch、chip、dialog、picker、text | 局部组件的布局、状态装配、语义与公开 Defaults |
 | backdrop | 所属窗口的内容源、绘制录制与采样坐标映射 |
 | effect | 普通投影、模糊、材质、光效与融合绘制 |
 | shape | 公共 Shape 与几何约定 |

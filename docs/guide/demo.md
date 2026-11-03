@@ -40,7 +40,7 @@ CI 可通过 KEYSTORE_FILE、KEYSTORE_PASSWORD、KEYSTORE_ALIAS、KEYSTORE_ALIAS
 
 Demo 在 DemoApplication 调用 `Coui.initialize(CouiMaterial3Style())`。默认值在组件消费处解析。关闭“使用 Material 主题配色”时，局部 `CouiTheme` 使用原生外观，Demo 的 M3 内容与背景也使用 COUI 中性表面和蓝色强调色；菜单与底栏不额外叠加页面染色。显式 FAB 配色预设继续生效。
 
-首页和详情页使用 Demo 自己的 Material 3 Scaffold，正文采样源供顶栏和底栏消费，Activity 根部提供菜单与弹窗的窗口采样源。分组和行布局使用 `com.itos.coui.layout` 的 `Group`、`Item`、`Divider`、`Footer`；偏好行等便捷包装属于 Demo 内部实现，不是库 API。安全区和返回处理由 Demo 管理。
+首页和详情页使用公开的 [CouiScaffold](../components/scaffold.md)，由容器处理横向安全区和实测栏位占位，Demo 在外侧处理 IME。正文采样源供顶栏和底栏消费，Activity 根部提供菜单与弹窗的窗口采样源。分组和行布局使用 `com.itos.coui.layout` 的 `Group`、`Item`、`Divider`、`Footer`；偏好行、返回和业务状态由 Demo 管理。Demo 保留 M3 对照内容及可选适配模块；核心页面容器不依赖它们。
 
 首页只使用彩色图标目录和分组卡片，不增加分类小标题；详情都有用途介绍，按控件类型使用对应系统式行列与说明。菜单页集中展示上下箭头 Popup 行；开关页包含模拟等待的加载状态；滑条轨道在独立槽位居中。时间、倒计时、日期与月历分别提供页面组件和标准弹窗。模糊页按设置式图示、说明、调节的顺序组织；图示由 Demo 使用 Box 和 Modifier 组合。
 

@@ -2,6 +2,8 @@
 
 Status: implemented
 
+当前可选容器的职责与测量契约见[轻量页面容器](../architecture/2026-11-03-optional-coui-scaffold.md)。下文旧 Scaffold 的派生实现与来源记录保持历史含义。
+
 ## Problem
 
 本篇保留五轮修复的依据与结论。其中关于库内 Scaffold 的稳定 padding 和正文子组合优化已由[宿主页面所有权](../architecture/2026-11-03-host-owned-page-layout.md)取代，相关实现及其专用作用域已删除；这些段落仅保留当时的取舍与来源，不再是当前接入要求。其余输入、绘制、资源与物理修复继续有效。

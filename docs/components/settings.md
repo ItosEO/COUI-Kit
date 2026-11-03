@@ -86,7 +86,7 @@ fun AboutRow(
 
 ## 迁移与边界
 
-这些布局入口位于 `com.itos.coui.layout`，不会为业务类型提供开关行、菜单行或其他行包装。COUI 不提供页面级 Scaffold 或设置页包装；宿主继续使用自己的页面容器和导航。Demo 的行包装是 Demo 内部实现，不是库 API。
+这些布局入口位于 `com.itos.coui.layout`，不会为业务类型提供开关行、菜单行或其他行包装。页面可选用通用 [CouiScaffold](scaffold.md) 或宿主自己的容器；设置页直接组合普通组件。Demo 的行包装是 Demo 内部实现，不是库 API。
 
 完整路由、搜索结果与业务行由宿主实现。实际组合见[二级页宿主](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsPage.kt)、[设置列表示例](../../demo/src/main/java/com/itos/coui/demo/DemoListSamples.kt)和 [Demo 指南](../guide/demo.md)。布局和反馈依据目标 Settings 17 的实际消费者，保留项目批准的平滑圆角与公共效果。跨设备字体、IME、RTL、TalkBack 和动画中段仍需实际验收。
 
