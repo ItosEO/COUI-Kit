@@ -35,7 +35,7 @@ internal fun DemoRecordMetaballBackground(
     fusionActive: Boolean,
     deleteActionAlpha: Float,
 ) {
-    val cardColor = MaterialTheme.colorScheme.surfaceContainer
+    val cardColor = MaterialTheme.colorScheme.surfaceBright
     Canvas(modifier = modifier) {
         drawRecordMetaball(
             renderer, size, visibleCardWidth, deleteActionWidth,
@@ -97,7 +97,7 @@ private fun DrawScope.drawRecordMetaball(
     val cardWidth = minOf(visibleCardWidth.toPx(), regionSize.width)
     val cardLeft = if (alignCardEnd) regionSize.width - cardWidth else 0f
     val actionLeft = regionSize.width - actionWidth + menuTranslation
-    val radius = DemoShapes.effect.radius.toPx()
+    val radius = DemoShapes.record.topEnd.toPx(regionSize, this)
     scale(
         scaleX = if (layoutDirection == LayoutDirection.Rtl) -1f else 1f,
         scaleY = 1f,

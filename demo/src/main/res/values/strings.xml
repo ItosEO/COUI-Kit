@@ -63,8 +63,13 @@
     <string name="chip_show_icon_button">Show icon tab</string>
     <string name="chip_solid_background">Solid background</string>
     <string name="chip_categories">Select category</string>
-    <string name="record_title">Sample record %1$d</string>
-    <string name="record_detail">COUI Demo · %1$d min %2$d s</string>
+    <string name="record_preview">Sample record</string>
+    <string name="record_view_details">View record</string>
+    <string name="record_fps">%1$s FPS</string>
+    <string name="record_separator">" / "</string>
+    <string name="record_remark">Ranked match</string>
+    <string name="record_filtered">Segments filtered</string>
+    <string name="record_last_viewed">Last viewed record</string>
     <string name="record_delete">Delete sample</string>
     <string name="record_confirm_delete">Confirm deletion</string>
     <string name="record_open_actions">Show record actions</string>

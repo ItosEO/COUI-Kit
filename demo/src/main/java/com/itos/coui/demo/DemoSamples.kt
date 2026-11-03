@@ -152,8 +152,10 @@ internal fun EffectsDemo(dark: Boolean, query: String, shadowAvailable: Boolean)
             EffectText(stringResource(R.string.renderer_unavailable), color = MaterialTheme.colorScheme.error)
         }
     }
-    DemoSection(R.string.fusion_title, query) {
-        if (Build.VERSION.SDK_INT >= 33) RecordSwipeSamples(dark) else EffectText(stringResource(R.string.requires_api_33))
+    val fusionTitle = stringResource(R.string.fusion_title)
+    val fusionState = rememberSaveableStateHolder()
+    if (query.isBlank() || fusionTitle.contains(query.trim(), ignoreCase = true)) {
+        fusionState.SaveableStateProvider(R.string.fusion_title) { RecordSwipeSamples(dark) }
     }
     FoundationEffectsDemo(dark, query)
 }

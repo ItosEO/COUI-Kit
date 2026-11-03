@@ -21,7 +21,7 @@
     <string name="intro_effect_backdrop">This is a blur effect! Soften the picture and compare the details.</string>
     <string name="intro_effect_material">This is a material effect! Move the background to see its colors through the surface.</string>
     <string name="intro_effect_shadow">This is a shadow! Adjust the height and watch the surface float.</string>
-    <string name="intro_effect_fusion">This is a fusion effect! Bring the surfaces together and separate them.</string>
+    <string name="intro_effect_fusion">Swipe a sample record to reveal Delete. Tap twice to confirm, or keep swiping and release to delete.</string>
     <string name="loading_switch">Loading switch</string>
     <string name="loading_switch_description">Loading</string>
     <string name="loading_switch_summary">The sample finishes after a short delay</string>

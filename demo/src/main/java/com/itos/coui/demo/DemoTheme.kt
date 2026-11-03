@@ -30,6 +30,7 @@ internal object DemoShapes {
     val contentCard = CouiShape(20.dp)
     val card = ContinuousRoundedRectangle(24.dp)
     val item = ContinuousRoundedRectangle(12.dp)
+    val record = ContinuousRoundedRectangle(16.dp)
     val capsule = ContinuousRoundedRectangle(999.dp)
     val checkbox = ContinuousRoundedRectangle(4.dp)
     val checkboxBorder = ContinuousRoundedRectangle(3.2.dp)

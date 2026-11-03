@@ -21,7 +21,7 @@
     <string name="intro_effect_backdrop">这是一个模糊效果！把画面变得柔和，看看哪些细节还在。</string>
     <string name="intro_effect_material">这是一个材质效果！移动背景，看看表面如何透出色彩。</string>
     <string name="intro_effect_shadow">这是一个阴影！调一调高度，看看表面怎样浮起来。</string>
-    <string name="intro_effect_fusion">这是一个融合效果！把两个表面靠近，再让它们分开。</string>
+    <string name="intro_effect_fusion">侧滑示例记录，连续点击两次删除按钮确认删除；继续拉长并松手也可删除。</string>
     <string name="loading_switch">加载开关</string>
     <string name="loading_switch_description">加载中</string>
     <string name="loading_switch_summary">示例将在短暂等待后完成</string>

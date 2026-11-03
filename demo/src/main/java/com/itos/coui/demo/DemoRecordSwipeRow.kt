@@ -43,6 +43,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
@@ -74,6 +77,7 @@ internal fun DemoRecordSwipeRow(
     minHeight: Dp = RecordDeleteActionSize,
     actionSpacing: Dp = RecordSwipeActionSpacing,
     onCommitDelete: () -> Unit,
+    onDeleteAnimationStart: () -> Unit,
     endActionContent: @Composable BoxScope.(Boolean, Boolean, () -> Unit) -> Unit,
     content: @Composable () -> Unit,
 ) {
@@ -113,6 +117,8 @@ internal fun DemoRecordSwipeRow(
     val latestOnOpenChange by rememberUpdatedState(onOpenChange)
     val latestOnClick by rememberUpdatedState(onClick)
     val latestOnCommitDelete by rememberUpdatedState(onCommitDelete)
+    val latestOnDeleteAnimationStart by rememberUpdatedState(onDeleteAnimationStart)
+    val showActionsLabel = stringResource(R.string.record_open_actions)
 
     fun settleTo(target: Float, velocity: Float = offsetPx.velocity, dragEndOffset: Float? = null) {
         val previousMotion = motionJob
@@ -129,6 +135,7 @@ internal fun DemoRecordSwipeRow(
         if (!deleteAnimating) {
             deleteConfirmationRequested = false
             latestOnOpenChange(false)
+            latestOnDeleteAnimationStart()
             deleteAnimating = true
             val previousMotion = motionJob
             settlingTargetPx = null
@@ -332,7 +339,7 @@ internal fun DemoRecordSwipeRow(
                     this@drawWithContent.drawContent()
                 }
             }
-            .clip(DemoShapes.effect)
+            .clip(DemoShapes.record)
             .then(if (leftShrinkPx > 0f) Modifier.blur(radius = deleteRevealBlur) else Modifier)
 
         Box(
@@ -376,11 +383,16 @@ internal fun DemoRecordSwipeRow(
                     indication = null,
                     enabled = !deleteAnimating,
                     onClickLabel = if (isOpen) stringResource(R.string.record_close_actions)
-                        else stringResource(R.string.record_open_actions),
+                        else stringResource(R.string.record_view_details),
                     onClick = {
                         if (latestIsOpen) latestOnOpenChange(false) else latestOnClick()
                     },
                 )
+                .semantics {
+                    if (!isOpen && !deleteAnimating) customActions = listOf(
+                        CustomAccessibilityAction(showActionsLabel) { latestOnOpenChange(true); true },
+                    )
+                }
                 .onSizeChanged { size ->
                     contentHeightPx = max(minHeightPx, size.height.toFloat())
                 }
