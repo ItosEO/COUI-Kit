@@ -60,7 +60,7 @@ private val FadeColors = LongArray(FadeStopCount) { index ->
 /**
  * 背景从标题栏顶部开始并向下延伸，不改变布局或触摸高度。
  * gradientSpeed 为 null 时保留项目固定渐隐；正值选择全高原厂幂曲线。
- * gradientColor 非透明时叠加原厂主题背景渐变，dark 默认跟随当前主题并选择对应透明度分支。
+ * gradientColor 非透明时叠加主题背景渐变，其 alpha 与预设透明度相乘；dark 默认跟随当前主题。
  */
 @Composable
 fun CouiTopAppBar(
@@ -96,7 +96,7 @@ fun CouiTopAppBar(
     }
     val gradient = remember(gradientColor, dark) {
         // GradientBackgroundDrawable 从下到上：浅色 0/.7/1，深色 0/.4。
-        fun color(alpha: Float) = gradientColor.copy(alpha = (alpha * 255).toInt() / 255f)
+        fun color(alpha: Float) = gradientColor.copy(alpha = gradientColor.alpha * ((alpha * 255).toInt() / 255f))
         if (dark) Brush.verticalGradient(0f to color(.4f), 1f to color(0f))
         else Brush.verticalGradient(0f to color(1f), .6f to color(.7f), 1f to color(0f))
     }

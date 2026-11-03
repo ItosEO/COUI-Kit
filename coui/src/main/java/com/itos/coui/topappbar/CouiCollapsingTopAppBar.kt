@@ -28,7 +28,10 @@ import com.itos.coui.text.CouiTextKind
 import com.itos.coui.text.rememberCouiTextStyle
 import kotlin.math.roundToInt
 
-/** 设置首页标题与常驻搜索槽；scrollState 的连接须挂在实际内容滚动容器的祖先。 */
+/**
+ * 设置首页标题与常驻搜索槽；state 的连接须挂在实际内容滚动容器的祖先。
+ * dark 只控制本顶栏，搜索槽由宿主传入相同模式或使用共同的局部主题；标题色 alpha 与动画相乘。
+ */
 @Composable
 fun CouiCollapsingTopAppBar(
     modifier: Modifier = Modifier,
@@ -70,7 +73,7 @@ fun CouiCollapsingTopAppBar(
                 scaleY = scaleX
                 translationY = -200f * p
                 transformOrigin = TransformOrigin(if (layoutDirection == LayoutDirection.Rtl) 1f else 0f, 0f)
-            }, style = titleStyle.copy(color = titleColor.copy(alpha = 1f)),
+            }, style = titleStyle.copy(color = titleColor),
                 maxLines = 1, overflow = TextOverflow.Ellipsis)
             Box(propagateMinConstraints = true) { searchBar() }
         }) { children, constraints ->

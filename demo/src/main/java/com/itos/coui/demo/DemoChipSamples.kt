@@ -23,8 +23,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.itos.coui.backdrop.couiBackdrop
 import com.itos.coui.backdrop.rememberCouiBackdrop
-import com.itos.coui.layout.CouiGroup
-import com.itos.coui.layout.CouiDivider
+import com.itos.coui.layout.Group
+import com.itos.coui.layout.Divider
 import com.itos.coui.chip.CouiChipTabButton
 import com.itos.coui.chip.CouiChipTabItem
 import com.itos.coui.chip.CouiChipTabRow
@@ -60,11 +60,11 @@ private fun ChipTabMaterialSample(dark: Boolean) {
     val backgroundColor = if (solidBackground) {
         if (dark) Color.Black else Color.White
     } else MaterialTheme.colorScheme.surfaceBright
-    CouiGroup {
+    Group {
         DemoSwitchRow(stringResource(R.string.chip_enable), enabled, { enabled = it })
-        CouiDivider()
+        Divider()
         DemoSwitchRow(stringResource(R.string.chip_show_icon_button), showIconButton, { showIconButton = it })
-        CouiDivider()
+        Divider()
         DemoSwitchRow(stringResource(R.string.chip_solid_background), solidBackground, { solidBackground = it })
     }
     if (renderers == null || (showIconButton && buttonRenderer == null)) {
@@ -74,7 +74,7 @@ private fun ChipTabMaterialSample(dark: Boolean) {
         return
     }
     // 卡片只在完整示意区域裁剪；不能用 48dp 行高把分类项的投影上下截断。
-    CouiGroup { Box(Modifier.fillMaxWidth().height(144.dp)) {
+    Group { Box(Modifier.fillMaxWidth().height(144.dp)) {
         Box(Modifier.matchParentSize().couiBackdrop(backdrop).background(backgroundColor))
         CouiChipTabRow(
             modifier = Modifier.fillMaxWidth().align(Alignment.Center),

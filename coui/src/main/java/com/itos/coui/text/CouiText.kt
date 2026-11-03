@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import com.itos.coui.theme.LocalCouiContentColor
 import kotlin.math.roundToInt
 
 /** COUI 语义排版预设；宿主可通过 rememberCouiTextStyle 用于 Compose 文本与编辑框。 */
@@ -32,12 +33,11 @@ enum class CouiTextKind(internal val size: Float, internal val family: String, i
     Stepper(18f, "sans-serif-medium", 500),
     Progress(14f, "sans-serif-medium", 500),
     Description(12f, "sans-serif", 400),
-    Menu(15f, "sans-serif-regular", 400),
 }
 
 /** 系统资源决定排版，组件与语义由 Compose 承载，不继承宿主 M3 Typography。 */
 @Composable
-fun CouiText(modifier: Modifier = Modifier, text: String, kind: CouiTextKind, color: Color,
+fun CouiText(modifier: Modifier = Modifier, text: String, kind: CouiTextKind, color: Color = LocalCouiContentColor.current,
     onLineCount: (Int) -> Unit = {}, textAlign: TextAlign? = null) {
     val style = rememberCouiTextStyle(kind)
     BasicText(text, modifier,
@@ -69,7 +69,7 @@ private fun couiTextSize(kind: CouiTextKind, configuration: Configuration, spToP
         val base = (pixels / configuration.fontScale).roundToInt()
         return base * if (configuration.fontScale < 1.15f) 1f else 1.15f
     }
-    return if (kind == CouiTextKind.Menu) couiAdaptFontSize(pixels, configuration, 1.6f) else pixels
+    return pixels
 }
 
 private fun couiLineSpacing(kind: CouiTextKind): Float = when (kind) {
@@ -88,5 +88,4 @@ private fun couiLineSpacing(kind: CouiTextKind): Float = when (kind) {
     CouiTextKind.Search -> if (Build.VERSION.SDK_INT >= 35) 1.1321f else 1.1f
     CouiTextKind.SearchCancel -> if (Build.VERSION.SDK_INT >= 35) 1.2245f else 1.1f
     CouiTextKind.PreferenceValue -> if (Build.VERSION.SDK_INT >= 35) 1.2245f else 1.1f
-    CouiTextKind.Menu -> if (Build.VERSION.SDK_INT >= 35) 1.1321f else 1.1f
 }

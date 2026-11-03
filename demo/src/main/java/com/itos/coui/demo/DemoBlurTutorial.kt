@@ -26,8 +26,9 @@ import kotlin.math.roundToInt
 @Composable
 internal fun BlurTutorial(dark: Boolean) {
     var radius by rememberSaveable { mutableFloatStateOf(30f) }
-    CouiIllustration(Modifier.padding(top = 16.dp)) {
-        Row(Modifier.fillMaxWidth().height(280.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+    Box(Modifier.fillMaxWidth().padding(top = 16.dp).padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
+        Row(Modifier.widthIn(max = 412.dp).heightIn(max = 300.dp).fillMaxWidth().height(280.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             for (blurred in listOf(false, true)) Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                 val backdrop = rememberCouiBackdrop()
                 Box(Modifier.weight(1f).fillMaxWidth().clip(DemoShapes.card)) {
@@ -55,7 +56,7 @@ internal fun BlurTutorial(dark: Boolean) {
     }
     Text(stringResource(R.string.intro_effect_backdrop), Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp),
         style = rememberCouiTextStyle(CouiTextKind.PreferenceSummary), color = MaterialTheme.colorScheme.onSurfaceVariant)
-    CouiGroup {
+    Group {
         DemoSliderPreference(title = stringResource(R.string.blur_radius), value = radius, onValueChange = { radius = it },
             valueText = radius.roundToInt().toString(), valueRange = 0f..80f)
     }

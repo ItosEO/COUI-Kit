@@ -26,9 +26,9 @@ import com.itos.coui.dialog.CouiDialogDefaults
 import com.itos.coui.effect.LocalCouiContourGlowEnabled
 import com.itos.coui.menu.rememberCouiWindowBackdrop
 import com.itos.coui.layout.CouiPageDefaults
-import com.itos.coui.layout.CouiDivider
-import com.itos.coui.layout.CouiFooter
-import com.itos.coui.layout.CouiGroup
+import com.itos.coui.layout.Divider
+import com.itos.coui.layout.Footer
+import com.itos.coui.layout.Group
 @Composable
 internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPreferences,
     back: () -> Unit, open: (String) -> Unit) {
@@ -55,49 +55,49 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
                 "sliders", "switch", "checkbox", "dialogs", "menu" -> ComponentDetail(page, dark, toggleTheme)
                 "settings" -> {
                     ListSamples(dark, open)
-                    CouiGroup { DemoPreference(title = stringResource(R.string.home_app_settings), onClick = { open("appsettings") }) }
+                    Group { DemoPreference(title = stringResource(R.string.home_app_settings), onClick = { open("appsettings") }) }
                 }
                 "chip" -> ChipTabSample(dark)
                 "effect_backdrop" -> BlurTutorial(dark)
                 "timepicker", "countdownpicker", "datepicker", "calendar" -> PickerSamples(page, dark)
                 "appbar", "search", "navigation", "fab" -> ChromeDetail(page, dark, open)
-                "color" -> CouiGroup(Modifier.selectableGroup(), footer = stringResource(R.string.settings_demo_only)) {
+                "color" -> Group(Modifier.selectableGroup(), footer = stringResource(R.string.settings_demo_only)) {
                     listOf(R.string.settings_color_natural, R.string.settings_color_vivid).forEachIndexed { index, label ->
                         DemoSelectPreference(title = stringResource(label), selected = preferences.colorMode == index,
                             onSelect = { preferences.color(index) })
-                        if (index == 0) CouiDivider()
+                        if (index == 0) Divider()
                     }
                 }
                 "font" -> {
-                    CouiGroup(Modifier.selectableGroup()) {
+                    Group(Modifier.selectableGroup()) {
                         listOf(R.string.settings_size_small, R.string.settings_size_default, R.string.settings_size_large).forEachIndexed { index, label ->
                             DemoSelectPreference(title = stringResource(label), selected = preferences.fontSize == index,
                                 onSelect = { preferences.font(index) })
-                            if (index < 2) CouiDivider()
+                            if (index < 2) Divider()
                         }
                     }
-                    CouiGroup(footer = stringResource(R.string.settings_demo_only)) {
+                    Group(footer = stringResource(R.string.settings_demo_only)) {
                         DemoPreference(title = stringResource(R.string.settings_preview))
                         BasicText(stringResource(R.string.settings_preview_summary), Modifier.padding(16.dp),
                             style = TextStyle(fontSize = listOf(14.sp, 16.sp, 20.sp)[preferences.fontSize.coerceIn(0, 2)],
                                 color = MaterialTheme.colorScheme.onSurface))
                     }
                 }
-                "privacy" -> CouiGroup(footer = stringResource(R.string.settings_demo_only)) {
+                "privacy" -> Group(footer = stringResource(R.string.settings_demo_only)) {
                     DemoPreference(title = stringResource(R.string.settings_local), summary = stringResource(R.string.settings_privacy_summary))
-                    CouiDivider()
+                    Divider()
                     DemoPreference(title = stringResource(R.string.settings_disabled), enabled = false,
                         summary = stringResource(R.string.settings_disabled_summary), onClick = {})
                 }
                 "about" -> {
-                    CouiGroup {
+                    Group {
                         DemoPreference(title = stringResource(R.string.app_name), value = "1.0")
-                        CouiDivider()
+                        Divider()
                         DemoPreference(title = stringResource(R.string.settings_baseline), value = "ColorOS 17")
-                        CouiDivider()
+                        Divider()
                         DemoPreference(title = stringResource(R.string.home_release), value = "Release / R8")
                     }
-                    CouiGroup {
+                    Group {
                         DemoPreference(title = stringResource(R.string.settings_reset), onClick = { reset = true })
                     }
                 }
@@ -106,32 +106,32 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
                         EffectsDemo(dark, stringResource(entry.title), shadowAvailable = Build.VERSION.SDK_INT >= 34)
                     }
                 } else {
-                    CouiGroup(title = stringResource(R.string.settings_appearance)) {
+                    Group(title = stringResource(R.string.settings_appearance)) {
                         DemoSwitchPreference(title = stringResource(R.string.settings_dark), checked = dark, onCheckedChange = preferences::dark)
-                        CouiDivider()
+                        Divider()
                         DemoPreference(title = stringResource(R.string.settings_color),
                             value = stringResource(if (preferences.colorMode == 0) R.string.settings_color_natural else R.string.settings_color_vivid),
                             onClick = { open("color") })
-                        CouiDivider()
+                        Divider()
                         DemoPreference(title = stringResource(R.string.settings_font),
                             value = stringResource(R.string.settings_size_value, preferences.fontSize + 1), onClick = { open("font") })
                     }
-                    CouiGroup(title = stringResource(R.string.settings_notifications), footer = stringResource(R.string.settings_dependency)) {
+                    Group(title = stringResource(R.string.settings_notifications), footer = stringResource(R.string.settings_dependency)) {
                         DemoSwitchPreference(title = stringResource(R.string.settings_allow_notifications), checked = preferences.notifications,
                             onCheckedChange = preferences::notifications)
-                        CouiDivider()
+                        Divider()
                         DemoSwitchPreference(title = stringResource(R.string.settings_sound), checked = preferences.sound,
                             onCheckedChange = preferences::sound, enabled = preferences.notifications)
-                        CouiDivider()
+                        Divider()
                         DemoSwitchPreference(title = stringResource(R.string.settings_automatic), checked = preferences.automatic,
                             onCheckedChange = preferences::automatic, enabled = preferences.notifications)
                     }
-                    CouiGroup {
+                    Group {
                         DemoPreference(title = stringResource(R.string.settings_privacy), onClick = { open("privacy") })
-                        CouiDivider()
+                        Divider()
                         DemoPreference(title = stringResource(R.string.settings_about), onClick = { open("about") })
                     }
-                    CouiFooter(text = stringResource(R.string.settings_demo_only))
+                    Footer(text = stringResource(R.string.settings_demo_only))
                 }
             }
             val backdrop = rememberCouiWindowBackdrop()

@@ -8,7 +8,7 @@ Status: implemented
 
 ## Decision
 
-库在 `com.itos.coui.layout` 包公开 `CouiGroup`、`CouiItem`、`CouiPreferenceLayout` 等局部布局，另提供语义文字、折叠顶栏、常驻搜索和可选回弹。布局族不带 Settings 前缀，不为未合并的旧名称建立兼容别名。宿主持有查询、展开目标、导航、偏好、业务回调与滚动状态；不公开整页业务包装。
+库在 `com.itos.coui.layout` 包公开 `Group`、`Item`、`Divider`、`Footer`，另提供语义文字、折叠顶栏、常驻搜索和可选回弹。独立点击行与行布局的原选择用于拆开交互和排版；该公开拆分由[通用 Item 收敛](../simplification/2026-11-03-layout-item-api.md)替代，图示由宿主组合。布局族不为未合并的旧名称建立兼容别名。宿主持有查询、展开目标、导航、偏好、业务回调与滚动状态；不公开整页业务包装。
 
 原先的页面容器与配色作用域决定由[宿主页面所有权](../architecture/2026-11-03-host-owned-page-layout.md)替代。页面结构与采样装配由宿主选择，组件可独立与其他设计混用。折叠补偿仍只改变顶部留白，底部视口保持固定。
 

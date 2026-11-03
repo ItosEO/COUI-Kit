@@ -31,47 +31,47 @@ internal fun ListSamples(dark: Boolean, open: (String) -> Unit) {
         while (running && progress < 1f) { delay(250); progress = (progress + .02f).coerceAtMost(1f) }
         if (progress >= 1f) running = false
     }
-    CouiGroup(title = stringResource(R.string.list_item_info)) {
+    Group(title = stringResource(R.string.list_item_info)) {
         DemoPreference(title = stringResource(R.string.app_name), value = "ColorOS 17", icon = { Icon(DemoIcons.Info, null) })
-        CouiDivider(startIndent = 56.dp)
+        Divider(startIndent = 56.dp)
         DemoPreference(title = stringResource(R.string.settings_local), summary = stringResource(R.string.settings_privacy_summary))
     }
-    CouiGroup {
+    Group {
         DemoPreference(title = stringResource(R.string.list_item_action), summary = stringResource(R.string.settings_font),
             value = stringResource(R.string.settings_size_default), onClick = { open("font") })
-        CouiDivider()
+        Divider()
         DemoPreference(title = stringResource(R.string.list_item_input), value = name,
             onClick = { draft = name; editing = true })
     }
-    CouiGroup(Modifier.selectableGroup(), title = stringResource(R.string.list_item_single)) {
+    Group(Modifier.selectableGroup(), title = stringResource(R.string.list_item_single)) {
         listOf(R.string.settings_color_natural, R.string.settings_color_vivid).forEachIndexed { index, title ->
             DemoSelectPreference(title = stringResource(title), selected = choice == index, onSelect = { choice = index })
-            if (index == 0) CouiDivider()
+            if (index == 0) Divider()
         }
     }
-    CouiGroup(title = stringResource(R.string.list_item_multi)) {
+    Group(title = stringResource(R.string.list_item_multi)) {
         DemoCheckboxPreference(title = stringResource(R.string.settings_sound), checked = first, onCheckedChange = { first = it })
-        CouiDivider()
+        Divider()
         DemoCheckboxPreference(title = stringResource(R.string.settings_automatic), checked = second, onCheckedChange = { second = it })
     }
-    CouiGroup(title = stringResource(R.string.list_item_input)) {
+    Group(title = stringResource(R.string.list_item_input)) {
         DemoInputPreference(title = stringResource(R.string.list_item_input), value = name, onValueChange = { name = it },
             placeholder = stringResource(R.string.list_item_hint))
     }
-    CouiGroup {
+    Group {
         DemoStepperPreference(title = stringResource(R.string.list_item_stepper), value = count, onValueChange = { count = it },
             decreaseDescription = stringResource(R.string.stepper_decrease), increaseDescription = stringResource(R.string.stepper_increase))
-        CouiDivider()
+        Divider()
         DemoProgressPreference(title = stringResource(R.string.list_item_progress), progress = progress,
             actionText = stringResource(if (running) R.string.progress_pause else R.string.progress_resume),
             onAction = { if (progress >= 1f) progress = 0f; running = !running })
     }
-    CouiGroup(title = stringResource(R.string.list_item_link)) {
+    Group(title = stringResource(R.string.list_item_link)) {
         DemoPreference(title = stringResource(R.string.menu_title), onClick = { open("menu") })
-        CouiDivider()
+        Divider()
         DemoPreference(title = stringResource(R.string.picker_time_title), onClick = { open("timepicker") })
     }
-    CouiGroup {
+    Group {
         DemoPreference(title = stringResource(R.string.dialog_title), onClick = { open("dialogs") })
     }
     if (editing) CouiAlertDialog(onDismissRequest = { editing = false }, dark = dark,

@@ -38,7 +38,7 @@ CouiTheme(darkTheme = dark, colorScheme = colors) {
 
 `CouiTypography` 管普通内容、标签、菜单项及可选字体族。Shape 仍由各组件 Defaults 提供，适配器不把 COUI 几何改成 M3。
 
-`CouiColorScheme.background` 是页面底色，`surface` 是组件表面，`container` 是分组卡片。原生预设区分页面与卡片；自定义色板省略 `background` 时沿用 `surface`。`CouiPageDefaults.themeColors()` 分别读取 `background` 和 `container`，宿主将页面底色传给自己的页面容器。
+`CouiColorScheme.background` 是页面底色，`surface` 是组件表面，`container` 是分组卡片。原生预设区分页面与卡片；自定义色板省略 `background` 时沿用 `surface`。`CouiPageDefaults.themeColors()` 分别读取 `background` 和 `container`，宿主将页面底色传给自己的页面容器。`CouiPageDefaults.colors(accent, dark)` 从对应的原生浅色或深色预设生成 `CouiPageColors`，再应用显式强调色；它不会读取或创建主题作用域。
 
 ## Material 颜色与字体角色
 
@@ -53,6 +53,8 @@ CouiTheme(darkTheme = dark, colorScheme = colors) {
 | 普通内容 / 菜单项 / 菜单头部标签 | `bodyLarge` / `labelLarge` / `bodySmall` |
 
 Chip 从 `labelLarge` 取字体族。Dialog 从 `titleLarge`、`bodyMedium`、`labelLarge`、`bodyLarge`、`labelSmall` 分别取得标题、正文、按钮、输入与计数字体族。两者的字号、字重和排版由组件控制；未启用 M3 适配时使用系统字体策略。
+
+`CouiText` 的 `kind` 必填；省略 `color` 时使用 `LocalCouiContentColor.current`，显式颜色优先。菜单项的字号、字重与字体族统一由 `CouiTheme.typography.menuItem` 提供。
 
 ## 菜单、底栏与 FAB 的染色
 

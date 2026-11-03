@@ -23,7 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import com.itos.coui.layout.CouiPageDefaults
-import com.itos.coui.layout.CouiFooter
+import com.itos.coui.layout.Footer
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
@@ -40,7 +40,7 @@ import com.itos.coui.navigation.CouiBottomBar
 import com.itos.coui.navigation.CouiNavigationItem
 import com.itos.coui.search.CouiSearchBar
 import com.itos.coui.search.rememberCouiSearchBarState
-import com.itos.coui.layout.CouiGroup
+import com.itos.coui.layout.Group
 import com.itos.coui.topappbar.CouiTopAppBar
 import com.itos.coui.text.CouiTextKind
 import com.itos.coui.text.rememberCouiTextStyle
@@ -62,7 +62,7 @@ internal fun ChromeDetail(page: String, dark: Boolean, open: (String) -> Unit) {
     val renderer = rendering?.getOrNull()
     val title = stringResource((DemoComponentGroups.flatten().first { it.page == page }).title)
     BackHandler(expanded) { expanded = false; query = "" }
-    CouiGroup {
+    Group {
         Column(Modifier.fillMaxWidth()) {
             Box(Modifier.fillMaxWidth().height(if (page == "search") 152.dp else 260.dp).clip(CouiPageDefaults.shape)) {
                 Box(Modifier.matchParentSize().couiBackdrop(backdrop).background(MaterialTheme.colorScheme.background)) {
@@ -106,9 +106,9 @@ internal fun ChromeDetail(page: String, dark: Boolean, open: (String) -> Unit) {
             if (Build.VERSION.SDK_INT < 34 && page in listOf("navigation", "fab")) Text(stringResource(R.string.requires_api_34))
         }
     }
-    if (page == "navigation" || page == "fab") CouiFooter(text = stringResource(R.string.sample_press_count, clicks))
+    if (page == "navigation" || page == "fab") Footer(text = stringResource(R.string.sample_press_count, clicks))
     if (page == "search" && state.active) DemoCatalogSearch(query) { query = ""; expanded = false; open(it) }
-    if (page == "appbar") CouiGroup {
+    if (page == "appbar") Group {
         DemoPreference(title = stringResource(R.string.catalog_appbar_behavior), summary = stringResource(R.string.catalog_appbar_behavior_summary))
     }
 }

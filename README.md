@@ -15,6 +15,7 @@ COUI-Kit 参考 ColorOS 17 的「凝光视效」，提供背景模糊、材质�
 ## 特点
 
 - 组件和效果可以分别使用，也可以组合使用。
+- 设置式布局提供 `Group`、`Item`、`Divider` 和 `Footer`。`Item` 可自行处理可选整行点击，也可只布局内容，让宿主拥有选择、开关等状态。
 - 可以只取用单个 COUI 组件，与 Material、Miuix 或自有设计混搭；不要求替换宿主的 Scaffold、主题和导航，见[宿主页面接入](docs/guide/secondary-pages.md)。
 - 支持接入 App 的配色、文字样式和形状，并提供常用外观预设。
 - 提供原生主题、组件默认值与可选 `coui-material3` 适配模块。核心独立于 Material 3；M3 宿主可在启动时初始化适配，见[外观与预设](docs/guide/appearance.md)。

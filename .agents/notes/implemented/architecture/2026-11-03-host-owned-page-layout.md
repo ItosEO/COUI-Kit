@@ -10,7 +10,7 @@ Status: implemented
 
 移除 CouiScaffold 及其专用的 PageContentPadding、PageSlot、PageStyle、LocalPageStyle 和 pageStyle。库不提供替代的 Scaffold、页面包装器或新的全局 Provider。页面布局、导航、安全区分工、返回分发和业务状态归宿主。
 
-CouiGroup、CouiItem、CouiDivider、CouiFooter、CouiPreferenceLayout 和 CouiIllustration 保持独立。默认外观在消费处读取现有 CouiTheme；需要覆盖时使用所属组件的显式颜色或 dark 参数。分组的配色只作用于自身标题、卡片和说明，不隐式改变任意内容槽内的 Material、Miuix 或宿主组件。
+Group、Item、Divider、Footer 提供局部分组与行装配。最初为减少宿主重复排版而独立公开的行布局与图示入口，由[通用 Item 收敛](../simplification/2026-11-03-layout-item-api.md)部分替代：行布局并入 Item，图示回到宿主。默认外观在消费处读取现有 CouiTheme；需要覆盖时使用所属组件的显式颜色或 dark 参数。分组的配色只作用于自身标题、卡片和说明，不隐式改变任意内容槽内的 Material、Miuix 或宿主组件。
 
 背景采样继续使用现有 rememberCouiBackdrop、Modifier.couiBackdrop 和 ProvideCouiMenuBackdrop。纯分组、设置行、文字和图示不创建采样源。使用模糊材质的宿主显式指定正文源；菜单/弹窗的窗口源按需单独安装，不能用正文源替代完整窗口，也不能将采样消费者录入它自己的源。
 

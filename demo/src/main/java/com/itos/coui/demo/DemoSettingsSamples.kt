@@ -14,20 +14,20 @@ internal fun SwitchSample(dark: Boolean) {
     var loading by rememberSaveable { mutableStateOf(false) }
     var pending by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(loading) { if (loading) { delay(2200); row = pending; loading = false } }
-    CouiGroup(title = stringResource(R.string.sample_enabled)) {
+    Group(title = stringResource(R.string.sample_enabled)) {
         DemoSwitchPreference(title = stringResource(R.string.settings_switch_drag), checked = first, onCheckedChange = { first = it })
-        CouiDivider()
+        Divider()
         DemoSwitchPreference(title = stringResource(R.string.catalog_switch_row), checked = second, onCheckedChange = { second = it },
             summary = stringResource(R.string.settings_sound_summary))
     }
-    CouiGroup(title = stringResource(R.string.loading_switch)) {
+    Group(title = stringResource(R.string.loading_switch)) {
         DemoSwitchPreference(title = stringResource(R.string.loading_switch), checked = row,
             onCheckedChange = { pending = it; loading = true }, summary = stringResource(R.string.loading_switch_summary),
-            loading = loading, loadingDescription = stringResource(R.string.loading_switch_description), loadingStyle = true)
+            loading = loading, loadingDescription = stringResource(R.string.loading_switch_description))
     }
-    CouiGroup(title = stringResource(R.string.sample_disabled)) {
+    Group(title = stringResource(R.string.sample_disabled)) {
         DemoSwitchPreference(title = stringResource(R.string.checkbox_disabled_unchecked), checked = false, onCheckedChange = {}, enabled = false)
-        CouiDivider()
+        Divider()
         DemoSwitchPreference(title = stringResource(R.string.checkbox_disabled), checked = true, onCheckedChange = {}, enabled = false)
     }
 }

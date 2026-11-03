@@ -8,7 +8,7 @@
 | [顶栏搜索](search.md) | 搜索按钮与输入框之间的转场 |
 | [常驻搜索](search-bar.md) | 搜索胶囊与独立取消按钮 |
 | [折叠顶栏](collapsing-app-bar.md) | 大标题折叠与搜索联动 |
-| [分组与行布局](settings.md) | 独立卡片分组、行布局、说明和图示 |
+| [分组与行布局](settings.md) | `Group`、`Item`、`Divider`、`Footer` 及宿主组合行内容 |
 | [底栏](bottom-bar.md) | 页面选择、左右附件和融合表面 |
 | [FAB](fab.md) | 独立浮动操作 |
 | [菜单](menu.md) | 选择、勾选、分组与子菜单 |

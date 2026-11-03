@@ -10,7 +10,7 @@ Status: implemented
 
 Demo 消费公开的选择器与独立布局组件，组件/效果首页只登记目录，详情由普通 Activity 装配。标准 Intent 启动和 finish 交由当前 ROM 决定转场；不注册厂商白名单或复制 OEM 窗口协议。来源页查询、导航行和反馈在转场时保留，返回恢复原状态；dock 及 renderer 位于稳定作用域。
 
-页面沿用[宿主页面所有权](../architecture/2026-11-03-host-owned-page-layout.md)：DemoApp 与 DemoSettingsPage 使用应用层 Material 3 Scaffold，正文源显式录制完整视口，顶栏和底栏不录入其消费的正文源。DemoHostActivity 提供菜单/弹窗窗口源。横向安全区由页面消费，顶部由顶栏处理，底部由底栏或 Scaffold 处理；滚动内容应用并消费测量所得 padding。分组使用 CouiGroup 的默认留白，不恢复已移除的 topSpacing 参数或库内页面容器。
+页面沿用[宿主页面所有权](../architecture/2026-11-03-host-owned-page-layout.md)：DemoApp 与 DemoSettingsPage 使用应用层 Material 3 Scaffold，正文源显式录制完整视口，顶栏和底栏不录入其消费的正文源。DemoHostActivity 提供菜单/弹窗窗口源。横向安全区由页面消费，顶部由顶栏处理，底部由底栏或 Scaffold 处理；滚动内容应用并消费测量所得 padding。分组使用 Group 的默认留白，不恢复已移除的 topSpacing 参数或库内页面容器。
 
 保留主线 DemoApplication 的 Coui.initialize(CouiMaterial3Style()) 与可选模块依赖，不恢复根部手工色板映射。预设页控制局部原生/M3 外观，movableContentOf 保留同一页面状态树；各 Activity 共享偏好和实际深浅模式。组件默认配色在消费处解析，显式样式取最终 COUI 角色，菜单填写明确模式，不猜表面亮度。
 

@@ -187,4 +187,4 @@ M3 模式的 `CouiTopAppBarButton` 使用 `minimumInteractiveComponentSize()`，
 
 ## 设置式折叠背景
 
-CouiTopAppBar 的 backgroundAlpha 只控制背景，不改变标题和触摸布局。gradientSpeed 留空时保留原固定渐隐，正值选择全高幂曲线；gradientColor 非透明时按 dark 选择对应页面背景渐变，dark 默认跟随当前 CouiTheme。默认与显式 referenceBlurRadius 均按 dp 解释，通用顶栏保留已有按 density 装配的强度。新首页可直接组合 [CouiCollapsingTopAppBar](collapsing-app-bar.md)，它在消费处传入 Settings 的固定引擎像素半径。普通二级页继续使用原顶栏。
+CouiTopAppBar 的 `backgroundAlpha` 只控制背景，不改变标题和触摸布局。`gradientColor` 自身的 alpha 保留，并与渐变曲线和背景图层 alpha 相乘；显式透明度不会被渐隐曲线覆盖。`gradientSpeed` 留空时保留原固定渐隐，正值选择全高幂曲线；`gradientColor` 非透明时按 `dark` 选择对应页面背景渐变，`dark` 默认跟随当前 CouiTheme。默认与显式 `referenceBlurRadius` 均按 dp 解释，通用顶栏保留已有按 density 装配的强度。新首页可直接组合 [CouiCollapsingTopAppBar](collapsing-app-bar.md)，它保留标题颜色 alpha，并将其与折叠和搜索内容动画系数相乘；它在消费处传入 Settings 的固定引擎像素半径。普通二级页继续使用原顶栏。

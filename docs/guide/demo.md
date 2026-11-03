@@ -40,9 +40,9 @@ CI 可通过 KEYSTORE_FILE、KEYSTORE_PASSWORD、KEYSTORE_ALIAS、KEYSTORE_ALIAS
 
 Demo 在 DemoApplication 调用 `Coui.initialize(CouiMaterial3Style())`。默认值在组件消费处解析。关闭“使用 Material 主题配色”时，局部 `CouiTheme` 使用原生外观，Demo 的 M3 内容与背景也使用 COUI 中性表面和蓝色强调色；菜单与底栏不额外叠加页面染色。显式 FAB 配色预设继续生效。
 
-首页和详情页使用 Demo 自己的 Material 3 Scaffold，正文采样源供顶栏和底栏消费，Activity 根部提供菜单与弹窗的窗口采样源。分组和行布局直接使用 `com.itos.coui.layout` 的公开组件，安全区和返回处理由 Demo 管理。
+首页和详情页使用 Demo 自己的 Material 3 Scaffold，正文采样源供顶栏和底栏消费，Activity 根部提供菜单与弹窗的窗口采样源。分组和行布局使用 `com.itos.coui.layout` 的 `Group`、`Item`、`Divider`、`Footer`；偏好行等便捷包装属于 Demo 内部实现，不是库 API。安全区和返回处理由 Demo 管理。
 
-首页只使用彩色图标目录和分组卡片，不增加分类小标题；详情都有用途介绍，按控件类型使用对应系统式行列与说明。菜单页集中展示上下箭头 Popup 行；开关页包含模拟等待的加载状态；滑条轨道在独立槽位居中。时间、倒计时、日期与月历分别提供页面组件和标准弹窗。模糊页采用设置式图示、说明、调节的顺序。
+首页只使用彩色图标目录和分组卡片，不增加分类小标题；详情都有用途介绍，按控件类型使用对应系统式行列与说明。菜单页集中展示上下箭头 Popup 行；开关页包含模拟等待的加载状态；滑条轨道在独立槽位居中。时间、倒计时、日期与月历分别提供页面组件和标准弹窗。模糊页按设置式图示、说明、调节的顺序组织；图示由 Demo 使用 Box 和 Modifier 组合。
 
 视觉与行为核对 Settings 首页和普通二级页的实际消费者；Miuix 仅保留宿主职责参考。原生标题、搜索与列表的参数和状态分别追踪，不用固定小标题或便签式搜索替代。本地未进行设备像素、动态输入或性能验收。
 

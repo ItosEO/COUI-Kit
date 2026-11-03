@@ -7,8 +7,8 @@ COUI-Kit 是可按需取用的组件与视觉效果库，不提供独立 Scaffol
 | 需要的能力 | 使用方式 |
 | --- | --- |
 | 一行内容或一个控件 | 直接放入现有布局，不安装页面容器或背景 Provider |
-| 分组、说明、图示 | 组合 CouiGroup、CouiFooter、CouiIllustration |
-| COUI 点击反馈 | 使用 CouiItem 或已有反馈 Modifier，保持唯一点击 owner |
+| 分组、说明 | 组合 `Group`、`Footer`；图示由宿主使用普通布局和 Modifier 绘制 |
+| COUI 点击反馈 | 普通跳转使用 `Item.onClick`；选择行由宿主提供 toggleable/selectable 和反馈 |
 | COUI 惯性与回弹 | 在实际滚动容器上显式使用 couiVerticalScroll |
 | 模糊顶栏、底栏或 FAB | 由宿主录制正文 Backdrop，浮动组件位于该源之外 |
 | 材质菜单或弹窗 | 按需安装既有窗口采样 Provider，不改变页面测量 |
@@ -42,10 +42,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import com.itos.coui.backdrop.couiBackdrop
 import com.itos.coui.backdrop.rememberCouiBackdrop
-import com.itos.coui.layout.CouiGroup
-import com.itos.coui.layout.CouiItem
+import com.itos.coui.layout.Group
+import com.itos.coui.layout.Item
 import com.itos.coui.layout.CouiPageDefaults
-import com.itos.coui.layout.CouiPreferenceLayout
 import com.itos.coui.text.CouiText
 import com.itos.coui.text.CouiTextKind
 import com.itos.coui.topappbar.CouiTopAppBar
@@ -85,12 +84,10 @@ fun MixedPage(
                 contentPadding = padding,
             ) {
                 item {
-                    CouiGroup(colors = colors) {
-                        CouiItem(onClick = onOpen) {
-                            CouiPreferenceLayout {
-                                CouiText(text = rowTitle, kind = CouiTextKind.PreferenceTitle,
-                                    color = colors.title)
-                            }
+                    Group(colors = colors) {
+                        Item(onClick = onOpen) {
+                            CouiText(text = rowTitle, kind = CouiTextKind.PreferenceTitle,
+                                color = colors.title)
                         }
                     }
                 }
@@ -148,6 +145,6 @@ Demo 使用普通 Activity 导航，页面由应用层 Material 3 Scaffold 装�
 
 ## 从 PR 临时容器迁移
 
-移除 CouiScaffold 后，使用宿主已有容器，按上文显式接入所需采样能力。原来的 colors/dark 不再经隐藏页面作用域传给整页；使用既有 CouiTheme 局部覆盖，或分别传 Group.colors、Item.dark、Divider.color、Footer.color。Group 的内容槽保留其自己的主题。
+移除 CouiScaffold 后，使用宿主已有容器，按上文显式接入所需采样能力。原来的 colors/dark 不再经隐藏页面作用域传给整页；使用既有 CouiTheme 局部覆盖，或分别传 `Group.colors`、`Item.dark`、`Divider.color`、`Footer.color`。`Group` 的内容槽保留其自己的主题。
 
 COUI 的组件形状、排版、材质和交互具有独立职责。其他库可以作为研究参考，但其页面、导航和主题框架不是 COUI-Kit 必须复制的架构。

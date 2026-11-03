@@ -31,6 +31,8 @@ import androidx.compose.ui.unit.dp
 import com.itos.coui.effect.couiButtonFeedback
 import com.itos.coui.shape.CouiShape
 import com.itos.coui.theme.CouiTheme
+import com.itos.coui.theme.CouiColorScheme
+import com.itos.coui.theme.CouiPresets
 import com.itos.coui.text.CouiText
 import com.itos.coui.text.CouiTextKind
 
@@ -55,16 +57,15 @@ object CouiPageDefaults {
     val dividerHeight = 0.33.dp
     /** 消费当前原生/可选宿主策略；显式 colors 仍优先。 */
     @Composable
-    fun themeColors(dark: Boolean = CouiTheme.isDark): CouiPageColors {
-        val theme = CouiTheme.colorSchemeFor(dark)
-        return CouiPageColors(theme.background, theme.container, theme.onSurface,
-            theme.onSurfaceVariant, theme.onSurface.copy(alpha = .3f), theme.accent, theme.outlineVariant)
-    }
-    fun colors(accent: Color, dark: Boolean) = CouiPageColors(
-        Color(if (dark) 0xFF000000 else 0xFFF0F1F2), Color(if (dark) 0x1AFFFFFF else 0xFFFFFFFF),
-        Color(if (dark) 0xE6FFFFFF else 0xE6000000), Color(if (dark) 0x8AFFFFFF else 0x8A000000),
-        Color(if (dark) 0x4DFFFFFF else 0x4D000000), accent)
+    fun themeColors(dark: Boolean = CouiTheme.isDark): CouiPageColors =
+        CouiTheme.colorSchemeFor(dark).pageColors()
+
+    fun colors(accent: Color, dark: Boolean): CouiPageColors =
+        (if (dark) CouiPresets.Dark else CouiPresets.Light).pageColors().copy(accent = accent)
 }
+
+private fun CouiColorScheme.pageColors() = CouiPageColors(background, container, onSurface,
+    onSurfaceVariant, onSurface.copy(alpha = .3f), accent, outlineVariant)
 
 /**
  * 一组相邻设置项共享项目平滑圆角；条件隐藏的条目不保留空白或分组端点。
@@ -72,7 +73,7 @@ object CouiPageDefaults {
  * colors 只控制本组卡片、标题和说明；任意内容槽继续使用各组件自己的主题或显式参数。
  */
 @Composable
-fun CouiGroup(
+fun Group(
     modifier: Modifier = Modifier,
     title: String? = null,
     footer: String? = null,
@@ -91,29 +92,13 @@ fun CouiGroup(
         Column(Modifier.padding(horizontal = CouiPageDefaults.horizontalMargin).fillMaxWidth()
             .clip(CouiPageDefaults.shape).background(colors.card)
             .padding(vertical = CouiPageDefaults.groupPadding), content = content)
-        if (!footer.isNullOrEmpty()) CouiFooter(text = footer, color = colors.summary)
+        if (!footer.isNullOrEmpty()) Footer(text = footer, color = colors.summary)
     }
-}
-
-/** 自定义可点击设置项。只拥有自身点击与反馈，不改变内容槽的主题或业务状态。 */
-@Composable
-fun CouiItem(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-    enabled: Boolean = true,
-    dark: Boolean = CouiTheme.isDark,
-    content: @Composable RowScope.() -> Unit,
-) {
-    val source = remember { MutableInteractionSource() }
-    Row(modifier.fillMaxWidth().heightIn(min = CouiPageDefaults.rowMinHeight)
-        .couiButtonFeedback(dark, source, enabled, list = true)
-        .clickable(source, null, enabled, role = Role.Button, onClick = onClick)
-        .semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, content = content)
 }
 
 /** 卡片内部的细分隔。默认至少一个物理像素，实际高度服从宿主约束。 */
 @Composable
-fun CouiDivider(modifier: Modifier = Modifier,
+fun Divider(modifier: Modifier = Modifier,
     startIndent: androidx.compose.ui.unit.Dp = CouiPageDefaults.rowPadding,
     endIndent: androidx.compose.ui.unit.Dp = CouiPageDefaults.rowPadding,
     color: Color = CouiTheme.colorScheme.outlineVariant) {
@@ -126,25 +111,38 @@ fun CouiDivider(modifier: Modifier = Modifier,
 }
 
 @Composable
-fun CouiFooter(modifier: Modifier = Modifier, text: String,
+fun Footer(modifier: Modifier = Modifier, text: String,
     color: Color = CouiTheme.colorScheme.onSurfaceVariant) {
     CouiText(text = text, kind = CouiTextKind.Description, color = color, modifier =
         modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 8.dp), textAlign = TextAlign.Start)
 }
 
-/** 可装配的行布局；宿主替换 leading/headline/supporting/trailing，交互由外层 Modifier 拥有。 */
+/**
+ * 通用行内容槽；onClick 非空时安装唯一的点击与反馈，行内留白也参与点击。
+ * 无 onClick 时不提供点击、按钮语义或反馈；宿主可自行组合 toggleable/selectable 与反馈。
+ * enabled 仅控制本组件的点击与反馈，任意内容槽的交互与禁用状态由宿主负责。
+ */
 @Composable
-fun CouiPreferenceLayout(
+fun Item(
     modifier: Modifier = Modifier,
     leading: (@Composable () -> Unit)? = null,
     supporting: (@Composable () -> Unit)? = null,
     trailing: @Composable () -> Unit = {},
+    onClick: (() -> Unit)? = null,
+    enabled: Boolean = true,
+    dark: Boolean = CouiTheme.isDark,
     contentPadding: androidx.compose.foundation.layout.PaddingValues = androidx.compose.foundation.layout.PaddingValues(
         horizontal = CouiPageDefaults.rowPadding, vertical = CouiPageDefaults.contentPadding),
     leadingSize: androidx.compose.ui.unit.Dp = CouiPageDefaults.iconSize,
     headline: @Composable () -> Unit,
 ) {
-    Row(modifier.fillMaxWidth().defaultMinSize(minHeight = CouiPageDefaults.rowMinHeight).semantics(mergeDescendants = true) {}
+    val interaction = if (onClick != null) {
+        val source = remember { MutableInteractionSource() }
+        Modifier.couiButtonFeedback(dark, source, enabled, list = true)
+            .clickable(source, null, enabled, role = Role.Button, onClick = onClick)
+    } else Modifier
+    Row(modifier.fillMaxWidth().defaultMinSize(minHeight = CouiPageDefaults.rowMinHeight)
+        .then(interaction).semantics(mergeDescendants = true) {}
         .padding(contentPadding),
         verticalAlignment = Alignment.CenterVertically) {
         if (leading != null) Box(Modifier.padding(end = 16.dp).size(leadingSize), contentAlignment = Alignment.Center) { leading() }

@@ -15,8 +15,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import com.itos.coui.layout.CouiPageDefaults
-import com.itos.coui.layout.CouiDivider
-import com.itos.coui.layout.CouiGroup
+import com.itos.coui.layout.Divider
+import com.itos.coui.layout.Group
 
 internal data class DemoCatalogEntry(val page: String, val title: Int, val icon: androidx.compose.ui.graphics.vector.ImageVector)
 
@@ -48,13 +48,13 @@ internal val DemoEffectGroups = listOf(
 @Composable
 internal fun DemoCatalog(groups: List<List<DemoCatalogEntry>>, open: (String) -> Unit, enabled: Boolean = true) {
     groups.forEach { entries -> key(entries.first().page) {
-        CouiGroup {
+        Group {
             entries.forEachIndexed { index, entry -> key(entry.page) {
                 DemoPreference(Modifier.heightIn(min = CouiPageDefaults.homeRowMinHeight),
                     title = stringResource(entry.title), enabled = enabled, onClick = { open(entry.page) }, icon = {
                         Icon(entry.icon, null, Modifier.size(CouiPageDefaults.iconSize), tint = catalogIconColor(entry.page))
                     })
-                if (index != entries.lastIndex) CouiDivider(startIndent = 56.dp)
+                if (index != entries.lastIndex) Divider(startIndent = 56.dp)
             } }
         }
     } }

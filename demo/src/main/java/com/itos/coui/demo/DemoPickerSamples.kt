@@ -6,7 +6,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import com.itos.coui.menu.rememberCouiWindowBackdrop
 import com.itos.coui.picker.*
-import com.itos.coui.layout.CouiGroup
+import com.itos.coui.layout.Group
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -27,13 +27,13 @@ internal fun PickerSamples(page: String, dark: Boolean) {
         DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)) else if (page == "timepicker")
         LocalTime.ofSecondOfDay(seconds.toLong()).format(DateTimeFormatter.ofPattern(if (is24Hour) "HH:mm" else "hh:mm a", locale))
         else String.format(locale, "%02d:%02d:%02d", seconds / 3600, seconds / 60 % 60, seconds % 60)
-    CouiGroup(title = stringResource(R.string.picker_inline)) {
+    Group(title = stringResource(R.string.picker_inline)) {
         PickerBody(page, seconds, { seconds = it }, date, { date = it }, dark, is24Hour)
     }
-    if (page == "timepicker") CouiGroup {
+    if (page == "timepicker") Group {
         DemoSwitchPreference(title = stringResource(R.string.settings_time_24), checked = is24Hour, onCheckedChange = { is24Hour = it })
     }
-    CouiGroup(title = stringResource(R.string.picker_dialog)) {
+    Group(title = stringResource(R.string.picker_dialog)) {
         DemoPreference(title = title, value = value, onClick = {
             draftSeconds = seconds; draftDate = date; opened = true
         })

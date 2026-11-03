@@ -22,6 +22,8 @@ TopAppBarButton 在原 Modifier 位置调用真正的 M3 minimumInteractiveCompo
 
 菜单项与头部标签分别采用 M3 labelLarge 与 bodySmall，与用户指定的 Metric 菜单角色一致；普通内容继续采用 bodyLarge。原生菜单排版按同一基准调整，具体参数只由 CouiTypography 持有。
 
+语义文字的默认颜色读取现有 LocalCouiContentColor，不另立菜单文字角色；页面配色的显式原生工厂也从 CouiPresets 派生。顶栏将显式颜色的 alpha 与既有渐变或动画系数相乘，接口收敛与覆盖规则见[通用 Item 收敛](../simplification/2026-11-03-layout-item-api.md)。
+
 Chip 与 Dialog 仅接入相应 M3 字体族，不改 COUI 字号、字重、行距和 fontScale。Dialog 订阅 FontFamily.Resolver 返回的 State，resolved Typeface 同时驱动行距计算、操作区测量和绘制，避免锁住首次 fallback 字体。native 保留原系统字体。
 
 CouiMenuStyle 仅在末尾增加可选 dark。默认工厂填写实际模式，main/submenu 的文字、材质、阴影与反馈统一使用它。旧手写完整 Style 缺省该字段时保留原 surface 亮度判定。headerTextStyle 的显式字体与字号继续完整生效。

@@ -12,11 +12,13 @@ COUI-Kit 处于早期预览阶段。本文记录公开 API、行为、接入和�
 - CouiDivider 默认厚度至少为一个物理像素，布局与填色使用同一高度，继续服从宿主 Modifier 约束。
 - Wallpaper 复用 Personalise 的不可变矢量；核心源码和 API 文档归档附带 ICON_SOURCES.md，保留现有第三方权利声明。
 - 移除 CouiScaffold（曾名 CouiSettingsScaffold）及其专用页面测量、padding 与配色作用域。保留宿主已有 Scaffold、主题和导航；模糊材质按需组合原有 Backdrop 接口，不增加替代页面包装器。
-- CouiGroup 增加显式 colors，CouiItem 增加 dark，CouiDivider / CouiFooter 增加 color；默认值在消费处读取 CouiTheme。Group 配色仅作用于自身卡片、标题和 footer，不隐式改变其内容槽。原页面级 colors/dark 改为组件参数或既有局部主题，见[宿主页面接入](docs/guide/secondary-pages.md)。
+- Group 增加显式 colors，Item 增加 dark，Divider / Footer 增加 color；默认值在消费处读取 CouiTheme。Group 配色仅作用于自身卡片、标题和说明，不隐式改变其内容槽。CouiPageDefaults.colors 从对应原生浅色/深色预设派生并应用强调色。
 - PR #15 布局族公开命名简化：包名 `com.itos.coui.settings` → `com.itos.coui.layout`；`CouiSettingsGroup/Item/Divider/Footer/Illustration` → `CouiGroup/Item/Divider/Footer/Illustration`；`CouiSettingsColors/Defaults` → `CouiPageColors/Defaults`。这些入口尚未合入 main，不保留旧名称别名。
+- PR #16 进一步简化布局入口：包名继续为 `com.itos.coui.layout`；`CouiGroup/Item/Divider/Footer` 改为 `Group/Item/Divider/Footer`，`CouiPageColors/Defaults` 保留原名。移除 `CouiPreferenceLayout`，其 leading/headline/supporting/trailing、contentPadding 和 leadingSize 由 `Item` 提供；移除 `CouiIllustration`，图示由宿主布局与 Modifier 组合。`Item.onClick` 可省略；省略时不创建点击、按钮语义或反馈。普通跳转使用 `Item.onClick`，选择行由宿主提供 toggleable/selectable 和反馈。未发布的 PR 接口不保留兼容别名。
 - CouiSearchBarColors 的 background 更名为 fallbackBackground，仅负责 API 31–33 的普通填色；API 34 起继续使用所属模糊材质，文字、图标与清除颜色仍可显式覆盖。
-- CouiGroup 移除 topSpacing 参数，保留按标题选择的默认顶部留白。删除显式传入的默认值；额外外部留白使用 Modifier.padding。该 Modifier 不抵消内部默认留白；需要完全自定组间距时，由宿主组合标题、卡片与内容。CouiPreferenceLayout 移除 minHeight 参数，改用 Modifier.heightIn 或 height，内部默认行高服从外部约束。内部 contentPadding 与 leadingSize 参数保留。
-- CouiTextKind 移除没有消费者的 Title、Message、Button、Input、Counter 角色；弹窗使用已有 Dialog 组件内部排版，自定义文字使用 Compose TextStyle。设置页、搜索与页面标题角色及 onLineCount 回调保留。接入说明见[分组与行布局](docs/components/settings.md)。
+- Group 按标题选择默认顶部留白；额外外部留白使用 Modifier.padding，不会抵消内部默认留白。需要完全自定组间距时，由宿主组合标题、卡片与内容。Item 的默认行高继续服从外部 Modifier 与父级约束。
+- CouiText.color 默认读取 LocalCouiContentColor.current，kind 仍必填；CouiTextKind 移除未使用的 Menu 角色及没有消费者的 Title、Message、Button、Input、Counter 角色。弹窗使用已有 Dialog 组件内部排版，自定义文字使用 Compose TextStyle。设置页、搜索与页面标题角色及 onLineCount 回调保留。couiButtonFeedback 的 dark 默认读取 CouiTheme.isDark，enabled 默认 true，interactionSource 仍必填。接入说明见[分组与行布局](docs/components/settings.md)。
+- CouiTopAppBar 的渐变保留 gradientColor.alpha；折叠顶栏保留标题颜色 alpha，并与既有动画系数相乘。折叠顶栏的 dark 仅控制本组件，搜索内容槽使用宿主显式传入的模式或共同局部主题。
 
 ## [0.0.1-alpha3] - 2026-11-01
 

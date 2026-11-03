@@ -36,6 +36,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.unit.toSize
 import com.itos.coui.input.isCouiTouchCancelled
+import com.itos.coui.theme.CouiTheme
 
 /** 导航项过滤 state_pressed, COUIMaskRippleDrawable 实际只绘 hover -> focus。 */
 @Composable
@@ -100,8 +101,8 @@ private fun rememberMaskProgress(active: Boolean): State<Float> {
  * 宿主将同一 interactionSource 交给唯一的 clickable / toggleable owner，并自行提供外部裁剪。
  */
 @Composable
-fun Modifier.couiButtonFeedback(dark: Boolean, interactionSource: MutableInteractionSource,
-    enabled: Boolean, pressFeedback: Boolean = true, list: Boolean = false, hoverLocked: Boolean = false): Modifier {
+fun Modifier.couiButtonFeedback(dark: Boolean = CouiTheme.isDark, interactionSource: MutableInteractionSource,
+    enabled: Boolean = true, pressFeedback: Boolean = true, list: Boolean = false, hoverLocked: Boolean = false): Modifier {
     val hovered by interactionSource.collectIsHoveredAsState()
     val focused by interactionSource.collectIsFocusedAsState()
     val pressed by interactionSource.collectIsPressedAsState()

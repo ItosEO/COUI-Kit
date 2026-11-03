@@ -1,6 +1,5 @@
 package com.itos.coui.demo
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,10 +46,7 @@ internal fun DemoPreference(
     showChevron: Boolean = onClick != null,
 ) {
     val style = LocalDemoSettingsStyle.current
-    val source = remember { MutableInteractionSource() }
-    DemoPreferenceRow(modifier.then(if (onClick != null) Modifier.couiButtonFeedback(style.dark, source, enabled, list = true)
-        .clickable(source, null, enabled, role = Role.Button, onClick = onClick) else Modifier),
-        title, summary, enabled, icon) {
+    DemoPreferenceRow(modifier, title, summary, enabled, icon, onClick = onClick) {
         if (!value.isNullOrEmpty()) BasicText(value, Modifier.widthIn(max = 162.dp).padding(start = 16.dp),
             style = rememberCouiTextStyle(CouiTextKind.PreferenceValue).copy(
                 color = if (enabled) style.colors.summary else style.colors.disabled, textAlign = TextAlign.End),
@@ -73,7 +69,6 @@ internal fun DemoSwitchPreference(
     loading: Boolean = false,
     loadingDescription: String? = null,
     hapticFeedbackEnabled: Boolean = true,
-    loadingStyle: Boolean = false,
 ) {
     val style = LocalDemoSettingsStyle.current
     val view = LocalView.current
@@ -85,8 +80,6 @@ internal fun DemoSwitchPreference(
         }, title, summary, enabled, icon) {
         CouiSwitch(Modifier.padding(start = 16.dp), checked, null, style.dark,
             CouiSwitchDefaults.colors(style.colors.accent, style.dark), enabled, source,
-            // COUISwitch.canDrag 对 loadingStyle 始终返回 false，等待开始前也只接受点击。
-            onDragCheckedChange = if (loadingStyle) null else onCheckedChange,
             loading = loading, loadingDescription = loadingDescription,
             hapticFeedbackEnabled = hapticFeedbackEnabled)
     }
@@ -142,9 +135,12 @@ internal fun DemoPreferenceRow(modifier: Modifier, title: String, summary: Strin
     icon: (@Composable () -> Unit)?,
     contentPadding: androidx.compose.foundation.layout.PaddingValues = androidx.compose.foundation.layout.PaddingValues(
         horizontal = CouiPageDefaults.rowPadding, vertical = CouiPageDefaults.contentPadding),
+    onClick: (() -> Unit)? = null,
     trailing: @Composable () -> Unit) {
-    val colors = LocalDemoSettingsStyle.current.colors
-    CouiPreferenceLayout(modifier, leading = icon, contentPadding = contentPadding, headline = {
+    val style = LocalDemoSettingsStyle.current
+    val colors = style.colors
+    Item(modifier, leading = icon, onClick = onClick, enabled = enabled, dark = style.dark,
+        contentPadding = contentPadding, headline = {
         CouiText(text = title, kind = CouiTextKind.PreferenceTitle, color = if (enabled) colors.title else colors.disabled,
             textAlign = TextAlign.Start)
     }, supporting = summary?.takeIf { it.isNotEmpty() }?.let { text -> @Composable {

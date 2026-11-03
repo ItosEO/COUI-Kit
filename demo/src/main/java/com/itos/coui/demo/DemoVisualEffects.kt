@@ -118,7 +118,7 @@ private fun BackdropSample(mode: BackdropMode, dark: Boolean) {
     } else null
     DemoSliderPreference(title = stringResource(R.string.blur_radius),
         value = radius, onValueChange = { radius = it }, valueRange = 0f..32f, valueText = radius.toInt().toString())
-    com.itos.coui.layout.CouiDivider()
+    com.itos.coui.layout.Divider()
     DemoSliderPreference(title = stringResource(R.string.backdrop_position),
         value = phase, onValueChange = { phase = it }, valueText = "${(phase * 100).toInt()}%")
     BackdropStage(phase) { backdrop ->
