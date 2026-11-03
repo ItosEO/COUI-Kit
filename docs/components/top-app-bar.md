@@ -151,7 +151,7 @@ CouiTopAppBarButton(onClick = onReset, text = true, enabled = canReset, style = 
 }
 ~~~
 
-`enabled = false` 会禁用按钮，但不会隐藏它。可选 M3 适配会在最终内容作用域同步 Local，禁用 alpha 只计算一次；子内容显式颜色或内层 Local 继续优先。未接入适配的纯 native 核心需自行桥接 M3 插槽，见[外观指南](../guide/appearance.md#内容插槽与最小交互尺寸)。Material 图标、`Icon` 和 `Text` 需要由应用声明相应依赖。
+`enabled = false` 会禁用按钮，但不会隐藏它。可选 M3 适配为内容插槽提供 M3 Local；子内容显式颜色或内层 Local 优先。未接入适配的纯 native 核心需自行桥接 M3 插槽，见[外观指南](../guide/appearance.md#内容插槽与最小交互尺寸)。Material 图标、`Icon` 和 `Text` 需要由应用声明相应依赖。
 
 ## 显示和隐藏操作
 
@@ -179,7 +179,7 @@ CouiTopAppBarButtonGroup {
 
 每个按钮默认创建独立的 renderer。需要处理创建失败时，可以先创建 `CouiFloatingRenderer.standalone()`，再通过 `renderer` 传入。
 
-`CouiTopAppBarButton` 的 M3 策略在原 Modifier 位置使用真正的 `minimumInteractiveComponentSize()`，遵守宿主尺寸 Local 和 alignment lines，不再叠加固定占位。原生策略保留原规则；SearchButton 的固定容器不变。仅转发的 title 与 buttonGroup 不建立新的文字样式作用域。
+M3 模式的 `CouiTopAppBarButton` 使用 `minimumInteractiveComponentSize()`，遵守宿主最小交互尺寸设置。SearchButton 使用固定容器。title 与 buttonGroup 继承宿主文字样式。
 
 顶栏不消费状态栏 inset，可在顶栏内容或页面根节点添加一次 `statusBarsPadding()`。渐进模糊背景会向下延伸，但不会增加布局高度或触摸范围。
 
@@ -187,4 +187,4 @@ CouiTopAppBarButtonGroup {
 
 ## 设置式折叠背景
 
-CouiTopAppBar 的 backgroundAlpha 只控制背景，不改变标题和触摸布局。gradientSpeed 留空时保留原固定渐隐，正值选择全高幂曲线；gradientColor 非透明时按 dark 选择对应页面背景渐变。默认模糊半径由原始像素预设换算成 dp，显式 referenceBlurRadius 仍按 dp 解释。新首页可直接组合 [CouiCollapsingTopAppBar](collapsing-app-bar.md)，普通二级页继续使用原顶栏。
+CouiTopAppBar 的 backgroundAlpha 只控制背景，不改变标题和触摸布局。gradientSpeed 留空时保留原固定渐隐，正值选择全高幂曲线；gradientColor 非透明时按 dark 选择对应页面背景渐变。默认与显式 referenceBlurRadius 均按 dp 解释，通用顶栏保留已有按 density 装配的强度。新首页可直接组合 [CouiCollapsingTopAppBar](collapsing-app-bar.md)，它在消费处传入 Settings 的固定引擎像素半径。普通二级页继续使用原顶栏。

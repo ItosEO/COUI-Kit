@@ -1,25 +1,34 @@
 package com.itos.coui.demo
 
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import com.itos.coui.scroll.couiVerticalScroll
 import com.itos.coui.scroll.CouiOverscrollEffect
 import com.itos.coui.scroll.rememberCouiOverscrollEffect
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import com.itos.coui.backdrop.couiBackdrop
+import com.itos.coui.backdrop.rememberCouiBackdrop
 import com.itos.coui.theme.LocalCouiContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -45,7 +54,7 @@ import androidx.compose.ui.platform.LocalDensity
 import android.os.Build
 import com.itos.coui.shape.CouiCapsuleShape
 
-import com.itos.coui.settings.*
+import com.itos.coui.layout.*
 
 /**
  * 普通设置二级页：52dp 顶栏、独立采样/滚动内容和系统安全区。业务导航和返回拦截由宿主处理。
@@ -58,7 +67,7 @@ internal fun DemoSettingsPage(
     backDescription: String,
     onBack: () -> Unit,
     dark: Boolean,
-    colors: CouiSettingsColors,
+    colors: CouiPageColors,
     scrollState: ScrollState = rememberScrollState(),
     actions: @Composable () -> Unit = {},
     overscrollEffect: CouiOverscrollEffect? = rememberCouiOverscrollEffect(),
@@ -67,9 +76,13 @@ internal fun DemoSettingsPage(
     val source = remember { MutableInteractionSource() }
     val density = LocalDensity.current.density
     val contour = LocalCouiContourGlowEnabled.current
-    CouiSettingsScaffold(modifier, dark, colors, topBar = { backdrop ->
+    val backdrop = rememberCouiBackdrop()
+    Scaffold(modifier = modifier.fillMaxSize()
+        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
+        containerColor = colors.background,
+        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom), topBar = {
                 CouiTopAppBar(Modifier.fillMaxWidth(), backdrop) {
-                    Row(Modifier.fillMaxWidth().statusBarsPadding().height(CouiSettingsDefaults.toolbarHeight)
+                    Row(Modifier.fillMaxWidth().statusBarsPadding().height(CouiPageDefaults.toolbarHeight)
                         .padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                         if (Build.VERSION.SDK_INT >= 34) {
                             CouiTopAppBarButton(onClick = onBack, style = CouiToolbarStyle(dark = dark,
@@ -93,8 +106,10 @@ internal fun DemoSettingsPage(
                     }
                 }
     }) { innerPadding ->
-        Column(Modifier.fillMaxSize().couiVerticalScroll(scrollState, overscrollEffect = overscrollEffect)
-            .padding(innerPadding).consumeWindowInsets(innerPadding)
-            .padding(bottom = CouiSettingsDefaults.groupSpacing), content = content)
+        Box(Modifier.fillMaxSize().couiBackdrop(backdrop).background(colors.background)) {
+            Column(Modifier.fillMaxSize().couiVerticalScroll(scrollState, overscrollEffect = overscrollEffect)
+                .padding(innerPadding).consumeWindowInsets(innerPadding)
+                .padding(bottom = CouiPageDefaults.groupSpacing), content = content)
+        }
     }
 }

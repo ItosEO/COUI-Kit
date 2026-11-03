@@ -13,12 +13,16 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.withFrameNanos
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
@@ -67,9 +71,6 @@ object CouiPickerDefaults {
     val height = 135.dp
     val columnWidth = 62.dp
     val padding = 12.dp
-    val countdownHeight = 228.dp
-    val countdownMargin = 30.dp
-    val separatorWidth = 30.dp
     val dateYearWidth = 76.dp
     val dateMonthWidth = 96.dp
 }
@@ -77,6 +78,7 @@ object CouiPickerDefaults {
 /**
  * 可装配数值滚轮；受控 value，每次跨项提交，CANCEL 只吸附当前项、不产生额外点击。
  * textSize 为 dp；与原厂 NumberPicker 一样不重复应用系统 SP 放大。
+ * 高度由 modifier 控制；未指定时使用 Defaults，运动步长与命中区域使用实际视口。
  */
 @Composable
 fun CouiWheelPicker(
@@ -88,7 +90,6 @@ fun CouiWheelPicker(
     dark: Boolean = CouiTheme.isDark,
     enabled: Boolean = true,
     wrap: Boolean = true,
-    height: Dp = CouiPickerDefaults.height,
     textSize: Dp = 16.dp,
     focusTextSize: Dp = 20.dp,
     diffusion: Dp = 0.dp,
@@ -99,7 +100,7 @@ fun CouiWheelPicker(
     colors: CouiWheelColors = CouiPickerDefaults.wheelColors(dark),
 ) {
     require(!valueRange.isEmpty() && value in valueRange)
-    require(textSize.value > 0 && focusTextSize.value > 0 && height.value > 0)
+    require(textSize.value > 0 && focusTextSize.value > 0)
     require(repeatIntervalMillis > 0)
     require(diffusion.value >= 0f)
     val density = LocalDensity.current
@@ -109,12 +110,17 @@ fun CouiWheelPicker(
     val callback by rememberUpdatedState(onValueChange)
     val normal = with(density) { textSize.roundToPx().coerceAtLeast(1) }
     val focus = with(density) { focusTextSize.roundToPx().coerceAtLeast(1) }
-    val h = with(density) { height.roundToPx().coerceAtLeast(1) }
+    val defaultHeight = with(density) { CouiPickerDefaults.height.roundToPx() }
     val spread = with(density) { diffusion.toPx().toInt().toFloat() }
-    val row = normal + (h - 3 * normal).coerceAtLeast(0) / 3
-    val motion = remember(context, valueRange, wrap, row, spread) {
-        CouiWheelMotion(context, scope, value, valueRange, wrap && valueRange.count() > 3, row.toFloat(), spread)
+    var measuredHeight by remember(density) { mutableIntStateOf(defaultHeight) }
+    // Clock 使用实测高度生成像素步长；保持触摸、动画和 Canvas 的同一几何。
+    val row = normal + (measuredHeight - 3 * normal).coerceAtLeast(0) / 3
+    val rangeSize = valueRange.last.toLong() - valueRange.first.toLong() + 1L
+    val semanticSteps = (rangeSize - 2L).coerceIn(0L, Int.MAX_VALUE.toLong()).toInt()
+    val motion = remember(context, valueRange, wrap, normal, spread, density) {
+        CouiWheelMotion(context, scope, value, valueRange, wrap, row.toFloat(), spread)
     }
+    val repeatJob = remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
     SideEffect {
         motion.onChange = { next ->
             callback(next)
@@ -137,12 +143,21 @@ fun CouiWheelPicker(
     val mask = if (verticalFading) Modifier.graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
         .drawWithContent {
             drawContent()
+            if (size.height <= 0f) return@drawWithContent
             val edge = (((size.height.toInt() - normal) / 2) * .9f / size.height).coerceIn(0f, .5f)
             drawRect(Brush.verticalGradient(0f to Color.Transparent, edge to Color.White,
                 (1f - edge) to Color.White, 1f to Color.Transparent), blendMode = BlendMode.DstIn)
         } else Modifier
-    Canvas(modifier.height(height).clipToBounds().then(mask)
-        .progressSemantics(motion.value.toFloat(), valueRange.first.toFloat()..valueRange.last.toFloat(), (valueRange.count() - 2).coerceAtLeast(0))
+    Canvas(modifier.height(CouiPickerDefaults.height).onSizeChanged {
+        val nextStep = normal + (it.height - 3 * normal).coerceAtLeast(0) / 3
+        if (motion.step != nextStep.toFloat()) {
+            repeatJob.value?.cancel()
+            repeatJob.value = null
+            motion.resize(nextStep.toFloat())
+        }
+        measuredHeight = it.height
+    }.clipToBounds().then(mask)
+        .progressSemantics(motion.value.toFloat(), valueRange.first.toFloat()..valueRange.last.toFloat(), semanticSteps)
         .semantics {
             contentDescription = label; stateDescription = formatter(motion.value)
             if (!enabled) disabled()
@@ -154,12 +169,20 @@ fun CouiWheelPicker(
             }
         }.onKeyEvent { event ->
             if (!enabled || event.type != KeyEventType.KeyDown) false
-            else when (event.key) {
-                Key.DirectionUp -> { motion.tap(-1); true }
-                Key.DirectionDown -> { motion.tap(1); true }
-                else -> false
+            else {
+                val direction = when (event.key) {
+                    Key.DirectionUp -> -1
+                    Key.DirectionDown -> 1
+                    else -> 0
+                }
+                if (direction == 0 || !motion.canStep(direction)) false
+                else {
+                    repeatJob.value?.cancel()
+                    repeatJob.value = null
+                    motion.keyboardStep(direction)
+                }
             }
-        }.focusable(enabled).pointerInput(motion, enabled) {
+        }.focusable(enabled).pointerInput(motion, enabled, row) {
             if (!enabled) return@pointerInput
             awaitEachGesture {
                 val down = awaitFirstDown(requireUnconsumed = false)
@@ -176,6 +199,7 @@ fun CouiWheelPicker(
                         while (true) { motion.tap(direction); delay(repeatIntervalMillis) }
                     }
                 }
+                repeatJob.value = repeat
                 try {
                     while (true) {
                         val event = awaitPointerEvent(PointerEventPass.Main)
@@ -183,17 +207,26 @@ fun CouiWheelPicker(
                         if (event.isCouiTouchCancelled() || (pointer.isConsumed && pointer.pressed)) break
                         tracker.addPosition(pointer.uptimeMillis, pointer.position)
                         if (!dragging && abs(pointer.position.y - down.position.y) > viewConfiguration.touchSlop) {
-                            dragging = true; repeat.cancel(); motion.begin()
+                            dragging = true; repeat.cancel(); motion.beginDrag()
                         } else if (dragging && pointer.pressed) motion.drag(pointer.position.y - pointer.previousPosition.y)
                         pointer.consume()
                         if (!pointer.pressed) {
                             repeat.cancel()
-                            if (dragging) motion.end(tracker.calculateVelocity().y, false)
-                            else if (!longPressed && direction != 0) motion.tap(direction) else motion.settle()
+                            val nearDown = abs(pointer.position.y - down.position.y) < viewConfiguration.touchSlop
+                            if (dragging && !(nearDown && direction != 0 && !longPressed)) {
+                                motion.end(tracker.calculateVelocity().y, false)
+                            } else if (!longPressed && direction != 0) {
+                                motion.tap(direction)
+                                motion.releaseTap()
+                            } else motion.releaseTap()
                             finished = true; break
                         }
                     }
-                } finally { repeat.cancel(); if (!finished) motion.end(0f, true) }
+                } finally {
+                    repeat.cancel()
+                    if (repeatJob.value === repeat) repeatJob.value = null
+                    if (!finished) motion.end(0f, true)
+                }
             }
         }) {
         drawIntoCanvas { output ->
@@ -201,18 +234,23 @@ fun CouiWheelPicker(
             val center = size.height / 2
             val band = 24.dp.toPx() + spread
             paint.textSize = normal.toFloat()
-            val baseline = (3 * row - baselineMetrics.top - baselineMetrics.bottom) / 2
+            val baseline = (size.height - baselineMetrics.top - baselineMetrics.bottom) / 2
             for (relative in -2..2) {
                 val number = motion.display(relative) ?: continue
                 val text = formatter(number)
-                val y = (baseline + motion.offset + relative * (row + spread)).toInt().toFloat()
+                val y = (baseline + motion.offset + relative * (motion.step + spread)).toInt().toFloat()
                 val alpha = if (enabled) 1f else .5f
+                // 原厂超宽文本以普通字号判断，放不下时保留开头而非两侧裁切。
+                paint.textSize = normal.toFloat()
+                val wide = paint.measureText(text) >= size.width
+                paint.textAlign = if (wide) Paint.Align.LEFT else Paint.Align.CENTER
+                val x = if (wide) 0f else size.width / 2
                 canvas.save(); canvas.clipOutRect(0f, center - band, size.width, center + band)
-                paint.textSize = normal.toFloat(); paint.color = normalColor.copy(alpha = normalColor.alpha * alpha).toArgb()
-                canvas.drawText(text, size.width / 2, y, paint); canvas.restore()
+                paint.color = normalColor.copy(alpha = normalColor.alpha * alpha).toArgb()
+                canvas.drawText(text, x, y, paint); canvas.restore()
                 canvas.save(); canvas.clipRect(0f, center - band, size.width, center + band)
                 paint.textSize = focus.toFloat(); paint.color = focusColor.copy(alpha = focusColor.alpha * alpha).toArgb()
-                canvas.drawText(text, size.width / 2, y, paint); canvas.restore()
+                canvas.drawText(text, x, y, paint); canvas.restore()
             }
         }
     }

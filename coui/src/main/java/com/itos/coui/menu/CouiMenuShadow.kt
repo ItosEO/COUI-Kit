@@ -62,7 +62,7 @@ internal fun rememberCouiMenuShadow(
     }
     val renderer = remember { CouiShadowRenderer() }
     val density = LocalDensity.current
-    val radius = with(density) { LocalCouiMenuStyle.current.radius.toPx() }
+    val radius = with(density) { LocalCouiMenuStyle.current.resolvedRadius.toPx() }
     val style = CouiShadowDefaults.menu(dark)
     // 原厂资源先经 getDimensionPixelSize, 子面板 translationZ 则为 1 物理像素。
     val elevation = with(density) { style.elevation.roundToPx().toFloat() } + if (child) 1f else 0f

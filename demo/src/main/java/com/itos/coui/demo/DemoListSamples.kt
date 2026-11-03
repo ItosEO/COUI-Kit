@@ -8,7 +8,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.itos.coui.settings.*
+import com.itos.coui.layout.*
 import com.itos.coui.dialog.*
 import com.itos.coui.menu.rememberCouiWindowBackdrop
 import android.os.Build
@@ -28,47 +28,47 @@ internal fun ListSamples(dark: Boolean, open: (String) -> Unit) {
     var running by rememberSaveable { mutableStateOf(false) }
     val backdrop = rememberCouiWindowBackdrop()
     LaunchedEffect(running) { while (running && progress < 1f) { delay(250); progress = (progress + .02f).coerceAtMost(1f) } }
-    CouiSettingsGroup(title = stringResource(R.string.list_item_info)) {
+    CouiGroup(title = stringResource(R.string.list_item_info)) {
         DemoPreference(title = stringResource(R.string.app_name), value = "ColorOS 17", icon = { Icon(DemoIcons.Info, null) })
-        CouiSettingsDivider(startIndent = 56.dp)
+        CouiDivider(startIndent = 56.dp)
         DemoPreference(title = stringResource(R.string.settings_local), summary = stringResource(R.string.settings_privacy_summary))
     }
-    CouiSettingsGroup {
+    CouiGroup {
         DemoPreference(title = stringResource(R.string.list_item_action), summary = stringResource(R.string.settings_font),
             value = stringResource(R.string.settings_size_default), onClick = { open("font") })
-        CouiSettingsDivider()
+        CouiDivider()
         DemoPreference(title = stringResource(R.string.list_item_input), value = name,
             onClick = { draft = name; editing = true })
     }
-    CouiSettingsGroup(Modifier.selectableGroup(), title = stringResource(R.string.list_item_single)) {
+    CouiGroup(Modifier.selectableGroup(), title = stringResource(R.string.list_item_single)) {
         listOf(R.string.settings_color_natural, R.string.settings_color_vivid).forEachIndexed { index, title ->
             DemoSelectPreference(title = stringResource(title), selected = choice == index, onSelect = { choice = index })
-            if (index == 0) CouiSettingsDivider()
+            if (index == 0) CouiDivider()
         }
     }
-    CouiSettingsGroup(title = stringResource(R.string.list_item_multi)) {
+    CouiGroup(title = stringResource(R.string.list_item_multi)) {
         DemoCheckboxPreference(title = stringResource(R.string.settings_sound), checked = first, onCheckedChange = { first = it })
-        CouiSettingsDivider()
+        CouiDivider()
         DemoCheckboxPreference(title = stringResource(R.string.settings_automatic), checked = second, onCheckedChange = { second = it })
     }
-    CouiSettingsGroup(title = stringResource(R.string.list_item_input)) {
+    CouiGroup(title = stringResource(R.string.list_item_input)) {
         DemoInputPreference(title = stringResource(R.string.list_item_input), value = name, onValueChange = { name = it },
             placeholder = stringResource(R.string.list_item_hint))
     }
-    CouiSettingsGroup {
+    CouiGroup {
         DemoStepperPreference(title = stringResource(R.string.list_item_stepper), value = count, onValueChange = { count = it },
             decreaseDescription = stringResource(R.string.stepper_decrease), increaseDescription = stringResource(R.string.stepper_increase))
-        CouiSettingsDivider()
+        CouiDivider()
         DemoProgressPreference(title = stringResource(R.string.list_item_progress), progress = progress,
             actionText = stringResource(if (running) R.string.progress_pause else R.string.progress_resume),
             onAction = { if (progress >= 1f) progress = 0f; running = !running })
     }
-    CouiSettingsGroup(title = stringResource(R.string.list_item_link)) {
+    CouiGroup(title = stringResource(R.string.list_item_link)) {
         DemoPreference(title = stringResource(R.string.menu_title), onClick = { open("menu") })
-        CouiSettingsDivider()
+        CouiDivider()
         DemoPreference(title = stringResource(R.string.picker_time_title), onClick = { open("timepicker") })
     }
-    CouiSettingsGroup {
+    CouiGroup {
         DemoPreference(title = stringResource(R.string.dialog_title), onClick = { open("dialogs") })
     }
     if (editing) CouiAlertDialog(onDismissRequest = { editing = false }, dark = dark,

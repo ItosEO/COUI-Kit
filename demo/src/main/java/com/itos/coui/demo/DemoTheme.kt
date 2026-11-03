@@ -17,9 +17,9 @@ import com.kyant.capsule.ContinuousRoundedRectangle
 import com.itos.coui.theme.CouiTheme
 import com.itos.coui.theme.LocalCouiDarkTheme
 
-internal data class DemoSettingsStyle(val dark: Boolean, val colors: com.itos.coui.settings.CouiSettingsColors)
+internal data class DemoSettingsStyle(val dark: Boolean, val colors: com.itos.coui.layout.CouiPageColors)
 internal val LocalDemoSettingsStyle = androidx.compose.runtime.staticCompositionLocalOf {
-    DemoSettingsStyle(false, com.itos.coui.settings.CouiSettingsDefaults.colors(androidx.compose.ui.graphics.Color(0xFF0080FF), false))
+    DemoSettingsStyle(false, com.itos.coui.layout.CouiPageDefaults.colors(androidx.compose.ui.graphics.Color(0xFF0080FF), false))
 }
 
 internal object DemoShapes {
@@ -43,7 +43,7 @@ internal fun DemoTheme(dark: Boolean, materialTheme: Boolean = true, content: @C
     val currentContent by rememberUpdatedState(content)
     // 切换局部外观时移动同一内容树，保留页面状态与 renderer 的生命周期。
     val scopedContent = remember { movableContentOf {
-        val settings = com.itos.coui.settings.CouiSettingsDefaults.themeColors()
+        val settings = com.itos.coui.layout.CouiPageDefaults.themeColors()
         CompositionLocalProvider(LocalDemoSettingsStyle provides DemoSettingsStyle(CouiTheme.isDark, settings)) { currentContent() }
     } }
     // 页面使用 surfaceContainer，示例卡片独立使用 surfaceBright。

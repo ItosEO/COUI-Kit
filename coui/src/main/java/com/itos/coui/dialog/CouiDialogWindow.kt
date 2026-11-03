@@ -63,6 +63,8 @@ import com.itos.coui.effect.LocalCouiContourGlowEnabled
 import com.itos.coui.effect.rememberCouiMaterialEffect
 import com.itos.coui.menu.LocalCouiMenuBackdrop
 import com.itos.coui.menu.rememberCouiKawaseBlur
+import com.itos.coui.shape.CouiShape
+import com.itos.coui.shape.resolveCouiCornerRadius
 
 /** 输入预设只声明窗口策略，实际写入由窗口 owner 排在 Compose 参数更新之后。 */
 internal val LocalCouiDialogSoftInputMode = staticCompositionLocalOf<Int?> { null }
@@ -71,7 +73,7 @@ internal val LocalCouiDialogSoftInputMode = staticCompositionLocalOf<Int?> { nul
  * 普通警告窗口。宿主持有可见性、回调和不包含弹窗自身的窗口源。
  * 可选材质要求 API 33 与有效 backdrop；缺失时明确报错，不把 Kawase 等级当作高斯半径。
  * 只处理背景的采样、材质与轮廓，文字和按钮不进入背景滤镜。
- * cornerRadius 必须与 shape 一致；不提供 Tiny、列表、推荐按钮和拖拽面板。
+ * 不提供 Tiny、列表、推荐按钮和拖拽面板。
  */
 @Composable
 internal fun CouiDialogWindow(
@@ -81,14 +83,13 @@ internal fun CouiDialogWindow(
     dark: Boolean,
     placement: CouiDialogPlacement = CouiDialogPlacement.Bottom,
     shape: Shape = CouiDialogDefaults.shape,
-    cornerRadius: Dp = CouiDialogDefaults.cornerRadius,
+    cornerRadius: Dp = Dp.Unspecified,
     properties: DialogProperties = DialogProperties(usePlatformDefaultWidth = false),
     material: CouiDialogMaterial? = null,
     backdrop: CouiBackdrop? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val windowBackdrop = backdrop ?: LocalCouiMenuBackdrop.current
-    require(cornerRadius.value.isFinite() && cornerRadius >= 0.dp) { "弹窗圆角必须是有限非负值" }
     if (material != null) {
         check(Build.VERSION.SDK_INT >= 33) { "弹窗项目材质要求 Android 13 或更高版本" }
         checkNotNull(windowBackdrop) { "弹窗项目材质需要宿主提供不包含弹窗自身的窗口背景源" }
@@ -150,7 +151,8 @@ internal fun CouiDialogWindow(
         val edge = remember(material != null, contourEnabled) {
             if (material != null && contourEnabled && Build.VERSION.SDK_INT >= 33) CouiContour(style = CouiContourStyle.Dialog) else null
         }
-        val radiusPx = with(LocalDensity.current) { cornerRadius.toPx() }
+        val radiusPx = if (edge != null) with(LocalDensity.current) { shape.resolveCouiCornerRadius(cornerRadius).toPx() } else 0f
+        val edgeWeight = (shape as? CouiShape)?.cornerWeight ?: CouiDialogDefaults.edgeWeight
         var outerCoordinates: LayoutCoordinates? by remember { mutableStateOf(null) }
         var cardCoordinates: LayoutCoordinates? by remember { mutableStateOf(null) }
         // maxWidth 是含 InsetDrawable 左右留白的外框宽度，不是可见卡片宽度。
@@ -169,7 +171,7 @@ internal fun CouiDialogWindow(
                 DialogCard(modifier.fillMaxWidth()
                     .heightIn(max = maxCardHeight)
                     .onGloballyPositioned { cardCoordinates = it },
-                    material, windowBackdrop, colors, shape, edge, dark, radiusPx, content)
+                    material, windowBackdrop, colors, shape, edge, dark, radiusPx, edgeWeight, content)
         }
     }
     // 位于 Dialog 调用之后，保证晚于其 updateParameters 的 SOFT_INPUT_MODE 重置；
@@ -187,6 +189,7 @@ private fun DialogCard(
     edge: CouiContour?,
     dark: Boolean,
     radiusPx: Float,
+    edgeWeight: Float,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val blur = if (material != null) rememberCouiKawaseBlur(checkNotNull(backdrop), colors.surface, material.blurRadius) else null
@@ -211,7 +214,7 @@ private fun DialogCard(
         // 原厂 RootLayout.onDraw 先画白光，再由 dispatchDraw 绘制文字与按钮。
         if (Build.VERSION.SDK_INT >= 33) edge?.let { renderer ->
             drawIntoCanvas { canvas ->
-                canvas.nativeCanvas.drawRect(0f, 0f, size.width, size.height, edgePaint.apply { shader = renderer.shader(size, density, radiusPx, CouiDialogDefaults.edgeWeight,
+                canvas.nativeCanvas.drawRect(0f, 0f, size.width, size.height, edgePaint.apply { shader = renderer.shader(size, density, radiusPx, edgeWeight,
                         Color.Transparent, if (dark) .03f else .4f, if (dark) .3f else .6f, 1f,
                         (if (dark) 2f else 4f) * density) })
             }

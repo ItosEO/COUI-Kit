@@ -57,13 +57,9 @@ import androidx.compose.ui.layout.lookaheadScopeCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.node.ModifierNodeElement
-import androidx.compose.ui.node.requireLayoutCoordinates
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.relocation.BringIntoViewModifierNode
-import androidx.compose.ui.relocation.bringIntoView
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -76,12 +72,12 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.toSize
 import com.itos.coui.effect.CouiFloatingRenderer
 import com.itos.coui.effect.CouiFloatingSurface
 import com.itos.coui.effect.SpotlightPreset
 import com.itos.coui.effect.couiFloatingSurface
 import com.itos.coui.effect.rememberCouiSpotlight
+import com.itos.coui.input.CouiSearchRelocationBoundary
 import com.itos.coui.motion.couiPressMotion
 import com.itos.coui.motion.couiTouchMotion
 import com.itos.coui.motion.rememberCouiPressMotion
@@ -114,7 +110,7 @@ fun CouiTopAppBarSearch(
         val keyboard = LocalSoftwareKeyboardController.current
         BoxWithConstraints(
             modifier.fillMaxWidth().height(64.dp)
-                .then(SearchRelocationBoundary),
+                .then(CouiSearchRelocationBoundary),
             contentAlignment = Alignment.CenterStart,
         ) {
             val density = LocalDensity.current
@@ -234,8 +230,7 @@ fun CouiTopAppBarSearch(
                 }
                 LaunchedEffect(focusPending, enabled, visible, state.motion.expanded) {
                     if (focusPending && enabled && visible && state.motion.expanded) {
-                        requester.requestFocus()
-                        keyboard?.show()
+                        if (requester.requestFocus()) keyboard?.show()
                         onFocused()
                     }
                 }
@@ -419,21 +414,6 @@ private fun SearchSurface(
                     ) else Modifier),
                 contentAlignment = Alignment.Center,
             ) { content() }
-        }
-    }
-}
-
-private data object SearchRelocationBoundary : ModifierNodeElement<SearchRelocationNode>() {
-    override fun create() = SearchRelocationNode()
-    override fun update(node: SearchRelocationNode) = Unit
-}
-
-private class SearchRelocationNode : Modifier.Node(), BringIntoViewModifierNode {
-    override suspend fun bringIntoView(childCoordinates: LayoutCoordinates, boundsProvider: () -> Rect?) {
-        if (!childCoordinates.isAttached || boundsProvider() == null) return
-        // 输入保留内部滚动; 祖先只需显示固定顶栏, 不能追逐展开时越界的输入坐标而翻页。
-        bringIntoView {
-            if (isAttached) Rect(Offset.Zero, requireLayoutCoordinates().size.toSize()) else null
         }
     }
 }

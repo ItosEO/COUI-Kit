@@ -32,7 +32,7 @@ import androidx.compose.ui.platform.LocalView
 import com.itos.coui.input.CouiHapticFeedback
 import com.itos.coui.input.performCouiHapticFeedback
 
-import com.itos.coui.settings.*
+import com.itos.coui.layout.*
 
 /** 标题、摘要、可选图标、右侧状态与跳转箭头。无 onClick 时保持信息项语义。 */
 @Composable
@@ -102,7 +102,7 @@ internal fun DemoCheckboxPreference(
     summary: String? = null,
     enabled: Boolean = true,
     contentPadding: androidx.compose.foundation.layout.PaddingValues = androidx.compose.foundation.layout.PaddingValues(
-        horizontal = CouiSettingsDefaults.rowPadding, vertical = CouiSettingsDefaults.contentPadding),
+        horizontal = CouiPageDefaults.rowPadding, vertical = CouiPageDefaults.contentPadding),
 ) {
     val style = LocalDemoSettingsStyle.current
     val source = remember { MutableInteractionSource() }
@@ -141,7 +141,7 @@ internal fun DemoSelectPreference(
 internal fun DemoPreferenceRow(modifier: Modifier, title: String, summary: String?, enabled: Boolean,
     icon: (@Composable () -> Unit)?,
     contentPadding: androidx.compose.foundation.layout.PaddingValues = androidx.compose.foundation.layout.PaddingValues(
-        horizontal = CouiSettingsDefaults.rowPadding, vertical = CouiSettingsDefaults.contentPadding),
+        horizontal = CouiPageDefaults.rowPadding, vertical = CouiPageDefaults.contentPadding),
     trailing: @Composable () -> Unit) {
     val colors = LocalDemoSettingsStyle.current.colors
     CouiPreferenceLayout(modifier, leading = icon, contentPadding = contentPadding, headline = {

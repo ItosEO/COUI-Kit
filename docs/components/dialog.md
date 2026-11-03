@@ -17,7 +17,7 @@ if (visible) {
 }
 ~~~
 
-`dark` 和 `colors` 默认读取局部 `CouiTheme` 或初始化策略；未初始化时使用原生预设，模式来自 Local 或系统。M3 自动模式只接入对应文字角色的字体族，保留原字号、字重、行距和 fontScale；测量与绘制共同响应异步字体加载。自定义正文不被强设新样式。通用规则见[外观与预设](../guide/appearance.md)。
+`dark` 和 `colors` 默认读取局部 `CouiTheme` 或初始化策略；未初始化时使用原生预设，模式来自 Local 或系统。M3 模式使用对应文字角色的字体族，字号、字重、行距和 fontScale 由组件控制。自定义正文使用宿主样式。通用规则见[外观与预设](../guide/appearance.md)。
 
 ## 显示一个简单确认弹窗
 
@@ -155,7 +155,7 @@ fun RenameDialog(
 
 编辑不会自动提交或关闭弹窗。示例在 `onSave` 中传出输入值，由页面保存并关闭弹窗；关闭后重新打开会创建新的输入状态。需要保留草稿时，可以将 `TextFieldState` 提到弹窗外层。
 
-页面负责设置长度、内容校验和确认条件。已有的 `TextFieldValue` 调用仍然可用；需要按替换范围过滤粘贴或输入法组合输入时，可以使用 `state` 版本的 `inputTransformation`。程序性的 `state.edit` 和清除不会经过该转换。
+页面负责设置长度、内容校验和确认条件。`CouiInputDialog` 支持 `TextFieldState` 和 `TextFieldValue`。需要按替换范围过滤粘贴或输入法组合输入时，使用 `state` 版本的 `inputTransformation`；程序性的 `state.edit` 和清除不会经过该转换。
 
 默认会在窗口获焦后请求输入焦点和键盘。需要手动点击输入区时，设置 `autoFocus = false`。输入弹窗使用 `ADJUST_RESIZE`，内容不需要再添加 `imePadding`。自定义 `properties` 时，请保留 `decorFitsSystemWindows = true` 和 `usePlatformDefaultWidth = false`。
 
@@ -205,7 +205,9 @@ CouiAlertDialog(
 
 默认 `colors` 使用 `CouiDialogDefaults.themeColors(dark)`。显式自定义时可从该入口复制调整；主操作配色可以使用 `CouiDialogDefaults.primaryActionColors(accent)`。
 
-修改圆角时，请同时调整 `shape` 和 `cornerRadius`，让面板、操作区和外层裁剪保持一致。
+修改圆角时，传入 `shape = CouiShape(radius, cornerWeight)`。裁剪与材质轮廓从 Shape 读取半径和权重。`cornerRadius` 默认 `Dp.Unspecified`，表示从 Shape 解析；显式传入时必须与 CouiShape 的半径一致。
+
+使用其他自定义 `Shape` 并开启材质轮廓时，须显式提供有限非负的 `cornerRadius`；轮廓权重使用 Dialog 预设。无材质轮廓时只使用 Shape 裁剪。
 
 ## 窗口和限制
 

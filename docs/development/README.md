@@ -13,7 +13,6 @@
 | 对照、检查、设备验收与诊断               | [验证与评审](validation.md)                 |
 | Demo 打包、固定测试签名、PR 检查与失败诊断 | [CI 与 PR 检查](ci.md)                     |
 | Maven Central、GitHub Packages 与版本映射 | [发布渠道](publishing.md) |
-| 单一组件 API、默认参数与 Effect 保留策略 | [组件默认参数实施状态](high-level-api-design.md) |
-| 自动化测试建设顺序与场景 | [自动化测试评估](testing-plan.md) |
+| 自动化测试建设顺序与场景 | [自动化测试建议](testing-plan.md) |
 
 AI 代理的任务阅读顺序与执行权限由 [AGENTS.md](../../AGENTS.md)规定。

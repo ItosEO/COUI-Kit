@@ -12,7 +12,7 @@ Status: implemented
 
 [CouiSwitch](../../../../coui/src/main/java/com/itos/coui/switch/CouiSwitch.kt)是唯一基础组件，宿主持有 checked、loading、主题与业务回调。库公开 CouiSwitchColors 和 CouiSwitchDefaults；运动和加载绘制保持 internal，触觉辅助为 private，不另公开按钮、设置行或通用触觉枚举。
 
-加载和禁用都是同一个 CouiSwitch 的状态。[DemoSwitchSamples](../../../../demo/src/main/java/com/itos/coui/demo/DemoSettingsSamples.kt)直接传入 loading 或 enabled 展示，仅模拟业务等待，不提供额外预设或包装组件。Demo 沿原 ControlsDemo 增加一个分组和搜索标题，保留原页面、dock、配置开关和其他示例。
+加载和禁用都是同一个 CouiSwitch 的状态。[DemoSettingsSamples](../../../../demo/src/main/java/com/itos/coui/demo/DemoSettingsSamples.kt)直接传入 loading 或 enabled 展示，仅模拟业务等待。开关详情通过 Demo 的行布局装配，目录与页面组织见[设置式 Demo](2026-11-01-demo-catalog-and-system-icons.md)，业务等待不进入库。
 
 ### 原厂依据与移植
 

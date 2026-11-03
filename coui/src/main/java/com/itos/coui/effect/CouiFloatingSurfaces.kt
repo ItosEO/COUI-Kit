@@ -104,6 +104,9 @@ class CouiFloatingRenderer private constructor(internal val surfaceCount: Int) {
 /**
  * 单主体 BaseShader; 不绑定底栏, 不创建融球资源。
  * foregroundComposition 为 true 时材质和光晕仅输出前景; 共用 backdrop, 源须覆盖不透明 SDR 页面。
+ * beforeContent 在材质之后、内容之前直接混合到目标；接收内容的缓存裁剪路径，调用方不得修改。
+ * 回调坐标仍为节点本地坐标，变换及裁剪由调用方提供。
+ * renderer、contentLayer 与返回的 Modifier 绑定一个绘制节点，不跨节点复用。
  */
 @RequiresApi(34)
 @Composable
@@ -125,7 +128,7 @@ fun Modifier.couiFloatingSurface(
         beforeContent = beforeContent?.let { draw -> { _, path -> draw(path) } }) { listOf(surface()) }
 }
 
-/** 三主体按宿主子项顺序传入; 菜单使用 index 1, 两侧附件均使用 index 2。 */
+/** 三主体在同一节点按 Z 排序，同 Z 保留宿主子项顺序；资源与返回的 Modifier 不跨节点复用。菜单 index 1，两侧附件 index 2。 */
 @RequiresApi(34)
 @Composable
 fun Modifier.couiFloatingSurfaces(
@@ -181,7 +184,7 @@ private fun Modifier.floatingSurfaces(
     contourGlowEnabled: Boolean,
     foregroundComposition: Boolean = false,
     beforeContent: (DrawScope.(Int, Path) -> Unit)? = null,
-    drawOrder: List<Int> = materials.indices.toList(),
+    drawOrder: List<Int>? = null,
     surfaces: () -> List<CouiFloatingSurface>,
 ): Modifier {
     val recordingDensity = LocalDensity.current
@@ -281,7 +284,8 @@ private fun Modifier.floatingSurfaces(
                 contentLayers[index].clip = true
             }
             floatingDrawGroups(shadows.map { it.elevation }).forEach { indices ->
-                val group = indices.filter { nodes[it].visible }.sortedBy { drawOrder.indexOf(it) }
+                val visible = indices.filter { nodes[it].visible }
+                val group = if (drawOrder == null) visible else visible.sortedBy { drawOrder.indexOf(it) }
                 group.forEach { index ->
                     commands.add(shadowLayers[index])
                     // 前景模式下, 原 Shader 在此阈值内严格输出透明, 无需录制背景或创建光晕图层。

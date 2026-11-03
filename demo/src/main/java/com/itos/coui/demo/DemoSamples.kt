@@ -27,8 +27,8 @@ import com.itos.coui.menu.CouiMenu
 import com.itos.coui.menu.CouiMenuItem
 import com.itos.coui.menu.couiMenuAnchor
 import com.itos.coui.menu.rememberCouiMenuAnchor
-import com.itos.coui.settings.CouiSettingsDivider
-import com.itos.coui.settings.CouiSettingsGroup
+import com.itos.coui.layout.CouiDivider
+import com.itos.coui.layout.CouiGroup
 import kotlin.math.roundToInt
 
 @Composable
@@ -37,7 +37,7 @@ internal fun DemoSection(title: Int, query: String, padded: Boolean = true, cont
     val state = rememberSaveableStateHolder()
     if (query.isNotBlank() && !headingText.contains(query.trim(), ignoreCase = true)) return
     state.SaveableStateProvider(title) {
-        CouiSettingsGroup(title = headingText) {
+        CouiGroup(title = headingText) {
             if (padded) Column(Modifier.fillMaxWidth(), content = content)
             else content()
         }
@@ -57,22 +57,22 @@ internal fun ComponentDetail(page: String, dark: Boolean, onToggleTheme: () -> U
         "switch" -> SwitchSample(dark)
         "sliders" -> SliderSample(dark)
         "menu" -> {
-            CouiSettingsGroup(title = stringResource(R.string.menu_overflow_preset)) {
+            CouiGroup(title = stringResource(R.string.menu_overflow_preset)) {
                 DemoPreference(title = stringResource(R.string.menu_toolbar_more),
                     summary = stringResource(R.string.menu_overflow_preset_summary))
             }
             PopupRowSample(dark)
-            CouiSettingsGroup(title = stringResource(R.string.menu_actions)) { MenuSample(dark) }
+            CouiGroup(title = stringResource(R.string.menu_actions)) { MenuSample(dark) }
         }
         "dialogs" -> DialogSample(dark, onToggleTheme)
     }
     if (page == "checkbox") {
         var checked by rememberSaveable { mutableStateOf(false) }
-        CouiSettingsGroup {
+        CouiGroup {
             DemoCheckboxRow(stringResource(R.string.checkbox_toggle), checked, { checked = it }, dark)
-            CouiSettingsDivider()
+            CouiDivider()
             DemoCheckboxRow(stringResource(R.string.checkbox_disabled), true, {}, dark, enabled = false)
-            CouiSettingsDivider()
+            CouiDivider()
             DemoCheckboxRow(stringResource(R.string.checkbox_disabled_unchecked), false, {}, dark, enabled = false)
         }
     }
@@ -84,17 +84,17 @@ private fun SliderSample(dark: Boolean) {
     var section by rememberSaveable { mutableFloatStateOf(2f) }
     var implicitStep by rememberSaveable { mutableFloatStateOf(5f) }
     var enabled by rememberSaveable { mutableStateOf(true) }
-    CouiSettingsGroup {
+    CouiGroup {
         DemoSwitchRow(stringResource(R.string.enable_controls), enabled, { enabled = it })
     }
-    CouiSettingsGroup {
+    CouiGroup {
         DemoSliderPreference(title = stringResource(R.string.continuous_slider),
             value = value, onValueChange = { value = it }, valueText = "${(value * 100).roundToInt()}%", enabled = enabled)
-        CouiSettingsDivider()
+        CouiDivider()
         DemoSliderPreference(title = stringResource(R.string.section_slider),
             value = section, onValueChange = { section = it }, valueText = section.roundToInt().toString(),
             valueRange = 0f..4f, steps = 3, showTickMarks = true, enabled = enabled)
-        CouiSettingsDivider()
+        CouiDivider()
         DemoSliderPreference(title = stringResource(R.string.implicit_slider),
             value = implicitStep, onValueChange = { implicitStep = it }, valueText = implicitStep.roundToInt().toString(),
             valueRange = 0f..10f, steps = 9, showTickMarks = false, enabled = enabled)
@@ -113,9 +113,9 @@ private fun MenuSample(dark: Boolean) {
     val longLabels = (1..12).map { stringResource(R.string.menu_item_number, it) }
     DemoPreference(title = stringResource(R.string.menu_selection_label),
         value = if (longMenu) longLabels[selected] else if (selected == 0) first else second)
-    CouiSettingsDivider()
+    CouiDivider()
     DemoSwitchRow(stringResource(R.string.scroll_menu), longMenu, { longMenu = it; selected = 0 })
-    CouiSettingsDivider()
+    CouiDivider()
     Box {
         DemoPreference(modifier = Modifier.couiMenuAnchor(anchor),
             title = stringResource(R.string.open_menu), summary = stringResource(R.string.menu_open_summary),
@@ -166,7 +166,7 @@ internal fun PresetsDemo(dark: Boolean, query: String, contour: Boolean, onConto
     materialTheme: Boolean, onMaterialThemeChange: (Boolean) -> Unit) {
     DemoSection(R.string.presets_title, query, padded = false) {
         DemoSwitchRow(stringResource(R.string.material_theme_toggle), materialTheme, onMaterialThemeChange)
-        CouiSettingsDivider()
+        CouiDivider()
         Column(Modifier.selectableGroup()) {
             CouiFabColor.entries.forEach { option ->
                 val label = stringResource(when (option) {
@@ -180,11 +180,11 @@ internal fun PresetsDemo(dark: Boolean, query: String, contour: Boolean, onConto
                 }
             }
         }
-        CouiSettingsDivider()
+        CouiDivider()
         DemoSwitchRow(stringResource(R.string.contour_toggle), contour, onContourChange)
-        CouiSettingsDivider()
+        CouiDivider()
         DemoSwitchRow(stringResource(R.string.left_accessory_toggle), leftAccessory, onLeftAccessoryChange)
-        CouiSettingsDivider()
+        CouiDivider()
         DemoSwitchRow(stringResource(R.string.right_accessory_toggle), rightAccessory, onRightAccessoryChange)
     }
 }

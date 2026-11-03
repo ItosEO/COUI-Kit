@@ -99,7 +99,7 @@ COUIPopupListWindow / COUIPopupWindow
   → 系统合成端的模糊与材质消费者
 ```
 
-Java 入口、参数与 native 模糊片段分别有证据；这不表示所有中间传递步骤都已逐段执行验证。原厂窗口后景与本库的应用内采样来源也不同。
+原厂采样窗口后景，本库采样应用内内容；对照时需区分这两种来源。链路证据见[菜单记录](../../.agents/notes/implemented/bug-fix/2026-10-15-coui-submenu-input-dispatch.md)。
 
 当前移植入口：
 
@@ -109,7 +109,7 @@ Java 入口、参数与 native 模糊片段分别有证据；这不表示所有�
 - [CouiSpotlight](../../coui/src/main/java/com/itos/coui/effect/CouiSpotlight.kt)：点触光、跟手及预设。
 - [CouiMenuSubMenu](../../coui/src/main/java/com/itos/coui/menu/CouiMenuSubMenu.kt)：主子面板及连续输入。
 
-菜单现在是用户批准的组合，不是原 COUI 菜单整套预设。不要以“恢复官方”为由撤销通知描边、主题染色等已登记特化。当前组合、采样和输入边界见[菜单记录](../../.agents/notes/implemented/bug-fix/2026-10-15-coui-submenu-input-dispatch.md)。
+菜单使用通知描边、菜单内晕与主题染色的项目组合；对照原厂时，将这些特化与算法差异分开。范围见[菜单记录](../../.agents/notes/implemented/bug-fix/2026-10-15-coui-submenu-input-dispatch.md)。
 
 ### 3.2 底栏与 FAB：先分主体，再分效果
 
@@ -125,7 +125,7 @@ Java 入口、参数与 native 模糊片段分别有证据；这不表示所有�
   → 使用同一融合覆盖率及最终 alpha 合成
 ```
 
-当前 [CouiFloatingShader](../../coui/src/main/java/com/itos/coui/effect/CouiFloatingShader.kt) 已让轮廓使用融合距离场。再次要求“轮廓融合”时，应先验证此链路是否被破坏，而不是另叠一层独立描边。
+[CouiFloatingShader](../../coui/src/main/java/com/itos/coui/effect/CouiFloatingShader.kt) 的轮廓使用融合距离场。轮廓分离时，先检查这条链路。
 
 [CouiFloatingSurfaces](../../coui/src/main/java/com/itos/coui/effect/CouiFloatingSurfaces.kt) 承接采样、普通投影、caustic、材质和内容的分层。独立 FAB 走单主体入口，不填充假附件，也不共享底栏的收放状态。当前保留附件式底栏和独立 FAB，没有实现普通底栏绑定外部 FAB 的协议，当前装配见[独立 FAB](../../coui/src/main/java/com/itos/coui/floatingactionbutton/CouiFab.kt)与[底栏](../../coui/src/main/java/com/itos/coui/navigation/CouiBottomBar.kt)。
 
@@ -153,17 +153,17 @@ Java 入口、参数与 native 模糊片段分别有证据；这不表示所有�
 
 当前 [CouiSlider](../../coui/src/main/java/com/itos/coui/slider/CouiSlider.kt) 分离逻辑值与视觉位置，业务范围及保存仍由宿主负责。宿主选择的 G2 轨道是外观适配，不是提取版本的原厂默认；专用马达波形及完整物理引擎没有跨平台等价保证。见[滑条决策](../../.agents/notes/implemented/feature/2026-10-21-coui-slider.md)。
 
-通知侧滑的同色横向双主体 CONIC 场已抽到 [CouiMetaballRenderer](../../coui/src/main/java/com/itos/coui/effect/CouiMetaballRenderer.kt)。[Demo 融合示例](../../demo/src/main/java/com/itos/coui/demo/DemoRecordMetaball.kt)中的背景与内容遮罩使用相同算法、分别持有 renderer。它不提供背景采样或输入，也不替代底栏的多主体分层材质。名称都叫“融球”，不是整段替换的依据。
+[CouiMetaballRenderer](../../coui/src/main/java/com/itos/coui/effect/CouiMetaballRenderer.kt) 实现通知侧滑的同色横向双主体 CONIC 场。[Demo 融合示例](../../demo/src/main/java/com/itos/coui/demo/DemoRecordMetaball.kt)中的背景与内容遮罩使用相同算法、分别持有 renderer。它不提供背景采样或输入，也不替代底栏的多主体分层材质。
 
 ### 3.5 ChipTab：核对整条手势，而不只核对物理公式
 
 分类栏的惯性、回弹和选中露出并非同一条动画。物理类能收敛，不代表调用它的手势总能完成收尾；复用通用按压入口，也不代表已经保留原厂的取消时机。
 
-原厂对照覆盖便签与录音的 `COUIChip`、`COUIHorizontalScrollView` 和 `SpringOverScroller`。材料版本及哈希见[输入中断记录](../../.agents/notes/implemented/bug-fix/2026-10-24-chip-scroll-interruption.md)，组件装配见[ChipTab 记录](../../.agents/notes/implemented/feature/2026-10-24-chip-tab.md)。本次核查使用以下方法发现差异：
+原厂入口包括便签与录音的 `COUIChip`、`COUIHorizontalScrollView` 和 `SpringOverScroller`。材料版本及哈希见[输入中断记录](../../.agents/notes/implemented/bug-fix/2026-10-24-chip-scroll-interruption.md)，组件装配见[ChipTab 记录](../../.agents/notes/implemented/feature/2026-10-24-chip-tab.md)。用以下输入检查中断路径：
 
-| 反例与检查方法                            | 发现的差异                         | 原厂依据与当前入口                                                                                                                                                                                                |
+| 反例与检查方法                            | 需要核对的行为                         | 原厂依据与当前入口                                                                                                                                                                                                |
 |------------------------------------|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 越界回弹中按下，不达到拖动阈值就抬手；从 DOWN 追到每个提前返回 | DOWN 已停止旧回弹，但阈值等待外的收尾无法恢复它    | 原厂分发及触摸路径在 UP/CANCEL 调用 `springBack`，未进入拖动的 UP 也有处理；当前 [CouiChipTabRow](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabRow.kt) 将阈值等待纳入同一收尾范围                                                     |
+| 越界回弹中按下，不达到拖动阈值就抬手；从 DOWN 追到每个提前返回 | DOWN 停止回弹后，UP/CANCEL 能否恢复边界收尾    | 原厂分发及触摸路径在 UP/CANCEL 调用 `springBack`，未进入拖动的 UP 也有处理；当前 [CouiChipTabRow](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabRow.kt) 将阈值等待纳入同一收尾范围                                                     |
 | 按住分类项后横向拖动，让父容器接管；分别检查按压与点触光       | 点触光取消不能代替按压释放；按压还须防止本次手势中重新启动 | `COUIChip.handleActionCancel` 调用 `executeFeedbackAnimator(false)`；当前分类项显式开启公共输入的 `cancelOnConsumedMove`，其他消费者保留原行为                                                                                       |
 | 分别追直接松手、惯性触边和中断，不只比较可见位置与速度        | 将临时积分位置统一重置到边界，会改变不同入口的初始状态   | 原厂 `springBack` 经 `setCurrentValue(..., false)` 保留临时位置；`setAtRest` 同步当前位置；`notifyEdgeReached` 写入边界。当前 [CouiScrollPhysics](../../coui/src/main/java/com/itos/coui/scroll/CouiScrollPhysics.kt) 分别处理 |
 
@@ -193,7 +193,7 @@ Java 入口、参数与 native 模糊片段分别有证据；这不表示所有�
   → coui：COUI 控件、固定预设、效果、采样、几何、动效和输入
 ```
 
-公共 Defaults 由各组件族持有，原生默认主题由库持有；动态取色、Material 映射、HCT、应用偏好和日志留在宿主。不要因为文件导入 COUI 就将它迁入库，也不要新增只转发参数的包装层。当前代码入口和完整边界见[架构](architecture.md)及[分层决策](../../.agents/notes/implemented/architecture/2026-10-21-coui-module-boundary.md)。
+公共 Defaults 由各组件族持有，原生默认主题由库持有；动态取色、HCT、应用偏好和日志归宿主，Material 映射归可选适配模块。完整边界见[架构](architecture.md)及[分层决策](../../.agents/notes/implemented/architecture/2026-10-21-coui-module-boundary.md)。
 
 ### 4.3 为一条绘制链核对这些输入
 
@@ -207,7 +207,7 @@ Java 入口、参数与 native 模糊片段分别有证据；这不表示所有�
 
 这些输入未对齐时，不应先用颜色和强度补偿。
 
-## 5. 已遇到的坑及排查方法
+## 5. 常见差异与排查方法
 
 ### 5.1 材质、光效与投影
 
@@ -229,7 +229,7 @@ Java 入口、参数与 native 模糊片段分别有证据；这不表示所有�
 | 菜单用 Kawase，所以顶栏也用多级降采样    | 顶栏实际渐进分支使用位置可变 Gaussian；旧多级 atlas 路线没有对应依据。也不能未查采样器就将马赛克归因为 nearest filtering                                  | [渐进模糊研究](../../.agents/notes/implemented/bug-fix/2026-10-18-coui-topbar-gradient-blur.md)                                                                   |
 | 拖动时后景跟按钮走                 | 检查实际窗口坐标、采样原点与变换订阅。浮动 bounds 为未缩放坐标，缩放单独传入；投影网格已含缩放时不能外层再缩放                                                    | [浮动几何](../../coui/src/main/java/com/itos/coui/effect/CouiFloatingGeometry.kt)、[绘制装配](../../coui/src/main/java/com/itos/coui/effect/CouiFloatingSurfaces.kt) |
 | 背景停在旧帧或主题切换无效             | 背景源不能永久缓存；已有 RenderEffect 保存的是 uniform 快照。几何、主题、开关或目标坐标变化后需正确失效；跨窗口还要核对源 View                                  | [背景契约](../effects/backdrop.md)                                                                                                                              |
-| 后台返回投影变淡，点一下恢复            | 不能用同色判断录制仍有效。系统可丢弃内部 RenderNode 的 DisplayList；应在失效时重录，不增加持续刷新掩盖缺陷。历史缓存自检证明修复行为，不证明每次设备症状都由此触发                  | [阴影缓存与验证](../../.agents/notes/implemented/bug-fix/2026-10-18-coui-native-shadow.md)                                                                         |
+| 后台返回投影变淡，点一下恢复            | 系统可丢弃内部 RenderNode 的 DisplayList；检查录制是否失效，并在失效时重录。不能只用颜色是否变化判断缓存有效性                  | [阴影缓存与验证](../../.agents/notes/implemented/bug-fix/2026-10-18-coui-native-shadow.md)                                                                         |
 | 录制投影触发 StackOverflowError | 当前 Compose 的作用域 record 可将调用方 Density 写回自身 DrawContext。纯投影使用显式独立 Density 的成员入口；含 drawContent 的前景仍需原绘制上下文，不能批量替换 | [当前分层录制](../../coui/src/main/java/com/itos/coui/effect/CouiFloatingSurfaces.kt)                                                                             |
 | Shader 构造不报错，因此空白就是透明度问题  | 构造成功不证明目标 GPU 能执行所用 SkSL。先区分未执行与正常透明输出，不能给未知后端写虚假成功路径                                                          | [兼容要求](../guide/compatibility.md)                                                                                                                           |
 
@@ -266,7 +266,7 @@ Java 入口、参数与 native 模糊片段分别有证据；这不表示所有�
 
 视觉差异先按“采样 → 坐标 → 材质 → 合成 → 几何 → 状态”缩小范围。性能差异先查缓存失效、重复录制、离屏面积、采样次数、网格重建及片段运算。**没有新增 effect 节点，不等于没有新增 GPU 成本。**
 
-普通投影的性能研究采用过同包旁路对照，再针对 fast 裁剪承载减少中间图像。操作速度和样本量不同的结果只作线索，不转成固定收益；细节保留在[对应记录](../../.agents/notes/implemented/bug-fix/2026-10-18-coui-native-shadow.md)。不要为复现一次实验长期保留额外设置、计数器或诊断入口。
+性能对照应使用相同操作速度和样本条件，一次只改变一条绘制链。实验结束后清理仅用于该实验的设置、计数器和诊断入口。
 
 ## 7. 交接时保留什么
 
@@ -299,5 +299,3 @@ Java 入口、参数与 native 模糊片段分别有证据；这不表示所有�
 | ChipTab 与横向输入 | [组件装配](../../.agents/notes/implemented/feature/2026-10-24-chip-tab.md)、[选中项露出](../../.agents/notes/implemented/bug-fix/2026-10-24-chip-selection-visibility.md)、[命中与中断](../../.agents/notes/implemented/bug-fix/2026-10-24-chip-scroll-interruption.md) |
 | 横向双主体融合       | [算法接入](../effects/metaball.md)、[生产算法](../../coui/src/main/java/com/itos/coui/effect/CouiMetaballRenderer.kt)、[Demo](../../demo/src/main/java/com/itos/coui/demo/DemoRecordSamples.kt)                                                                   |
 | 开发与验证流程       | [Developer 指南](README.md)、[消费者兼容要求](../guide/compatibility.md)、[执行约束](../../AGENTS.md)                                                                                                                                                                  |
-
-后续增加新组件时，先检查已有消费者、算法和决策，再恢复缺少的定点证据。不要因一个局部差异，自动重开已停止的整套研究或重写可用链路。

@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -30,6 +31,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.itos.coui.effect.CouiFloatingRenderer
+import com.itos.coui.backdrop.couiBackdrop
+import com.itos.coui.backdrop.rememberCouiBackdrop
 import com.itos.coui.effect.LocalCouiContourGlowEnabled
 import com.itos.coui.effect.couiNavigationFeedback
 import com.itos.coui.floatingactionbutton.CouiFabColor
@@ -38,8 +41,7 @@ import com.itos.coui.navigation.CouiBottomBar
 import com.itos.coui.navigation.CouiNavigationItem
 import com.itos.coui.search.CouiSearchBar
 import com.itos.coui.search.rememberCouiSearchBarState
-import com.itos.coui.settings.CouiSettingsDefaults
-import com.itos.coui.settings.CouiSettingsScaffold
+import com.itos.coui.layout.CouiPageDefaults
 import com.itos.coui.topappbar.CouiCollapsingTopAppBar
 import com.itos.coui.topappbar.CouiCollapsingAppBarDefaults
 import com.itos.coui.topappbar.rememberCouiCollapsingAppBarState
@@ -70,6 +72,8 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
     val scrolls = List(3) { rememberScrollState() }
     val headers = List(3) { index -> rememberCouiCollapsingAppBarState(canScroll = { scrolls[index].maxValue > 0 }) }
     val colors = MaterialTheme.colorScheme
+    val background = CouiPageDefaults.themeColors(dark).background
+    val backdrop = rememberCouiBackdrop()
     val color = CouiFabDefaults.containerColor(preset, dark)
     // 源 Activity 在窗口转场中仍可见，导航不拆掉结果行及其按压退场；返回时保留查询。
     val open: (String) -> Unit = openPage
@@ -81,8 +85,10 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
             val search = rememberCouiSearchBarState(searching)
             val density = LocalDensity.current
             val resultOffset = with(LocalDensity.current) { CouiCollapsingAppBarDefaults.resultsStartOffset.toPx() }
-            CouiSettingsScaffold(Modifier.imePadding().nestedScroll(header.nestedScrollConnection), dark,
-                CouiSettingsDefaults.themeColors(dark), topBar = { backdrop ->
+            Scaffold(modifier = Modifier.fillMaxSize().imePadding()
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                .nestedScroll(header.nestedScrollConnection), containerColor = background,
+                contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom), topBar = {
                     CouiCollapsingTopAppBar(state = header, searchState = search, title = titles[page],
                         color = colors.onSurface, backdrop = backdrop, backgroundColor = colors.background, dark = dark) {
                         CouiSearchBar(state = search, query = query, onQueryChange = { query = it },
@@ -92,7 +98,7 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
                             clearDescription = stringResource(R.string.catalog_search_clear),
                             dark = dark, backdrop = backdrop, shadowProgress = header.collapsedFraction)
                     }
-                }, bottomBar = { backdrop ->
+                }, bottomBar = {
                     if (Build.VERSION.SDK_INT >= 34 && renderers != null) {
                         Box(Modifier.fillMaxWidth()) {
                             CouiBottomBar(
@@ -109,9 +115,9 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
                         }
                     } else PlainDemoBottomBar(titles, navigation, selectedNavigation, page, selectPage, dark)
                 } ) { innerPadding ->
+                Box(Modifier.fillMaxSize().couiBackdrop(backdrop).background(background)) {
                 pageState.SaveableStateProvider(page) {
                 val contentPadding = remember(header, innerPadding, density) { header.contentPadding(innerPadding, density) }
-                Box(Modifier.fillMaxSize()) {
                     Column(Modifier.fillMaxSize().graphicsLayer { alpha = search.contentAlpha }
                         .couiVerticalScroll(contentScroll, enabled = !search.active)
                         .padding(contentPadding).consumeWindowInsets(innerPadding)

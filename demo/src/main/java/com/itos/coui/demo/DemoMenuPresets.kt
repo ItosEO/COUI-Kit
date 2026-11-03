@@ -1,6 +1,6 @@
 package com.itos.coui.demo
 
-import com.itos.coui.settings.*
+import com.itos.coui.layout.*
 import android.os.Build
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource

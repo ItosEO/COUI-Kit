@@ -75,6 +75,10 @@ backgroundColor 需不透明，background 绘制实际图案或页面内容。�
 
 ## 资源与失败处理
 
+`drawCouiBackdrop` 的内部采样层、效果 scope 和目标坐标逐节点创建；返回的 Modifier 可用于多个面板。`shape` 裁剪背景、surface 与子内容，滤镜仅处理背景。padding 在它外侧时缩小采样和裁剪区域，在内侧时留白也包含在面板内。
+
+通用背景和渐进背景的内部图层随节点挂载和移除成对创建、释放。自定义回调捕获的外部 renderer 仍由调用方管理，不能借复用 Modifier 共享可变绘制资源。
+
 每个独立绘制节点持有自己的可变 renderer。单主体使用 CouiFloatingRenderer.standalone()，底栏使用 CouiFloatingRenderer()；不要跨节点共享。融合背景和遮罩也分别持有 renderer。
 
 宿主在创建前检查平台门槛。需要错误 UI 时，在 remember 的工厂中捕获构造结果，再按结果决定是否进入组件；不要把 Compose content 放进普通 try/catch。创建异常保留原因，协程取消须继续传播。

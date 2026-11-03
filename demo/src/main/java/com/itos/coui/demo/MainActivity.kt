@@ -5,8 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
+import com.itos.coui.menu.ProvideCouiMenuBackdrop
 
 class MainActivity : DemoHostActivity() {
     @androidx.compose.runtime.Composable
@@ -34,7 +38,11 @@ abstract class DemoHostActivity : ComponentActivity() {
                 }
             }
             DemoTheme(dark = dark, materialTheme = preferences.materialTheme) {
-                Page(dark, preferences)
+                ProvideCouiMenuBackdrop(isolateContent = false) { windowSource ->
+                    Box(Modifier.fillMaxSize().then(windowSource)) {
+                        Page(dark, preferences)
+                    }
+                }
             }
         }
     }

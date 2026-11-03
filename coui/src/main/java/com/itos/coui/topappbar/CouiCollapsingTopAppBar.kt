@@ -3,9 +3,9 @@ package com.itos.coui.topappbar
 import android.graphics.Paint
 import android.graphics.Typeface
 import androidx.compose.runtime.remember
-import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -15,6 +15,8 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -33,14 +35,15 @@ fun CouiCollapsingTopAppBar(
     state: CouiCollapsingAppBarState,
     searchState: CouiSearchBarState,
     title: String,
-    color: Color = CouiTheme.colorScheme.onSurface,
+    color: Color = Color.Unspecified,
     backdrop: CouiBackdrop,
     backgroundColor: Color = Color.Transparent,
     dark: Boolean = CouiTheme.isDark,
     searchBar: @Composable () -> Unit,
 ) {
     val density = LocalDensity.current
-    val topInset = WindowInsets.statusBars.getTop(density)
+    val layoutDirection = LocalLayoutDirection.current
+    val titleColor = if (color == Color.Unspecified) CouiTheme.colorSchemeFor(dark).onSurface else color
     val titleStyle = rememberCouiTextStyle(CouiTextKind.HomeTitle)
     val descent = remember(titleStyle, density) { Paint().apply {
         typeface = Typeface.create(Typeface.create("sans-serif-semibold", Typeface.NORMAL), 700, false)
@@ -54,32 +57,33 @@ fun CouiCollapsingTopAppBar(
     val p = searchState.pageProgress.coerceIn(0f, 1f)
     SideEffect { state.updateSearch(searchState.expanded, searchState.active) }
     CouiTopAppBar(modifier.fillMaxWidth(), backdrop,
+        referenceBlurRadius = with(density) { CouiCollapsingAppBarDefaults.referenceBlurRadiusPx.toDp() },
         // HomepageImpl.updateBlurOverlayExtraHeight：展开为零，折叠或搜索编辑时使用页面资源。
         bottomExtension = if (searchState.active || state.collapsedFraction >= 1f)
             CouiCollapsingAppBarDefaults.searchBlurExtension else 0.dp,
         gradientSpeed = 3f, gradientColor = backgroundColor, dark = dark,
         backgroundAlpha = if (searchState.active) 1f else (state.offsetPx / (30 * density.density)).coerceIn(0f, 1f)) {
-        Layout(content = {
+        Layout(modifier = Modifier.statusBarsPadding(), content = {
             BasicText(title, Modifier.semantics { heading() }.graphicsLayer {
                 alpha = (1f - f) * searchState.contentAlpha
                 scaleX = (1f - .3f * f) * (.8f + .2f * searchState.contentAlpha)
                 scaleY = scaleX
                 translationY = -200f * p
-                transformOrigin = TransformOrigin(0f, 0f)
-            }, style = titleStyle.copy(color = color.copy(alpha = 1f)),
+                transformOrigin = TransformOrigin(if (layoutDirection == LayoutDirection.Rtl) 1f else 0f, 0f)
+            }, style = titleStyle.copy(color = titleColor.copy(alpha = 1f)),
                 maxLines = 1, overflow = TextOverflow.Ellipsis)
-            searchBar()
+            Box(propagateMinConstraints = true) { searchBar() }
         }) { children, constraints ->
             val titleNode = children[0].measure(constraints.copy(minWidth = 0, minHeight = 0,
                 maxWidth = (constraints.maxWidth - 2 * start.roundToInt()).coerceAtLeast(0)))
             val search = children[1].measure(constraints.copy(minWidth = constraints.maxWidth, minHeight = 0))
             val remainingTitle = (titleHeight - state.offsetPx).coerceAtLeast(0f)
-            val searchY = topInset + remainingTitle
+            val searchY = remainingTitle
             layout(constraints.maxWidth, (searchY + search.height).roundToInt()) {
                 val expandedY = titleHeight - titleBottom - titleNode.height + descent
                 val collapsedY = titleHeight - collapsedHeight + (collapsedHeight - titleNode.height) / 2
                 val titleY = expandedY + (collapsedY - expandedY) * f - state.offsetPx
-                titleNode.placeRelative((start - (8 * density.density) * f).roundToInt(), topInset + titleY.roundToInt())
+                titleNode.placeRelative((start - (8 * density.density) * f).roundToInt(), titleY.roundToInt())
                 search.placeRelative(0, searchY.roundToInt())
             }
         }

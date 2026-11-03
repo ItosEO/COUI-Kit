@@ -30,6 +30,7 @@ object CouiCollapsingAppBarDefaults {
     val titleBottom = 18.dp
     val resultsStartOffset = 108.dp
     internal val searchBlurExtension = 14.dp
+    internal const val referenceBlurRadiusPx = 30f
     internal const val snapResponse = .25f
 }
 
@@ -137,15 +138,14 @@ class CouiCollapsingAppBarState internal constructor(rangePx: Float, initialFrac
 
     internal fun updateRange(range: Float) {
         if (range == rangePx) return
-        val fraction = collapsedFraction
-        val logical = logicalOffset / rangePx
-        val content = contentOffsetPx / rangePx
+        val fraction = logicalOffset / rangePx
         val restore = restoreOffset / rangePx
         dispose()
         rangePx = range
+        // 配置重测后采用已接受的逻辑位置，不能保留已取消弹簧的中间坐标。
         offsetPx = fraction * range
-        logicalOffset = logical * range
-        contentOffsetPx = content * range
+        logicalOffset = offsetPx
+        contentOffsetPx = offsetPx
         restoreOffset = restore * range
     }
     internal fun saveState() = listOf(logicalOffset / rangePx, restoreOffset / rangePx, if (searching) 1f else 0f)

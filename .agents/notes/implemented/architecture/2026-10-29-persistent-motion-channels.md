@@ -46,7 +46,7 @@ Status: implemented
 
 ## Consequences
 
-普通弹簧有明确的重定向、停止、重置与释放路径，复选框不再把共享时钟误当作共享曲线。代价是 Touch/Press 每实例持有与 scope 绑定的生命周期 Job，硬重置在需要时替换 SpringAnimation。State 返回类型导致二进制不兼容，调用模块须重新编译；只读 .value 源码保持，直接轴控制按[运动迁移说明](../../../../docs/effects/motion.md#从公开-animatable-迁移)改为组件方法。已知外部宿主只读取轴值，没有切换其依赖或修改其独立 LiquidGlass 合成。
+普通弹簧有明确的重定向、停止、重置与释放路径，复选框不再把共享时钟误当作共享曲线。代价是 Touch/Press 每实例持有与 scope 绑定的生命周期 Job，硬重置在需要时替换 SpringAnimation。State 返回类型导致二进制不兼容，调用模块须重新编译；只读 .value 源码保持，直接轴控制按[运动控制说明](../../../../docs/effects/motion.md#主动控制运动)改为组件方法。已知外部宿主只读取轴值，没有切换其依赖或修改其独立 LiquidGlass 合成。
 
 本轮不处理子菜单动态可见矩形、完整 Slider 边界物理或统一菜单、Section、Loading、Chip 物理后端。保留 Compose 绘制、G2、染色、搜索避让和 Switch 受控 CANCEL 等已批准特化。没有设备数据，不宣称性能收益或全链路原厂等价。
 

@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.itos.coui.backdrop.couiBackdrop
 import com.itos.coui.backdrop.drawCouiBackdrop
 import com.itos.coui.backdrop.rememberCouiBackdrop
-import com.itos.coui.settings.*
+import com.itos.coui.layout.*
 import com.itos.coui.text.CouiTextKind
 import com.itos.coui.text.rememberCouiTextStyle
 import com.itos.coui.topappbar.CouiTopAppBarDefaults
@@ -27,7 +27,7 @@ import kotlin.math.roundToInt
 @Composable
 internal fun BlurTutorial(dark: Boolean) {
     var radius by rememberSaveable { mutableFloatStateOf(CouiTopAppBarDefaults.referenceBlurRadiusPx) }
-    CouiSettingsIllustration(Modifier.padding(top = 16.dp)) {
+    CouiIllustration(Modifier.padding(top = 16.dp)) {
         Row(Modifier.fillMaxWidth().height(280.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             for (blurred in listOf(false, true)) Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                 val backdrop = rememberCouiBackdrop()
@@ -56,7 +56,7 @@ internal fun BlurTutorial(dark: Boolean) {
     }
     Text(stringResource(R.string.intro_effect_backdrop), Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp),
         style = rememberCouiTextStyle(CouiTextKind.PreferenceSummary), color = MaterialTheme.colorScheme.onSurfaceVariant)
-    CouiSettingsGroup {
+    CouiGroup {
         DemoSliderPreference(title = stringResource(R.string.blur_radius), value = radius, onValueChange = { radius = it },
             valueText = radius.roundToInt().toString(), valueRange = 0f..80f)
     }

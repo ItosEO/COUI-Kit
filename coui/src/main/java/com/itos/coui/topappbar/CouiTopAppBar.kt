@@ -66,9 +66,7 @@ fun CouiTopAppBar(
     modifier: Modifier = Modifier,
     backdrop: CouiBackdrop,
     fadeHeight: androidx.compose.ui.unit.Dp = CouiTopAppBarDefaults.fadeHeight,
-    referenceBlurRadius: androidx.compose.ui.unit.Dp = with(LocalDensity.current) {
-        CouiTopAppBarDefaults.referenceBlurRadiusPx.toDp()
-    },
+    referenceBlurRadius: androidx.compose.ui.unit.Dp = CouiTopAppBarDefaults.referenceBlurRadius,
     bottomExtension: androidx.compose.ui.unit.Dp = CouiTopAppBarDefaults.bottomExtension,
     backgroundAlpha: Float = 1f,
     gradientSpeed: Float? = null,

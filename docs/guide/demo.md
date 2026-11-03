@@ -2,7 +2,7 @@
 
 ## 运行
 
-在 Android Studio 中打开仓库根目录，完成 Gradle Sync，再选择 `demo` 运行。SDK、Java 和依赖要求以 [版本目录](../../gradle/libs.versions.toml)、[库配置](../../coui/build.gradle.kts)、[Demo 配置](../../demo/build.gradle.kts) 和 [Gradle JVM 配置](../../gradle/gradle-daemon-jvm.properties) 为准。工程使用 AGP 内置 Kotlin，不再应用 `org.jetbrains.kotlin.android`。
+在 Android Studio 中打开仓库根目录，完成 Gradle Sync，再选择 `demo` 运行。SDK、Java 和依赖要求以 [版本目录](../../gradle/libs.versions.toml)、[库配置](../../coui/build.gradle.kts)、[Demo 配置](../../demo/build.gradle.kts) 和 [Gradle JVM 配置](../../gradle/gradle-daemon-jvm.properties) 为准。工程使用 AGP 内置 Kotlin。
 
 需要下载 CI 构建时，见 [Demo CI 与 PR 检查](../development/ci.md)。本地与 CI 可以共用独立的 Demo 测试密钥；同一 applicationId 的覆盖安装要求证书一致。
 
@@ -10,9 +10,7 @@ Demo 的 release 启用 R8 代码压缩、优化、混淆及资源裁剪，使�
 
 ## 本地签名
 
-> 本地已同步上游的可选签名与 Git 提交数版本策略。未配置签名字段时继续使用现有 AGP 测试证书；密钥与密码不写入文档或 Git。
-
-首次配置时，将根目录 [signing.properties.example](https://github.com/ItosEO/COUI-Kit/blob/5c1a63ed5a6d22d25571b0482f32eefe940f4583/signing.properties.example) 复制为 signing.properties，填写已有 Demo 密钥。KEYSTORE_FILE 相对于仓库根目录，也可填写绝对路径。四个字段必须完整，debug 与 release 使用同一配置；未配置文件和环境字段时，AGP 自动使用或创建本机默认 debug keystore。
+首次配置时，将根目录 [signing.properties.example](../../signing.properties.example) 复制为 signing.properties，填写已有 Demo 密钥。KEYSTORE_FILE 相对于仓库根目录，也可填写绝对路径。四个字段必须完整，debug 与 release 使用同一配置；未配置文件和环境字段时，AGP 自动使用或创建本机默认 debug keystore。
 
 没有现成密钥时，可以使用 JDK 的 keytool 创建独立测试密钥，再将实际密码填入配置：
 
@@ -37,6 +35,8 @@ CI 可通过 KEYSTORE_FILE、KEYSTORE_PASSWORD、KEYSTORE_ALIAS、KEYSTORE_ALIAS
 - 预设页保留原 dock 附件、轮廓与 FAB 配色，不保留已经移除的首页顶栏按钮开关。底栏布局保留，配色作用于右侧附件；首页不再额外悬浮加号。
 
 Demo 沿用主线 DemoApplication 的 `Coui.initialize(CouiMaterial3Style())`。默认值在组件消费处解析；预设页通过局部 `CouiTheme` 切换原生外观，M3 插槽颜色由适配器桥接，显式颜色继续优先。
+
+首页和详情页使用 Demo 自己的 Material 3 Scaffold，正文采样源供顶栏和底栏消费，Activity 根部提供菜单与弹窗的窗口采样源。分组和行布局直接使用 `com.itos.coui.layout` 的公开组件，安全区和返回处理由 Demo 管理。
 
 首页只使用彩色图标目录和分组卡片，不增加分类小标题；详情都有用途介绍，按控件类型使用对应系统式行列与说明。菜单页集中展示上下箭头 Popup 行；开关页包含模拟等待的加载状态；滑条轨道在独立槽位居中。时间、倒计时、日期与月历分别提供页面组件和标准弹窗。模糊页采用设置式图示、说明、调节的顺序。
 

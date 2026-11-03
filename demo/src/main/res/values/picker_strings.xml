@@ -14,9 +14,6 @@
     <string name="picker_day">Day</string>
     <string name="picker_confirm">Confirm</string>
     <string name="picker_cancel">Cancel</string>
-    <string name="picker_previous">Previous month</string>
-    <string name="picker_next">Next month</string>
-    <string name="picker_change_month">Change year and month</string>
     <string name="picker_selected">Selected: %1$s</string>
     <string name="picker_title">Pickers</string>
 </resources>

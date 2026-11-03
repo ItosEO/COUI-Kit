@@ -27,6 +27,8 @@ val surfaceModifier = Modifier.couiFloatingSurface(
 
 将 surfaceModifier 挂到负责绘制的节点。宿主负责内容层的录制、当前尺寸与变换，完整单主体装配见 [CouiFab](../../coui/src/main/java/com/itos/coui/floatingactionbutton/CouiFab.kt)。不要将空的 GraphicsLayer 当作已录制内容。
 
+此 Modifier 绑定传入的 renderer、内容层和当前坐标，只能挂到该节点。第二个节点须单独装配；可复用 material、shadow 等不可变配置。它不改变测量，内容路径、投影溢出和材质 patch 各按原有层序绘制，不能再用外层 clip 一并裁掉投影。
+
 ## 单主体与三主体
 
 - CouiFloatingRenderer.standalone() 配合 couiFloatingSurface，仅创建单主体链路。
@@ -49,6 +51,6 @@ foregroundComposition 只在单主体入口提供，控制材质和光晕的前�
 
 ## 双主体与绘制阶段
 
-搜索与取消使用 CouiFloatingRenderer.pair() 及 Modifier.couiFloatingPair。materials、shadows、shapes、contentLayers 均为两项，材质 index 按 1、2 排列；drawOrder 是这两个下标的排列，仅改变同高绘制顺序。surfaces 返回同一帧的两个节点，几何与内容必须一致。beforeContent 在各材质之后、对应内容之前执行，接收节点下标与缓存裁剪 Path；不得修改 Path。foregroundComposition 只输出前景，以 SrcOver 叠到已绘制页面，要求不透明 SDR 来源；默认仍保留完整 destination 合成。
+搜索与取消使用 CouiFloatingRenderer.pair() 及 Modifier.couiFloatingPair。materials、shadows、shapes、contentLayers 均为两项，材质 index 按 1、2 排列；drawOrder 是这两个下标的排列，仅改变同一 Z 分组内的绘制顺序。三主体入口保留原来的 Z 排序，不因双主体的显式顺序改变。surfaces 返回同一帧的两个节点，几何与内容必须一致。beforeContent 在各材质之后、对应内容之前执行，接收节点下标与缓存裁剪 Path；不得修改 Path。foregroundComposition 只输出前景，以 SrcOver 叠到已绘制页面，要求不透明 SDR 来源；默认仍保留完整 destination 合成。
 
 这条入口复用现有融合和光效，不增加假节点。每个独立绘制组件持有自己的 renderer 和内容层；不得跨搜索实例共享可变资源。

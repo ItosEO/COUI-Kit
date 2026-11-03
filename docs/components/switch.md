@@ -134,7 +134,7 @@ CouiSwitch(
 
 触觉反馈遵循系统设置；传入 `hapticFeedbackEnabled = false` 可以关闭。
 
-## 版本和验收
+## 系统版本
 
 开关支持库的最低系统版本。
 
@@ -142,4 +142,4 @@ CouiSwitch(
 
 Demo 的“组件 → 开关”分组包含点击、拖动、加载和禁用示例。
 
-Demo 示例见 [DemoSwitchSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsSamples.kt)，库入口和配色见 [CouiSwitch / CouiSwitchDefaults](../../coui/src/main/java/com/itos/coui/switch/CouiSwitch.kt)。
+Demo 示例见 [DemoSettingsSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsSamples.kt)，库入口和配色见 [CouiSwitch / CouiSwitchDefaults](../../coui/src/main/java/com/itos/coui/switch/CouiSwitch.kt)。
