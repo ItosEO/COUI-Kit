@@ -8,7 +8,7 @@ Status: implemented
 
 ## Decision
 
-Demo 保留组件、效果、预设三页与底栏，组件和效果由目录进入普通 Activity。标准 Intent 和 finish 使用当前 ROM 的应用转场；首页查询、来源行与反馈在转场时保留，底栏和 renderer 位于稳定组合位置。导航、草稿、偏好和业务回调只存在于 Demo。
+Demo 保留组件、效果、预设三页与底栏，组件和效果由目录进入普通 Activity。标准 Intent 和 finish 使用当前 ROM 的应用转场；首页与搜索详情的查询、展开目标和来源行反馈在转场时保留，底栏和 renderer 位于稳定组合位置。点击搜索结果只执行导航，取消搜索或在展开时按返回键才关闭并清空查询。导航、草稿、偏好和业务回调只存在于 Demo。
 
 详情按稳定 page 标识直接装配示例。目录搜索只筛选可导航条目，不把本地化标题转换成 query 再筛回详情。首页页签继续使用 SaveableStateHolder，详情保留各示例自身的 rememberSaveable；不为固定 Activity 再保存一层筛选分组。设置行直接组合公开 COUI 控件，删除无消费者的旧 M3 开关和纯参数转发。整行开关的点击与拖动边界见[整行开关输入](../bug-fix/2026-11-03-switch-row-drag.md)。
 

@@ -64,7 +64,7 @@ internal fun ChromeDetail(page: String, dark: Boolean, open: (String) -> Unit) {
                 }
             }
             if (state.active) Column(if (expanded) Modifier else Modifier.clearAndSetSemantics {}) {
-                DemoCatalogSearch(query, enabled = expanded) { query = ""; expanded = false; open(it) }
+                DemoCatalogSearch(query, enabled = expanded, open = open)
             }
         }
         "appbar" -> {
