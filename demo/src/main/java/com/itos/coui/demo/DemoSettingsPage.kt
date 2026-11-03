@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
@@ -77,7 +78,7 @@ internal fun DemoSettingsPage(
     val density = LocalDensity.current.density
     val contour = LocalCouiContourGlowEnabled.current
     val backdrop = rememberCouiBackdrop()
-    Scaffold(modifier = modifier.fillMaxSize()
+    Scaffold(modifier = modifier.fillMaxSize().imePadding()
         .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
         containerColor = colors.background,
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom), topBar = {

@@ -15,6 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.itos.coui.effect.couiButtonFeedback
@@ -50,13 +51,14 @@ internal fun DemoProgressPreference(
             })
             BasicText(actionText, Modifier.padding(horizontal = 6.dp),
                 style = textStyle.copy(color = style.colors.accent), maxLines = 1)
-            // 原厂文字在已完成区域和未完成区域使用不同颜色；两份文字共享测量。
+            // 原厂文字在已完成区域和未完成区域使用不同颜色；覆盖层只绘制，不重复朗读。
             Box(Modifier.matchParentSize().drawWithContent {
                 drawContext.canvas.save()
                 drawContext.canvas.clipRect(0f, 0f, size.width * progress, size.height)
                 drawContent(); drawContext.canvas.restore()
             }, contentAlignment = Alignment.Center) {
-                BasicText(actionText, Modifier.padding(horizontal = 6.dp), style = textStyle.copy(color = Color.White), maxLines = 1)
+                BasicText(actionText, Modifier.padding(horizontal = 6.dp).clearAndSetSemantics {},
+                    style = textStyle.copy(color = Color.White), maxLines = 1)
             }
         }
     }

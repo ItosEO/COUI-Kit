@@ -102,7 +102,9 @@ fun MixedPage(
 
 这里只有需要材质的顶栏要求 Backdrop；仅使用 Group、Item 或普通文字时省略采样源即可。使用其他 Scaffold 或自有布局时保留其原有测量规则，按相同源与消费者关系装配，不复制此例的 Material 依赖到核心库。
 
-内容应用并消费宿主传入的 padding。使用 LazyColumn 时将其传为 contentPadding；使用 Column 加 verticalScroll/couiVerticalScroll 时，padding 放在滚动内容侧，不能缩小整个采样视口。顶栏处理顶部及自身横向安全区；带底栏时由该底栏处理其底部安全区。不要对已消费部分重复添加系统 inset。Material 3 的规则见 [Android 官方说明](https://developer.android.com/develop/ui/compose/system/material-insets)。
+内容应用并消费宿主传入的顶栏、底栏和系统栏 padding。使用 LazyColumn 时将其传为 contentPadding；使用 Column 加 verticalScroll/couiVerticalScroll 时，这些 padding 放在滚动内容侧，保留浮动表面下方的采样视口。顶栏处理顶部及自身横向安全区；带底栏时由该底栏处理其底部安全区。不要对已消费部分重复添加系统 inset。Material 3 的规则见 [Android 官方说明](https://developer.android.com/develop/ui/compose/system/material-insets)。
+
+含输入框的页面另需处理 IME：将 imePadding 放在实际滚动容器之前，使键盘打开时缩小其真实视口，Foundation 才能将焦点滚入可见区。Demo 在 Scaffold 外侧使用 imePadding，先消费 IME；Scaffold 再计算剩余安全区，不重复加入键盘高度。仅在滚动内容尾部增加键盘空白不会缩小视口，不能替代焦点避让。已有宿主完成 IME 避让时继续沿用其处理，见 [Insets 消费规则](https://developer.android.com/develop/ui/compose/system/insets-ui)。
 
 折叠顶栏仍通过 state.contentPadding 修正正文顶部，保留底部视口，具体见[折叠顶栏](../components/collapsing-app-bar.md)。自定义宿主必须回传顶栏实测占位，不以固定高度代替；这是局部组件的布局契约，不要求库内 Scaffold。
 
