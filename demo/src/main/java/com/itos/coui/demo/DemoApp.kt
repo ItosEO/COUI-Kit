@@ -118,8 +118,8 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
                 } ) { innerPadding ->
                 Box(Modifier.fillMaxSize().couiBackdrop(backdrop).background(background)) {
                 pageState.SaveableStateProvider(page) {
-                val contentPadding = remember(header, innerPadding, density) { header.contentPadding(innerPadding, density) }
-                val contentEnabled = !search.active
+                    val contentPadding = remember(header, innerPadding, density) { header.contentPadding(innerPadding, density) }
+                    val contentEnabled = !search.active
                     Column(Modifier.fillMaxSize().graphicsLayer { alpha = search.contentAlpha }
                         .then(if (contentEnabled) Modifier else Modifier.clearAndSetSemantics {})
                         .couiVerticalScroll(contentScroll, enabled = contentEnabled)
