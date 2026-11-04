@@ -2,7 +2,6 @@ package com.itos.coui.demo
 
 import com.itos.coui.icons.CouiIcons
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
