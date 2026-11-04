@@ -109,7 +109,7 @@ TopAppBarButtonGroup {
 
 ### 从搜索胶囊分离自定义按钮
 
-将 `action` 和 `onActionClick` 传给 `TopAppBarSearch`。展开时，右侧动作从搜索胶囊中融合分离；关闭时，动作沿同一路径融合收回，绘制保留到搜索弹簧结束。两部分共享双主体材质、轮廓、阴影与当前动画几何。
+将 `action` 和 `onActionClick` 传给 `TopAppBarSearch`。展开时，右侧动作从搜索胶囊中融合分离；关闭时，动作沿同一路径融合收回，绘制保留到搜索弹簧结束。
 
 下面的代码替换基本示例中的 `TopAppBarSearch`，沿用其状态、样式和 `close` 回调：
 
@@ -135,7 +135,7 @@ TopAppBarSearch(
 
 按钮按内容测量，宽度最多为可用搜索宽度的 40%，并受组件最大宽度限制；输入使用剩余宽度。RTL 下动作位于逻辑末端。`trailingIcon` 仍是输入框内部插槽，与外侧融合动作独立。
 
-右侧融合动作是项目扩展，复用常驻搜索的双主体后端和现有顶栏搜索进度。没有动作时，搜索继续使用单主体路径。Demo 见[顶栏示例](../../demo/src/main/java/com/itos/coui/demo/DemoToolbarSamples.kt)。
+完整示例见[顶栏示例](../../demo/src/main/java/com/itos/coui/demo/DemoToolbarSamples.kt)。
 
 M3 插槽的主题继承见[外观与预设](../guide/appearance.md)。收起时的 title 使用宿主样式。`TopAppBarSearchButton` 使用固定布局容器，不受 M3 最小交互尺寸 Local 控制。
 

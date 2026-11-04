@@ -114,6 +114,6 @@ Scaffold(
 
 ## 混合设计应用
 
-已有 Material 3 `Scaffold`、Miuix 或自有布局可以继续使用。此时创建源、在现有正文容器挂载源，再显式传给浮动组件，见[宿主页面接入](../guide/secondary-pages.md)。导航、返回、业务状态、滚动和 Snackbar 由宿主组合；设置页直接组合 `Group` 与 `Item`。菜单和材质弹窗的窗口背景源需另行配置。
+使用 Material 3 `Scaffold`、Miuix 或自有布局时，创建源、在正文容器挂载源，再显式传给浮动组件，见[宿主页面接入](../guide/secondary-pages.md)。导航、返回、业务状态、滚动和 Snackbar 由宿主组合；设置页直接组合 `Group` 与 `Item`。菜单和材质弹窗的窗口背景源需另行配置。
 
 [公开实现](../../coui/src/main/java/com/itos/coui/layout/Scaffold.kt) · [首页 Demo](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt) · [二级页 Demo](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsPage.kt)

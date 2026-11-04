@@ -54,9 +54,9 @@ CollapsingTopAppBar(
 )
 ```
 
-`header`、`backdrop` 和 `colors` 由页面按下节方式创建；正文继续使用同一个 `header.nestedScrollConnection` 和 `contentPadding`。标题保持可见，字号和位置随折叠变化，最终保留固定栏位。预设见 `CouiCollapsingAppBarDefaults`；无搜索模式的字号使用 dp，不额外按系统字体倍率放大。普通大标题页面优先使用上面的 `LargeTopAppBar` 槽位接口。
+`header`、`backdrop` 和 `colors` 由页面按下节方式创建；正文使用同一个 `header.nestedScrollConnection` 和 `contentPadding`。标题保持可见，字号和位置随折叠变化，最终保留固定栏位。预设见 `CouiCollapsingAppBarDefaults`；无搜索模式的字号使用 dp，不额外按系统字体倍率放大。普通大标题页面优先使用上面的 `LargeTopAppBar` 槽位接口。
 
-`searchBar = null` 表示没有搜索槽。传入空 lambda 仍表示搜索式布局；已有空槽调用需要固定小标题时，应省略槽位或传 `null`。
+省略 `searchBar` 或传入 `null` 时使用纯标题布局；传入空 lambda 也会使用搜索式布局。
 
 ## 基本装配
 

@@ -43,7 +43,7 @@ dependencies {
 
 ## 显示第一个组件
 
-以下无前缀 API 示例对应当前源码，使用[源码模块接入](#源码模块)或包含该变更的开发版本。上方 `0.0.1-alpha3` 依赖使用带 `Coui` 前缀的组件名，迁移规则见 [CHANGELOG](../../CHANGELOG.md#组件命名迁移)。
+以下示例使用源码或开发快照中的无前缀组件名；源码接入见[源码模块](#源码模块)。`0.0.1-alpha3` 使用带 `Coui` 前缀的名称，版本差异和迁移规则见 [CHANGELOG](../../CHANGELOG.md#组件命名迁移)。
 
 在 Compose 页面中加入下面的滑条，拖动时更新 `value`：
 
@@ -93,9 +93,9 @@ fun PageContent(
 }
 ~~~
 
-容器录制完整正文视口与 `containerColor`，不包含顶栏、底栏和 FAB。正文仍需应用并消费 Padding。正文内部的模糊效果需使用独立源，不能采样自身。已有 Material 等第三方容器继续使用创建源、挂载源和显式传参这三处连接，见[宿主页面接入](secondary-pages.md)。
+容器录制完整正文视口与 `containerColor`，不包含顶栏、底栏和 FAB。正文需应用并消费 Padding。正文内部的模糊效果需使用独立源，不能采样自身。Material 等第三方容器需手动创建源、挂载源并显式传参，见[宿主页面接入](secondary-pages.md)。
 
-`TopAppBar` 提供标题字体和主题内容色，并处理顶部及横向安全区。正文应用 Scaffold 返回的 Padding。示例文字使用 Foundation，通过 `LocalCouiTextStyle` 读取槽位样式。
+`TopAppBar` 提供标题字体和主题内容色，并处理顶部及横向安全区。示例文字使用 Foundation，通过 `LocalCouiTextStyle` 读取槽位样式。
 
 菜单的背景源使用 `ProvideCouiMenuBackdrop`；材质弹窗的用法见[弹窗](../components/dialog.md#使用背景材质)。背景源、renderer 和失败处理的细节见[背景采样](../effects/backdrop.md)。
 

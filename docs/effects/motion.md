@@ -57,7 +57,7 @@ Box(
 
 按压输入的 cancelOnConsumedMove 用于父容器消费移动后立即释放，并在本次触摸结束前保持取消。选择、光效、按压与滚动各自有状态 owner，不能用某一路已取消推断其他路径都已收尾。
 
-预设集中在 CouiSwipeRevealDefaults；菜单公开展开弹簧仍可引用。使用参数含义和单位，不在宿主复制固定数值。
+跟随预设使用 `CouiSwipeRevealDefaults`，宿主无需复制固定参数。
 
 ## 入口与示例
 

@@ -89,8 +89,6 @@ Fab(
 
 启用 M3 适配后，省略材质的 FAB 会向 M3 图标提供主题 `onAccent`。显式材质保持 ambient 内容色；预设或自定义底色可显式设置 `tint`。示例使用 `CouiShape` 创建圆形，也可以传入自己的 Shape。
 
-有色预设见 `CouiFabColor` 和 `CouiFabDefaults`。
-
 轮廓光由 `LocalCouiContourGlowEnabled` 控制；关闭后，`CouiFabDefaults.shadow` 使用普通有色投影。
 
 ## 版本和绘制空间

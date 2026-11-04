@@ -94,7 +94,7 @@ COUI Scaffold 只在独立消费者槽位内提供默认源，不需要调用方
 
 通用背景和渐进背景的内部图层随节点挂载和移除成对创建、释放。自定义回调捕获的外部 renderer 仍由调用方管理，不能借复用 Modifier 共享可变绘制资源。
 
-每个独立绘制节点持有自己的可变 renderer。单主体使用 CouiFloatingRenderer.standalone()，底栏使用 CouiFloatingRenderer()；不要跨节点共享。融合背景和遮罩也分别持有 renderer。
+renderer 需逐节点独立创建，选型见[浮动表面](floating-surfaces.md#选择主体数量)；融合背景与遮罩的装配见[内容遮罩](metaball.md#内容遮罩)。
 
 宿主在创建前检查平台门槛。需要错误 UI 时，在 remember 的工厂中捕获构造结果，再按结果决定是否进入组件；不要把 Compose content 放进普通 try/catch。创建异常保留原因，协程取消须继续传播。
 

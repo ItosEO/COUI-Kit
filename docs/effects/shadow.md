@@ -4,7 +4,7 @@
 
 ## 最小普通阴影
 
-下面使用便捷入口，不需要背景采样。示例没有应用文案，可直接放入支持 API 34 的 Compose 内容。宿主在进入此函数前检查版本；父级需要为阴影保留绘制空间，不能沿主体边界裁剪。
+以下示例适用于 API 34 及以上的 Compose 内容。宿主须先检查版本；父级须为阴影保留绘制空间，不能沿主体边界裁剪。
 
 ```kotlin
 @RequiresApi(34)
@@ -22,15 +22,13 @@ fun ShadowSample(modifier: Modifier = Modifier, dark: Boolean) {
 }
 ```
 
-便捷阴影不改变布局，长度使用 dp；窗口坐标、节点 alpha、轴向缩放和多主体请直接使用 `CouiShadowRenderer`。普通 RoundRect 不支持 inverse clipping，不能开启对应参数。完整低层示例见 [DemoShadowSamples](../../demo/src/main/java/com/itos/coui/demo/DemoShadowSamples.kt)。
-
 ## 自定义绘制
 
 CouiShadowStyle 的长度使用 dp。便捷入口完成本地坐标和像素换算，不改变布局尺寸；父级变换作用于主体和投影整体。radius 省略时使用短边的一半。
 
 同一个 `couiShadow` Modifier 可用于多个节点，每个节点各持有 renderer 和缓存槽。尺寸变化更新本节点的网格，不重建 Shader。阴影画在内容后方；将主体的 clip 放在阴影内侧，外层 padding 用来给阴影留出空间。
 
-CouiShadowOutline 提供公开轮廓选项；普通 RoundRect 不支持 inverse clipping。使用 SmoothCapsule 时，内容形状和投影几何需要按同一主体装配，示例见 DemoShadowSamples。
+CouiShadowOutline 提供公开轮廓选项；普通 RoundRect 不支持 inverse clipping。使用 SmoothCapsule 时，内容形状和投影几何需要按同一主体装配，示例见 [DemoShadowSamples](../../demo/src/main/java/com/itos/coui/demo/DemoShadowSamples.kt)。
 
 需要窗口坐标、节点 alpha、轴向缩放或多主体槽位时，直接持有 CouiShadowRenderer，并调用其 Canvas 绘制接口；不要把已经缩放的网格再次整体缩放。完整参数见[公开声明](../../coui/src/main/java/com/itos/coui/effect/CouiShadowRenderer.kt)。
 

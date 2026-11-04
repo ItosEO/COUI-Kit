@@ -163,7 +163,7 @@ if (visible) {
 }
 ~~~
 
-`visible`、文案和回调沿用前面的确认弹窗示例。`material` 非空时要求 API 33 及以上，并且必须有有效的 `backdrop`，也可以沿用当前 Provider 提供的背景源；缺少系统支持或背景源时会报错。需要在不支持材质的系统显示不透明表面时，传入 `material = null`。页面已经使用 `ProvideCouiMenuBackdrop` 时，可以省略 `backdrop`，沿用当前 Provider 的源。
+`visible`、文案和回调沿用前面的确认弹窗示例。`material` 非空时要求 API 33 及以上，并须通过 `backdrop` 或 `ProvideCouiMenuBackdrop` 提供有效背景源；缺少系统支持或背景源时会报错。不支持材质时传入 `material = null`，使用不透明表面。
 
 背景模糊采样自页面，窗口遮罩由系统绘制。
 

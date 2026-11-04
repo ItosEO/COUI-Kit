@@ -39,7 +39,7 @@ fun VolumeSlider(
 }
 ~~~
 
-页面需要在 `onValueChange` 中更新 `value`。此例显式传入强调色、深浅色和形状；省略 `colors` 时会按最终的 `dark` 与 `enabled` 生成配色。需要保存到设置或发送给服务时，可以在调整结束后处理，见下文的 `onValueChangeFinished`。
+页面需要在 `onValueChange` 中更新 `value`。示例显式指定强调色、深浅色和形状。需要保存到设置或发送给服务时，使用 `onValueChangeFinished`，见下文。
 
 ## 分段选择
 

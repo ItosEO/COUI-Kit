@@ -48,7 +48,7 @@ val surfaceModifier = Modifier.couiFloatingSurface(
 
 ## 资源与错误
 
-每个独立绘制节点持有自己的 renderer、内容层和采样坐标，不跨节点共享可变资源。material、shadow 等不可变配置可以复用。主题、轮廓、几何和位置变化应更新当前节点，录制层随节点释放。
+主题、轮廓、几何或位置变化时，更新当前节点的参数；录制层随节点释放。
 
 平台门槛及创建失败的处理见[背景采样](backdrop.md#资源与失败处理)。
 

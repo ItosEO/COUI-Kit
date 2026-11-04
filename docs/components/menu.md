@@ -107,7 +107,7 @@ ProvideCouiMenuBackdrop { source ->
 
 ### 空闲时按需离屏
 
-背景内容默认使用离屏隔离。不透明的静态页面可设置 `isolateContent = false`，让没有菜单或材质弹窗消费背景时的源使用 `CompositingStrategy.Auto`。下面沿用前面的 import、参数和 `MenuButton`：
+背景内容默认使用离屏隔离。不透明的静态页面可设置 `isolateContent = false`，让没有菜单或材质弹窗消费背景时的源使用 `CompositingStrategy.Auto`。下面沿用前面的参数和 `MenuButton`：
 
 ~~~kotlin
 ProvideCouiMenuBackdrop(isolateContent = false) { source ->
