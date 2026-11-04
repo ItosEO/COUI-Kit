@@ -140,11 +140,11 @@ internal fun SearchSamples(dark: Boolean, open: (String) -> Unit) {
                     }
                 }
             }
-            if (toolbarExpanded) SearchResults(toolbarQuery, enabled, open)
         } else {
             DemoPreference(title = stringResource(R.string.requires_api_34), enabled = false)
         }
     }
+    if (toolbarExpanded) SearchResults(toolbarQuery, enabled, open)
 }
 
 @Composable
