@@ -52,7 +52,7 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
             when (page) {
                 "sliders", "switch", "checkbox", "dialogs", "menu" -> ComponentDetail(page, dark, toggleTheme)
                 "settings" -> {
-                    ListSamples(dark, open)
+                    ListSamples(open)
                     Group { DemoPreference(title = stringResource(R.string.home_app_settings), onClick = { open("appsettings") }) }
                 }
                 "chip" -> ChipTabSample(dark)
