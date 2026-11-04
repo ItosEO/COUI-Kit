@@ -20,8 +20,8 @@
     <string name="checkbox_toggle">切换此复选框</string>
     <string name="checkbox_disabled">已选中且禁用</string>
     <string name="menu_title">菜单</string>
-    <string name="menu_first">第一项</string>
-    <string name="menu_second">第二项</string>
+    <string name="menu_first">标准模式</string>
+    <string name="menu_second">节能模式</string>
     <string name="menu_pinned">固定</string>
     <string name="menu_more">子菜单</string>
     <string name="menu_disabled">禁用项</string>
