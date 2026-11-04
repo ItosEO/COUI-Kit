@@ -36,15 +36,18 @@ internal fun PickerSamples(page: String, dark: Boolean) {
     val thisMonth = LocalDate.now().withDayOfMonth(1)
     val minDate = if (restricted) thisMonth else LocalDate.of(1900, 1, 1)
     val maxDate = if (restricted) thisMonth.plusMonths(1).minusDays(1) else LocalDate.of(2100, 12, 31)
-    if (page == "datepicker" || page == "calendar") Group {
-        DemoSwitchPreference(title = stringResource(R.string.picker_date_restricted),
-            checked = restricted, onCheckedChange = { active ->
-                restricted = active
-                if (active) {
-                    date = LocalDate.ofEpochDay(date).coerceIn(thisMonth, maxDate).toEpochDay()
-                    draftDate = date
-                }
-            })
+    if (page == "datepicker" || page == "calendar") {
+        Group {
+            DemoSwitchPreference(title = stringResource(R.string.picker_date_restricted),
+                checked = restricted, onCheckedChange = { active ->
+                    restricted = active
+                    if (active) {
+                        date = LocalDate.ofEpochDay(date).coerceIn(thisMonth, maxDate).toEpochDay()
+                        draftDate = date
+                    }
+                })
+        }
+        if (restricted) Footer(text = stringResource(R.string.picker_date_restriction_note))
     }
     Group(title = stringResource(R.string.picker_inline)) {
         PickerBody(page, seconds, { seconds = it }, date, { date = it }, dark, is24Hour, minDate, maxDate)
