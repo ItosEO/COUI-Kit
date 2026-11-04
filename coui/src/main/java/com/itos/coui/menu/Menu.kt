@@ -744,7 +744,8 @@ private fun <T> CouiMenuRow(
 
 @Composable
 private fun CouiMenuDivider() {
-    val color = LocalCouiMenuStyle.current.colors.outlineVariant.copy(alpha = 0.6f)
+    val outline = LocalCouiMenuStyle.current.colors.outlineVariant
+    val color = outline.copy(alpha = outline.alpha * 0.6f)
     Spacer(
         Modifier.fillMaxWidth().height(CouiMenuDividerHeight).drawBehind {
             val inset = (CouiMenuItemStateHorizontalInset + CouiMenuItemContentHorizontalPadding).toPx()
