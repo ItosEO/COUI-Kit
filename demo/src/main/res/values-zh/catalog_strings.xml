@@ -110,10 +110,8 @@
     <string name="search_toolbar">顶栏展开式搜索</string>
     <string name="search_toolbar_title">搜索示例</string>
     <string name="search_close">关闭搜索</string>
-    <string name="search_submit">提交搜索</string>
     <string name="search_results">搜索结果</string>
     <string name="search_no_results">没有匹配的组件</string>
-    <string name="search_result_selected">已选择：%1$s</string>
     <string name="nav_left_visible">显示左侧设置按钮</string>
     <string name="nav_right_visible">显示右侧新建按钮</string>
     <string name="nav_current">当前分类：%1$s</string>
@@ -125,7 +123,6 @@
     <string name="checkbox_standalone">独立复选框</string>
     <string name="switch_standalone">独立开关</string>
     <string name="slider_finished">已完成 %1$d 次调整</string>
-    <string name="slider_hint_finished">松开滑块后更新提交次数</string>
     <string name="picker_wheel_value">当前数值：%1$d</string>
     <string name="picker_wheel_wrap">循环滚动</string>
     <string name="picker_wheel_enabled">启用滚轮</string>
@@ -137,7 +134,6 @@
     <string name="settings_header_count">点击标题操作 %1$d 次</string>
     <string name="settings_group_example">分组与行布局</string>
     <string name="settings_long_summary">这是一条较长的辅助说明，用于检查换行、行高和尾部内容是否保持对齐。</string>
-    <string name="settings_color_preview">仅预览下面的颜色示例，不更改系统或全局主题。</string>
     <string name="chip_category_recent">最近</string>
     <string name="chip_category_favorites">收藏</string>
     <string name="chip_category_media">图片</string>
@@ -147,4 +143,5 @@
     <string name="chip_category_all">全部</string>
     <string name="chip_selection">当前分类</string>
     <string name="chip_content_summary">分类变化会更新这里的内容。</string>
+    <string name="list_item_text_preview">这是可调节字号的文字预览。</string>
 </resources>
