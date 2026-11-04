@@ -43,8 +43,7 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
     }
     CompositionLocalProvider(LocalCouiContourGlowEnabled provides preferences.contour) {
         DemoSettingsPage(title = stringResource(title), backDescription = stringResource(R.string.settings_back),
-            onBack = back, dark = dark, colors = CouiPageDefaults.themeColors(dark),
-            actions = { if (page == "menu") MenuToolbarAction(dark, preferences, open) }) {
+            onBack = back, dark = dark, colors = CouiPageDefaults.themeColors(dark)) {
             if (entry != null && page != "effect_backdrop") BasicText(stringResource(catalogDescription(page)),
                 Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 12.dp),
                 style = com.itos.coui.text.rememberCouiTextStyle(com.itos.coui.text.CouiTextKind.PreferenceSummary)

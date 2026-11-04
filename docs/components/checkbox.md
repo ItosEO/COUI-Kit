@@ -77,7 +77,7 @@ fun CheckboxRow(
 
 ## 只放一个复选框
 
-没有整行文案时，可以用 48dp 的 `Box` 包住复选框，并提供无障碍描述。下面的片段使用上一节的参数和导入：
+没有整行文案时，可以用 48dp 的 `Box` 包住复选框，并提供无障碍描述。外层 `toggleable` 必须设置 `indication = null`，隐藏点击涟漪，保留点击和复选语义。下面的片段使用上一节的参数和导入：
 
 ~~~kotlin
 import androidx.compose.foundation.layout.Box

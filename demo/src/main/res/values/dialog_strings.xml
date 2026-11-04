@@ -10,7 +10,6 @@
     <string name="dialog_device_name_initial">COUI Demo</string>
     <string name="dialog_device_name_title">Change phone name</string>
     <string name="dialog_device_name_message">Your phone name is visible when using Bluetooth, Wi-Fi Direct, and other connections.</string>
-    <string name="dialog_device_name_value">Example device name: %1$s</string>
     <string name="dialog_input_clear">Clear input</string>
     <string name="dialog_input_save">Save</string>
     <string name="dialog_input_counter">%1$d/%2$d</string>
@@ -18,10 +17,8 @@
     <string name="dialog_material">Dialog background material</string>
     <string name="dialog_material_unavailable">Background material requires Android 13.</string>
     <string name="dialog_sample_title">Apply these settings?</string>
-    <string name="dialog_sample_message">Confirm to update the sample state on this page.</string>
+    <string name="dialog_sample_message">Choose an action below.</string>
     <string name="dialog_confirm">Confirm</string>
     <string name="dialog_cancel">Cancel</string>
-    <string name="dialog_reset">Reset choice</string>
-    <string name="dialog_applied">You tapped Confirm.</string>
-    <string name="dialog_not_applied">You have not tapped Confirm yet.</string>
+    <string name="dialog_later">Later</string>
 </resources>

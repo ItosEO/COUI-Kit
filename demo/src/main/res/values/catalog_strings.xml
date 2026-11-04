@@ -1,13 +1,11 @@
 <resources>
-    <string name="menu_overflow_preset">Toolbar menu preset</string>
-    <string name="menu_overflow_preset_summary">Tap the three dots in the top right. This preset uses the same menu component.</string>
     <string name="sample_press_count">Sample presses: %1$d</string>
     <string name="sample_click">Activate sample</string>
-    <string name="intro_switch">Test standalone and whole-row switches, drag-to-toggle and loading feedback.</string>
+    <string name="intro_switch">Test switch clicks, dragging, loading feedback and disabled states.</string>
     <string name="intro_sliders">Compare continuous, stepped and unmarked value adjustment.</string>
     <string name="intro_checkbox">Check standalone and whole-row checkboxes, including disabled states.</string>
     <string name="intro_dialogs">Compare bottom and center dialogs, actions, input and material.</string>
-    <string name="intro_menu">Open toolbar and list menus to test checks, submenus and scrolling.</string>
+    <string name="intro_menu">Open list menus to test checks, submenus and scrolling.</string>
     <string name="intro_appbar">Test icon and text actions, disabled controls and entry animations. The home catalog shows a collapsing title.</string>
     <string name="intro_search">Try persistent search and expandable toolbar search.</string>
     <string name="intro_navigation">Change the selected item and show or hide side actions.</string>
@@ -50,9 +48,6 @@
     <string name="menu_actions">Menu options</string>
     <string name="menu_selection_label">Current option</string>
     <string name="menu_open_summary">Choose a mode, toggle a pinned option or open the submenu.</string>
-    <string name="menu_toolbar_more">More options</string>
-    <string name="menu_light">Light mode</string>
-    <string name="menu_dark">Dark mode</string>
     <string name="settings_title">Settings page</string>
     <string name="settings_back">Back</string>
     <string name="settings_appearance">Appearance</string>
@@ -87,7 +82,6 @@
     <string name="home_app_settings">App settings</string>
     <string name="home_release">Build type</string>
     <string name="dialog_theme_live">Switch theme with dialog open</string>
-    <string name="catalog_switch_row">Whole-row switch</string>
     <string name="catalog_search_hint">Search components and effects</string>
     <string name="catalog_search_cancel">Cancel</string>
     <string name="catalog_search_clear">Clear search</string>
@@ -122,7 +116,6 @@
     <string name="fab_action_result">Sample items created: %1$d</string>
     <string name="checkbox_standalone">Standalone checkbox</string>
     <string name="switch_standalone">Standalone switch</string>
-    <string name="slider_finished">Adjustments completed: %1$d</string>
     <string name="picker_wheel_value">Current value: %1$d</string>
     <string name="picker_wheel_wrap">Wrap at the ends</string>
     <string name="picker_wheel_enabled">Enable wheel</string>

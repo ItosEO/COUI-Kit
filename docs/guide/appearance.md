@@ -74,6 +74,8 @@ Chip 从 `labelLarge` 取字体族。Dialog 从 `titleLarge`、`bodyMedium`、`l
 
 顶栏按钮的 M3 路径使用 `minimumInteractiveComponentSize()`，遵守宿主尺寸 Local 与 alignment lines；原生策略使用组件的最小布局尺寸。搜索按钮使用固定容器，不受该 Local 控制。
 
+独立复选框的外层点击容器应隐藏涟漪，并保留点击和无障碍语义，装配方式见[只放一个复选框](../components/checkbox.md#只放一个复选框)。
+
 未启用适配器而在纯 native 核心插槽中使用 M3 内容时，仍需自行桥接其内容 Local；更常见的做法是接入可选模块。
 
 ## Shape 与效果开关

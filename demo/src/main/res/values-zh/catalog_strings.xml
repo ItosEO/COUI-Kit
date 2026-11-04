@@ -1,13 +1,11 @@
 <resources>
-    <string name="menu_overflow_preset">右上角菜单预设</string>
-    <string name="menu_overflow_preset_summary">点击右上角三点打开菜单；它与下面的列表项预设使用同一个菜单组件。</string>
     <string name="sample_press_count">已点击示例 %1$d 次</string>
     <string name="sample_click">点击示例</string>
-    <string name="intro_switch">开关支持独立点击、整行切换、拖动吸附与加载反馈。</string>
+    <string name="intro_switch">查看开关点击、拖动吸附、加载反馈与不可用状态。</string>
     <string name="intro_sliders">比较连续滑动、分段刻度和隐藏刻度的数值调整。</string>
     <string name="intro_checkbox">查看独立复选框、整行勾选及不可用状态。</string>
     <string name="intro_dialogs">比较底部与居中弹窗、不同操作数量、输入和材质。</string>
-    <string name="intro_menu">通过工具栏或列表项打开菜单，查看勾选、子菜单与滚动行为。</string>
+    <string name="intro_menu">通过列表项打开菜单，查看勾选、子菜单与滚动行为。</string>
     <string name="intro_appbar">体验图标、文字操作、禁用与显隐动画；首页还提供滚动折叠顶栏。</string>
     <string name="intro_search">分别体验常驻搜索和顶栏按钮展开式搜索。</string>
     <string name="intro_navigation">切换选中项，控制左右附件的出现与退场。</string>
@@ -50,9 +48,6 @@
     <string name="menu_actions">菜单选项</string>
     <string name="menu_selection_label">当前选项</string>
     <string name="menu_open_summary">查看当前选项、勾选和子菜单，长菜单可滚动。</string>
-    <string name="menu_toolbar_more">更多选项</string>
-    <string name="menu_light">浅色模式</string>
-    <string name="menu_dark">深色模式</string>
     <string name="settings_title">设置二级页</string>
     <string name="settings_back">返回</string>
     <string name="settings_appearance">外观</string>
@@ -87,7 +82,6 @@
     <string name="home_app_settings">应用设置</string>
     <string name="home_release">构建类型</string>
     <string name="dialog_theme_live">弹窗内切换浅深色</string>
-    <string name="catalog_switch_row">整行开关</string>
     <string name="catalog_search_hint">搜索组件和效果</string>
     <string name="catalog_search_cancel">取消</string>
     <string name="catalog_search_clear">清空搜索内容</string>
@@ -122,7 +116,6 @@
     <string name="fab_action_result">已新建 %1$d 项示例</string>
     <string name="checkbox_standalone">独立复选框</string>
     <string name="switch_standalone">独立开关</string>
-    <string name="slider_finished">已完成 %1$d 次调整</string>
     <string name="picker_wheel_value">当前数值：%1$d</string>
     <string name="picker_wheel_wrap">循环滚动</string>
     <string name="picker_wheel_enabled">启用滚轮</string>
