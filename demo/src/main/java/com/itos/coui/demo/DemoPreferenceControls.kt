@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.itos.coui.effect.couiButtonFeedback
@@ -25,6 +26,7 @@ import com.itos.coui.slider.CouiSliderDefaults
 import com.itos.coui.text.CouiTextKind
 import com.itos.coui.text.rememberCouiTextStyle
 import com.itos.coui.theme.CouiTheme
+import com.itos.coui.shape.CouiCapsuleShape
 
 /** Menu 的设置行装配预设；展开期间锁住行蒙层，菜单选择和退场仍由同一个 Menu 持有。 */
 @Composable
