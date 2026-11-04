@@ -105,8 +105,8 @@ internal fun SearchSamples(dark: Boolean, open: (String) -> Unit) {
                 clearDescription = stringResource(R.string.catalog_search_clear),
                 dark = dark, backdrop = backdrop, enabled = enabled)
         }
-        if (persistent.active) SearchResults(persistentQuery, enabled && persistentExpanded, open)
     }
+    if (persistent.active) SearchResults(persistentQuery, enabled && persistentExpanded, open)
     Group(title = stringResource(R.string.search_toolbar)) {
         if (Build.VERSION.SDK_INT >= 34) {
             val state = rememberCouiTopAppBarSearchState(toolbarExpanded)
@@ -149,9 +149,11 @@ internal fun SearchSamples(dark: Boolean, open: (String) -> Unit) {
 
 @Composable
 private fun SearchResults(query: String, enabled: Boolean, open: (String) -> Unit) {
-    val entries = DemoComponentGroups.flatten().filter {
-        stringResource(it.title).contains(query.trim(), ignoreCase = true) ||
-            it.page.contains(query.trim(), ignoreCase = true)
+    val needle = query.trim()
+    val entries = (DemoComponentGroups + DemoEffectGroups).flatten().filter {
+        stringResource(it.title).contains(needle, ignoreCase = true) ||
+            it.page.contains(needle, ignoreCase = true) ||
+            stringResource(catalogDescription(it.page)).contains(needle, ignoreCase = true)
     }.take(4)
     Group(title = stringResource(R.string.search_results)) {
         if (entries.isEmpty()) {
