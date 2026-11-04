@@ -63,7 +63,7 @@ internal fun ListSamples(open: (String) -> Unit) {
         }
     }
     Group(title = stringResource(R.string.settings_preview)) {
-        Text(stringResource(R.string.settings_preview_summary), Modifier.padding(16.dp),
+        Text(stringResource(R.string.list_item_text_preview), Modifier.padding(16.dp),
             style = TextStyle(fontSize = if (selected == 0) 14.sp else 20.sp))
     }
     Footer(text = stringResource(R.string.settings_demo_only))
