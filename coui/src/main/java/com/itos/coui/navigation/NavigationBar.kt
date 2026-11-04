@@ -75,6 +75,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.itos.coui.backdrop.CouiBackdrop
+import com.itos.coui.backdrop.LocalCouiBackdrop
 import com.itos.coui.effect.CouiFloatingMaterial
 import com.itos.coui.effect.CouiFloatingRenderer
 import com.itos.coui.effect.CouiFloatingShadow
@@ -108,7 +109,9 @@ data class CouiNavigationItem(val title: String, val icon: ImageVector, val sele
 @Composable
 fun NavigationBar(
     modifier: Modifier = Modifier,
-    backdrop: CouiBackdrop,
+    backdrop: CouiBackdrop = checkNotNull(LocalCouiBackdrop.current) {
+        "底栏需要显式 backdrop 或 COUI Scaffold 的独立栏位"
+    },
     renderer: CouiFloatingRenderer,
     items: List<CouiNavigationItem>,
     selectedIndex: Int,

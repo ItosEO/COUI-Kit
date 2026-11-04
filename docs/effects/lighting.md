@@ -7,22 +7,6 @@
 下面函数在 API 33 及以上使用。宿主传入不透明底色、Shape、深浅色、点击回调和内容；先画底色，再画光，最后画内容。
 
 ~~~kotlin
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.semantics.Role
-import com.itos.coui.effect.SpotlightPreset
-import com.itos.coui.effect.rememberCouiSpotlight
-
 @RequiresApi(33)
 @Composable
 fun LitSurface(

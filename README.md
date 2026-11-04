@@ -63,10 +63,6 @@ dependencies {
 在已有 `Application.onCreate()` 中、创建 Compose UI 前初始化一次：
 
 ```kotlin
-import android.app.Application
-import com.itos.coui.material3.CouiMaterial3Style
-import com.itos.coui.theme.Coui
-
 class App : Application() {
     override fun onCreate() {
         super.onCreate()
@@ -80,9 +76,6 @@ class App : Application() {
 默认深浅模式跟随系统。App 有独立主题开关时，在现有主题 Provider 中提供实际的 `darkTheme`：
 
 ```kotlin
-import androidx.compose.runtime.CompositionLocalProvider
-import com.itos.coui.theme.LocalCouiDarkTheme
-
 CompositionLocalProvider(LocalCouiDarkTheme provides darkTheme) {
     content()
 }

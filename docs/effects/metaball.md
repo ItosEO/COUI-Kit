@@ -7,16 +7,6 @@
 下面函数在 API 33 及以上使用。first 和 second 由宿主提供，中心、尺寸和圆角均为当前 Canvas 的本地像素；modifier 必须给 Canvas 有效尺寸。
 
 ~~~kotlin
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Canvas
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import com.itos.coui.effect.CouiMetaballBody
-import com.itos.coui.effect.CouiMetaballRenderer
-import com.itos.coui.swipereveal.CouiSwipeRevealDefaults
-
 @RequiresApi(33)
 @Composable
 fun MetaballPair(

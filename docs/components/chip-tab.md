@@ -7,8 +7,6 @@
 分类项、选中 key、选择回调和背景源由宿主提供：
 
 ~~~kotlin
-import com.itos.coui.chip.ChipTabRow
-
 ChipTabRow(
     items = items,
     selectedKey = selectedKey,
@@ -24,18 +22,6 @@ ChipTabRow(
 下面创建三个分类，并在点击时更新选中项。分类栏需要 API 34，以及一个覆盖页面内容的背景源。
 
 ~~~kotlin
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import com.itos.coui.backdrop.CouiBackdrop
-import com.itos.coui.chip.CouiChipTabItem
-import com.itos.coui.chip.ChipTabRow
-
 @RequiresApi(34)
 @Composable
 fun Categories(
@@ -68,11 +54,6 @@ fun Categories(
 使用 `leadingAction` 可以在分类组前添加按钮。例如，将上一节的 `ChipTabRow` 替换为下面的代码，点击按钮打开分类管理：
 
 ~~~kotlin
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.Icon
-import com.itos.coui.chip.ChipTabButton
-
 ChipTabRow(
     modifier = modifier.fillMaxWidth(),
     items = items,

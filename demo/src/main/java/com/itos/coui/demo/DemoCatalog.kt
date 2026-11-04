@@ -54,36 +54,44 @@ internal val DemoEffectGroups = listOf(
 )
 
 @Composable
-internal fun DemoCatalog(groups: List<List<DemoCatalogEntry>>, open: (String) -> Unit, enabled: Boolean = true) {
-    groups.forEach { entries -> key(entries.first().page) {
-        Group {
-            entries.forEachIndexed { index, entry -> key(entry.page) {
-                DemoPreference(Modifier.heightIn(min = CatalogRowMinHeight),
-                    title = stringResource(entry.title), enabled = enabled, onClick = { open(entry.page) }, icon = {
-                        Icon(entry.icon, null, Modifier.size(CouiPageDefaults.iconSize), tint = catalogIconColor(entry.page))
-                    })
-                if (index != entries.lastIndex) Divider(startIndent =
-                    CouiPageDefaults.rowPadding + CouiPageDefaults.iconSize + CouiPageDefaults.iconSpacing)
-            } }
+internal fun DemoCatalog(groups: List<List<DemoCatalogEntry>>, open: (String) -> Unit, enabled: Boolean = true,
+    query: String = "") {
+    val needle = query.trim()
+    var hasMatches = false
+    groups.forEach { entries ->
+        val matches = entries.mapNotNull { entry ->
+            if (catalogSearchMatches(entry, needle)) entry to entry.page
+            else if (entry.page == "wheel") {
+                DemoWheelPickerEntries.firstOrNull { catalogSearchMatches(it, needle) }?.let { entry to it.page }
+            } else null
         }
-    } }
+        if (matches.isNotEmpty()) {
+            hasMatches = true
+            key(entries.first().page) {
+                Group {
+                    matches.forEachIndexed { index, (entry, route) -> key(entry.page) {
+                        DemoPreference(Modifier.heightIn(min = CatalogRowMinHeight),
+                            title = stringResource(entry.title), enabled = enabled, onClick = { open(route) }, icon = {
+                                Icon(entry.icon, null, Modifier.size(CouiPageDefaults.iconSize), tint = catalogIconColor(entry.page))
+                            })
+                        if (index != matches.lastIndex) Divider(startIndent =
+                            CouiPageDefaults.rowPadding + CouiPageDefaults.iconSize + CouiPageDefaults.iconSpacing)
+                    } }
+                }
+            }
+        }
+    }
+    if (!hasMatches) Text(stringResource(R.string.no_matches), Modifier.padding(32.dp),
+        color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
 @Composable
-internal fun DemoCatalogSearch(query: String, enabled: Boolean = true, open: (String) -> Unit) {
-    val entries = (DemoComponentGroups + DemoEffectGroups).flatten() + DemoWheelPickerEntries.drop(1)
-    val filtered = entries.filter {
-        val needle = query.trim()
-        stringResource(it.title).contains(needle, ignoreCase = true) ||
-            it.page.contains(needle, ignoreCase = true) ||
-            stringResource(if (it.page == "wheel") R.string.intro_numberpicker else catalogDescription(it.page))
-                .contains(needle, ignoreCase = true) ||
-            (it.page == "wheel" && stringResource(R.string.picker_number_title).contains(needle, ignoreCase = true))
-    }
-    if (filtered.isEmpty()) Text(stringResource(R.string.no_matches), Modifier.padding(32.dp),
-        color = MaterialTheme.colorScheme.onSurfaceVariant)
-    else DemoCatalog(listOf(filtered), open, enabled = enabled)
-}
+private fun catalogSearchMatches(entry: DemoCatalogEntry, needle: String): Boolean =
+    stringResource(entry.title).contains(needle, ignoreCase = true) ||
+        entry.page.contains(needle, ignoreCase = true) ||
+        stringResource(if (entry.page == "wheel") R.string.intro_numberpicker else catalogDescription(entry.page))
+            .contains(needle, ignoreCase = true) ||
+        (entry.page == "wheel" && stringResource(R.string.picker_number_title).contains(needle, ignoreCase = true))
 
 /** 目录图标由 Demo 配色，几何使用随 Demo 打包的 ColorOS 原始矢量。 */
 private fun catalogIconColor(page: String): Color = Color(when (page) {

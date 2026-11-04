@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.itos.coui.backdrop.CouiBackdrop
+import com.itos.coui.backdrop.LocalCouiBackdrop
 import com.itos.coui.effect.CouiFloatingRenderer
 import com.itos.coui.effect.CouiFloatingSurface
 import com.itos.coui.effect.LocalCouiContourGlowEnabled
@@ -97,7 +98,9 @@ fun SearchBar(
     cancelText: String,
     clearDescription: String,
     dark: Boolean = CouiTheme.isDark,
-    backdrop: CouiBackdrop,
+    backdrop: CouiBackdrop = checkNotNull(LocalCouiToolbarBackdrop.current ?: LocalCouiBackdrop.current) {
+        "搜索需要显式 backdrop 或独立的顶栏作用域"
+    },
     onSearch: () -> Unit = {},
     shadowProgress: Float = 0f,
     colors: CouiSearchBarColors = CouiSearchBarDefaults.colors(dark),

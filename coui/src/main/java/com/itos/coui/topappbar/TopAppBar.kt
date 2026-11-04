@@ -1,172 +1,188 @@
 package com.itos.coui.topappbar
 
-import android.graphics.BlendMode
-import android.graphics.ColorSpace
-import android.graphics.LinearGradient
-import android.graphics.RenderEffect
-import android.graphics.Shader
-import android.os.Build
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.isSpecified
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asComposeRenderEffect
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.dp
 import com.itos.coui.backdrop.CouiBackdrop
-import com.itos.coui.backdrop.CouiBackdropEffectScope
-import com.itos.coui.backdrop.couiBackdrop
-import com.itos.coui.backdrop.drawCouiBackdrop
-import com.itos.coui.backdrop.rememberCouiBackdrop
-import com.itos.coui.effect.CouiCoverageBlurEffect
-import com.itos.coui.effect.drawCouiGradientBackdrop
+import com.itos.coui.backdrop.LocalCouiBackdrop
+import com.itos.coui.text.CouiTextKind
+import com.itos.coui.text.rememberCouiTextStyle
 import com.itos.coui.theme.CouiTheme
+import com.itos.coui.theme.ProvideCouiContent
+import com.itos.coui.theme.LocalCouiDarkTheme
+import kotlin.math.roundToInt
 
-internal val LocalCouiToolbarBackdrop = staticCompositionLocalOf<CouiBackdrop?> { null }
-internal val LocalCouiToolbarOverlay = staticCompositionLocalOf<SharedTransitionScope?> { null }
-
-private const val FadeStopCount = 65
-private val BlurLayers = listOf(
-    Triple(3.dp, 0.68f, 1f),
-    Triple(7.dp, 0.44f, 0.82f),
-    Triple(12.dp, 0.28f, 0.68f),
-).map { (radius, start, end) ->
-    radius to FloatArray(FadeStopCount) { index ->
-        start + (end - start) * index / (FadeStopCount - 1f)
-    }
-}
-
-private val GradientColorSpace = ColorSpace.get(ColorSpace.Named.EXTENDED_SRGB)
-// 三层遮罩共用透明度曲线; 颜色和各层节点位置不随栏高变化, 只在初始化时生成。
-private val FadeColors = LongArray(FadeStopCount) { index ->
-    val progress = index / (FadeStopCount - 1f)
-    val smoothProgress = progress * progress * (3f - 2f * progress)
-    // 直接打包高精度透明度, 避免先舍入到 8 位。
-    android.graphics.Color.pack(0f, 0f, 0f, 1f - smoothProgress, GradientColorSpace)
-}
-
-/**
- * 背景从标题栏顶部开始并向下延伸，不改变布局或触摸高度。
- * gradientSpeed 为 null 时保留项目固定渐隐；正值选择全高原厂幂曲线。
- * gradientColor 非透明时叠加主题背景渐变，其 alpha 与预设透明度相乘；dark 默认跟随当前主题。
- */
+/** 完整紧凑顶栏；内部处理安全区和槽位布局，点击行为由宿主提供。 */
 @Composable
 fun TopAppBar(
     modifier: Modifier = Modifier,
-    backdrop: CouiBackdrop,
-    fadeHeight: androidx.compose.ui.unit.Dp = CouiTopAppBarDefaults.fadeHeight,
-    referenceBlurRadius: androidx.compose.ui.unit.Dp = CouiTopAppBarDefaults.referenceBlurRadius,
-    bottomExtension: androidx.compose.ui.unit.Dp = CouiTopAppBarDefaults.bottomExtension,
-    backgroundAlpha: Float = 1f,
-    gradientSpeed: Float? = null,
-    gradientColor: Color = Color.Transparent,
+    title: @Composable () -> Unit,
+    navigationIcon: @Composable () -> Unit = {},
+    actions: @Composable RowScope.() -> Unit = {},
     dark: Boolean = CouiTheme.isDark,
-    content: @Composable () -> Unit,
+    colors: CouiTopAppBarColors = CouiTopAppBarDefaults.colors(dark = dark),
+    windowInsets: WindowInsets = CouiTopAppBarDefaults.windowInsets,
+    backdrop: CouiBackdrop = checkNotNull(LocalCouiBackdrop.current) {
+        "顶栏需要显式 backdrop 或 ProvideCouiBackdrop 作用域"
+    },
 ) {
-    val density = LocalDensity.current.density
-    val destination = rememberCouiBackdrop(parent = backdrop)
-    val backgroundModifier = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        Modifier.drawCouiGradientBackdrop(
-            backdrop = backdrop,
-            fadeHeightPx = fadeHeight.value * density,
-            referenceBlurRadiusPx = referenceBlurRadius.value * density,
-            gradientSpeed = gradientSpeed,
-        )
-    } else {
-        val blurEffects = remember(density) {
-            BlurLayers.map { (radius, _) -> CouiCoverageBlurEffect(radius.value * density) }
+    TopAppBarSurface(modifier.fillMaxWidth(), backdrop,
+        gradientColor = colors.backgroundColor, dark = dark) {
+        CompositionLocalProvider(LocalCouiDarkTheme provides dark) {
+            AppBarLayout(title, navigationIcon, actions, colors, windowInsets,
+                CouiTopAppBarDefaults.height, CouiTopAppBarDefaults.height, null)
         }
-        Modifier.drawCouiBackdrop(
-            backdrop = backdrop,
-            shape = { RectangleShape },
-            effects = { progressiveBlur(blurEffects, fadeHeight) },
-        )
     }
-    val gradient = remember(gradientColor, dark) {
-        // GradientBackgroundDrawable 从下到上：浅色 0/.7/1，深色 0/.4。
-        fun color(alpha: Float) = gradientColor.copy(alpha = gradientColor.alpha * ((alpha * 255).toInt() / 255f))
-        if (dark) Brush.verticalGradient(0f to color(.4f), 1f to color(0f))
-        else Brush.verticalGradient(0f to color(1f), .6f to color(.7f), 1f to color(0f))
+}
+
+/**
+ * 大标题缩为固定小标题；省略 scrollBehavior 时保持展开。
+ * 连接挂到正文祖先，正文通过 scrollBehavior.state.contentPadding 补偿逻辑滚动与可见弹簧的差值。
+ * 高度不含 windowInsets；expandedHeight 必须大于正数 collapsedHeight。
+ */
+@Composable
+fun LargeTopAppBar(
+    modifier: Modifier = Modifier,
+    title: @Composable () -> Unit,
+    navigationIcon: @Composable () -> Unit = {},
+    actions: @Composable RowScope.() -> Unit = {},
+    scrollBehavior: CouiTopAppBarScrollBehavior? = null,
+    dark: Boolean = CouiTheme.isDark,
+    colors: CouiTopAppBarColors = CouiTopAppBarDefaults.colors(dark = dark),
+    windowInsets: WindowInsets = CouiTopAppBarDefaults.windowInsets,
+    expandedHeight: Dp = CouiTopAppBarDefaults.expandedHeight,
+    collapsedHeight: Dp = CouiTopAppBarDefaults.collapsedHeight,
+    backdrop: CouiBackdrop = checkNotNull(LocalCouiBackdrop.current) {
+        "顶栏需要显式 backdrop 或 ProvideCouiBackdrop 作用域"
+    },
+) {
+    require(expandedHeight.value.isFinite() && collapsedHeight.value.isFinite() &&
+        collapsedHeight > 0.dp && expandedHeight > collapsedHeight) {
+        "展开高度必须大于收起高度，且高度必须是有限正数"
     }
-    SharedTransitionScope { overlayModifier ->
-        Layout(
-            modifier = modifier.then(overlayModifier),
-            content = {
-                Box(Modifier.couiBackdrop(destination)) {
-                    Box(Modifier.matchParentSize().graphicsLayer { alpha = backgroundAlpha.coerceIn(0f, 1f) }) {
-                        Spacer(Modifier.matchParentSize().then(backgroundModifier))
-                        if (gradientColor.alpha > 0f) Spacer(Modifier.matchParentSize().background(gradient))
-                    }
-                }
-                Box {
-                    CompositionLocalProvider(
-                        LocalCouiToolbarBackdrop provides destination,
-                        LocalCouiToolbarOverlay provides this@SharedTransitionScope,
-                        content = content,
-                    )
-                }
-            },
-        ) { measurables, constraints ->
-            val topBar = measurables[1].measure(constraints.copy(minHeight = 0))
-            val background = measurables[0].measure(
-                Constraints.fixed(
-                    width = topBar.width,
-                    height = topBar.height + bottomExtension.roundToPx(),
-                )
-            )
-            // 仅背景溢出下沿, 不移动首项, 也不扩大标题栏的触摸区域。
-            layout(topBar.width, topBar.height) {
-                background.placeRelative(0, 0)
-                topBar.placeRelative(0, 0)
+    val density = LocalDensity.current
+    val state = scrollBehavior?.state
+    SideEffect {
+        state?.updateRange(density, hasSearchBar = false, expandedHeight = expandedHeight, collapsedHeight = collapsedHeight)
+        state?.updateSearch(expanded = false, active = false)
+    }
+    TopAppBarSurface(modifier.fillMaxWidth(), backdrop,
+        referenceBlurRadius = with(density) { CouiCollapsingAppBarDefaults.referenceBlurRadiusPx.toDp() },
+        bottomExtension = CouiCollapsingAppBarDefaults.titleOnlyBlurExtension,
+        gradientSpeed = 3f, gradientColor = colors.backgroundColor, dark = dark,
+        topExtension = {
+            with(density) {
+                val range = (expandedHeight.roundToPx() - collapsedHeight.roundToPx()).coerceAtLeast(0)
+                (state?.offsetPx ?: 0f).coerceIn(0f, range.toFloat()).toDp()
+            }
+        }) {
+        CompositionLocalProvider(LocalCouiDarkTheme provides dark) {
+            AppBarLayout(title, navigationIcon, actions, colors, windowInsets, expandedHeight, collapsedHeight, state)
+        }
+    }
+}
+
+@Composable
+private fun AppBarLayout(
+    title: @Composable () -> Unit,
+    navigationIcon: @Composable () -> Unit,
+    actions: @Composable RowScope.() -> Unit,
+    colors: CouiTopAppBarColors,
+    windowInsets: WindowInsets,
+    expandedHeight: Dp,
+    collapsedHeight: Dp,
+    state: CouiCollapsingAppBarState?,
+) {
+    val large = expandedHeight > collapsedHeight
+    val density = LocalDensity.current
+    val direction = LocalLayoutDirection.current
+    val titleStyle = rememberCouiTextStyle(if (large) CouiTextKind.HomeTitle else CouiTextKind.Toolbar)
+    val fraction = state?.collapsedFraction ?: 0f
+    val progress = if (large) CouiCollapsingAppBarDefaults.titleEasing.transform(fraction) else 0f
+    val scale = if (large) {
+        // 项目定制：展开沿用首页排版，收起字号仍保持固定 dp。
+        val collapsedScale = with(density) {
+            CouiCollapsingAppBarDefaults.collapsedTitleSize.toPx() / titleStyle.fontSize.toPx()
+        }
+        1f + (collapsedScale - 1f) * progress
+    } else 1f
+    Layout(modifier = Modifier.windowInsetsPadding(windowInsets), content = {
+        Box {
+            CompositionLocalProvider(LocalCouiToolbarContentColor provides colors.navigationIconColor) {
+                ProvideCouiContent(color = colors.navigationIconColor, content = navigationIcon)
             }
         }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            CompositionLocalProvider(LocalCouiToolbarContentColor provides colors.actionIconColor) {
+                ProvideCouiContent(color = colors.actionIconColor) { actions() }
+            }
+        }
+        Box(Modifier.semantics { heading() }.graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+            transformOrigin = TransformOrigin(if (direction == LayoutDirection.Rtl) 1f else 0f, 0f)
+            clip = true
+        }) {
+            ProvideCouiContent(color = colors.titleColor, textStyle = titleStyle.copy(color = colors.titleColor),
+                mergeTextStyle = false, content = title)
+        }
+    }) { nodes, constraints ->
+        require(constraints.hasBoundedWidth) { "顶栏需要有界宽度" }
+        val width = constraints.maxWidth
+        val expanded = expandedHeight.roundToPx()
+        val collapsed = collapsedHeight.roundToPx()
+        val range = (expanded - collapsed).coerceAtLeast(0)
+        val offset = (state?.offsetPx ?: 0f).coerceIn(0f, range.toFloat())
+        val height = constraints.constrainHeight((expanded - offset).roundToInt())
+        val toolbarHeight = if (large) minOf(collapsed, height) else height
+        val padding = CouiTopAppBarDefaults.horizontalPadding.roundToPx().coerceAtMost(width / 2)
+        val gap = CouiTopAppBarDefaults.titleGap.roundToPx()
+        val slotWidth = (width - 2 * padding).coerceAtLeast(0)
+        val navigation = nodes[0].measure(Constraints(maxWidth = slotWidth, maxHeight = toolbarHeight))
+        val action = nodes[1].measure(Constraints(maxWidth = slotWidth - navigation.width, maxHeight = toolbarHeight))
+        val compactStart = if (large && navigation.width == 0) CouiCollapsingAppBarDefaults.titleOnlyStart.toPx()
+            else (padding + navigation.width + if (navigation.width > 0) gap else 0).toFloat()
+        val compactEnd = padding + action.width + if (action.width > 0) gap else 0
+        val expandedStart = CouiTopAppBarDefaults.expandedTitleStart.toPx()
+        // 带按钮时整段转场预留按钮宽度，标题上移经过操作行时也不会覆盖点击区域。
+        val start = if (large && navigation.width == 0)
+            expandedStart + (compactStart - expandedStart) * progress else compactStart
+        val end = if (large && action.width == 0) CouiCollapsingAppBarDefaults.titleOnlyStart.toPx()
+            else compactEnd.toFloat()
+        // 用缩放后的可见宽度限制标题，避免收起时覆盖导航或操作按钮。
+        val titleWidth = ((width - start - end).coerceAtLeast(0f) / scale).roundToInt()
+        val titleNode = nodes[2].measure(Constraints(maxWidth = titleWidth, maxHeight = (height / scale).toInt()))
+        layout(width, height) {
+            navigation.placeRelative(padding, (toolbarHeight - navigation.height) / 2)
+            action.placeRelative(width - padding - action.width, (toolbarHeight - action.height) / 2)
+            val titleY = if (large) {
+                val expandedY = expanded - (CouiTopAppBarDefaults.expandedHeight -
+                    CouiCollapsingAppBarDefaults.titleOnlyTop).toPx()
+                val collapsedY = range + (collapsed - titleNode.height * scale) / 2f
+                expandedY + (collapsedY - expandedY) * progress - offset
+            } else (height - titleNode.height) / 2f
+            titleNode.placeRelative(start.roundToInt(),
+                titleY.coerceIn(0f, (height - titleNode.height * scale).coerceAtLeast(0f)).roundToInt())
+        }
     }
-}
-
-private fun CouiBackdropEffectScope.progressiveBlur(blurEffects: List<CouiCoverageBlurEffect>, fadeHeight: androidx.compose.ui.unit.Dp) {
-    if (!size.isSpecified || size.height <= 0f) return
-
-    // CouiBackdrop 会平移采样原点; 遮罩使用相同偏移并保留平台模糊的采样外沿。
-    padding = blurEffects.maxOf { it.padding }
-    var combined = RenderEffect.createOffsetEffect(0f, 0f)
-    for ((index, layer) in BlurLayers.withIndex()) {
-        val positions = layer.second
-        val blurred = blurEffects[index].effect
-        val mask = fadeEffect(positions, fadeHeight)
-        val maskedBlur = RenderEffect.createBlendModeEffect(blurred, mask, BlendMode.DST_IN)
-        // 在滤镜内叠到不透明采样底图上, 不再由 Compose 分别输出三张半透明图层。
-        combined = RenderEffect.createBlendModeEffect(combined, maskedBlur, BlendMode.SRC_OVER)
-    }
-    // 保留采样内容本身的颜色, 避免主题底色覆盖不同表面时形成额外的明暗渐变。
-    renderEffect = combined.asComposeRenderEffect()
-}
-
-private fun CouiBackdropEffectScope.fadeEffect(positions: FloatArray, fadeHeight: androidx.compose.ui.unit.Dp): RenderEffect {
-    // 渐变沿固定长度展开并锚定背景下沿, 折叠时只平移, 不随栏高压缩。
-    // 起点允许超出顶部; 由渐变自身延续端点颜色, 不裁短坐标区间。
-    val gradientBottom = padding + size.height
-    val gradientTop = gradientBottom - fadeHeight.toPx()
-    return RenderEffect.createShaderEffect(
-        LinearGradient(
-            0f,
-            gradientTop,
-            0f,
-            gradientBottom,
-            FadeColors,
-            positions,
-            Shader.TileMode.CLAMP,
-        )
-    )
 }

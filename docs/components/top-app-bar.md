@@ -1,20 +1,12 @@
 # 🧭顶栏与按钮
 
-`TopAppBar` 在页面顶部显示渐进模糊背景。你可以在其中放置标题、操作按钮和搜索框。
+`TopAppBar` 提供标题、导航和操作槽位，并显示渐进模糊背景。需要大标题时使用 `LargeTopAppBar`；需要自行组合布局或顶栏搜索时使用 `TopAppBarSurface`。
 
 ## 最小调用
 
 顶栏按钮需要 API 34 和页面背景源。宿主提供按钮内容与操作：
 
 ~~~kotlin
-import androidx.annotation.RequiresApi
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import com.itos.coui.backdrop.CouiBackdrop
-import com.itos.coui.topappbar.TopAppBar
-import com.itos.coui.topappbar.TopAppBarButton
-import com.itos.coui.topappbar.TopAppBarButtonGroup
-
 @RequiresApi(34)
 @Composable
 fun ToolbarAction(
@@ -23,7 +15,7 @@ fun ToolbarAction(
     onAction: () -> Unit,
     actionContent: @Composable () -> Unit,
 ) {
-    TopAppBar(modifier = modifier, backdrop = backdrop) {
+    TopAppBarSurface(modifier = modifier, backdrop = backdrop) {
         TopAppBarButtonGroup {
             TopAppBarButton(onClick = onAction) {
                 actionContent()
@@ -37,26 +29,9 @@ fun ToolbarAction(
 
 ## 显示一个简单顶栏
 
-下面的顶栏显示标题和一个文字按钮。按钮需要 API 34；请先按[快速开始](../guide/getting-started.md#浮动组件的背景源)创建背景源，再把顶栏放在源节点之外。
+下面的顶栏显示标题和一个文字按钮。按钮需要 API 34；放入 COUI Scaffold 的 `topBar` 时可省略 `backdrop`。本例通过参数接收源，适用于第三方容器，接入方式见[快速开始](../guide/getting-started.md#浮动组件的背景源)。
 
 ~~~kotlin
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.itos.coui.backdrop.CouiBackdrop
-import com.itos.coui.topappbar.CouiToolbarStyle
-import com.itos.coui.topappbar.TopAppBar
-import com.itos.coui.topappbar.TopAppBarButton
-import com.itos.coui.topappbar.TopAppBarButtonGroup
-
 @RequiresApi(34)
 @Composable
 fun PageToolbar(
@@ -67,41 +42,32 @@ fun PageToolbar(
     actionLabel: String,
     onAction: () -> Unit,
 ) {
-    TopAppBar(modifier = modifier.fillMaxWidth(), backdrop = backdrop) {
-        Row(
-            modifier = Modifier.fillMaxWidth().statusBarsPadding()
-                .heightIn(min = 64.dp).padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(title, Modifier.weight(1f), style = style.textStyle, color = style.contentColor)
+    TopAppBar(
+        modifier = modifier,
+        backdrop = backdrop,
+        title = { Text(title) },
+        actions = {
             TopAppBarButtonGroup {
                 TopAppBarButton(onClick = onAction, text = true, style = style) {
                     Text(actionLabel)
                 }
             }
-        }
-    }
+        },
+    )
 }
 ~~~
 
-顶栏叠在页面内容上。请按实际顶栏高度设置内容的顶部间距，避免内容被遮挡。此例显式使用 `style`；按钮和搜索组件也可以省略它以使用默认样式。示例假定宿主已接入可选 M3 适配，Material3 `Text` 自动继承组件内容色与文字样式，项目仍需声明 Material3 依赖。
+把顶栏放入 Scaffold 的 `topBar`，并将正文应用 Scaffold 返回的 Padding。直接叠放时，由页面预留顶栏的实际高度。此例显式使用按钮 `style`；也可以省略它以使用默认样式。示例假定宿主已接入可选 M3 适配，Material3 `Text` 自动继承组件内容色与文字样式，项目仍需声明 Material3 依赖。
+
+`navigationIcon` 放置返回等导航操作，`actions` 是 RowScope 槽位。`CouiTopAppBarDefaults.colors()` 分别配置背景、标题、导航和操作颜色；默认读取当前主题。标题字体由顶栏提供。纯 Compose 标题使用 `BasicText(title, style = LocalCouiTextStyle.current)`，其中 `BasicText` 来自 `androidx.compose.foundation.text`，`LocalCouiTextStyle` 来自 `com.itos.coui.theme`。
+
+普通大标题页面的滚动装配见[折叠顶栏](collapsing-app-bar.md#普通大标题)。
 
 ## 配置顶栏样式
 
 顶栏按钮使用 `CouiToolbarStyle` 设置材质、文字和光标。下面根据页面的颜色创建一份样式：
 
 ~~~kotlin
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextStyle
-import com.itos.coui.effect.LocalCouiContourGlowEnabled
-import com.itos.coui.shape.CouiCapsuleShape
-import com.itos.coui.topappbar.CouiToolbarStyle
-import com.itos.coui.topappbar.CouiTopAppBarButtonDefaults
-
 @Composable
 fun rememberToolbarStyle(
     dark: Boolean,
@@ -138,10 +104,6 @@ fun rememberToolbarStyle(
 默认按钮适合放图标；设置 `text = true` 可以显示文字按钮：
 
 ~~~kotlin
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Icon
-
 TopAppBarButton(onClick = onSettings, style = style) {
     Icon(Icons.Default.Settings, contentDescription = settingsLabel)
 }
@@ -158,8 +120,6 @@ TopAppBarButton(onClick = onReset, text = true, enabled = canReset, style = styl
 将操作放进 `TopAppBarButtonGroup`。需要显隐动画时，再用 `TopAppBarActionVisibility` 包住按钮：
 
 ~~~kotlin
-import com.itos.coui.topappbar.TopAppBarActionVisibility
-
 TopAppBarButtonGroup {
     TopAppBarActionVisibility(visible = actionsVisible) {
         TopAppBarButton(onClick = onSettings, style = style) {
@@ -175,19 +135,23 @@ TopAppBarButtonGroup {
 
 ## 版本和 inset
 
-顶栏容器支持库的最低系统版本，顶栏按钮和搜索需要 API 34。按钮组和搜索组件放在 `TopAppBar` 内使用。
+顶栏容器支持库的最低系统版本，顶栏按钮和搜索需要 API 34。按钮组放在完整顶栏的导航或操作槽位中，或放在 `TopAppBarSurface` 的自定义内容中。组合搜索使用 `TopAppBarSurface`。
 
 每个按钮默认创建独立的 renderer。需要处理创建失败时，可以先创建 `CouiFloatingRenderer.standalone()`，再通过 `renderer` 传入。
 
-M3 模式的 `TopAppBarButton` 使用 `minimumInteractiveComponentSize()`，遵守宿主最小交互尺寸设置。SearchButton 使用固定容器。title 与 buttonGroup 继承宿主文字样式。
+M3 模式的 `TopAppBarButton` 使用 `minimumInteractiveComponentSize()`，遵守宿主最小交互尺寸设置。SearchButton 使用固定容器。完整顶栏提供标题字体；自定义 Surface 中的 title 与 buttonGroup 沿用内容自身的文字样式。
 
-顶栏不消费状态栏 inset，可在顶栏内容或页面根节点添加一次 `statusBarsPadding()`。渐进模糊背景会向下延伸，但不会增加布局高度或触摸范围。
+`TopAppBar` 和 `LargeTopAppBar` 默认处理顶部及横向系统安全区，可通过 `windowInsets` 调整。父级已消费的 inset 不重复添加。`TopAppBarSurface` 只提供背景，不消费 inset；自定义内容需自行处理一次安全区。渐进模糊背景会向下延伸，但不会增加布局高度或触摸范围。
 
-源码见 [TopAppBar](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBar.kt)、[按钮](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBarButton.kt)、[按钮组与显隐](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBarButtonGroup.kt)、[按钮预设](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButtonDefaults.kt)，完整页面见 [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)。
+COUI Scaffold 的 `topBar` 自动提供正文背景源，`TopAppBar`、`LargeTopAppBar` 和 `TopAppBarSurface` 可省略 `backdrop`，显式参数优先。第三方容器使用 `rememberCouiBackdrop()` 创建源，在现有正文容器上添加 `.couiBackdrop(backdrop)`，再将源显式传给顶栏。不需要额外的背景容器或全局初始化；源节点不能包含顶栏。完整装配与高级作用域见[背景采样](../effects/backdrop.md#顶栏接入)。
+
+源码见 [TopAppBar / LargeTopAppBar](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBar.kt)、[TopAppBarSurface](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBarSurface.kt)、[按钮](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBarButton.kt)、[按钮组与显隐](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBarButtonGroup.kt)、[按钮预设](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarButtonDefaults.kt)，完整页面见 [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)。
 
 ## 背景参数
 
-`backgroundAlpha` 只控制背景透明度。`gradientColor` 的 alpha 与渐变曲线及背景图层透明度相乘；`dark` 决定背景渐变的深浅色分支，默认读取 `CouiTheme.isDark`。
+以下参数属于 `TopAppBarSurface`。`backgroundAlpha` 只控制背景透明度。`gradientColor` 的 alpha 与渐变曲线及背景图层透明度相乘；`dark` 决定背景渐变的深浅色分支，默认读取 `CouiTheme.isDark`。
+
+`topExtension` 返回背景向上延伸的 dp 距离，在测量阶段读取；它增加背景高度并将背景向上平移，不改变内容占位或命中区域。折叠顶栏用它保持完整背景随顶栏移动，使渐进曲线与采样尺寸稳定。`bottomExtension` 只增加向下延伸的范围。
 
 API 33 起，`gradientSpeed = null` 使用固定长度渐隐，正值选择全高幂曲线。`referenceBlurRadius` 按 dp 解释；需要固定引擎像素半径时，在消费处按当前 density 换算。API 31–32 的平台分层路径仍使用自身固定模糊参数。
 

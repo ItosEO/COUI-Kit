@@ -1,6 +1,7 @@
 package com.itos.coui.topappbar
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
@@ -16,6 +17,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.dynamicanimation.animation.FloatValueHolder
@@ -25,13 +27,21 @@ import kotlin.math.PI
 
 object CouiCollapsingAppBarDefaults {
     val titleHeight = 116.dp
+    val titleOnlyHeight = 110.dp
     val collapsedTitleHeight = 52.dp
+    val expandedTitleSize = 32.dp
+    val collapsedTitleSize = 24.dp
+    // shortcut: 独立标题使用便签紧凑布局边距；接入原厂宽屏布局时再按窗口类别切换。
+    val titleOnlyStart = 16.dp
+    val titleOnlyTop = 54.dp
     val titleStart = 24.dp
     val titleBottom = 18.dp
     val resultsStartOffset = 108.dp
+    internal val titleOnlyBlurExtension = 8.dp
     internal val searchBlurExtension = 14.dp
     internal const val referenceBlurRadiusPx = 30f
     internal const val snapResponse = .25f
+    internal val titleEasing = CubicBezierEasing(.33f, 0f, .67f, 1f)
 }
 
 /** 正向先折叠顶栏；反向在内容到顶后展开。与实际滚动列表共享同一个 nestedScrollConnection。 */
@@ -40,13 +50,17 @@ class CouiCollapsingAppBarState internal constructor(rangePx: Float, initialFrac
     restoreFraction: Float = initialFraction, initialSearching: Boolean = false) {
     internal var rangePx by mutableFloatStateOf(rangePx)
     internal var offsetPx by mutableFloatStateOf((if (initialSearching) 1f else initialFraction).coerceIn(0f, 1f) * rangePx)
-    private var contentOffsetPx by mutableFloatStateOf(offsetPx)
+    internal var contentOffsetPx by mutableFloatStateOf(offsetPx)
+        private set
     private var logicalOffset = offsetPx
     internal var searchLocked = false
     internal var canScroll: () -> Boolean = { true }
     private var snap: SpringAnimation? = null
     private var contentSnap: SpringAnimation? = null
     private var searching = initialSearching
+    private var hasSearchBar = true
+    private var expandedHeight = CouiCollapsingAppBarDefaults.titleOnlyHeight
+    private var collapsedHeight = CouiCollapsingAppBarDefaults.collapsedTitleHeight
     private var restoreOffset = restoreFraction * rangePx
     val collapsedFraction: Float get() = (offsetPx / rangePx).coerceIn(0f, 1f)
     /** 像素；加到使用顶栏测量 padding 的内容层。列表跟随逻辑滚动，搜索栏跟随独立弹簧。 */
@@ -75,7 +89,7 @@ class CouiCollapsingAppBarState internal constructor(rangePx: Float, initialFrac
         }
         override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
             if (!searchLocked) {
-                if (!canScroll()) animateOffset(0f, animateContent = true)
+                if (hasSearchBar && !canScroll()) animateOffset(0f, animateContent = true)
                 else if (logicalOffset > 0f && logicalOffset < rangePx) settle()
             }
             return Velocity.Zero
@@ -136,7 +150,15 @@ class CouiCollapsingAppBarState internal constructor(rangePx: Float, initialFrac
         animateOffset(if (expanded) rangePx else restoreOffset, animateContent = true)
     }
 
-    internal fun updateRange(range: Float) {
+    internal fun updateRange(density: Density, hasSearchBar: Boolean = this.hasSearchBar,
+        expandedHeight: Dp = this.expandedHeight, collapsedHeight: Dp = this.collapsedHeight) {
+        this.hasSearchBar = hasSearchBar
+        this.expandedHeight = expandedHeight
+        this.collapsedHeight = collapsedHeight
+        val range = with(density) {
+            if (hasSearchBar) CouiCollapsingAppBarDefaults.titleHeight.roundToPx().toFloat()
+            else (expandedHeight.roundToPx() - collapsedHeight.roundToPx()).toFloat().coerceAtLeast(1f)
+        }
         if (range == rangePx) return
         val fraction = logicalOffset / rangePx
         val restore = restoreOffset / rangePx
@@ -159,7 +181,7 @@ fun rememberCouiCollapsingAppBarState(canScroll: () -> Boolean = { true }): Coui
     val saver = listSaver<CouiCollapsingAppBarState, Float>(save = { it.saveState() },
         restore = { CouiCollapsingAppBarState(range, it[0], it[1], it[2] > 0f) })
     val state = rememberSaveable(saver = saver) { CouiCollapsingAppBarState(range, 0f) }
-    SideEffect { state.updateRange(range); state.canScroll = canScroll }
+    SideEffect { state.updateRange(density); state.canScroll = canScroll }
     DisposableEffect(state) { onDispose { state.dispose() } }
     return state
 }

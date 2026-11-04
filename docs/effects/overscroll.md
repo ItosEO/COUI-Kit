@@ -7,12 +7,6 @@
 以下片段位于宿主 Composable 中，`content` 是页面内容。滚动容器占满交互视口，使短内容和空内容的留白区域也能响应拖动。
 
 ```kotlin
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.ui.Modifier
-import com.itos.coui.scroll.couiVerticalScroll
-
 val scroll = rememberScrollState()
 Column(Modifier.fillMaxSize().couiVerticalScroll(scroll)) {
     content()
@@ -28,11 +22,6 @@ Column(Modifier.fillMaxSize().couiVerticalScroll(scroll)) {
 此入口的手指拖动事件通过可选 `interactionSource` 发出，不发送到只读的 `ScrollState.interactionSource`。下面片段同样位于 Composable 中；`dragged` 可供宿主 UI 读取。
 
 ```kotlin
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsDraggedAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-
 val interactions = remember { MutableInteractionSource() }
 val dragged by interactions.collectIsDraggedAsState()
 val scrolling = Modifier.couiVerticalScroll(scroll, interactionSource = interactions)
@@ -47,8 +36,6 @@ val scrolling = Modifier.couiVerticalScroll(scroll, interactionSource = interact
 触觉使用当前 View 的 COUI 边缘反馈码，并遵守系统触觉设置；不支持该码的 ROM 不替换为其他波形。关闭方式如下：
 
 ```kotlin
-import com.itos.coui.scroll.rememberCouiOverscrollEffect
-
 val edge = rememberCouiOverscrollEffect(hapticFeedbackEnabled = false)
 val scrolling = Modifier.couiVerticalScroll(scroll, overscrollEffect = edge)
 ```

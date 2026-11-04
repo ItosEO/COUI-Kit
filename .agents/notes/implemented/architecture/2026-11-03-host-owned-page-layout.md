@@ -18,7 +18,7 @@ Status: implemented
 
 本篇移除初始 Scaffold 及 PageContentPadding、PageSlot、PageStyle、LocalPageStyle 和 pageStyle，选择由宿主完成通用页面布局，不另提供同职能容器。理由是页面测量、配色作用域和采样被绑定，而当时已有基础接口能表达 COUI 特有能力。
 
-[可选轻量页面容器](2026-11-03-optional-coui-scaffold.md)恢复通用栏位测量与 Insets 处理，接管“不提供容器”这一部分。旧页面配色作用域和隐式采样不恢复。
+[可选轻量页面容器](2026-11-03-optional-coui-scaffold.md)恢复通用栏位测量与 Insets 处理，接管“不提供容器”这一部分。旧页面配色作用域不恢复；COUI Scaffold 的局部正文采样由[Scaffold 正文源](2026-11-04-scaffold-body-backdrop.md)持有，第三方容器继续显式装配。
 
 独立行布局与图示曾用于减少宿主重复排版；[通用 Item](../simplification/2026-11-03-layout-item-api.md)将行内容槽并入 Item，图示由宿主组合。Group、Item、Divider、Footer 仍可独立使用。
 

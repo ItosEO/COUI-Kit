@@ -7,8 +7,6 @@
 页面提供展开状态、菜单项和回调：
 
 ~~~kotlin
-import com.itos.coui.menu.Menu
-
 Menu(
     expanded = expanded,
     onDismissRequest = onDismissRequest,
@@ -24,22 +22,6 @@ Menu(
 下面的按钮会打开菜单。选择项目后调用 `onSelect`，然后关闭菜单：
 
 ~~~kotlin
-import androidx.compose.foundation.layout.Box
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import com.itos.coui.menu.Menu
-import com.itos.coui.menu.CouiMenuDefaults
-import com.itos.coui.menu.CouiMenuItem
-import com.itos.coui.menu.CouiMenuStyle
-import com.itos.coui.menu.couiMenuAnchor
-import com.itos.coui.menu.rememberCouiMenuAnchor
-
 @Composable
 fun MenuButton(
     modifier: Modifier = Modifier,
@@ -94,10 +76,6 @@ fun MenuButton(
 | `children` | 一级子菜单；父项只展开，不提交值 |
 
 ~~~kotlin
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Edit
-
 val items = listOf(
     CouiMenuItem(0, "重命名", icon = Icons.Default.Edit, selected = selected == 0),
     CouiMenuItem(1, "固定到桌面", icon = Icons.Default.Check, checked = pinned),
@@ -115,13 +93,6 @@ val items = listOf(
 不提供背景源时，菜单使用 `CouiMenuStyle.colors.container` 作为不透明底色。需要采样页面背景时，用 `ProvideCouiMenuBackdrop` 包住页面，并将返回的 Modifier 加到背景内容上：
 
 ~~~kotlin
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Modifier
-import com.itos.coui.menu.ProvideCouiMenuBackdrop
-
 ProvideCouiMenuBackdrop { source ->
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().then(source).background(background)) {
@@ -158,17 +129,6 @@ ProvideCouiMenuBackdrop(isolateContent = false) { source ->
 `CouiMenuStyle` 设置菜单的颜色、形状和文字。下面根据页面颜色创建一份样式：
 
 ~~~kotlin
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.itos.coui.checkbox.CouiCheckboxDefaults
-import com.itos.coui.menu.CouiMenuColors
-import com.itos.coui.menu.CouiMenuStyle
-import com.itos.coui.shape.CouiShape
-
 @Composable
 fun rememberMenuStyle(
     dark: Boolean,

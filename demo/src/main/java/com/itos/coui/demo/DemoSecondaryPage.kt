@@ -23,7 +23,6 @@ import com.itos.coui.dialog.CouiDialogAction
 import com.itos.coui.dialog.CouiDialogDefaults
 import com.itos.coui.effect.LocalCouiContourGlowEnabled
 import com.itos.coui.floatingactionbutton.CouiFabColor
-import com.itos.coui.backdrop.CouiBackdrop
 import androidx.compose.ui.Alignment
 import com.itos.coui.menu.rememberCouiWindowBackdrop
 import com.itos.coui.layout.CouiPageDefaults
@@ -46,10 +45,10 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
         "about" -> R.string.settings_about
         else -> R.string.home_app_settings
     }
-    val floatingAction: (@Composable BoxScope.(CouiBackdrop) -> Unit)? = if (page == "fab") {
-        { backdrop ->
+    val floatingAction: (@Composable BoxScope.() -> Unit)? = if (page == "fab") {
+        {
             FabSampleButton(Modifier.align(Alignment.BottomEnd).padding(24.dp),
-                dark = dark, preset = fabPreset, backdrop = backdrop)
+                dark = dark, preset = fabPreset)
         }
     } else null
     CompositionLocalProvider(LocalCouiContourGlowEnabled provides preferences.contour) {

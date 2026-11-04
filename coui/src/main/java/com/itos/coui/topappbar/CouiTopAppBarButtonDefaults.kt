@@ -2,9 +2,11 @@ package com.itos.coui.topappbar
 
 import android.graphics.BlendMode
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import com.itos.coui.effect.CouiFloatingMaterial
 import com.itos.coui.effect.CouiFloatingShadow
 import com.itos.coui.effect.LocalCouiContourGlowEnabled
@@ -12,6 +14,8 @@ import com.itos.coui.shape.CouiShape
 import com.itos.coui.shape.CouiCapsuleShape
 import com.itos.coui.theme.CouiTheme
 import androidx.compose.ui.unit.dp
+
+internal val LocalCouiToolbarContentColor = staticCompositionLocalOf { Color.Unspecified }
 
 /** 沿用 ToolbarMaterialEffectDelegate 的光效几何及底栏混色方案, 略增强底色权重以改善可读性, 普通投影适当减弱。 */
 object CouiTopAppBarButtonDefaults {
@@ -25,7 +29,8 @@ object CouiTopAppBarButtonDefaults {
         return CouiToolbarStyle(dark, circleShape, CouiCapsuleShape,
             material = { capsule -> material(dark, capsule, search) },
             shadow = { capsule -> shadow(dark, capsule, density, contour, search) },
-            contentColor = colors.onSurface, textStyle = CouiTheme.typography.body,
+            contentColor = LocalCouiToolbarContentColor.current.takeOrElse { colors.onSurface },
+            textStyle = CouiTheme.typography.body,
             cursorColor = colors.accent, contourGlowEnabled = contour)
     }
 

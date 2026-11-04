@@ -57,7 +57,7 @@ internal fun ToolbarSample() {
                 ToolbarPreviewList(query)
             }
         }) { backdrop ->
-            TopAppBar(Modifier.align(Alignment.TopCenter).fillMaxWidth(), backdrop) {
+            TopAppBarSurface(Modifier.align(Alignment.TopCenter).fillMaxWidth(), backdrop) {
                 Row(Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically) {
                     if (Build.VERSION.SDK_INT >= 34) {
@@ -140,7 +140,7 @@ internal fun SearchSamples(dark: Boolean) {
                     dark = dark, backdrop = backdrop, enabled = persistentEnabled)
                 if (Build.VERSION.SDK_INT >= 34) {
                     val state = rememberCouiTopAppBarSearchState(toolbarExpanded)
-                    TopAppBar(Modifier.fillMaxWidth(), backdrop) {
+                    TopAppBarSurface(Modifier.fillMaxWidth(), backdrop) {
                         Row(Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 16.dp),
                             verticalAlignment = Alignment.CenterVertically) {
                             TopAppBarSearch(modifier = Modifier.weight(1f), state = state,

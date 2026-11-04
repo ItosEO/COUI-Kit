@@ -7,11 +7,6 @@
 以下片段只使用 Foundation 与 COUI，位于宿主 Composable 中。`label` 和 `color` 由宿主提供；M3 应用也可把同一矢量传给 `Icon`：
 
 ```kotlin
-import androidx.compose.foundation.Image
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import com.itos.coui.icons.CouiIcons
-
 Image(
     painter = rememberVectorPainter(CouiIcons.Search),
     contentDescription = label,

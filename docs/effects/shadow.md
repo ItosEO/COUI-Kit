@@ -7,19 +7,6 @@
 下面使用便捷入口，不需要背景采样。示例没有应用文案，可直接放入支持 API 34 的 Compose 内容。宿主在进入此函数前检查版本；父级需要为阴影保留绘制空间，不能沿主体边界裁剪。
 
 ```kotlin
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import com.itos.coui.effect.CouiShadowDefaults
-import com.itos.coui.effect.couiShadow
-import com.itos.coui.shape.CouiShape
-
 @RequiresApi(34)
 @Composable
 fun ShadowSample(modifier: Modifier = Modifier, dark: Boolean) {

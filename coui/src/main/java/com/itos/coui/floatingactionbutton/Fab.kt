@@ -31,6 +31,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.itos.coui.backdrop.CouiBackdrop
+import com.itos.coui.backdrop.LocalCouiBackdrop
 import com.itos.coui.effect.CouiFloatingMaterial
 import com.itos.coui.effect.CouiFloatingRenderer
 import com.itos.coui.effect.CouiFloatingShadow
@@ -49,7 +50,9 @@ import com.itos.coui.motion.rememberCouiTouchMotion
 @Composable
 fun Fab(
     modifier: Modifier = Modifier,
-    backdrop: CouiBackdrop,
+    backdrop: CouiBackdrop = checkNotNull(LocalCouiBackdrop.current) {
+        "FAB 需要显式 backdrop 或 COUI Scaffold 的独立栏位"
+    },
     renderer: CouiFloatingRenderer,
     onClick: (() -> Unit)? = null,
     dark: Boolean = CouiTheme.isDark,

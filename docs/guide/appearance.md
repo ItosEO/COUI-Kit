@@ -7,8 +7,6 @@
 在 Compose 中直接使用原生默认值，`checked` 和回调由宿主持有：
 
 ~~~kotlin
-import com.itos.coui.switch.Switch
-
 Switch(checked = checked, onCheckedChange = onCheckedChange)
 ~~~
 
@@ -23,10 +21,6 @@ Switch(checked = checked, onCheckedChange = onCheckedChange)
 `CouiTheme` 建立局部原生或自定义外观，退出后恢复外层策略。它同时提供自身模式。在全局使用 M3 适配时，局部主题仍桥接 M3 内容插槽。
 
 ~~~kotlin
-import androidx.compose.ui.graphics.Color
-import com.itos.coui.theme.CouiPresets
-import com.itos.coui.theme.CouiTheme
-
 val colors = (if (dark) CouiPresets.Dark else CouiPresets.Light)
     .copy(accent = Color(0xFF0080FF))
 CouiTheme(darkTheme = dark, colorScheme = colors) {
@@ -87,9 +81,6 @@ Chip 从 `labelLarge` 取字体族。Dialog 从 `titleLarge`、`bodyMedium`、`l
 轮廓与内晕通过 `LocalCouiContourGlowEnabled` 控制。显式构造 Style 时，应与对应阴影工厂使用同一值：
 
 ~~~kotlin
-import androidx.compose.runtime.CompositionLocalProvider
-import com.itos.coui.effect.LocalCouiContourGlowEnabled
-
 CompositionLocalProvider(LocalCouiContourGlowEnabled provides contourEnabled) {
     content()
 }

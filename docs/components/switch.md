@@ -7,8 +7,6 @@
 页面持有当前值并在回调中更新：
 
 ~~~kotlin
-import com.itos.coui.switch.Switch
-
 Switch(
     checked = checked,
     onCheckedChange = onCheckedChange,
@@ -22,16 +20,6 @@ Switch(
 在 Compose 页面中创建一个开关，点击后更新 `checked`：
 
 ~~~kotlin
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import com.itos.coui.switch.Switch
-import com.itos.coui.switch.CouiSwitchDefaults
-
 var checked by rememberSaveable { mutableStateOf(false) }
 
 Switch(
@@ -52,22 +40,6 @@ Switch(
 需要点击整行切换时，给行添加 `toggleable`，并将开关的 `onCheckedChange` 设为 `null`：
 
 ~~~kotlin
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.unit.dp
-import com.itos.coui.switch.Switch
-import com.itos.coui.switch.CouiSwitchDefaults
-
 @Composable
 fun SwitchRow(
     modifier: Modifier = Modifier,

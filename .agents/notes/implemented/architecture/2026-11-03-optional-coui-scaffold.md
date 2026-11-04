@@ -2,6 +2,8 @@
 
 Status: implemented
 
+本篇的显式采样与无浮动操作槽选择由[Scaffold 正文源](2026-11-04-scaffold-body-backdrop.md)部分取代；栏位测量、安全区及可选容器的决定继续有效。
+
 ## Problem
 
 纯 COUI 应用需要顶栏、底栏与正文布局，但不应因此依赖 Material 3。完全交给宿主实现会重复栏位测量和 Insets 消费，Demo 首页与详情页也有同一需求。

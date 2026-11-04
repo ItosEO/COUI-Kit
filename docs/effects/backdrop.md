@@ -7,22 +7,6 @@
 下面函数把 background 内容作为不透明采样源，foreground 作为面板上的清晰内容。两个参数都是宿主的 Compose 内容，示例的尺寸和模糊半径用于展示装配。
 
 ~~~kotlin
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import com.itos.coui.backdrop.couiBackdrop
-import com.itos.coui.backdrop.drawCouiBackdrop
-import com.itos.coui.backdrop.rememberCouiBackdrop
-import com.itos.coui.shape.CouiShape
-
 @Composable
 fun BlurStage(
     modifier: Modifier = Modifier,
@@ -50,6 +34,37 @@ fun BlurStage(
 ~~~
 
 backgroundColor 需不透明，background 绘制实际图案或页面内容。这里的 blur 接收像素，使用所在 Density 将 dp 转换；只对采样层应用效果，前景内容保持独立。
+
+## 顶栏接入
+
+使用 COUI [Scaffold](../components/scaffold.md) 时，容器自动录制完整正文视口和 `containerColor`。顶栏、底栏和 FAB 槽位获得默认源，无需创建、挂载或传参。正文不获得自身源，正文内部效果需独立装配，避免自采样。
+
+使用 Material 等第三方容器时，创建源，把 `couiBackdrop` 添加到现有正文容器，再把同一个源显式传给顶栏。下面片段使用 Material 3 Scaffold；`backgroundColor`、`title` 和正文 `content` 由宿主提供：
+
+```kotlin
+val backdrop = rememberCouiBackdrop()
+androidx.compose.material3.Scaffold(
+    topBar = {
+        TopAppBar(
+            backdrop = backdrop,
+            title = { BasicText(title, style = LocalCouiTextStyle.current) },
+        )
+    },
+) { padding ->
+    Column(Modifier.fillMaxSize().couiBackdrop(backdrop).background(backgroundColor)
+        .padding(padding).consumeWindowInsets(padding)) {
+        content()
+    }
+}
+```
+
+不需要额外的背景容器或全局初始化。源只挂到一个正文节点，顶栏位于源节点之外；图层的创建、更新和释放由库处理。沿用其他 Scaffold 或正文布局时，保留这三处连接即可，见[宿主页面接入](../guide/secondary-pages.md)。
+
+## 可选的页面作用域
+
+高级装配需要共享默认源时，可使用 `ProvideCouiBackdrop(backdrop)`。`TopAppBar`、`LargeTopAppBar`、`TopAppBarSurface`、`CollapsingTopAppBar`、`NavigationBar`、`Fab` 和 `SearchBar` 会读取最近的作用域，显式 `backdrop` 优先。该入口只提供已有源，不创建或挂载节点；第三方容器普通接入直接传参即可。不要向源的内容子树提供它自身。
+
+COUI Scaffold 只在独立消费者槽位内提供默认源，不需要调用方安装 Provider。未显式传入且作用域不存在时会报错。页面源不会从窗口源隐式获取；Scaffold 不安装菜单和材质弹窗的窗口源，这些组件继续按各自接口接入。
 
 ## 源与窗口
 
@@ -87,4 +102,4 @@ backgroundColor 需不透明，background 绘制实际图案或页面内容。�
 
 ## 公开入口
 
-[CouiBackdrop / rememberCouiBackdrop / couiBackdrop](../../coui/src/main/java/com/itos/coui/backdrop/CouiBackdrop.kt)、[drawCouiBackdrop / CouiBackdropEffectScope](../../coui/src/main/java/com/itos/coui/backdrop/DrawCouiBackdrop.kt)。完整采样舞台见 [DemoVisualEffects](../../demo/src/main/java/com/itos/coui/demo/DemoVisualEffects.kt)。
+[CouiBackdrop / rememberCouiBackdrop / couiBackdrop](../../coui/src/main/java/com/itos/coui/backdrop/CouiBackdrop.kt)、[ProvideCouiBackdrop](../../coui/src/main/java/com/itos/coui/backdrop/ProvideCouiBackdrop.kt)、[drawCouiBackdrop / CouiBackdropEffectScope](../../coui/src/main/java/com/itos/coui/backdrop/DrawCouiBackdrop.kt)。完整采样舞台见 [DemoVisualEffects](../../demo/src/main/java/com/itos/coui/demo/DemoVisualEffects.kt)。

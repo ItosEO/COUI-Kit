@@ -105,13 +105,13 @@ internal fun FabSample(preset: CouiFabColor, onPresetChange: (CouiFabColor) -> U
 }
 
 @Composable
-internal fun FabSampleButton(modifier: Modifier = Modifier, dark: Boolean, preset: CouiFabColor, backdrop: CouiBackdrop) {
+internal fun FabSampleButton(modifier: Modifier = Modifier, dark: Boolean, preset: CouiFabColor) {
     if (Build.VERSION.SDK_INT >= 34) {
         val rendering = remember { runCatching { CouiFloatingRenderer.standalone() } }
         val renderer = rendering.getOrNull()
         if (renderer != null) {
             val color = CouiFabDefaults.containerColor(preset, dark)
-            Fab(modifier, backdrop, renderer, dark = dark, shape = DemoShapes.couiCircle,
+            Fab(modifier, renderer = renderer, dark = dark, shape = DemoShapes.couiCircle,
                 material = CouiFabDefaults.material(color, dark),
                 shadow = CouiFabDefaults.shadow(color, LocalDensity.current.density,
                     LocalCouiContourGlowEnabled.current)) {

@@ -6,7 +6,7 @@ COUI 组件可以放入现有 Material、Miuix 或自有页面。纯 COUI 应用
 | --- | --- |
 | 普通分组与控件 | 直接放入已有布局，见[分组与行布局](../components/settings.md) |
 | COUI 惯性与回弹 | 在实际滚动容器使用 [couiVerticalScroll](../effects/overscroll.md) |
-| 模糊顶栏、底栏或 FAB | 录制正文 Backdrop，将消费者放在源之外 |
+| 模糊顶栏、底栏或 FAB | COUI Scaffold 自动提供正文源；第三方容器显式接入 Backdrop |
 | 材质菜单或弹窗 | 按需提供窗口背景源 |
 
 配色来自组件参数或当前 `CouiTheme`。M3 适配是可选依赖，接入方法见[外观与预设](appearance.md)。
@@ -16,35 +16,6 @@ COUI 组件可以放入现有 Material、Miuix 或自有页面。纯 COUI 应用
 下面的应用层示例使用 Material 3 Scaffold。宿主需自行依赖 Material 3 并提供 MaterialTheme；文案和导航回调由宿主传入。
 
 ```kotlin
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
-import com.itos.coui.backdrop.couiBackdrop
-import com.itos.coui.backdrop.rememberCouiBackdrop
-import com.itos.coui.layout.Group
-import com.itos.coui.layout.Item
-import com.itos.coui.layout.CouiPageDefaults
-import com.itos.coui.text.Text
-import com.itos.coui.text.CouiTextKind
-import com.itos.coui.topappbar.TopAppBar
-
 @Composable
 fun MixedPage(
     modifier: Modifier = Modifier,
@@ -56,35 +27,28 @@ fun MixedPage(
     val background = MaterialTheme.colorScheme.background
     val titleColor = MaterialTheme.colorScheme.onBackground
     val colors = CouiPageDefaults.themeColors()
-    Scaffold(
+    androidx.compose.material3.Scaffold(
         modifier = modifier,
         containerColor = background,
         topBar = {
             TopAppBar(
-                modifier = Modifier.windowInsetsPadding(
-                    WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
                 backdrop = backdrop,
-            ) {
-                Box(Modifier.fillMaxWidth().statusBarsPadding()
-                    .height(CouiPageDefaults.toolbarHeight),
-                    contentAlignment = Alignment.Center) {
-                    BasicText(title, style = TextStyle(color = titleColor))
-                }
-            }
+                colors = CouiTopAppBarDefaults.colors(
+                    backgroundColor = background, titleColor = titleColor),
+                title = { BasicText(title, style = LocalCouiTextStyle.current) },
+            )
         },
     ) { padding ->
-        // 录制整个正文视口及其底色，但不录制顶栏和其他浮动消费者。
-        Box(Modifier.fillMaxSize().couiBackdrop(backdrop).background(background)) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().consumeWindowInsets(padding),
-                contentPadding = padding,
-            ) {
-                item {
-                    Group(colors = colors) {
-                        Item(onClick = onOpen) {
-                            Text(text = rowTitle, kind = CouiTextKind.PreferenceTitle,
-                                color = colors.title)
-                        }
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().couiBackdrop(backdrop).background(background)
+                .consumeWindowInsets(padding),
+            contentPadding = padding,
+        ) {
+            item {
+                Group(colors = colors) {
+                    Item(onClick = onOpen) {
+                        Text(text = rowTitle, kind = CouiTextKind.PreferenceTitle,
+                            color = colors.title)
                     }
                 }
             }
@@ -103,20 +67,19 @@ fun MixedPage(
 
 含输入框的页面在滚动容器外使用 `imePadding()`，使键盘打开时实际视口缩小，Foundation 才能处理焦点避让。只增加滚动内容尾部空白不会缩小视口。父级已处理 IME 时沿用其分工，详见 [Insets 消费规则](https://developer.android.com/develop/ui/compose/system/insets-ui)。
 
-折叠顶栏还需用 `state.contentPadding` 补偿正文顶部，并用宿主原始 Padding 消费 Insets，见[折叠顶栏](../components/collapsing-app-bar.md)。该状态接收普通 PaddingValues，不依赖特定 Scaffold。
+大标题页面使用 `LargeTopAppBar` 与 `CouiTopAppBarDefaults.exitUntilCollapsedScrollBehavior`，正文通过 `scrollBehavior.state.contentPadding` 补偿顶部，并用宿主原始 Padding 消费 Insets。常驻搜索页面使用 `CollapsingTopAppBar` 的 `state.contentPadding`。完整装配见[折叠顶栏](../components/collapsing-app-bar.md)。该状态接收普通 PaddingValues，不依赖特定 Scaffold。
 
 ## 正文源与窗口源
 
-正文源覆盖完整视口和不透明底色，供顶栏、底栏等浮动组件采样。将源挂在应用滚动 Padding 之前的位置，避免栏位下方出现未录制区域。消费者不能被录入自身采样的源。
+COUI `Scaffold` 自动录制完整正文视口与 `containerColor`，仅向 `topBar`、`bottomBar` 和 `floatingActionButton` 提供默认源。放入这些槽位的 COUI 顶栏、底栏、FAB 和搜索可省略 `backdrop`；显式参数优先。正文 `content` 不获得自身源，内部效果需配置独立源。完整用法见[页面容器](../components/scaffold.md)。
 
-菜单或材质弹窗需要包含顶栏的完整窗口背景时，可在宿主 Composable 中使用以下结构：
+第三方容器的正文源需覆盖完整视口和不透明底色，供顶栏、底栏等浮动组件采样。将源挂在应用滚动 Padding 之前的位置，避免栏位下方出现未录制区域。消费者不能被录入自身采样的源。
+
+使用第三方容器时，在现有正文容器的 Modifier 上添加 `.couiBackdrop(backdrop)`，并将同一个源显式传给顶栏即可，不必额外包装容器或安装 Provider。图层由库管理，无需全局初始化，见[背景采样](../effects/backdrop.md#顶栏接入)。
+
+Scaffold 不安装窗口源。菜单或材质弹窗需要包含顶栏的完整窗口背景时，可在宿主 Composable 中使用以下结构：
 
 ```kotlin
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Modifier
-import com.itos.coui.menu.ProvideCouiMenuBackdrop
-
 ProvideCouiMenuBackdrop { windowSource ->
     Box(Modifier.fillMaxSize().then(windowSource)) {
         // 原有页面；正文 Backdrop 保持独立。

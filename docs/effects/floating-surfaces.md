@@ -7,11 +7,6 @@
 下面片段位于 API 34 及以上的 Compose 内容中。backdrop 来自不透明 SDR 页面；material、shadow、shape 为宿主外观；contentLayer 是节点持有并录制实际前景内容的 GraphicsLayer；surface 返回该节点当前几何。
 
 ~~~kotlin
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import com.itos.coui.effect.CouiFloatingRenderer
-import com.itos.coui.effect.couiFloatingSurface
-
 val renderer = remember { CouiFloatingRenderer.standalone() }
 val surfaceModifier = Modifier.couiFloatingSurface(
     backdrop = backdrop,

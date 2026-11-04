@@ -31,7 +31,7 @@ fun TopAppBarButtonGroup(
     modifier: Modifier = Modifier,
     content: @Composable RowScope.() -> Unit,
 ) {
-    val overlay = checkNotNull(LocalCouiToolbarOverlay.current) { "顶栏按钮组必须位于 ProgressiveBlurTopAppBar 内" }
+    val overlay = checkNotNull(LocalCouiToolbarOverlay.current) { "顶栏按钮组必须位于顶栏效果作用域内" }
     overlay.apply {
         Row(
             modifier = Modifier.renderInSharedTransitionScopeOverlay(renderInOverlay = { true }).then(modifier),

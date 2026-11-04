@@ -2,38 +2,30 @@ package com.itos.coui.demo
 
 import com.itos.coui.icons.CouiIcons
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import com.itos.coui.scroll.couiVerticalScroll
 import com.itos.coui.scroll.CouiOverscrollEffect
 import com.itos.coui.scroll.rememberCouiOverscrollEffect
 import androidx.compose.material3.Icon
-import com.itos.coui.backdrop.couiBackdrop
-import com.itos.coui.backdrop.CouiBackdrop
-import com.itos.coui.backdrop.rememberCouiBackdrop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
@@ -46,6 +38,7 @@ import com.itos.coui.text.rememberCouiTextStyle
 import com.itos.coui.topappbar.TopAppBar
 import com.itos.coui.topappbar.TopAppBarButton
 import com.itos.coui.topappbar.CouiTopAppBarButtonDefaults
+import com.itos.coui.topappbar.CouiTopAppBarDefaults
 import com.itos.coui.effect.LocalCouiContourGlowEnabled
 import androidx.compose.ui.platform.LocalDensity
 import android.os.Build
@@ -68,51 +61,45 @@ internal fun DemoSettingsPage(
     scrollState: ScrollState = rememberScrollState(),
     actions: @Composable () -> Unit = {},
     overscrollEffect: CouiOverscrollEffect? = rememberCouiOverscrollEffect(),
-    floatingAction: (@Composable BoxScope.(CouiBackdrop) -> Unit)? = null,
+    floatingAction: (@Composable BoxScope.() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val source = remember { MutableInteractionSource() }
     val density = LocalDensity.current.density
     val contour = LocalCouiContourGlowEnabled.current
-    val backdrop = rememberCouiBackdrop()
     Scaffold(modifier = modifier.fillMaxSize().imePadding(),
         containerColor = colors.background,
+        floatingActionButton = floatingAction,
         topBar = {
-                TopAppBar(Modifier.fillMaxWidth(), backdrop) {
-                    Row(Modifier.fillMaxWidth().statusBarsPadding().height(CouiPageDefaults.toolbarHeight)
-                        .padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        if (Build.VERSION.SDK_INT >= 34) {
-                            TopAppBarButton(onClick = onBack, style = CouiTopAppBarButtonDefaults.style(dark).copy(
-                                contentColor = colors.title,
-                                textStyle = rememberCouiTextStyle(CouiTextKind.Toolbar), cursorColor = colors.accent,
-                                material = { CouiTopAppBarButtonDefaults.systemMaterial(dark, it) },
-                                shadow = { CouiTopAppBarButtonDefaults.shadow(dark, it, density, contour, alphaScale = 1f) })) {
-                                Icon(CouiIcons.Back, backDescription, Modifier.size(24.dp))
-                            }
-                        } else Box(Modifier.size(48.dp).clip(CouiShape(24.dp, 2f))
-                            .couiButtonFeedback(dark, source, true)
-                            .clickable(source, indication = null, role = Role.Button, onClick = onBack)
-                            .semantics { contentDescription = backDescription }, contentAlignment = Alignment.Center) {
-                            DemoSettingsArrow(Modifier.size(24.dp), back = true, color = colors.title)
+            TopAppBar(
+                title = {
+                    Text(text = title, kind = CouiTextKind.Toolbar, color = colors.title,
+                        textAlign = TextAlign.Start, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                },
+                dark = dark,
+                colors = CouiTopAppBarDefaults.colors(backgroundColor = Color.Transparent,
+                    titleColor = colors.title, dark = dark),
+                navigationIcon = {
+                    if (Build.VERSION.SDK_INT >= 34) {
+                        TopAppBarButton(onClick = onBack, style = CouiTopAppBarButtonDefaults.style(dark).copy(
+                            contentColor = colors.title,
+                            textStyle = rememberCouiTextStyle(CouiTextKind.Toolbar), cursorColor = colors.accent,
+                            material = { CouiTopAppBarButtonDefaults.systemMaterial(dark, it) },
+                            shadow = { CouiTopAppBarButtonDefaults.shadow(dark, it, density, contour, alphaScale = 1f) })) {
+                            Icon(CouiIcons.Back, backDescription, Modifier.size(24.dp))
                         }
-                        Text(Modifier.weight(1f).padding(start = 8.dp, end = 8.dp).semantics { heading() },
-                            text = title, kind = CouiTextKind.Toolbar, color = colors.title,
-                            textAlign = TextAlign.Start,
-                            maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        actions()
+                    } else Box(Modifier.size(48.dp).clip(CouiShape(24.dp, 2f))
+                        .couiButtonFeedback(dark, source, true)
+                        .clickable(source, indication = null, role = Role.Button, onClick = onBack)
+                        .semantics { contentDescription = backDescription }, contentAlignment = Alignment.Center) {
+                        DemoSettingsArrow(Modifier.size(24.dp), back = true, color = colors.title)
                     }
-                }
+                },
+                actions = { actions() },
+            )
     }) { innerPadding ->
-        Box(Modifier.fillMaxSize()) {
-            Box(Modifier.matchParentSize().couiBackdrop(backdrop).background(colors.background)) {
-                Column(Modifier.fillMaxSize().couiVerticalScroll(scrollState, overscrollEffect = overscrollEffect)
-                    .padding(innerPadding).consumeWindowInsets(innerPadding)
-                    .padding(bottom = CouiPageDefaults.groupSpacing), content = content)
-            }
-            if (floatingAction != null) Box(Modifier.matchParentSize()
-                .padding(innerPadding).consumeWindowInsets(innerPadding)) {
-                floatingAction(backdrop)
-            }
-        }
+        Column(Modifier.fillMaxSize().couiVerticalScroll(scrollState, overscrollEffect = overscrollEffect)
+            .padding(innerPadding).consumeWindowInsets(innerPadding)
+            .padding(bottom = CouiPageDefaults.groupSpacing), content = content)
     }
 }

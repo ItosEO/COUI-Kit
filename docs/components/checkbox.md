@@ -7,8 +7,6 @@
 页面提供当前勾选状态：
 
 ~~~kotlin
-import com.itos.coui.checkbox.Checkbox
-
 Checkbox(checked = checked)
 ~~~
 
@@ -19,24 +17,6 @@ Checkbox(checked = checked)
 给整行添加 `toggleable`，点击文字或复选框都可以切换：
 
 ~~~kotlin
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.unit.dp
-import com.itos.coui.checkbox.Checkbox
-import com.itos.coui.checkbox.CouiCheckboxDefaults
-import com.itos.coui.shape.CouiShape
-
 @Composable
 fun CheckboxRow(
     modifier: Modifier = Modifier,
@@ -80,10 +60,6 @@ fun CheckboxRow(
 没有整行文案时，可以用 48dp 的 `Box` 包住复选框，并提供无障碍描述。外层 `toggleable` 必须设置 `indication = null`，隐藏点击涟漪，保留点击和复选语义。下面的片段使用上一节的参数和导入：
 
 ~~~kotlin
-import androidx.compose.foundation.layout.Box
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-
 Box(
     Modifier
         .size(48.dp)

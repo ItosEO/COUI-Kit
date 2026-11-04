@@ -7,8 +7,6 @@
 页面提供当前值和更新回调：
 
 ~~~kotlin
-import com.itos.coui.slider.Slider
-
 Slider(
     value = value,
     onValueChange = onValueChange,
@@ -22,14 +20,6 @@ Slider(
 下面的滑条接收页面的当前值，并在拖动时通过 `onValueChange` 更新：
 
 ~~~kotlin
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import com.itos.coui.shape.CouiCapsuleShape
-import com.itos.coui.slider.Slider
-import com.itos.coui.slider.CouiSliderDefaults
-
 @Composable
 fun VolumeSlider(
     modifier: Modifier = Modifier,

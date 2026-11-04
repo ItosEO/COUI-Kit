@@ -14,14 +14,6 @@
 下面的函数只依赖 Foundation 和 COUI。文案与导航回调由宿主传入。
 
 ```kotlin
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import com.itos.coui.layout.CouiPageDefaults
-import com.itos.coui.layout.Group
-import com.itos.coui.layout.Item
-import com.itos.coui.text.Text
-import com.itos.coui.text.CouiTextKind
-
 @Composable
 fun AboutRow(
     modifier: Modifier = Modifier,
@@ -69,10 +61,6 @@ fun AboutRow(
 自定义行内留白或图标尺寸时，将同一组值用于 Item 和分隔线。在宿主 Composable 中计算：
 
 ```kotlin
-import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.dp
-
 val startIndent = contentPadding.calculateStartPadding(LocalLayoutDirection.current) +
     if (icon != null) iconSize + CouiPageDefaults.iconSpacing else 0.dp
 ```

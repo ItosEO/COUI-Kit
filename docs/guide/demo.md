@@ -25,7 +25,7 @@ CI 可通过 KEYSTORE_FILE、KEYSTORE_PASSWORD、KEYSTORE_ALIAS、KEYSTORE_ALIAS
 
 ## 展示与操作
 
-首页有组件、效果、预设三页。组件与效果页显示分组目录，点击条目进入独立 Activity；顶部标题随滚动折叠，搜索栏停靠在顶端。
+首页有组件、效果、预设三页。组件与效果页显示分组目录，点击条目进入独立 Activity。组件页保留搜索栏；效果和预设页不显示搜索栏，上滑后将大标题缩成固定的小标题。
 
 | 页面 | 内容 |
 | --- | --- |
@@ -37,9 +37,9 @@ CI 可通过 KEYSTORE_FILE、KEYSTORE_PASSWORD、KEYSTORE_ALIAS、KEYSTORE_ALIAS
 
 ### 搜索与返回
 
-首页与搜索详情按目录名称、说明和页面标识筛选可导航条目。清空按钮只清除查询；取消或在搜索展开时按返回键会关闭搜索并清除查询。点击结果只打开目标页面，不改变来源页的查询和展开状态；返回后继续显示原搜索结果。
+组件页搜索直接筛选首页原有的组件分组，空查询显示完整组件目录，不显示效果或隐藏的独立类型条目。搜索时间、倒计时或日期时，通过滚轮选择器条目进入对应类型。筛选使用独立滚动位置，清空查询或取消搜索后恢复原目录的位置。
 
-首页搜索展开及退场期间，原正文保留布局和保存状态，但禁用交互并退出无障碍遍历。结果层在展开目标为 true 时接受操作；收起目标生效后立即禁用输入和语义，保留退场绘制。搜索状态和路由由 Demo 持有，组件用法见[常驻搜索](../components/search-bar.md)。
+清空按钮只清除查询；取消或在搜索展开时按返回键会关闭搜索并清除查询。点击条目只打开目标页面，返回后保留来源页的查询与展开状态。搜索状态和路由由 Demo 持有，组件用法见[常驻搜索](../components/search-bar.md)。
 
 ### 主要示例
 
@@ -59,7 +59,7 @@ Sheet 和独立普通按钮不在当前展示范围。目录中的效果分类�
 
 `DemoApplication` 初始化可选 `CouiMaterial3Style`。开启 Material 配色时，组件在消费处读取宿主主题；关闭时，局部 `CouiTheme` 使用原生外观，Demo 的 M3 内容也映射到 COUI 表面与强调色。`DemoTheme` 为首页和详情提供页面内容色，偏好行直接读取 `CouiTheme` 和 `CouiPageDefaults`。显式 FAB 配色预设继续生效。主题接入见[外观与预设](appearance.md)。
 
-首页和详情页使用公开的 [Scaffold](../components/scaffold.md)。容器测量栏位并处理横向安全区，Demo 在容器外处理 IME；正文应用测量所得 Padding。正文 Backdrop 供顶栏和底栏采样，Activity 根部的窗口源供菜单与弹窗使用。源和消费者的分层见[宿主页面接入](secondary-pages.md)。
+首页和详情页使用公开的 [Scaffold](../components/scaffold.md)。容器测量栏位并处理横向安全区，Demo 在容器外处理 IME；正文应用测量所得 Padding。容器自动向顶栏、底栏和 FAB 槽位提供正文背景源，正文内的 ChipTab 和模糊演示保留独立源。Activity 根部的窗口源供菜单与弹窗使用，不由 Scaffold 安装。源和消费者的分层见[宿主页面接入](secondary-pages.md)。
 
 页面通过标准 Intent 启动、`finish()` 退出，使用当前 ROM 向普通应用提供的 Activity 转场。Demo 不实现系统设置的特权窗口或双栏协议。
 

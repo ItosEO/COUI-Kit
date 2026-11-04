@@ -11,8 +11,6 @@
 滚轮需要当前整数、范围、回调和无障碍标签：
 
 ~~~kotlin
-import com.itos.coui.picker.WheelPicker
-
 WheelPicker(
     value = minute,
     onValueChange = { minute = it },
@@ -24,8 +22,6 @@ WheelPicker(
 月历只需要当前日期和回调；年月日文案及按钮的无障碍说明由库按系统语言提供：
 
 ~~~kotlin
-import com.itos.coui.picker.CalendarPicker
-
 CalendarPicker(
     value = selectedDate,
     onValueChange = onDateChange,
@@ -39,17 +35,6 @@ CalendarPicker(
 下面使用两个 `WheelPicker` 选择 24 小时制时间。每列独立保存数值：
 
 ~~~kotlin
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.width
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.itos.coui.picker.WheelPicker
-
 @Composable
 fun TimeWheelExample() {
     var hour by rememberSaveable { mutableIntStateOf(9) }
@@ -86,16 +71,6 @@ fun TimeWheelExample() {
 月历支持翻月、点击日期，以及点击顶部日期标题切换到年/月/日滚轮：
 
 ~~~kotlin
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import com.itos.coui.picker.CalendarPicker
-import java.time.LocalDate
-
 @Composable
 fun CalendarExample(modifier: Modifier = Modifier) {
     var epochDay by rememberSaveable {
@@ -137,16 +112,6 @@ CalendarPicker(
 直接使用已有的 `AlertDialog` 和 `content` 槽位。弹窗持有草稿，用户确认后才保存：
 
 ~~~kotlin
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import com.itos.coui.dialog.AlertDialog
-import com.itos.coui.dialog.CouiDialogAction
-import com.itos.coui.picker.CalendarPicker
-import java.time.LocalDate
-
 @Composable
 fun DatePickerDialog(
     visible: Boolean,
@@ -185,11 +150,6 @@ fun DatePickerDialog(
 高度通过 `Modifier.height()` 设置；省略时使用 `CouiPickerDefaults.height`。父级约束和 Modifier 顺序决定实际视口，绘制、命中和运动步长使用实测高度。`textSize`、`focusTextSize` 和 `diffusion` 使用 `Dp`，字号不再次按系统 `sp` 放大。下面沿用前面的 `minute` 状态：
 
 ~~~kotlin
-import androidx.compose.foundation.layout.height
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.itos.coui.picker.CouiPickerDefaults
-
 WheelPicker(
     modifier = Modifier.height(160.dp),
     value = minute,
@@ -215,13 +175,6 @@ WheelPicker(
 时间或日期列需要贯穿整组的选择线时，在父级 Row 使用共享绘制：
 
 ~~~kotlin
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.Modifier
-import com.itos.coui.picker.CouiPickerDefaults
-import com.itos.coui.picker.couiPickerSelectionLines
-
 Row(
     Modifier.fillMaxWidth()
         .couiPickerSelectionLines(dividerColor)

@@ -59,7 +59,7 @@ fun TopAppBarButton(
     style: CouiToolbarStyle = CouiTopAppBarButtonDefaults.style(),
     content: @Composable RowScope.() -> Unit,
 ) {
-    val backdrop = checkNotNull(LocalCouiToolbarBackdrop.current) { "顶栏按钮必须位于 TopAppBar 内" }
+    val backdrop = checkNotNull(LocalCouiToolbarBackdrop.current) { "顶栏按钮必须位于顶栏效果作用域内" }
     val dark = style.dark
     val contour = style.contourGlowEnabled
     var boundsSize by remember { mutableStateOf(IntSize.Zero) }

@@ -7,36 +7,6 @@
 下面的搜索框支持输入、提交、关闭和返回键。搜索按钮与输入框需要放在同一个顶栏中，并使用同一份状态。此组件要求 API 34。
 
 ~~~kotlin
-import androidx.activity.compose.BackHandler
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.unit.dp
-import com.itos.coui.backdrop.CouiBackdrop
-import com.itos.coui.topappbar.CouiToolbarStyle
-import com.itos.coui.topappbar.TopAppBar
-import com.itos.coui.topappbar.TopAppBarButtonGroup
-import com.itos.coui.topappbar.TopAppBarSearch
-import com.itos.coui.topappbar.TopAppBarSearchButton
-import com.itos.coui.topappbar.rememberCouiTopAppBarSearchState
-
 @RequiresApi(34)
 @Composable
 fun SearchToolbar(
@@ -63,7 +33,7 @@ fun SearchToolbar(
         Unit
     }
     BackHandler(enabled = expanded, onBack = close)
-    TopAppBar(modifier = modifier, backdrop = backdrop) {
+    TopAppBarSurface(modifier = modifier, backdrop = backdrop) {
         Row(
             modifier = Modifier.fillMaxWidth().statusBarsPadding()
                 .heightIn(min = 64.dp).padding(horizontal = 16.dp),
@@ -112,13 +82,6 @@ fun SearchToolbar(
 将前面示例中的 `TopAppBarButtonGroup` 替换为下面的内容，可以控制右侧动作在搜索展开时的显示方式。动作回调和描述文案由页面提供：
 
 ~~~kotlin
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Icon
-import com.itos.coui.topappbar.TopAppBarButton
-import com.itos.coui.topappbar.TopAppBarSearchAction
-
 TopAppBarButtonGroup {
     TopAppBarSearchAction(state = state) {
         TopAppBarButton(onClick = onReset, style = style) {

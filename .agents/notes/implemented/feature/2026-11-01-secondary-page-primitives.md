@@ -10,6 +10,18 @@ Status: implemented
 
 库提供局部布局、语义文字、折叠顶栏、常驻搜索与可选回弹。查询、展开目标、导航、偏好、业务回调与滚动状态由宿主持有。布局族当前入口为 `com.itos.coui.layout` 下的 Group、Item、Divider、Footer；行内容槽合并和图示移除由[通用 Item](../simplification/2026-11-03-layout-item-api.md)持有。
 
+折叠顶栏用可空搜索槽区分两种装配：传入槽位时保留设置首页的标题退场与搜索停靠；省略或传 null 时，大标题缩为固定小标题，不降低透明度，短页面也允许保留收起状态。空 lambda 仍属于搜索式布局，不能据其测量高度猜宿主意图。折叠状态按当前槽位配置与密度更新行程，并按比例迁移已接受位置、正文补偿和搜索恢复位置；不让状态工厂反复恢复旧行程。无搜索时忽略搜索状态，避免调用方保留的展开目标锁住普通滚动。
+
+独立标题的依据为便签 17.0.24 的 `collapsing_floating_appbar_layout` / todo 版、`COUICollapsingToolbarLayoutStyle`、`COUICollapsedToolbarStyle` 以及 `COUICollapsingTextHelper` 的非 fade 分支。布局未装配常驻搜索，默认同色标题仅插值位置和字号；有持久副标题时使用另一组折叠字号，当前组件不装配该分支。紧凑布局的起始边距、展开顶部位置与标题字号来自同包资源，插值使用 `COUIEaseInterpolator`。公共实现使用公开 Typeface 与 Compose 安全区，暂不接入原厂响应式大屏边距；字体文件和动画像素仍需设备验收。
+
+LargeTopAppBar 的展开排版采用用户指定的项目定制：字号复用搜索式首页的 HomeTitle，起始边距与该首页对齐，并在折叠时过渡回原紧凑位置。收起字号保持固定 dp，缩放比例以实际展开字体像素计算，避免系统字体倍率传到收起态。该预设不表示便签原厂字号；CollapsingTopAppBar 的无搜索分支继续保留便签排版。
+
+普通大标题的背景也使用便签分支，不能混入搜索首页的滚动淡入。便签 `note_list_fragment`、`fragment_todo_list` 与 `todo_list_layout` 的 AppBarBlurOverlayView 未启用 scrollDrivenAlphaEnabled，构造默认 alpha 为 1、固定延伸 8dp。AppBarBlurOverlayBehavior.updateOverlayBounds 读取 AppBar 的 top 与 bottom，COUIViewOffsetHelper 通过 offsetTopAndBottom 平移整个 AppBar；背景保持完整高度随之移动，而非按剩余栏高缩放。页面入口经 NoteAppBarBlurUtil.resetToPageThemeDefaults 清除参数覆盖，采用 AppBarBlurParams 默认的 30px→0、speed=3。Java 的浮点值与构造分支已用 Droid ASC 和 JADX 交叉核对。
+
+移植在同一测量阶段读取标题实际高度与顶部延伸，固定下沿延伸，避免收起端点切换背景尺寸。这样滚动只改变背景位置，不会因剩余栏高变化而重建渐进效果的尺寸快照。
+
+搜索式首页同样保持完整背景高度，延伸取已有搜索预设，不在收起端点或搜索活动切换时重设尺寸。淡入长度和搜索活动时的显示规则保留，但滚动淡入读取正文位移，而非滞后的标题弹簧位移：正文 Padding 最终由 contentOffsetPx 决定，背景必须在正文进入顶栏时同步出现。此处属于针对 Compose 双位移装配的连续性适配，不将该透明度输入规则表述为已确认的 OEM 行为；标题、搜索与投影继续使用各自的动画进度。
+
 常驻搜索扩展现有浮动后端的真实双主体装配和材质后、内容前回调。形状、材质、轮廓、投影、跟手光及融合复用公共效果，不复制 Shader 或以第三个假节点凑数量。项目选用带背景模糊的 TYPE_FRAMEWORK_TOP_BAR_BLUR，区别于原厂默认的零半径材质分支。
 
 双主体低层入口继续公开，与单主体和三主体装配保持一致，供宿主自定义主体几何与内容；普通搜索用户使用 SearchBar。只因当前仓库主要由搜索消费就改为 internal，会撤回已选定的低层自定义能力，因此不收窄该接口。
@@ -26,7 +38,7 @@ Status: implemented
 
 ## 页面容器的决定关系
 
-早期 Scaffold 把栏位测量、安全区、正文/窗口采样和页面配色集中装配，目的是减少整页示例的重复代码。[宿主页面所有权](../architecture/2026-11-03-host-owned-page-layout.md)解除这些绑定；[可选轻量页面容器](../architecture/2026-11-03-optional-coui-scaffold.md)提供独立的通用测量与 Insets，不恢复页面配色作用域或隐式源。折叠补偿只改变正文顶部留白，底部视口保持固定。
+早期 Scaffold 把栏位测量、安全区、正文/窗口采样和页面配色集中装配，目的是减少整页示例的重复代码。[宿主页面所有权](../architecture/2026-11-03-host-owned-page-layout.md)解除这些绑定；[可选轻量页面容器](../architecture/2026-11-03-optional-coui-scaffold.md)提供独立的通用测量与 Insets，不恢复页面配色作用域。[Scaffold 正文源](../architecture/2026-11-04-scaffold-body-backdrop.md)管理 COUI 容器独立槽位的默认源，第三方容器仍显式接入。折叠补偿只改变正文顶部留白，底部视口保持固定。
 
 ## Evidence
 
