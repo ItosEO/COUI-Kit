@@ -24,9 +24,9 @@
     <string name="loading_switch">Loading switch</string>
     <string name="loading_switch_description">Loading</string>
     <string name="loading_switch_summary">The sample finishes after a short delay</string>
-    <string name="menu_row_title">Default network</string>
-    <string name="menu_row_option_one">Network 1</string>
-    <string name="menu_row_option_two">Network 2</string>
+    <string name="menu_row_title">Preferred network</string>
+    <string name="menu_row_option_one">Wi-Fi</string>
+    <string name="menu_row_option_two">Mobile data</string>
     <string name="menu_row_group">List item menu preset</string>
     <string name="sample_enabled">Available</string>
     <string name="sample_disabled">Unavailable</string>
@@ -138,4 +138,13 @@
     <string name="settings_group_example">Sections and items</string>
     <string name="settings_long_summary">A longer supporting message used to inspect line wrapping, row height and trailing content alignment.</string>
     <string name="settings_color_preview">Preview colors below only; this does not change the system or app theme.</string>
+    <string name="chip_category_recent">Recent</string>
+    <string name="chip_category_favorites">Favorites</string>
+    <string name="chip_category_media">Photos</string>
+    <string name="chip_category_notes">Notes</string>
+    <string name="chip_category_archive">Archived</string>
+    <string name="chip_category_shared">Shared</string>
+    <string name="chip_category_all">All</string>
+    <string name="chip_selection">Selected category</string>
+    <string name="chip_content_summary">Selecting a tab updates this content.</string>
 </resources>
