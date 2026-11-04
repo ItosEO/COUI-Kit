@@ -110,10 +110,8 @@
     <string name="search_toolbar">Expandable toolbar search</string>
     <string name="search_toolbar_title">Search samples</string>
     <string name="search_close">Close search</string>
-    <string name="search_submit">Submit search</string>
     <string name="search_results">Search results</string>
     <string name="search_no_results">No matching component</string>
-    <string name="search_result_selected">Selected: %1$s</string>
     <string name="nav_left_visible">Show settings action</string>
     <string name="nav_right_visible">Show new-item action</string>
     <string name="nav_current">Current section: %1$s</string>
@@ -125,7 +123,6 @@
     <string name="checkbox_standalone">Standalone checkbox</string>
     <string name="switch_standalone">Standalone switch</string>
     <string name="slider_finished">Adjustments completed: %1$d</string>
-    <string name="slider_hint_finished">Release the slider to update the commit count</string>
     <string name="picker_wheel_value">Current value: %1$d</string>
     <string name="picker_wheel_wrap">Wrap at the ends</string>
     <string name="picker_wheel_enabled">Enable wheel</string>
@@ -137,7 +134,6 @@
     <string name="settings_header_count">Header action presses: %1$d</string>
     <string name="settings_group_example">Sections and items</string>
     <string name="settings_long_summary">A longer supporting message used to inspect line wrapping, row height and trailing content alignment.</string>
-    <string name="settings_color_preview">Preview colors below only; this does not change the system or app theme.</string>
     <string name="chip_category_recent">Recent</string>
     <string name="chip_category_favorites">Favorites</string>
     <string name="chip_category_media">Photos</string>
@@ -147,4 +143,5 @@
     <string name="chip_category_all">All</string>
     <string name="chip_selection">Selected category</string>
     <string name="chip_content_summary">Selecting a tab updates this content.</string>
+    <string name="list_item_text_preview">This text preview changes with the selected size.</string>
 </resources>
