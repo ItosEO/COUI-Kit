@@ -27,6 +27,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.Saver
@@ -36,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -43,10 +45,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.rememberGraphicsLayer
+import androidx.compose.ui.graphics.layer.GraphicsLayer
+import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
@@ -80,7 +87,7 @@ private val ChipMaskFade = 12.dp
 private val ChipShadowExpansion = 100.dp
 private const val ChipActionVisibilityDuration = 280
 
-// 命中限制在列表宽度内，上下保留阴影空间。
+// 原位节点只录制绘制，裁剪负责限制子项命中；阴影在整栏共享层中回放。
 private object ChipViewportShape : Shape {
     override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
         val expansion = with(density) { ChipShadowExpansion.toPx() }
@@ -147,18 +154,24 @@ fun ChipTabRow(
         animationSpec = tween(ChipActionVisibilityDuration, easing = FastOutSlowInEasing),
         label = "chipTabContentPadding",
     )
-    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+    val viewportLayer = rememberGraphicsLayer()
+    var viewportBounds by remember { mutableStateOf(Rect.Zero) }
+    Row(modifier.chipMask(scroll, contentPadding, viewportLayer) { viewportBounds },
+        verticalAlignment = Alignment.CenterVertically) {
         TopAppBarActionVisibility(visible = showLeadingAction,
             durationMillis = ChipActionVisibilityDuration, easing = FastOutSlowInEasing) {
             Box(Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp)) { leadingAction?.invoke() }
         }
         Layout(
-            modifier = Modifier.weight(1f).clip(ChipViewportShape).selectableGroup()
+            modifier = Modifier.weight(1f)
+                .onPlaced { viewportBounds = Rect(it.positionInParent(), Size(it.size.width.toFloat(), it.size.height.toFloat())) }
+                .clip(ChipViewportShape)
+                .drawWithContent { viewportLayer.record { this@drawWithContent.drawContent() } }
+                .selectableGroup()
                 .semantics {
                     horizontalScrollAxisRange = ScrollAxisRange({ scroll.position.toFloat() }, { scroll.maximum.toFloat() }, rtl)
                     if (enabled) scrollBy { x, _ -> scroll.scrollBy(if (rtl) -x else x); true }
                 }
-                .chipMask(scroll, contentPadding)
                 .pointerInput(scroll, enabled, screenWidth, configuration) {
                     if (!enabled) return@pointerInput
                     awaitEachGesture {
@@ -252,7 +265,9 @@ fun ChipTabRow(
     }
 }
 
-private fun Modifier.chipMask(scroll: ChipRowScroll, padding: Dp): Modifier = drawWithCache {
+private fun Modifier.chipMask(scroll: ChipRowScroll, padding: Dp, viewportLayer: GraphicsLayer,
+    viewportBounds: () -> Rect): Modifier = drawWithCache {
+    val bounds = viewportBounds()
     val inset = padding.roundToPx().toFloat()
     val fade = ChipMaskFade.roundToPx().toFloat()
     val left = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -261,21 +276,26 @@ private fun Modifier.chipMask(scroll: ChipRowScroll, padding: Dp): Modifier = dr
     }
     val right = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
-        shader = LinearGradient(size.width - inset - fade, 0f, size.width - inset, 0f, 0, -1, Shader.TileMode.CLAMP)
+        shader = LinearGradient(bounds.width - inset - fade, 0f, bounds.width - inset, 0f, 0, -1, Shader.TileMode.CLAMP)
     }
     val expansion = ChipShadowExpansion.toPx()
     onDrawWithContent {
         val canvas = drawContext.canvas.nativeCanvas
-        val layer = canvas.saveLayer(-100f, -expansion, size.width + 100f, size.height + expansion, null)
+        // 原厂由整栏持有离屏层，列表的 DST_OUT 同时作用于交界处的图标标签投影。
+        val layer = canvas.saveLayer(0f, -expansion, size.width, size.height + expansion, null)
+        drawContent()
+        val viewport = canvas.save()
+        canvas.translate(bounds.left, bounds.top)
         val clip = canvas.save()
         val fadeLeft = scroll.position > 0
         val fadeRight = scroll.position < scroll.maximum
         canvas.clipRect(if (fadeLeft) inset else -100f, -100f,
-            if (fadeRight) size.width - inset else size.width + 100f, size.height + 100f)
-        drawContent()
+            if (fadeRight) bounds.width - inset else bounds.width + 100f, bounds.height + 100f)
+        drawLayer(viewportLayer)
         canvas.restoreToCount(clip)
-        if (fadeLeft) canvas.drawRect(inset, -100f, inset + fade, size.height + 100f, left)
-        if (fadeRight) canvas.drawRect(size.width - inset - fade, -100f, size.width - inset, size.height + 100f, right)
+        if (fadeLeft) canvas.drawRect(inset, -100f, inset + fade, bounds.height + 100f, left)
+        if (fadeRight) canvas.drawRect(bounds.width - inset - fade, -100f, bounds.width - inset, bounds.height + 100f, right)
+        canvas.restoreToCount(viewport)
         canvas.restoreToCount(layer)
     }
 }
@@ -293,6 +313,7 @@ private class ChipRowScroll(animationLevel: Int, initialPosition: Int = 0, priva
     private var widths = IntArray(0)
     private var layoutRtl: Boolean? = null
     private var lastSelectedKey: Any? = null
+    private var lastSelectedIndex = -1
     private var frameTime = 0L
     private var frameSeconds = 0.016f
     private var nominalFrameSeconds = 0.016f
@@ -333,7 +354,7 @@ private class ChipRowScroll(animationLevel: Int, initialPosition: Int = 0, priva
 
     fun layout(viewport: Int, padding: Int, fade: Int, contentWidth: Int, lefts: IntArray, widths: IntArray, rtl: Boolean,
         selectedKey: Any?, selectedIndex: Int) {
-        val selectionChanged = layoutRtl != null && lastSelectedKey != selectedKey
+        val selectionChanged = layoutRtl != null && (lastSelectedKey != selectedKey || lastSelectedIndex != selectedIndex)
         val layoutChanged = layoutRtl != null && (this.viewport != viewport || this.padding != padding ||
             this.fade != fade || this.contentWidth != contentWidth || layoutRtl != rtl ||
             !this.lefts.contentEquals(lefts) || !this.widths.contentEquals(widths))
@@ -355,6 +376,7 @@ private class ChipRowScroll(animationLevel: Int, initialPosition: Int = 0, priva
         }
         layoutRtl = rtl
         lastSelectedKey = selectedKey
+        lastSelectedIndex = selectedIndex
         initialized = true
         if (selectionChanged || layoutChanged) {
             stopScroll()
