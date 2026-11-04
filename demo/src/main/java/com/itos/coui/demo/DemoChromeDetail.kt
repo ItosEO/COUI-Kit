@@ -54,6 +54,7 @@ private fun NavigationSample(dark: Boolean, open: (String) -> Unit) {
     val titles = listOf(stringResource(R.string.controls), stringResource(R.string.effects),
         stringResource(R.string.presets))
     val rendering = if (Build.VERSION.SDK_INT >= 34) remember { runCatching { CouiFloatingRenderer() } } else null
+    val renderer = rendering?.getOrNull()
 
     Group {
         DemoSwitchPreference(title = stringResource(R.string.nav_left_visible), checked = left,
@@ -64,8 +65,8 @@ private fun NavigationSample(dark: Boolean, open: (String) -> Unit) {
     }
     Group(title = stringResource(R.string.catalog_navigation)) {
         ChromePreview(Modifier.height(224.dp)) { backdrop ->
-            if (Build.VERSION.SDK_INT >= 34 && rendering?.getOrNull() != null) {
-                NavigationBar(Modifier.align(Alignment.BottomCenter), backdrop, rendering.getOrThrow(),
+            if (Build.VERSION.SDK_INT >= 34 && renderer != null) {
+                NavigationBar(Modifier.align(Alignment.BottomCenter), backdrop, renderer,
                     items = listOf(
                         CouiNavigationItem(titles[0], CouiIcons.Components, CouiIcons.ComponentsSelected),
                         CouiNavigationItem(titles[1], DemoIcons.Effects, DemoIcons.EffectsSelected),
@@ -95,6 +96,7 @@ private fun FabSample(dark: Boolean) {
     var custom by rememberSaveable { mutableStateOf(false) }
     var created by rememberSaveable { mutableIntStateOf(0) }
     val rendering = if (Build.VERSION.SDK_INT >= 34) remember { runCatching { CouiFloatingRenderer.standalone() } } else null
+    val renderer = rendering?.getOrNull()
     Group(title = stringResource(R.string.presets_title)) {
         Column(Modifier.selectableGroup()) {
             CouiFabColor.entries.forEachIndexed { index, option ->
@@ -114,9 +116,9 @@ private fun FabSample(dark: Boolean) {
     }
     Group(title = stringResource(R.string.fab_preview_title)) {
         ChromePreview(Modifier.height(224.dp)) { backdrop ->
-            if (Build.VERSION.SDK_INT >= 34 && rendering?.getOrNull() != null) {
+            if (Build.VERSION.SDK_INT >= 34 && renderer != null) {
                 val color = if (custom) Color(0xFF2060D6) else CouiFabDefaults.containerColor(preset, dark)
-                Fab(Modifier.align(Alignment.BottomEnd).padding(24.dp), backdrop, rendering.getOrThrow(),
+                Fab(Modifier.align(Alignment.BottomEnd).padding(24.dp), backdrop, renderer,
                     onClick = { created++ }, dark = dark, shape = DemoShapes.couiCircle,
                     material = CouiFabDefaults.material(color, dark),
                     shadow = CouiFabDefaults.shadow(color, LocalDensity.current.density,
