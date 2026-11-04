@@ -91,6 +91,7 @@ internal fun DemoSliderPreference(
     steps: Int = 0,
     showTickMarks: Boolean = steps > 0,
     enabled: Boolean = true,
+    onValueChangeFinished: () -> Unit = {},
     leading: (@Composable () -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
 ) {
@@ -104,7 +105,8 @@ internal fun DemoSliderPreference(
             Slider(Modifier.weight(1f).semantics { contentDescription = title }, value, onValueChange,
                 dark = dark, enabled = enabled,
                 colors = CouiSliderDefaults.colors(colors.accent, dark, enabled), shape = CouiCapsuleShape,
-                valueRange = valueRange, steps = steps, showTickMarks = showTickMarks)
+                valueRange = valueRange, steps = steps, showTickMarks = showTickMarks,
+                onValueChangeFinished = onValueChangeFinished)
             trailing?.invoke()
         }
     }
