@@ -67,6 +67,7 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
                     if (Build.VERSION.SDK_INT >= 33) MaterialSample(dark)
                     else EffectText(stringResource(R.string.requires_api_33))
                 }
+                "wheel" -> WheelSample()
                 "timepicker", "countdownpicker", "datepicker", "calendar" -> PickerSamples(page, dark)
                 "appbar", "search", "navigation", "fab" -> ChromeDetail(page, dark, open)
                 "color" -> Group(Modifier.selectableGroup(), footer = stringResource(R.string.settings_demo_only)) {
