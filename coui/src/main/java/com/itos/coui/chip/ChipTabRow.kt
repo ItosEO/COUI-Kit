@@ -155,8 +155,9 @@ fun ChipTabRow(
         label = "chipTabContentPadding",
     )
     val viewportLayer = rememberGraphicsLayer()
+    val actionLayer = rememberGraphicsLayer()
     var viewportBounds by remember { mutableStateOf(Rect.Zero) }
-    Row(modifier.chipMask(scroll, contentPadding, viewportLayer) { viewportBounds },
+    Row(modifier.chipMask(scroll, contentPadding, viewportLayer, actionLayer) { viewportBounds },
         verticalAlignment = Alignment.CenterVertically) {
         TopAppBarActionVisibility(visible = showLeadingAction,
             durationMillis = ChipActionVisibilityDuration, easing = FastOutSlowInEasing) {
@@ -265,11 +266,11 @@ fun ChipTabRow(
     }
 }
 
-private fun Modifier.chipMask(scroll: ChipRowScroll, padding: Dp, viewportLayer: GraphicsLayer,
+private fun Modifier.chipMask(scroll: ChipRowScroll, padding: Dp, viewportLayer: GraphicsLayer, actionLayer: GraphicsLayer,
     viewportBounds: () -> Rect): Modifier = drawWithCache {
     val bounds = viewportBounds()
     val inset = padding.roundToPx().toFloat()
-    val fade = ChipMaskFade.roundToPx().toFloat()
+    val fade = ChipMaskFade.toPx()
     val left = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_OUT)
         shader = LinearGradient(inset, 0f, inset + fade, 0f, -1, 0, Shader.TileMode.CLAMP)
@@ -280,10 +281,10 @@ private fun Modifier.chipMask(scroll: ChipRowScroll, padding: Dp, viewportLayer:
     }
     val expansion = ChipShadowExpansion.toPx()
     onDrawWithContent {
+        // 列表原位只录制；完整动作槽位随后回放，保留其位置、淡化与外围投影。
+        actionLayer.record { this@onDrawWithContent.drawContent() }
         val canvas = drawContext.canvas.nativeCanvas
-        // 原厂由整栏持有离屏层，列表的 DST_OUT 同时作用于交界处的图标标签投影。
         val layer = canvas.saveLayer(0f, -expansion, size.width, size.height + expansion, null)
-        drawContent()
         val viewport = canvas.save()
         canvas.translate(bounds.left, bounds.top)
         val clip = canvas.save()
@@ -296,6 +297,8 @@ private fun Modifier.chipMask(scroll: ChipRowScroll, padding: Dp, viewportLayer:
         if (fadeLeft) canvas.drawRect(inset, -100f, inset + fade, bounds.height + 100f, left)
         if (fadeRight) canvas.drawRect(bounds.width - inset - fade, -100f, bounds.width - inset, bounds.height + 100f, right)
         canvas.restoreToCount(viewport)
+        // 原厂图标标签以正 elevation 排在列表之后，不受列表的 DST_OUT 遮罩擦除。
+        drawLayer(actionLayer)
         canvas.restoreToCount(layer)
     }
 }
