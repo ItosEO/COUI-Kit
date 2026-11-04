@@ -33,7 +33,8 @@ internal val DemoComponentGroups = listOf(
         DemoCatalogEntry("search", R.string.catalog_search, CouiIcons.Search),
         DemoCatalogEntry("navigation", R.string.catalog_navigation, CouiIcons.Featured),
         DemoCatalogEntry("fab", R.string.catalog_fab, CouiIcons.Add)),
-    listOf(DemoCatalogEntry("timepicker", R.string.picker_time_title, CouiIcons.Time),
+    listOf(DemoCatalogEntry("wheel", R.string.catalog_wheel, DemoIcons.Tune),
+        DemoCatalogEntry("timepicker", R.string.picker_time_title, CouiIcons.Time),
         DemoCatalogEntry("countdownpicker", R.string.picker_countdown_title, CouiIcons.Countdown),
         DemoCatalogEntry("datepicker", R.string.picker_date_title, DemoIcons.Date),
         DemoCatalogEntry("calendar", R.string.picker_calendar_title, CouiIcons.Calendar)),
@@ -100,6 +101,7 @@ internal fun catalogDescription(page: String): Int = when (page) {
     "navigation" -> R.string.intro_navigation
     "fab" -> R.string.intro_fab
     "settings" -> R.string.intro_settings
+    "wheel" -> R.string.intro_wheel
     "timepicker" -> R.string.intro_timepicker
     "countdownpicker" -> R.string.intro_countdownpicker
     "datepicker" -> R.string.intro_datepicker
