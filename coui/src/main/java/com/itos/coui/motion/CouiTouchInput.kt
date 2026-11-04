@@ -85,15 +85,16 @@ fun Modifier.couiTouchMotion(
     targetSize: ((Offset) -> IntSize?)? = null,
 ): Modifier = couiTouchMotion(motion, expanded, cancelOnConsumedMove = false, targetSize = targetSize)
 
-/** 弹窗按钮在父级滚动接管后按 CANCEL 收尾，保留公开入口及其他消费者的会话规则。 */
+/** 弹窗可跟随父滚动取消；底栏可在拖拽越过阈值后接管移动，公开入口仍只观察。 */
 internal fun Modifier.couiTouchMotion(
     motion: CouiTouchMotion,
     expanded: Boolean,
     cancelOnConsumedMove: Boolean,
     targetSize: ((Offset) -> IntSize?)? = null,
+    consumeDrag: Boolean = false,
 ): Modifier =
     onGloballyPositioned { motion.coordinates = it }
-        .pointerInput(motion, expanded, cancelOnConsumedMove) {
+        .pointerInput(motion, expanded, cancelOnConsumedMove, consumeDrag) {
             if (!expanded) return@pointerInput
             val trackers = mutableMapOf<PointerId, VelocityTracker>()
             var downTime = 0L
@@ -102,6 +103,8 @@ internal fun Modifier.couiTouchMotion(
                     var active: PointerId? = null
                     var velocityPointer: PointerId? = null
                     var cancelled = false
+                    var dragOrigin = Offset.Zero
+                    var ownsDrag = false
 
                     fun cancelTouch() {
                         motion.release(Offset.Zero)
@@ -109,6 +112,7 @@ internal fun Modifier.couiTouchMotion(
                         trackers.clear()
                         active = null
                         velocityPointer = null
+                        ownsDrag = false
                     }
 
                     while (true) {
@@ -166,10 +170,22 @@ internal fun Modifier.couiTouchMotion(
                         }
                         val position = coordinates.localToWindow(pointer.position)
                         if (active == null) {
+                            dragOrigin = position
+                            ownsDrag = false
                             motion.begin(position, bounds)
                         } else if (pointer.id != active) {
                             val previous = oldPointer?.let { coordinates.localToWindow(it.position) }
+                            if (previous != null) dragOrigin += position - previous
                             motion.switchPointer(previous, position)
+                        }
+                        if (consumeDrag && pointer.pressed &&
+                            (ownsDrag || (position - dragOrigin).getDistance() > viewConfiguration.touchSlop)
+                        ) {
+                            ownsDrag = true
+                            // Initial 阶段接管移动，父滚动和子项点击均能在本帧取消，普通轻触不受影响。
+                            event.changes.forEach { change ->
+                                if (change.pressed && change.position != change.previousPosition) change.consume()
+                            }
                         }
                         if (newPointer != null) velocityPointer = newPointer.id
                         if (event.changes.any { it.id == velocityPointer && !it.pressed } &&
@@ -191,6 +207,7 @@ internal fun Modifier.couiTouchMotion(
                             trackers.clear()
                             active = null
                             velocityPointer = null
+                            ownsDrag = false
                         }
                         if (cancelOnConsumedMove) {
                             val finalEvent = awaitPointerEvent(PointerEventPass.Final)

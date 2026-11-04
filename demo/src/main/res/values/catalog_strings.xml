@@ -102,9 +102,8 @@
     <string name="search_toolbar">Expandable toolbar search</string>
     <string name="nav_left_visible">Show settings action</string>
     <string name="nav_right_visible">Show new-item action</string>
-    <string name="nav_current">Current section: %1$s</string>
-    <string name="nav_created">Sample items created: %1$d</string>
-    <string name="nav_left_description">Open app settings</string>
+    <string name="nav_left_description">Settings icon</string>
+    <string name="nav_right_description">Add icon</string>
     <string name="fab_use_custom">Use custom blue</string>
     <string name="fab_preview_title">Floating action</string>
     <string name="fab_action_result">Sample items created: %1$d</string>

@@ -102,9 +102,8 @@
     <string name="search_toolbar">顶栏展开式搜索</string>
     <string name="nav_left_visible">显示左侧设置按钮</string>
     <string name="nav_right_visible">显示右侧新建按钮</string>
-    <string name="nav_current">当前分类：%1$s</string>
-    <string name="nav_created">已新建 %1$d 项示例</string>
-    <string name="nav_left_description">打开应用设置</string>
+    <string name="nav_left_description">设置图标</string>
+    <string name="nav_right_description">添加图标</string>
     <string name="fab_use_custom">使用自定义蓝色</string>
     <string name="fab_preview_title">浮动操作</string>
     <string name="fab_action_result">已新建 %1$d 项示例</string>

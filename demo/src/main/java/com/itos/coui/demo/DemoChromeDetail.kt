@@ -35,22 +35,21 @@ import com.itos.coui.text.CouiTextKind
 import com.itos.coui.text.rememberCouiTextStyle
 
 @Composable
-internal fun ChromeDetail(page: String, dark: Boolean, open: (String) -> Unit) {
+internal fun ChromeDetail(page: String, dark: Boolean) {
     when (page) {
         "appbar" -> ToolbarSample()
         "search" -> SearchSamples(dark)
-        "navigation" -> NavigationSample(dark, open)
+        "navigation" -> NavigationSample(dark)
         "fab" -> FabSample(dark)
     }
 }
 
 /** 主页面展示真实导航；此页专门比较两侧附件的独立显隐和操作。 */
 @Composable
-private fun NavigationSample(dark: Boolean, open: (String) -> Unit) {
+private fun NavigationSample(dark: Boolean) {
     var selected by rememberSaveable { mutableIntStateOf(0) }
     var left by rememberSaveable { mutableStateOf(false) }
     var right by rememberSaveable { mutableStateOf(true) }
-    var created by rememberSaveable { mutableIntStateOf(0) }
     val titles = listOf(stringResource(R.string.controls), stringResource(R.string.effects),
         stringResource(R.string.presets))
     val rendering = if (Build.VERSION.SDK_INT >= 34) remember { runCatching { CouiFloatingRenderer() } } else null
@@ -73,9 +72,8 @@ private fun NavigationSample(dark: Boolean, open: (String) -> Unit) {
                         CouiNavigationItem(titles[2], DemoIcons.Presets, DemoIcons.PresetsSelected)),
                     selectedIndex = selected, onSelection = { selected = it },
                     leftIcon = CouiIcons.Settings, leftDescription = stringResource(R.string.nav_left_description),
-                    rightIcon = CouiIcons.Add, rightDescription = stringResource(R.string.sample_click),
+                    rightIcon = CouiIcons.Add, rightDescription = stringResource(R.string.nav_right_description),
                     leftVisible = left, rightVisible = right,
-                    onLeftClick = { open("appsettings") }, onRightClick = { created++ },
                     rightContainerColor = CouiFabDefaults.containerColor(CouiFabColor.Notes, dark),
                     dark = dark, lightColor = Color.White,
                     circleShape = DemoShapes.couiCircle, capsuleShape = DemoShapes.couiCapsule)
@@ -85,8 +83,6 @@ private fun NavigationSample(dark: Boolean, open: (String) -> Unit) {
         rendering?.exceptionOrNull()?.let { Text(stringResource(R.string.renderer_error, it.message ?: it.javaClass.simpleName),
             color = MaterialTheme.colorScheme.error) }
     }
-    Footer(text = stringResource(R.string.nav_current, titles[selected]))
-    Footer(text = stringResource(R.string.nav_created, created))
 }
 
 /** 同一 FAB 动态切换配色，而不是复制四个相同的按钮。 */

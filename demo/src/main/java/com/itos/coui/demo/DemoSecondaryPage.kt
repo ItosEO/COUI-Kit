@@ -68,7 +68,7 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
                 }
                 "wheel" -> WheelSample()
                 "timepicker", "countdownpicker", "datepicker", "calendar" -> PickerSamples(page, dark)
-                "appbar", "search", "navigation", "fab" -> ChromeDetail(page, dark, open)
+                "appbar", "search", "navigation", "fab" -> ChromeDetail(page, dark)
                 "color" -> Group(Modifier.selectableGroup(), footer = stringResource(R.string.settings_demo_only)) {
                     listOf(R.string.settings_color_natural, R.string.settings_color_vivid).forEachIndexed { index, label ->
                         DemoSelectPreference(title = stringResource(label), selected = preferences.colorMode == index,

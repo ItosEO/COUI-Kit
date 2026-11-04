@@ -100,7 +100,10 @@ import com.itos.coui.shape.CouiCapsuleShape
 
 data class CouiNavigationItem(val title: String, val icon: ImageVector, val selectedIcon: ImageVector)
 
-/** 只负责底栏装配; 页面状态和导航提交仍由宿主持有。 */
+/**
+ * 只负责底栏装配，页面状态和导航提交仍由宿主持有。
+ * 附件点击回调为空时只显示图标并保留拖拽，不创建点击或 Button 语义。
+ */
 @RequiresApi(34)
 @Composable
 fun NavigationBar(
@@ -126,19 +129,19 @@ fun NavigationBar(
     onSelection: (Int) -> Unit,
 ) {
     require(items.isNotEmpty() && selectedIndex in items.indices)
-    require(!leftVisible || (leftIcon != null && onLeftClick != null && leftDescription != null)) {
-        "显示左附件时必须提供图标、描述和点击回调"
+    require(!leftVisible || (leftIcon != null && leftDescription != null)) {
+        "显示左附件时必须提供图标和描述"
     }
-    require(!rightVisible || (rightIcon != null && onRightClick != null && rightDescription != null)) {
-        "显示右附件时必须提供图标、描述和点击回调"
+    require(!rightVisible || (rightIcon != null && rightDescription != null)) {
+        "显示右附件时必须提供图标和描述"
     }
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
     val leftExpansion = remember(density, layoutDirection) { CouiFabExpansion(leftVisible) }
     val rightExpansion = remember(density, layoutDirection) { CouiFabExpansion(rightVisible) }
     // 融合完成会先隐藏附件, 点击不能继续等待缩放弹簧结束。
-    val leftInteractive = leftExpansion.present && leftExpansion.interactive && leftIcon != null && onLeftClick != null
-    val rightInteractive = rightExpansion.present && rightExpansion.interactive && rightIcon != null && onRightClick != null
+    val leftInteractive = leftExpansion.present && leftExpansion.interactive && leftIcon != null
+    val rightInteractive = rightExpansion.present && rightExpansion.interactive && rightIcon != null
     DisposableEffect(leftExpansion, rightExpansion) {
         onDispose {
             leftExpansion.dispose()
@@ -270,9 +273,9 @@ fun NavigationBar(
                 ) {
                     val interactionSource = remember { MutableInteractionSource() }
                     if (leftIcon != null) Icon(imageVector = leftIcon, contentDescription = if (leftInteractive) leftDescription else null, modifier = Modifier.fillMaxSize()
-                        .then(if (leftInteractive) Modifier.clickable(
+                        .then(if (leftInteractive && onLeftClick != null) Modifier.clickable(
                             interactionSource = interactionSource, indication = null, role = Role.Button,
-                            onClick = checkNotNull(onLeftClick),
+                            onClick = onLeftClick,
                         ) else Modifier).padding(16.dp), tint = foreground)
                 }
                 FloatingNode(
@@ -387,9 +390,9 @@ fun NavigationBar(
                 ) {
                     val interactionSource = remember { MutableInteractionSource() }
                     if (rightIcon != null) Icon(imageVector = rightIcon, contentDescription = if (rightInteractive) rightDescription else null, modifier = Modifier.fillMaxSize()
-                        .then(if (rightInteractive) Modifier.couiFabFeedback(dark, interactionSource).clickable(
+                        .then(if (rightInteractive && onRightClick != null) Modifier.couiFabFeedback(dark, interactionSource).clickable(
                             interactionSource = interactionSource, indication = null, role = Role.Button,
-                            onClick = checkNotNull(onRightClick),
+                            onClick = onRightClick,
                         ) else Modifier).padding(16.dp), tint = Color.White)
                 }
             }
@@ -433,7 +436,8 @@ private fun FloatingNode(
                     (expansion?.snappedScale(size.height) ?: 1f)
             }.then(
                 // 禁用 FAB 时移除输入节点; 空的 pointerInput 仍会挡住下方导航项。
-                if (interactive) Modifier.couiTouchMotion(motion, touchMotionEnabled)
+                if (interactive) Modifier.couiTouchMotion(motion, touchMotionEnabled,
+                    cancelOnConsumedMove = false, consumeDrag = true)
                     .couiPressMotion(press, touchMotionEnabled).then(lightInput)
                 else Modifier.clearAndSetSemantics {},
             ).drawWithContent {
