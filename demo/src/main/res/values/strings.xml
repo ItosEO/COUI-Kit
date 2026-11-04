@@ -20,8 +20,8 @@
     <string name="checkbox_toggle">Toggle this checkbox</string>
     <string name="checkbox_disabled">Disabled and checked</string>
     <string name="menu_title">Menu</string>
-    <string name="menu_first">First item</string>
-    <string name="menu_second">Second item</string>
+    <string name="menu_first">Standard mode</string>
+    <string name="menu_second">Power-saving mode</string>
     <string name="menu_pinned">Pinned</string>
     <string name="menu_more">Submenu</string>
     <string name="menu_disabled">Disabled item</string>
