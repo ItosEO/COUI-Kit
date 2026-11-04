@@ -61,6 +61,7 @@ internal fun ToolbarSample() {
         }
     }
     Footer(text = stringResource(R.string.toolbar_action_count, actions))
+    if (Build.VERSION.SDK_INT < 34) Footer(text = stringResource(R.string.requires_api_34))
     Footer(text = stringResource(R.string.toolbar_collapsing_hint))
 }
 
@@ -94,7 +95,11 @@ internal fun SearchSamples(dark: Boolean, open: (String) -> Unit) {
         ChromePreview(Modifier.height(140.dp)) { backdrop ->
             SearchBar(Modifier.align(Alignment.Center),
                 state = persistent, query = persistentQuery, onQueryChange = { persistentQuery = it },
-                onExpandedChange = { persistentExpanded = it; if (!it) persistentQuery = "" },
+                onExpandedChange = {
+                    persistentExpanded = it
+                    if (it) { toolbarExpanded = false; toolbarQuery = "" }
+                    if (!it) persistentQuery = ""
+                },
                 placeholder = stringResource(R.string.catalog_search_hint),
                 cancelText = stringResource(R.string.catalog_search_cancel),
                 clearDescription = stringResource(R.string.catalog_search_clear),
@@ -123,7 +128,12 @@ internal fun SearchSamples(dark: Boolean, open: (String) -> Unit) {
                         }
                         TopAppBarButtonGroup {
                             TopAppBarSearchButton(state = state,
-                                onClick = { toolbarExpanded = true; focusPending = true },
+                                onClick = {
+                                    persistentExpanded = false
+                                    persistentQuery = ""
+                                    toolbarExpanded = true
+                                    focusPending = true
+                                },
                                 contentDescription = stringResource(R.string.search_toolbar),
                                 enabled = enabled)
                         }
@@ -143,13 +153,15 @@ private fun SearchResults(query: String, enabled: Boolean, open: (String) -> Uni
         stringResource(it.title).contains(query.trim(), ignoreCase = true) ||
             it.page.contains(query.trim(), ignoreCase = true)
     }.take(4)
-    if (entries.isEmpty()) {
-        DemoPreference(title = stringResource(R.string.search_no_results), enabled = false)
-    } else {
-        entries.forEachIndexed { index, entry ->
-            DemoPreference(title = stringResource(entry.title), enabled = enabled,
-                onClick = { open(entry.page) })
-            if (index < entries.lastIndex) Divider()
+    Group(title = stringResource(R.string.search_results)) {
+        if (entries.isEmpty()) {
+            DemoPreference(title = stringResource(R.string.search_no_results), enabled = false)
+        } else {
+            entries.forEachIndexed { index, entry ->
+                DemoPreference(title = stringResource(entry.title), enabled = enabled,
+                    onClick = { open(entry.page) })
+                if (index < entries.lastIndex) Divider()
+            }
         }
     }
 }
