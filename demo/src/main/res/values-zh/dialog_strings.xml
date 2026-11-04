@@ -17,8 +17,8 @@
     <string name="dialog_input_unsupported">不支持输入特殊字符</string>
     <string name="dialog_material">弹窗背景材质</string>
     <string name="dialog_material_unavailable">背景材质需要 Android 13 或更高版本。</string>
-    <string name="dialog_sample_title">这是一个弹窗！</string>
-    <string name="dialog_sample_message">是的，这是一个弹窗。</string>
+    <string name="dialog_sample_title">是否应用当前设置？</string>
+    <string name="dialog_sample_message">确认后将更新页面中的示例状态。</string>
     <string name="dialog_confirm">确定</string>
     <string name="dialog_cancel">取消</string>
     <string name="dialog_reset">重置选择</string>
