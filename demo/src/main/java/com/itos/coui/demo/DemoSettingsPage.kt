@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -23,6 +24,7 @@ import com.itos.coui.scroll.CouiOverscrollEffect
 import com.itos.coui.scroll.rememberCouiOverscrollEffect
 import androidx.compose.material3.Icon
 import com.itos.coui.backdrop.couiBackdrop
+import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.backdrop.rememberCouiBackdrop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -53,6 +55,7 @@ import com.itos.coui.layout.*
 /**
  * 普通设置二级页：52dp 顶栏、独立采样/滚动内容和系统安全区。业务导航和返回拦截由宿主处理。
  * 标题依据实际 preference_list_with_appbar 的 SecondTitle，未启用另一条大标题折叠分支。
+ * floatingAction 位于正文采样源之外，按页面安全区固定放置，不参与正文滚动。
  */
 @Composable
 internal fun DemoSettingsPage(
@@ -65,6 +68,7 @@ internal fun DemoSettingsPage(
     scrollState: ScrollState = rememberScrollState(),
     actions: @Composable () -> Unit = {},
     overscrollEffect: CouiOverscrollEffect? = rememberCouiOverscrollEffect(),
+    floatingAction: (@Composable BoxScope.(CouiBackdrop) -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val source = remember { MutableInteractionSource() }
@@ -99,10 +103,16 @@ internal fun DemoSettingsPage(
                     }
                 }
     }) { innerPadding ->
-        Box(Modifier.fillMaxSize().couiBackdrop(backdrop).background(colors.background)) {
-            Column(Modifier.fillMaxSize().couiVerticalScroll(scrollState, overscrollEffect = overscrollEffect)
-                .padding(innerPadding).consumeWindowInsets(innerPadding)
-                .padding(bottom = CouiPageDefaults.groupSpacing), content = content)
+        Box(Modifier.fillMaxSize()) {
+            Box(Modifier.matchParentSize().couiBackdrop(backdrop).background(colors.background)) {
+                Column(Modifier.fillMaxSize().couiVerticalScroll(scrollState, overscrollEffect = overscrollEffect)
+                    .padding(innerPadding).consumeWindowInsets(innerPadding)
+                    .padding(bottom = CouiPageDefaults.groupSpacing), content = content)
+            }
+            if (floatingAction != null) Box(Modifier.matchParentSize()
+                .padding(innerPadding).consumeWindowInsets(innerPadding)) {
+                floatingAction(backdrop)
+            }
         }
     }
 }

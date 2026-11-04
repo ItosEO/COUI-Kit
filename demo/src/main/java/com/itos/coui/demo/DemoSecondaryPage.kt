@@ -2,6 +2,7 @@ package com.itos.coui.demo
 
 import android.os.Build
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.BasicText
@@ -22,6 +23,9 @@ import com.itos.coui.dialog.AlertDialog
 import com.itos.coui.dialog.CouiDialogAction
 import com.itos.coui.dialog.CouiDialogDefaults
 import com.itos.coui.effect.LocalCouiContourGlowEnabled
+import com.itos.coui.floatingactionbutton.CouiFabColor
+import com.itos.coui.backdrop.CouiBackdrop
+import androidx.compose.ui.Alignment
 import com.itos.coui.menu.rememberCouiWindowBackdrop
 import com.itos.coui.layout.CouiPageDefaults
 import com.itos.coui.layout.Divider
@@ -32,6 +36,7 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
     back: () -> Unit, open: (String) -> Unit) {
     val toggleTheme = { preferences.dark(!dark) }
     var reset by rememberSaveable { mutableStateOf(false) }
+    var fabPreset by rememberSaveable { mutableStateOf(CouiFabColor.Notes) }
     val accent = com.itos.coui.theme.CouiTheme.colorScheme.accent
     val entry = (DemoComponentGroups + DemoEffectGroups).flatten().firstOrNull { it.page == page }
     val title = entry?.title ?: when (page) {
@@ -41,10 +46,16 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
         "about" -> R.string.settings_about
         else -> R.string.home_app_settings
     }
+    val floatingAction: (@Composable BoxScope.(CouiBackdrop) -> Unit)? = if (page == "fab") {
+        { backdrop ->
+            FabSampleButton(Modifier.align(Alignment.BottomEnd).padding(24.dp),
+                dark = dark, preset = fabPreset, backdrop = backdrop)
+        }
+    } else null
     CompositionLocalProvider(LocalCouiContourGlowEnabled provides preferences.contour) {
         DemoSettingsPage(title = stringResource(title), backDescription = stringResource(R.string.settings_back),
-            onBack = back, dark = dark, colors = CouiPageDefaults.themeColors(dark)) {
-            if (entry != null && page != "effect_backdrop") BasicText(stringResource(catalogDescription(page)),
+            onBack = back, dark = dark, colors = CouiPageDefaults.themeColors(dark), floatingAction = floatingAction) {
+            if (entry != null && page != "effect_backdrop" && page != "fab") BasicText(stringResource(catalogDescription(page)),
                 Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 12.dp),
                 style = com.itos.coui.text.rememberCouiTextStyle(com.itos.coui.text.CouiTextKind.PreferenceSummary)
                     .copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
@@ -68,7 +79,8 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
                 }
                 "wheel" -> WheelSample()
                 "timepicker", "countdownpicker", "datepicker", "calendar" -> PickerSamples(page, dark)
-                "appbar", "search", "navigation", "fab" -> ChromeDetail(page, dark)
+                "appbar", "search", "navigation" -> ChromeDetail(page, dark)
+                "fab" -> FabSample(preset = fabPreset, onPresetChange = { fabPreset = it })
                 "color" -> Group(Modifier.selectableGroup(), footer = stringResource(R.string.settings_demo_only)) {
                     listOf(R.string.settings_color_natural, R.string.settings_color_vivid).forEachIndexed { index, label ->
                         DemoSelectPreference(title = stringResource(label), selected = preferences.colorMode == index,

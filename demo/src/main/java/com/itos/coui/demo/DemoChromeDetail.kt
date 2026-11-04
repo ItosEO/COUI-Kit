@@ -27,7 +27,6 @@ import com.itos.coui.floatingactionbutton.Fab
 import com.itos.coui.icons.CouiIcons
 import com.itos.coui.layout.CouiPageDefaults
 import com.itos.coui.layout.Divider
-import com.itos.coui.layout.Footer
 import com.itos.coui.layout.Group
 import com.itos.coui.navigation.CouiNavigationItem
 import com.itos.coui.navigation.NavigationBar
@@ -40,7 +39,6 @@ internal fun ChromeDetail(page: String, dark: Boolean) {
         "appbar" -> ToolbarSample()
         "search" -> SearchSamples(dark)
         "navigation" -> NavigationSample(dark)
-        "fab" -> FabSample(dark)
     }
 }
 
@@ -85,14 +83,8 @@ private fun NavigationSample(dark: Boolean) {
     }
 }
 
-/** 同一 FAB 动态切换配色，而不是复制四个相同的按钮。 */
 @Composable
-private fun FabSample(dark: Boolean) {
-    var preset by rememberSaveable { mutableStateOf(CouiFabColor.Notes) }
-    var custom by rememberSaveable { mutableStateOf(false) }
-    var created by rememberSaveable { mutableIntStateOf(0) }
-    val rendering = if (Build.VERSION.SDK_INT >= 34) remember { runCatching { CouiFloatingRenderer.standalone() } } else null
-    val renderer = rendering?.getOrNull()
+internal fun FabSample(preset: CouiFabColor, onPresetChange: (CouiFabColor) -> Unit) {
     Group(title = stringResource(R.string.presets_title)) {
         Column(Modifier.selectableGroup()) {
             CouiFabColor.entries.forEachIndexed { index, option ->
@@ -102,32 +94,35 @@ private fun FabSample(dark: Boolean) {
                     CouiFabColor.InfraredRemote -> R.string.preset_remote
                     CouiFabColor.Recorder -> R.string.preset_recorder
                 })
-                DemoSelectPreference(title = label, selected = preset == option, onSelect = { preset = option })
+                DemoSelectPreference(title = label, selected = preset == option, onSelect = { onPresetChange(option) })
                 if (index < CouiFabColor.entries.lastIndex) Divider()
             }
         }
-        Divider()
-        DemoSwitchPreference(title = stringResource(R.string.fab_use_custom), checked = custom,
-            onCheckedChange = { custom = it })
     }
-    Group(title = stringResource(R.string.fab_preview_title)) {
-        ChromePreview(Modifier.height(224.dp)) { backdrop ->
-            if (Build.VERSION.SDK_INT >= 34 && renderer != null) {
-                val color = if (custom) Color(0xFF2060D6) else CouiFabDefaults.containerColor(preset, dark)
-                Fab(Modifier.align(Alignment.BottomEnd).padding(24.dp), backdrop, renderer,
-                    onClick = { created++ }, dark = dark, shape = DemoShapes.couiCircle,
-                    material = CouiFabDefaults.material(color, dark),
-                    shadow = CouiFabDefaults.shadow(color, LocalDensity.current.density,
-                        LocalCouiContourGlowEnabled.current)) {
-                    Icon(CouiIcons.Add, stringResource(R.string.sample_click), Modifier.size(24.dp), tint = Color.White)
-                }
+    if (Build.VERSION.SDK_INT < 34) DemoPreference(title = stringResource(R.string.requires_api_34), enabled = false)
+    // 固定按钮上方保留滚动余量，窄屏横向布局下末项仍能完整露出。
+    if (Build.VERSION.SDK_INT >= 34) Spacer(Modifier.height(80.dp))
+}
+
+@Composable
+internal fun FabSampleButton(modifier: Modifier = Modifier, dark: Boolean, preset: CouiFabColor, backdrop: CouiBackdrop) {
+    if (Build.VERSION.SDK_INT >= 34) {
+        val rendering = remember { runCatching { CouiFloatingRenderer.standalone() } }
+        val renderer = rendering.getOrNull()
+        if (renderer != null) {
+            val color = CouiFabDefaults.containerColor(preset, dark)
+            Fab(modifier, backdrop, renderer, dark = dark, shape = DemoShapes.couiCircle,
+                material = CouiFabDefaults.material(color, dark),
+                shadow = CouiFabDefaults.shadow(color, LocalDensity.current.density,
+                    LocalCouiContourGlowEnabled.current)) {
+                Icon(CouiIcons.Add, stringResource(R.string.catalog_fab), Modifier.size(24.dp), tint = Color.White)
             }
         }
-        if (Build.VERSION.SDK_INT < 34) DemoPreference(title = stringResource(R.string.requires_api_34), enabled = false)
-        rendering?.exceptionOrNull()?.let { Text(stringResource(R.string.renderer_error, it.message ?: it.javaClass.simpleName),
-            color = MaterialTheme.colorScheme.error) }
+        rendering.exceptionOrNull()?.let { error ->
+            Text(stringResource(R.string.renderer_error, error.message ?: error.javaClass.simpleName),
+                modifier, color = MaterialTheme.colorScheme.error)
+        }
     }
-    Footer(text = stringResource(R.string.fab_action_result, created))
 }
 
 /** 预览背景独立录入采样源；浮动组件不被录入自己的 Backdrop。 */

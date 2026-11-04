@@ -9,7 +9,7 @@
     <string name="intro_appbar">Test icon and text actions, disabled controls and entry animations. The home catalog shows a collapsing title.</string>
     <string name="intro_search">Try persistent search and expandable toolbar search.</string>
     <string name="intro_navigation">Change the selected item and show or hide side actions.</string>
-    <string name="intro_fab">Choose a color preset or a custom tint and test press feedback.</string>
+    <string name="intro_fab">Choose a color preset for the floating button.</string>
     <string name="intro_settings">Compose section headers, summaries, icons, trailing content and row actions.</string>
     <string name="intro_timepicker">Combine integer wheels into 12-hour and 24-hour time pickers.</string>
     <string name="intro_countdownpicker">Use large number wheels to set hours, minutes and seconds.</string>
@@ -104,9 +104,6 @@
     <string name="nav_right_visible">Show new-item action</string>
     <string name="nav_left_description">Settings icon</string>
     <string name="nav_right_description">Add icon</string>
-    <string name="fab_use_custom">Use custom blue</string>
-    <string name="fab_preview_title">Floating action</string>
-    <string name="fab_action_result">Sample items created: %1$d</string>
     <string name="checkbox_standalone">Standalone checkbox</string>
     <string name="switch_standalone">Standalone switch</string>
     <string name="picker_wheel_value">Current value: %1$d</string>

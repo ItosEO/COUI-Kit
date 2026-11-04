@@ -51,7 +51,7 @@ fun Fab(
     modifier: Modifier = Modifier,
     backdrop: CouiBackdrop,
     renderer: CouiFloatingRenderer,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)? = null,
     dark: Boolean = CouiTheme.isDark,
     shape: Shape = CouiTopAppBarButtonDefaults.circleShape,
     material: CouiFloatingMaterial? = null,
@@ -90,11 +90,14 @@ fun Fab(
                 translationY = motion.translationY.value
                 scaleX = motion.scaleX.value + press.scale.value - 1f
                 scaleY = motion.scaleY.value + press.scale.value - 1f
-            }.couiTouchMotion(motion, true).couiPressMotion(press).then(lightInput)
+            }.couiTouchMotion(motion, true, cancelOnConsumedMove = false, consumeDrag = true)
+                .couiPressMotion(press).then(lightInput)
                 .drawWithContent { contentLayer.record { this@drawWithContent.drawContent() } }
                 .clip(shape).drawBehind { drawLight?.invoke(this) }
                 .couiFabFeedback(dark, interactionSource)
-                .clickable(interactionSource = interactionSource, indication = null, role = Role.Button, onClick = onClick),
+                .then(if (onClick != null) Modifier.clickable(
+                    interactionSource = interactionSource, indication = null, role = Role.Button, onClick = onClick,
+                ) else Modifier),
             contentAlignment = Alignment.Center,
         ) {
             ProvideCouiContent(color = if (material == null) colors.onAccent else androidx.compose.ui.graphics.Color.Unspecified,

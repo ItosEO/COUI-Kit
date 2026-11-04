@@ -9,7 +9,7 @@
     <string name="intro_appbar">体验图标、文字操作、禁用与显隐动画；首页还提供滚动折叠顶栏。</string>
     <string name="intro_search">分别体验常驻搜索和顶栏按钮展开式搜索。</string>
     <string name="intro_navigation">切换选中项，控制左右附件的出现与退场。</string>
-    <string name="intro_fab">使用配色预设或自定义颜色，观察浮动按钮的反馈。</string>
+    <string name="intro_fab">选择配色预设，观察浮动按钮的反馈。</string>
     <string name="intro_settings">组合分组标题、辅助文案、行内图标、尾部内容与点击状态。</string>
     <string name="intro_timepicker">将整数滚轮组合为 12/24 小时时间选择。</string>
     <string name="intro_countdownpicker">使用大数字滚轮选择时、分和秒。</string>
@@ -104,9 +104,6 @@
     <string name="nav_right_visible">显示右侧新建按钮</string>
     <string name="nav_left_description">设置图标</string>
     <string name="nav_right_description">添加图标</string>
-    <string name="fab_use_custom">使用自定义蓝色</string>
-    <string name="fab_preview_title">浮动操作</string>
-    <string name="fab_action_result">已新建 %1$d 项示例</string>
     <string name="checkbox_standalone">独立复选框</string>
     <string name="switch_standalone">独立开关</string>
     <string name="picker_wheel_value">当前数值：%1$d</string>

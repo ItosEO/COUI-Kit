@@ -85,7 +85,7 @@ fun Modifier.couiTouchMotion(
     targetSize: ((Offset) -> IntSize?)? = null,
 ): Modifier = couiTouchMotion(motion, expanded, cancelOnConsumedMove = false, targetSize = targetSize)
 
-/** 弹窗可跟随父滚动取消；底栏可在拖拽越过阈值后接管移动，公开入口仍只观察。 */
+/** 弹窗可跟随父滚动取消；底栏和 FAB 可在拖拽越过阈值后接管移动，公开入口仍只观察。 */
 internal fun Modifier.couiTouchMotion(
     motion: CouiTouchMotion,
     expanded: Boolean,
