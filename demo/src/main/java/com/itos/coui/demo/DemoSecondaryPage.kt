@@ -1,7 +1,6 @@
 package com.itos.coui.demo
 
 import android.os.Build
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectableGroup
@@ -38,7 +37,8 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
     var reset by rememberSaveable { mutableStateOf(false) }
     var fabPreset by rememberSaveable { mutableStateOf(CouiFabColor.Notes) }
     val accent = com.itos.coui.theme.CouiTheme.colorScheme.accent
-    val entry = (DemoComponentGroups + DemoEffectGroups).flatten().firstOrNull { it.page == page }
+    val catalogPage = if (DemoWheelPickerEntries.any { it.page == page }) "wheel" else page
+    val entry = (DemoComponentGroups + DemoEffectGroups).flatten().firstOrNull { it.page == catalogPage }
     val title = entry?.title ?: when (page) {
         "font" -> R.string.settings_font
         "color" -> R.string.settings_color
@@ -55,10 +55,6 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
     CompositionLocalProvider(LocalCouiContourGlowEnabled provides preferences.contour) {
         DemoSettingsPage(title = stringResource(title), backDescription = stringResource(R.string.settings_back),
             onBack = back, dark = dark, colors = CouiPageDefaults.themeColors(dark), floatingAction = floatingAction) {
-            if (entry != null && page != "effect_backdrop" && page != "fab") BasicText(stringResource(catalogDescription(page)),
-                Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 12.dp),
-                style = com.itos.coui.text.rememberCouiTextStyle(com.itos.coui.text.CouiTextKind.PreferenceSummary)
-                    .copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
             when (page) {
                 "sliders", "switch", "checkbox", "dialogs", "menu" -> ComponentDetail(page, dark, toggleTheme)
                 "settings" -> {
@@ -68,7 +64,6 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
                 "chip" -> ChipTabSample(dark)
                 "effect_backdrop" -> BlurTutorial(dark)
                 "effect_shadow" -> Group(title = stringResource(R.string.shadow_title)) {
-                    EffectText(stringResource(R.string.shadow_description))
                     if (Build.VERSION.SDK_INT >= 34) ShadowSamples(dark)
                     else EffectText(stringResource(R.string.requires_api_34))
                 }
@@ -77,8 +72,7 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
                     if (Build.VERSION.SDK_INT >= 33) MaterialSample(dark)
                     else EffectText(stringResource(R.string.requires_api_33))
                 }
-                "wheel" -> WheelSample()
-                "timepicker", "countdownpicker", "datepicker", "calendar" -> PickerSamples(page, dark)
+                "wheel", "timepicker", "countdownpicker", "datepicker", "calendar" -> PickerSamples(page, dark)
                 "appbar", "search", "navigation" -> ChromeDetail(page, dark)
                 "fab" -> FabSample(preset = fabPreset, onPresetChange = { fabPreset = it })
                 "color" -> Group(Modifier.selectableGroup(), footer = stringResource(R.string.settings_demo_only)) {

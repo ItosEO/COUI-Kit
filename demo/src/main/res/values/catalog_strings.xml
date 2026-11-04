@@ -44,7 +44,7 @@
     <string name="stepper_increase">Increase</string>
     <string name="progress_pause">Pause</string>
     <string name="progress_resume">Resume</string>
-    <string name="intro_chip">Scroll and select categories, inspect linked content and use the leading action.</string>
+    <string name="intro_chip">Scroll and select categories, with an optional icon button.</string>
     <string name="menu_actions">Menu options</string>
     <string name="menu_selection_label">Current option</string>
     <string name="menu_open_summary">Choose a mode, toggle a pinned option or open the submenu.</string>
@@ -91,8 +91,9 @@
     <string name="catalog_fab">Floating action button</string>
     <string name="catalog_appbar_behavior">Collapsing title and floating search</string>
     <string name="catalog_appbar_behavior_summary">Scroll the catalog to collapse the large title. Open search to split the cancel capsule; cancel restores the previous scroll position.</string>
-    <string name="intro_wheel">A single controlled wheel with wrapping, formatting and disabled states.</string>
-    <string name="catalog_wheel">Integer wheel</string>
+    <string name="intro_wheel">Switch between number, time, countdown and date wheels.</string>
+    <string name="intro_numberpicker">An integer wheel with wrapping, formatting and disabled states.</string>
+    <string name="catalog_wheel">Wheel pickers</string>
     <string name="toolbar_show_action">Show search button</string>
     <string name="toolbar_enable_action">Enable text action</string>
     <string name="toolbar_text_action">Done</string>
@@ -106,13 +107,10 @@
     <string name="nav_right_description">Add icon</string>
     <string name="checkbox_standalone">Standalone checkbox</string>
     <string name="switch_standalone">Standalone switch</string>
-    <string name="picker_wheel_value">Current value: %1$d</string>
     <string name="picker_wheel_wrap">Wrap at the ends</string>
     <string name="picker_wheel_enabled">Enable wheel</string>
     <string name="picker_date_restricted">Limit dates to this month</string>
-    <string name="picker_date_restriction_note">Only dates in the current month can be selected.</string>
     <string name="picker_wheel_label">Number</string>
-    <string name="picker_wheel_note">Toggle wrapping on the same wheel to inspect the range boundaries.</string>
     <string name="settings_header_action">Edit</string>
     <string name="settings_header_count">Header action presses: %1$d</string>
     <string name="settings_group_example">Sections and items</string>
@@ -124,7 +122,5 @@
     <string name="chip_category_archive">Archived</string>
     <string name="chip_category_shared">Shared</string>
     <string name="chip_category_all">All</string>
-    <string name="chip_selection">Selected category</string>
-    <string name="chip_content_summary">Selecting a tab updates this content.</string>
     <string name="list_item_text_preview">This text preview changes with the selected size.</string>
 </resources>

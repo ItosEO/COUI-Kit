@@ -29,7 +29,6 @@
     <string name="open_menu">Open menu</string>
     <string name="menu_header">Selection and submenu</string>
     <string name="shadow_title">Shadow</string>
-    <string name="shadow_description">The easy Modifier entry uses COUI shadow presets. The low-level Canvas renderer remains available.</string>
     <string name="elevation_value">Elevation: %1$d dp</string>
     <string name="shadow_subject">Shadow subject</string>
     <string name="fusion_title">Metaball algorithm</string>

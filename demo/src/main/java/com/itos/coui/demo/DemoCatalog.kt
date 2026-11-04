@@ -23,6 +23,13 @@ internal data class DemoCatalogEntry(val page: String, val title: Int, val icon:
 
 private val CatalogRowMinHeight = 52.dp
 
+internal val DemoWheelPickerEntries = listOf(
+    DemoCatalogEntry("wheel", R.string.picker_number_title, DemoIcons.Tune),
+    DemoCatalogEntry("timepicker", R.string.picker_time_title, CouiIcons.Time),
+    DemoCatalogEntry("countdownpicker", R.string.picker_countdown_title, CouiIcons.Countdown),
+    DemoCatalogEntry("datepicker", R.string.picker_date_title, DemoIcons.Date),
+)
+
 internal val DemoComponentGroups = listOf(
     listOf(DemoCatalogEntry("switch", R.string.switch_title, DemoIcons.Switch),
         DemoCatalogEntry("sliders", R.string.slider_title, DemoIcons.Tune),
@@ -34,9 +41,6 @@ internal val DemoComponentGroups = listOf(
         DemoCatalogEntry("navigation", R.string.catalog_navigation, CouiIcons.Featured),
         DemoCatalogEntry("fab", R.string.catalog_fab, CouiIcons.Add)),
     listOf(DemoCatalogEntry("wheel", R.string.catalog_wheel, DemoIcons.Tune),
-        DemoCatalogEntry("timepicker", R.string.picker_time_title, CouiIcons.Time),
-        DemoCatalogEntry("countdownpicker", R.string.picker_countdown_title, CouiIcons.Countdown),
-        DemoCatalogEntry("datepicker", R.string.picker_date_title, DemoIcons.Date),
         DemoCatalogEntry("calendar", R.string.picker_calendar_title, CouiIcons.Calendar)),
     listOf(DemoCatalogEntry("settings", R.string.settings_title, DemoIcons.Tune),
         DemoCatalogEntry("chip", R.string.chip_tab_title, CouiIcons.Components)),
@@ -67,11 +71,14 @@ internal fun DemoCatalog(groups: List<List<DemoCatalogEntry>>, open: (String) ->
 
 @Composable
 internal fun DemoCatalogSearch(query: String, enabled: Boolean = true, open: (String) -> Unit) {
-    val filtered = (DemoComponentGroups + DemoEffectGroups).flatten().filter {
+    val entries = (DemoComponentGroups + DemoEffectGroups).flatten() + DemoWheelPickerEntries.drop(1)
+    val filtered = entries.filter {
         val needle = query.trim()
         stringResource(it.title).contains(needle, ignoreCase = true) ||
             it.page.contains(needle, ignoreCase = true) ||
-            stringResource(catalogDescription(it.page)).contains(needle, ignoreCase = true)
+            stringResource(if (it.page == "wheel") R.string.intro_numberpicker else catalogDescription(it.page))
+                .contains(needle, ignoreCase = true) ||
+            (it.page == "wheel" && stringResource(R.string.picker_number_title).contains(needle, ignoreCase = true))
     }
     if (filtered.isEmpty()) Text(stringResource(R.string.no_matches), Modifier.padding(32.dp),
         color = MaterialTheme.colorScheme.onSurfaceVariant)

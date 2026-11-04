@@ -29,7 +29,6 @@
     <string name="open_menu">打开菜单</string>
     <string name="menu_header">选择与子菜单</string>
     <string name="shadow_title">阴影</string>
-    <string name="shadow_description">便捷 Modifier 入口使用 COUI 阴影预设。底层 Canvas 渲染接口仍可使用。</string>
     <string name="elevation_value">投影高度：%1$d dp</string>
     <string name="shadow_subject">阴影主体</string>
     <string name="fusion_title">融合算法</string>

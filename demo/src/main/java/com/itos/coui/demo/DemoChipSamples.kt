@@ -64,7 +64,7 @@ private fun ChipTabMaterialSample(dark: Boolean) {
     val anchor = rememberCouiMenuAnchor()
     val backgroundColor = if (solidBackground) {
         if (dark) Color.Black else Color.White
-    } else MaterialTheme.colorScheme.surfaceBright
+    } else if (dark) MaterialTheme.colorScheme.surfaceBright else MaterialTheme.colorScheme.background
     Group {
         DemoSwitchPreference(title = stringResource(R.string.chip_enable), checked = enabled, onCheckedChange = { enabled = it })
         Divider()
@@ -79,7 +79,7 @@ private fun ChipTabMaterialSample(dark: Boolean) {
         return
     }
     // 卡片只在完整示意区域裁剪；不能用 48dp 行高把分类项的投影上下截断。
-    Group { Box(Modifier.fillMaxWidth().height(144.dp)) {
+    Group { Box(Modifier.fillMaxWidth().height(120.dp)) {
         Box(Modifier.matchParentSize().couiBackdrop(backdrop).background(backgroundColor))
         ChipTabRow(
             modifier = Modifier.fillMaxWidth().align(Alignment.Center),
@@ -106,9 +106,6 @@ private fun ChipTabMaterialSample(dark: Boolean) {
                 }
             } else null,
         )
-    }
-    Group(title = stringResource(R.string.chip_selection)) {
-        DemoPreference(title = labels[selected], summary = stringResource(R.string.chip_content_summary))
     }
 }
 }

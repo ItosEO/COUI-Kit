@@ -21,7 +21,7 @@ import com.itos.coui.text.CouiTextKind
 import com.itos.coui.text.rememberCouiTextStyle
 import kotlin.math.roundToInt
 
-/** 按设置预览页的“图示—说明—调节”顺序组织，右侧采样自己的原图内容。 */
+/** 左右对照原图与模糊结果，右侧采样自己的原图内容。 */
 @Composable
 internal fun BlurTutorial(dark: Boolean) {
     var radius by rememberSaveable { mutableFloatStateOf(30f) }
@@ -55,8 +55,6 @@ internal fun BlurTutorial(dark: Boolean) {
             }
         }
     }
-    Text(stringResource(R.string.intro_effect_backdrop), Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp),
-        style = rememberCouiTextStyle(CouiTextKind.PreferenceSummary), color = MaterialTheme.colorScheme.onSurfaceVariant)
     Group {
         DemoSliderPreference(title = stringResource(R.string.blur_radius), value = radius, onValueChange = { radius = it },
             valueText = radius.roundToInt().toString(), valueRange = 0f..80f)

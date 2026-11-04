@@ -251,12 +251,12 @@ M3 主题适配的接入方式见[外观与预设](../guide/appearance.md)。
 
 ## Demo 与源码
 
-Demo 为时间、倒计时、年月日滚轮和月历提供独立详情页，每页包含页面控件和弹窗草稿。
+Demo 的滚轮选择器页可切换数字、时间、倒计时和年月日组合。各类型分别保存选择值，共用页面展示区和弹窗入口；取消弹窗不提交草稿。月历使用独立详情页。
 
-| 组合                    | 示例                                                                                  |
-|-----------------------|-------------------------------------------------------------------------------------|
-| 时间、AM/PM、倒计时、日期顺序与范围  | [DemoWheelPresets](../../demo/src/main/java/com/itos/coui/demo/DemoWheelPresets.kt) |
-| 标题、项目材质、确认/取消与任意选择器内容 | [DemoPickerDialog](../../demo/src/main/java/com/itos/coui/demo/DemoPickerDialog.kt) |
+| 组合                    | 示例                                                                                    |
+|-----------------------|---------------------------------------------------------------------------------------|
+| 时间、AM/PM、倒计时、日期顺序与范围  | [DemoWheelPresets](../../demo/src/main/java/com/itos/coui/demo/DemoWheelPresets.kt)   |
+| 标题、项目材质、确认/取消与任意选择器内容 | [DemoPickerDialog](../../demo/src/main/java/com/itos/coui/demo/DemoPickerDialog.kt)   |
 | 页面与弹窗共用内容、草稿及确认提交     | [DemoPickerSamples](../../demo/src/main/java/com/itos/coui/demo/DemoPickerSamples.kt) |
 
 公开 API 见 [WheelPicker / CouiWheelColors / CouiPickerDefaults](../../coui/src/main/java/com/itos/coui/picker/WheelPicker.kt)、[CalendarPicker](../../coui/src/main/java/com/itos/coui/picker/CalendarPicker.kt)及 [CouiCalendarColors / CouiCalendarDefaults](../../coui/src/main/java/com/itos/coui/picker/CouiCalendarDefaults.kt)。
