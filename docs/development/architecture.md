@@ -27,7 +27,7 @@ Group、Item、Divider、Footer 处理局部分组和行布局。Item.onClick �
 | 包 | 职责 |
 | --- | --- |
 | layout | 可选页面容器、分组与行布局；Scaffold 管理局部正文源，不持有业务状态 |
-| topappbar、search、navigation、floatingactionbutton、menu、slider、checkbox、switch、chip、dialog、picker、text | 局部组件的布局、状态装配、语义与公开 Defaults |
+| topappbar、search、navigation、floatingactionbutton、menu、slider、checkbox、radiobutton、switch、chip、dialog、picker、text | 局部组件的布局、状态装配、语义与公开 Defaults |
 | backdrop | 所属窗口的内容源、绘制录制与采样坐标映射 |
 | effect | 普通投影、模糊、材质、光效与融合绘制 |
 | shape | 公共 Shape 与几何约定 |

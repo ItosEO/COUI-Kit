@@ -89,6 +89,7 @@ internal fun DemoCatalog(groups: List<List<DemoCatalogEntry>>, open: (String) ->
 private fun catalogSearchMatches(entry: DemoCatalogEntry, needle: String): Boolean =
     stringResource(entry.title).contains(needle, ignoreCase = true) ||
         entry.page.contains(needle, ignoreCase = true) ||
+        (entry.page == "checkbox" && "radio".contains(needle, ignoreCase = true)) ||
         stringResource(if (entry.page == "wheel") R.string.intro_numberpicker else catalogDescription(entry.page))
             .contains(needle, ignoreCase = true) ||
         (entry.page == "wheel" && stringResource(R.string.picker_number_title).contains(needle, ignoreCase = true))

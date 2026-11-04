@@ -1,8 +1,57 @@
-# ☑️复选框
+# 单/复选框
 
-`Checkbox` 显示勾选状态。它只负责绘制，需要由外层添加点击和无障碍语义。
+`RadioButton` 显示互斥选择状态，`Checkbox` 显示可独立切换的勾选状态。两者只负责绘制，由外层添加点击和无障碍语义。
 
-## 最小调用
+## 单选框
+
+在 Compose 作用域中传入当前选中状态：
+
+~~~kotlin
+RadioButton(selected = selected)
+~~~
+
+默认配色跟随 COUI 主题。单选组由宿主持有一个选中值，点击已选项不取消选择。
+
+整行交互时，父容器使用 `selectableGroup`，每行使用 `selectable` 和 `Role.RadioButton`。下面的函数在页面内调用；`labels` 来自宿主文案，`selectedIndex` 和 `onSelect` 由页面状态提供：
+
+~~~kotlin
+@Composable
+fun RadioButtonGroup(
+    modifier: Modifier = Modifier,
+    labels: List<String>,
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
+    enabled: Boolean = true,
+) {
+    Column(modifier.selectableGroup()) {
+        labels.forEachIndexed { index, label ->
+            val selected = selectedIndex == index
+            Row(
+                Modifier.fillMaxWidth().selectable(
+                    selected = selected,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    enabled = enabled,
+                    role = Role.RadioButton,
+                    onClick = { onSelect(index) },
+                ).padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(label, Modifier.weight(1f))
+                RadioButton(selected = selected, enabled = enabled)
+            }
+        }
+    }
+}
+~~~
+
+在 `onSelect` 中把选中值设为点击项的索引。行和单选框必须使用相同的 `selected` 和 `enabled`。只由父项处理点击，不给绘制组件添加第二个点击入口。示例中的 `Text` 来自 Material3，项目需要声明该依赖。
+
+单选框默认尺寸为 24dp，点击范围由父项提供。公开参数见 [RadioButton](../../coui/src/main/java/com/itos/coui/radiobutton/RadioButton.kt)。
+
+`colors` 可覆盖配色，`CouiRadioButtonDefaults.colors(selected = accent, dark = dark)` 根据强调色与深浅模式生成默认值，见[单选框配色](../../coui/src/main/java/com/itos/coui/radiobutton/CouiRadioButtonDefaults.kt)。禁用时直接显示静态状态，重新启用不补播切换动画。
+
+## 复选框最小调用
 
 页面提供当前勾选状态：
 
@@ -57,7 +106,7 @@ fun CheckboxRow(
 
 ## 只放一个复选框
 
-没有整行文案时，可以用 48dp 的 `Box` 包住复选框，并提供无障碍描述。外层 `toggleable` 必须设置 `indication = null`，隐藏点击涟漪，保留点击和复选语义。下面的片段使用上一节的参数和导入：
+没有整行文案时，可以用 48dp 的 `Box` 包住复选框，并提供无障碍描述。外层 `toggleable` 必须设置 `indication = null`，隐藏点击涟漪，保留点击和复选语义。下面的片段位于 Compose 作用域，使用整行复选框示例中的参数：
 
 ~~~kotlin
 Box(

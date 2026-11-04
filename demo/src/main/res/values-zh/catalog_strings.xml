@@ -3,7 +3,7 @@
     <string name="sample_click">点击示例</string>
     <string name="intro_switch">查看开关点击、拖动吸附、加载反馈与不可用状态。</string>
     <string name="intro_sliders">比较连续滑动、分段刻度和隐藏刻度的数值调整。</string>
-    <string name="intro_checkbox">查看独立复选框、整行勾选及不可用状态。</string>
+    <string name="intro_checkbox">查看单选框、独立复选框、整行选择及不可用状态。</string>
     <string name="intro_dialogs">比较底部与居中弹窗、不同操作数量、输入和材质。</string>
     <string name="intro_menu">通过列表项打开菜单，查看勾选、子菜单与滚动行为。</string>
     <string name="intro_appbar">体验图标、文字操作、禁用与显隐动画；首页还提供滚动折叠顶栏。</string>

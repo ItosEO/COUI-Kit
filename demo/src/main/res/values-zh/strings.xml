@@ -16,7 +16,10 @@
     <string name="enable_controls">启用滑动选择条</string>
     <string name="continuous_value">连续值：%1$d%%</string>
     <string name="section_value">分段值：%1$d</string>
-    <string name="checkbox_title">复选框</string>
+    <string name="checkbox_title">单/复选框</string>
+    <string name="radio_group_title">单选框</string>
+    <string name="radio_first">选项一</string>
+    <string name="radio_second">选项二</string>
     <string name="checkbox_toggle">切换此复选框</string>
     <string name="checkbox_disabled">已选中且禁用</string>
     <string name="menu_title">菜单</string>

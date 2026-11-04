@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -49,8 +50,19 @@ internal fun ComponentDetail(page: String, dark: Boolean, onToggleTheme: () -> U
         "dialogs" -> DialogSample(dark, onToggleTheme)
     }
     if (page == "checkbox") {
+        var selected by rememberSaveable { mutableIntStateOf(0) }
         var checked by rememberSaveable { mutableStateOf(false) }
         var standalone by rememberSaveable { mutableStateOf(false) }
+        Group(Modifier.selectableGroup(), title = stringResource(R.string.radio_group_title)) {
+            DemoSelectPreference(title = stringResource(R.string.radio_first), selected = selected == 0, onSelect = { selected = 0 })
+            Divider()
+            DemoSelectPreference(title = stringResource(R.string.radio_second), selected = selected == 1, onSelect = { selected = 1 })
+        }
+        Group(Modifier.selectableGroup()) {
+            DemoSelectPreference(title = stringResource(R.string.checkbox_disabled), selected = true, onSelect = {}, enabled = false)
+            Divider()
+            DemoSelectPreference(title = stringResource(R.string.checkbox_disabled_unchecked), selected = false, onSelect = {}, enabled = false)
+        }
         Group(title = stringResource(R.string.checkbox_standalone)) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {

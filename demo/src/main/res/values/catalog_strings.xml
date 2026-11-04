@@ -3,7 +3,7 @@
     <string name="sample_click">Activate sample</string>
     <string name="intro_switch">Test switch clicks, dragging, loading feedback and disabled states.</string>
     <string name="intro_sliders">Compare continuous, stepped and unmarked value adjustment.</string>
-    <string name="intro_checkbox">Check standalone and whole-row checkboxes, including disabled states.</string>
+    <string name="intro_checkbox">Check radio buttons, standalone and whole-row checkboxes, including disabled states.</string>
     <string name="intro_dialogs">Compare bottom and center dialogs, actions, input and material.</string>
     <string name="intro_menu">Open list menus to test checks, submenus and scrolling.</string>
     <string name="intro_appbar">Test icon and text actions, disabled controls and entry animations. The home catalog shows a collapsing title.</string>

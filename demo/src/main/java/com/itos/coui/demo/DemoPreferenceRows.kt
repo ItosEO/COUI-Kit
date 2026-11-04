@@ -2,8 +2,6 @@ package com.itos.coui.demo
 
 import com.itos.coui.icons.CouiIcons
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -20,6 +18,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.itos.coui.checkbox.Checkbox
 import com.itos.coui.checkbox.CouiCheckboxDefaults
+import com.itos.coui.radiobutton.RadioButton
 import com.itos.coui.effect.couiButtonFeedback
 import com.itos.coui.switch.Switch
 import com.itos.coui.switch.CouiSwitchDefaults
@@ -123,14 +122,10 @@ internal fun DemoSelectPreference(
     icon: (@Composable () -> Unit)? = null,
 ) {
     val dark = CouiTheme.isDark
-    val colors = CouiPageDefaults.themeColors(dark)
     val source = remember { MutableInteractionSource() }
     DemoPreferenceRow(modifier.couiButtonFeedback(dark, source, enabled, list = true)
         .selectable(selected, source, null, enabled, Role.RadioButton, onSelect), title, summary, enabled, icon) {
-        Box(Modifier.padding(start = 16.dp).size(24.dp)) {
-            if (selected) Icon(CouiIcons.Check, null, Modifier.fillMaxSize(),
-                tint = if (enabled) colors.accent else colors.disabled)
-        }
+        RadioButton(modifier = Modifier.padding(start = 16.dp).size(24.dp), selected = selected, enabled = enabled)
     }
 }
 

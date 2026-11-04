@@ -16,7 +16,10 @@
     <string name="enable_controls">Enable sliders</string>
     <string name="continuous_value">Continuous: %1$d%%</string>
     <string name="section_value">Section: %1$d</string>
-    <string name="checkbox_title">Checkbox</string>
+    <string name="checkbox_title">Radio / Checkbox</string>
+    <string name="radio_group_title">Radio buttons</string>
+    <string name="radio_first">First option</string>
+    <string name="radio_second">Second option</string>
     <string name="checkbox_toggle">Toggle this checkbox</string>
     <string name="checkbox_disabled">Disabled and checked</string>
     <string name="menu_title">Menu</string>
