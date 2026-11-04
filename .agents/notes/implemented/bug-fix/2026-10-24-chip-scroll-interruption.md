@@ -20,7 +20,7 @@ DOWN 中断越界回弹后，如果本次触摸没有达到拖动阈值，原来
 
 [CouiScrollPhysics](../../../../coui/src/main/java/com/itos/coui/scroll/CouiScrollPhysics.kt) 在中断时按原厂 `setAtRest` 将临时积分位置同步到当前物理位置。直接 `springBack` 保留该临时位置，只有惯性触边对应的 `notifyEdgeReached` 路径将其重置为边界。不改变现有积分公式、惯性插值或选中露出弹簧。
 
-新的露出目标从当前显示位置、零初速度启动，继续使用已有 SpringAnimation。反向选择不继承旧目标的速度。点击、键盘焦点和受控选中值变化共用这条路径；完整可见范围仍由[选中项可见性决定](2026-10-24-chip-selection-visibility.md)持有。
+新的露出目标从当前显示位置、零初速度启动，继续使用已有 SpringAnimation。反向选择不继承旧目标的速度。点击、键盘焦点和受控选中值变化共用这条路径；滚动终点由[选中项可见性决定](2026-10-24-chip-selection-visibility.md)持有。
 
 ## 原厂依据
 
@@ -32,7 +32,7 @@ DOWN 中断越界回弹后，如果本次触摸没有达到拖动阈值，原来
 ## 历史决定审计
 
 - [分类栏装配](../feature/2026-10-24-chip-tab.md)：部分重叠，互链。其按下期间保留露出动画的行为由本篇替代，材质、选择状态和滚动物理保持原归属。
-- [选中项可见性](2026-10-24-chip-selection-visibility.md)：部分重叠，互链。保留渐隐区、项目宽度和布局变化的处理，仅补充输入中断规则。
+- [选中项可见性](2026-10-24-chip-selection-visibility.md)：部分重叠，互链。保留边缘渐隐绘制、项目宽度和布局变化的处理，仅补充输入中断规则。
 
 ## Alternatives considered
 
