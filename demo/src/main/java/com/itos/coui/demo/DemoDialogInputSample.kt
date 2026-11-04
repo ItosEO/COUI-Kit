@@ -65,7 +65,7 @@ internal fun RenameDeviceDialogSample(
         message = stringResource(R.string.dialog_device_name_message),
         clearContentDescription = stringResource(R.string.dialog_input_clear),
         counter = stringResource(R.string.dialog_input_counter, count, DEVICE_NAME_MAX_BYTES),
-        counterIsError = count >= DEVICE_NAME_MAX_BYTES,
+        counterIsError = count > DEVICE_NAME_MAX_BYTES,
         confirmAction = CouiDialogAction(stringResource(R.string.dialog_input_save), { if (canSave) onSave(name) }, enabled = canSave),
         dismissAction = CouiDialogAction(stringResource(R.string.dialog_cancel), onDismissRequest),
         material = if (material) CouiDialogDefaults.material(dark) else null, backdrop = backdrop)
