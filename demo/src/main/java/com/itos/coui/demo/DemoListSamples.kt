@@ -1,10 +1,12 @@
 package com.itos.coui.demo
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -27,8 +29,9 @@ internal fun ListSamples(open: (String) -> Unit) {
     Group(title = stringResource(R.string.settings_group_example),
         footer = stringResource(R.string.settings_header_count, headerActions),
         headerActions = {
-            Text(stringResource(R.string.settings_header_action),
-                Modifier.clickable { headerActions++ }.padding(horizontal = 8.dp, vertical = 6.dp))
+            TextButton(onClick = { headerActions++ }) {
+                Text(stringResource(R.string.settings_header_action))
+            }
         }) {
         DemoPreference(title = stringResource(R.string.app_name),
             summary = stringResource(R.string.settings_long_summary), value = "ColorOS 17",
@@ -44,7 +47,7 @@ internal fun ListSamples(open: (String) -> Unit) {
             enabled = false, onClick = {})
     }
     Group(Modifier.selectableGroup(), title = stringResource(R.string.list_item_single)) {
-        listOf(R.string.settings_color_natural, R.string.settings_color_vivid).forEachIndexed { index, label ->
+        listOf(R.string.settings_size_small, R.string.settings_size_large).forEachIndexed { index, label ->
             DemoSelectPreference(title = stringResource(label), selected = selected == index,
                 onSelect = { selected = index })
             if (index == 0) Divider()
@@ -58,6 +61,10 @@ internal fun ListSamples(open: (String) -> Unit) {
             summary = { Text(stringResource(R.string.settings_dependency)) }) {
             Text(stringResource(R.string.settings_automatic))
         }
+    }
+    Group(title = stringResource(R.string.settings_preview)) {
+        Text(stringResource(R.string.settings_preview_summary), Modifier.padding(16.dp),
+            style = TextStyle(fontSize = if (selected == 0) 14.sp else 20.sp))
     }
     Footer(text = stringResource(R.string.settings_demo_only))
 }
