@@ -1,0 +1,38 @@
+<resources>
+    <string-array name="toolbar_preview_titles">
+        <item>无线网络</item>
+        <item>蓝牙耳机</item>
+        <item>通知消息</item>
+        <item>电池状态</item>
+        <item>日历安排</item>
+        <item>音乐播放</item>
+        <item>照片相册</item>
+        <item>下载任务</item>
+        <item>隐私安全</item>
+        <item>屏幕显示</item>
+    </string-array>
+    <string-array name="toolbar_preview_summaries">
+        <item>已连接到 COUI Demo</item>
+        <item>模拟设备 · 立体声音频</item>
+        <item></item>
+        <item>电量充足，可继续使用</item>
+        <item>下午 3:00 · 项目讨论</item>
+        <item>午后电台 · 轻音乐</item>
+        <item></item>
+        <item>示例文件.zip · 24 MB</item>
+        <item>管理应用权限与本地访问记录</item>
+        <item></item>
+    </string-array>
+    <string-array name="toolbar_preview_values">
+        <item>Wi-Fi 6</item>
+        <item>已连接</item>
+        <item>3 条</item>
+        <item>72%</item>
+        <item>今天</item>
+        <item>暂停</item>
+        <item>128 张</item>
+        <item>完成</item>
+        <item></item>
+        <item>自动</item>
+    </string-array>
+</resources>

@@ -144,6 +144,36 @@ TopAppBarButtonGroup {
 
 默认动作会在搜索展开时淡出。设置 `visibleWhileSearching = true` 后，动作会移到新位置并保持可用。
 
+### 从搜索胶囊分离自定义按钮
+
+将 `action` 和 `onActionClick` 传给 `TopAppBarSearch`。展开时，右侧动作从搜索胶囊中融合分离；关闭时，动作沿同一路径融合收回，绘制保留到搜索弹簧结束。两部分共享双主体材质、轮廓、阴影与当前动画几何。
+
+下面的代码替换基本示例中的 `TopAppBarSearch`，沿用其状态、样式和 `close` 回调：
+
+~~~kotlin
+TopAppBarSearch(
+    modifier = Modifier.weight(1f),
+    state = state,
+    style = searchStyle,
+    query = query,
+    onQueryChange = onQueryChange,
+    onSearch = onSearch,
+    placeholder = placeholder,
+    focusPending = focusPending,
+    onFocused = { focusPending = false },
+    action = { Text(closeDescription) },
+    onActionClick = close,
+) {
+    Text(title)
+}
+~~~
+
+`action` 放置文字、图标或自定义排版。组件负责胶囊材质、点击、反馈与 Button 语义，内容中不要再套 `TopAppBarButton` 或添加独立点击。`onActionClick = null` 显示禁用动作；`enabled = false` 同时禁用搜索和动作。关闭目标生效时，动作立即停止输入并退出无障碍遍历。
+
+按钮按内容测量，宽度最多为可用搜索宽度的 40%，并受组件最大宽度限制；输入使用剩余宽度。RTL 下动作位于逻辑末端。`trailingIcon` 仍是输入框内部插槽，与外侧融合动作独立。
+
+右侧融合动作是项目扩展，复用常驻搜索的双主体后端和现有顶栏搜索进度。没有动作时，搜索继续使用单主体路径。Demo 见[顶栏示例](../../demo/src/main/java/com/itos/coui/demo/DemoToolbarSamples.kt)。
+
 M3 插槽的主题继承见[外观与预设](../guide/appearance.md)。收起时的 title 使用宿主样式。`TopAppBarSearchButton` 使用固定布局容器，不受 M3 最小交互尺寸 Local 控制。
 
 ## 搜索框样式

@@ -1,0 +1,38 @@
+<resources>
+    <string-array name="toolbar_preview_titles">
+        <item>Wi-Fi network</item>
+        <item>Bluetooth headphones</item>
+        <item>Notifications</item>
+        <item>Battery status</item>
+        <item>Calendar event</item>
+        <item>Music playback</item>
+        <item>Photo album</item>
+        <item>Downloads</item>
+        <item>Privacy and security</item>
+        <item>Display</item>
+    </string-array>
+    <string-array name="toolbar_preview_summaries">
+        <item>Connected to COUI Demo</item>
+        <item>Sample device · Stereo audio</item>
+        <item></item>
+        <item>Enough charge for the rest of the day</item>
+        <item>3:00 PM · Project discussion</item>
+        <item>Afternoon radio · Easy listening</item>
+        <item></item>
+        <item>Sample.zip · 24 MB</item>
+        <item>App permissions and local access history</item>
+        <item></item>
+    </string-array>
+    <string-array name="toolbar_preview_values">
+        <item>Wi-Fi 6</item>
+        <item>Connected</item>
+        <item>3 new</item>
+        <item>72%</item>
+        <item>Today</item>
+        <item>Paused</item>
+        <item>128 photos</item>
+        <item>Complete</item>
+        <item></item>
+        <item>Auto</item>
+    </string-array>
+</resources>

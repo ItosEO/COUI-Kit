@@ -38,7 +38,7 @@ import com.itos.coui.text.rememberCouiTextStyle
 internal fun ChromeDetail(page: String, dark: Boolean, open: (String) -> Unit) {
     when (page) {
         "appbar" -> ToolbarSample()
-        "search" -> SearchSamples(dark, open)
+        "search" -> SearchSamples(dark)
         "navigation" -> NavigationSample(dark, open)
         "fab" -> FabSample(dark)
     }
@@ -134,16 +134,21 @@ private fun FabSample(dark: Boolean) {
     Footer(text = stringResource(R.string.fab_action_result, created))
 }
 
-/** 在采样源上放置少量真实内容；组件不被录入自己的 Backdrop。 */
+/** 预览背景独立录入采样源；浮动组件不被录入自己的 Backdrop。 */
 @Composable
-internal fun ChromePreview(modifier: Modifier = Modifier, content: @Composable BoxScope.(CouiBackdrop) -> Unit) {
+internal fun ChromePreview(
+    modifier: Modifier = Modifier,
+    background: @Composable BoxScope.() -> Unit = {
+        Text(stringResource(R.string.settings_preview), Modifier.padding(18.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = rememberCouiTextStyle(CouiTextKind.PreferenceSummary))
+    },
+    content: @Composable BoxScope.(CouiBackdrop) -> Unit,
+) {
     val backdrop = rememberCouiBackdrop()
     Box(modifier.fillMaxWidth().clip(CouiPageDefaults.shape)) {
-        Box(Modifier.matchParentSize().couiBackdrop(backdrop).background(MaterialTheme.colorScheme.background)) {
-            Text(stringResource(R.string.settings_preview), Modifier.padding(18.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = rememberCouiTextStyle(CouiTextKind.PreferenceSummary))
-        }
+        Box(Modifier.matchParentSize().couiBackdrop(backdrop).background(MaterialTheme.colorScheme.background),
+            content = background)
         content(backdrop)
     }
 }

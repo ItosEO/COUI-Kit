@@ -9,6 +9,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,7 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.res.painterResource
 import com.itos.coui.theme.CouiIcon as Icon
 import com.itos.coui.theme.ProvideCouiContent
 import com.itos.coui.theme.LocalCouiContentColor as LocalContentColor
@@ -78,6 +78,8 @@ import com.itos.coui.effect.SpotlightPreset
 import com.itos.coui.effect.couiFloatingSurface
 import com.itos.coui.effect.rememberCouiSpotlight
 import com.itos.coui.input.CouiSearchRelocationBoundary
+import com.itos.coui.icons.CouiIcons
+import com.itos.coui.search.CouiSearchBarDefaults
 import com.itos.coui.motion.couiPressMotion
 import com.itos.coui.motion.couiTouchMotion
 import com.itos.coui.motion.rememberCouiPressMotion
@@ -86,7 +88,11 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-/** 标题槽位入口。visible 只控制整组淡化, 不改变搜索展收目标或页面查询。 */
+/**
+ * 标题槽位入口。visible 只控制整组淡化，不改变搜索展收目标或页面查询。
+ * action 提供右侧融合胶囊的非交互内容；点击、材质与反馈由组件持有。
+ * onActionClick 为 null 时禁用动作；收起时保留融合绘制并立即关闭输入与语义。
+ */
 @RequiresApi(34)
 @Composable
 fun TopAppBarSearch(
@@ -103,11 +109,12 @@ fun TopAppBarSearch(
     visible: Boolean = true,
     endPadding: Dp = 6.dp,
     trailingIcon: @Composable () -> Unit = {},
+    action: (@Composable () -> Unit)? = null,
+    onActionClick: (() -> Unit)? = null,
     title: @Composable () -> Unit,
 ) {
     CompositionLocalProvider(LocalCouiToolbarStyle provides style) {
         val requester = remember { FocusRequester() }
-        val keyboard = LocalSoftwareKeyboardController.current
         BoxWithConstraints(
             modifier.fillMaxWidth().height(64.dp)
                 .then(CouiSearchRelocationBoundary),
@@ -151,56 +158,25 @@ fun TopAppBarSearch(
                     ) {
                         Layout(
                             content = {
-                                SearchSurface(
-                                    modifier = Modifier,
-                                    renderer = renderer,
-                                    capsule = state.motion.expanded,
-                                    enabled = enabled,
-                                    interactive = enabled && visible && state.motion.expanded,
-                                    deform = enabled && visible && state.motion.expanded && !state.motion.running,
-                                    contentRenderEffect = blur,
-                                ) {
-                                    // 内容按最终宽度排版, 只裁剪可见宽度, 不对文字和图标做缩放。
-                                    Layout(content = {
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Box(Modifier.padding(start = 2.dp).size(36.dp), contentAlignment = Alignment.Center) {
-                                                    Icon(modifier = Modifier.size(24.dp), painter = painterResource(com.itos.coui.R.drawable.coui_search), contentDescription = null)
-                                                }
-                                                Box(Modifier.weight(1f).graphicsLayer { alpha = progress.coerceIn(0f, 1f) }) {
-                                                    BasicTextField(
-                                                        value = query,
-                                                        onValueChange = onQueryChange,
-                                                        modifier = Modifier.fillMaxWidth().focusRequester(requester)
-                                                            .semantics { contentDescription = placeholder },
-                                                        enabled = enabled && visible && state.motion.expanded,
-                                                        singleLine = true,
-                                                        textStyle = LocalCouiTextStyle.current.copy(
-                                                            color = LocalContentColor.current, fontSize = 15.sp,
-                                                        ),
-                                                        cursorBrush = SolidColor(LocalCouiToolbarStyle.current.cursorColor),
-                                                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                                                        keyboardActions = KeyboardActions(onSearch = { onSearch() }),
-                                                        decorationBox = { input ->
-                                                            Box(contentAlignment = Alignment.CenterStart) {
-                                                                if (query.isEmpty()) Text(
-                                                                    text = placeholder,
-                                                                    color = LocalContentColor.current.copy(alpha = LocalContentColor.current.alpha * 0.6f),
-                                                                    fontSize = 15.sp,
-                                                                    maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis,
-                                                                )
-                                                                input()
-                                                            }
-                                                        },
-                                                    )
-                                                }
-                                                Box(Modifier.graphicsLayer { alpha = progress.coerceIn(0f, 1f) }) { trailingIcon() }
-                                            }
-                                    }) { measurables, constraints ->
-                                        val child = measurables.single().measure(Constraints.fixed(fullWidth.roundToInt(), constraints.maxHeight))
-                                        layout(constraints.maxWidth, constraints.maxHeight) {
-                                            child.place(if (rtl) constraints.maxWidth - child.width else 0, 0)
-                                        }
-                                    }
+                                val input: @Composable (Float) -> Unit = { inputWidth ->
+                                    SearchInput(query, onQueryChange, onSearch, placeholder, requester,
+                                        enabled = enabled, active = visible && state.motion.expanded,
+                                        progress = progress, fullWidth = inputWidth, rtl = rtl,
+                                        focusPending = focusPending, onFocused = onFocused,
+                                        trailingIcon = trailingIcon)
+                                }
+                                val active = visible && state.motion.expanded
+                                if (action != null) {
+                                    TopAppBarSearchPair(fullWidth = fullWidth, progress = progress,
+                                        enabled = enabled, active = active, deform = enabled && active && !state.motion.running,
+                                        capsule = state.motion.expanded, contentRenderEffect = blur,
+                                        action = action, onActionClick = onActionClick, input = input)
+                                } else {
+                                    SearchSurface(modifier = Modifier, renderer = renderer,
+                                        capsule = state.motion.expanded, enabled = enabled,
+                                        interactive = enabled && active,
+                                        deform = enabled && active && !state.motion.running,
+                                        contentRenderEffect = blur) { input(fullWidth) }
                                 }
                             },
                         ) { measurables, constraints ->
@@ -226,12 +202,6 @@ fun TopAppBarSearch(
                                 }
                             }
                         }
-                    }
-                }
-                LaunchedEffect(focusPending, enabled, visible, state.motion.expanded) {
-                    if (focusPending && enabled && visible && state.motion.expanded) {
-                        if (requester.requestFocus()) keyboard?.show()
-                        onFocused()
                     }
                 }
             }
@@ -280,7 +250,7 @@ fun TopAppBarSearchButton(
                         capsule = false, enabled = enabled, interactive = enabled, deform = enabled,
                         onClick = { center -> state.sourceCenter = center; open() },
                     ) {
-                        Icon(modifier = Modifier.size(24.dp), painter = painterResource(com.itos.coui.R.drawable.coui_search), contentDescription = contentDescription)
+                        Icon(modifier = Modifier.size(CouiSearchBarDefaults.iconSize), imageVector = CouiIcons.SearchField, contentDescription = contentDescription)
                     }
                 }
 
@@ -339,6 +309,64 @@ fun TopAppBarSearchAction(
                     this.outsets = outsets
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun SearchInput(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    placeholder: String,
+    requester: FocusRequester,
+    enabled: Boolean,
+    active: Boolean,
+    progress: Float,
+    fullWidth: Float,
+    rtl: Boolean,
+    focusPending: Boolean,
+    onFocused: () -> Unit,
+    trailingIcon: @Composable () -> Unit,
+) {
+    val keyboard = LocalSoftwareKeyboardController.current
+    // 与输入节点同批组合，确保自定义动作的分阶段测量不会早于焦点节点请求焦点。
+    LaunchedEffect(focusPending, enabled, active) {
+        if (focusPending && enabled && active) {
+            if (requester.requestFocus()) keyboard?.show()
+            onFocused()
+        }
+    }
+    // 最终宽度排版，当前宽度裁剪；满幅输入节点阻止融合重叠区穿透到下层按钮。
+    Layout(content = {
+        BasicTextField(value = query, onValueChange = onQueryChange,
+            modifier = Modifier.fillMaxSize().focusRequester(requester)
+                .semantics { contentDescription = placeholder }
+                .then(if (!active) Modifier.clearAndSetSemantics {} else Modifier),
+            enabled = enabled && active, singleLine = true,
+            textStyle = LocalCouiTextStyle.current.copy(color = LocalContentColor.current, fontSize = 15.sp),
+            cursorBrush = SolidColor(LocalCouiToolbarStyle.current.cursorColor),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(onSearch = { onSearch() }),
+            decorationBox = { input ->
+                Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.padding(start = 2.dp).size(36.dp), contentAlignment = Alignment.Center) {
+                        Icon(modifier = Modifier.size(CouiSearchBarDefaults.iconSize), imageVector = CouiIcons.SearchField, contentDescription = null)
+                    }
+                    Box(Modifier.weight(1f).graphicsLayer { alpha = progress.coerceIn(0f, 1f) },
+                        contentAlignment = Alignment.CenterStart) {
+                        if (query.isEmpty()) Text(text = placeholder,
+                            color = LocalContentColor.current.copy(alpha = LocalContentColor.current.alpha * 0.6f),
+                            fontSize = 15.sp, maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis)
+                        input()
+                    }
+                    Box(Modifier.graphicsLayer { alpha = progress.coerceIn(0f, 1f) }) { trailingIcon() }
+                }
+            })
+    }) { measurables, constraints ->
+        val child = measurables.single().measure(Constraints.fixed(fullWidth.roundToInt(), constraints.maxHeight))
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            child.place(if (rtl) constraints.maxWidth - child.width else 0, 0)
         }
     }
 }
