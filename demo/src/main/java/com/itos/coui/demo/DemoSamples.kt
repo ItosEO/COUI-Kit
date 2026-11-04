@@ -5,6 +5,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.Role
+import com.itos.coui.checkbox.Checkbox
+import com.itos.coui.layout.Footer
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.runtime.Composable
@@ -33,10 +44,6 @@ internal fun ComponentDetail(page: String, dark: Boolean, onToggleTheme: () -> U
         "switch" -> SwitchSample(dark)
         "sliders" -> SliderSample()
         "menu" -> {
-            Group(title = stringResource(R.string.menu_overflow_preset)) {
-                DemoPreference(title = stringResource(R.string.menu_toolbar_more),
-                    summary = stringResource(R.string.menu_overflow_preset_summary))
-            }
             PopupRowSample(dark)
             Group(title = stringResource(R.string.menu_actions)) { MenuSample(dark) }
         }
@@ -44,6 +51,17 @@ internal fun ComponentDetail(page: String, dark: Boolean, onToggleTheme: () -> U
     }
     if (page == "checkbox") {
         var checked by rememberSaveable { mutableStateOf(false) }
+        var standalone by rememberSaveable { mutableStateOf(false) }
+        Group(title = stringResource(R.string.checkbox_standalone)) {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(stringResource(R.string.checkbox_standalone))
+                Box(Modifier.size(48.dp).toggleable(standalone, role = Role.Checkbox, onValueChange = { standalone = it }),
+                    contentAlignment = Alignment.Center) {
+                    Checkbox(modifier = Modifier.size(24.dp), checked = standalone)
+                }
+            }
+        }
         Group {
             DemoCheckboxPreference(title = stringResource(R.string.checkbox_toggle), checked = checked, onCheckedChange = { checked = it })
             Divider()
@@ -60,12 +78,14 @@ private fun SliderSample() {
     var section by rememberSaveable { mutableFloatStateOf(2f) }
     var implicitStep by rememberSaveable { mutableFloatStateOf(5f) }
     var enabled by rememberSaveable { mutableStateOf(true) }
+    var completed by rememberSaveable { androidx.compose.runtime.mutableIntStateOf(0) }
     Group {
         DemoSwitchPreference(title = stringResource(R.string.enable_controls), checked = enabled, onCheckedChange = { enabled = it })
     }
     Group {
         DemoSliderPreference(title = stringResource(R.string.continuous_slider),
-            value = value, onValueChange = { value = it }, valueText = "${(value * 100).roundToInt()}%", enabled = enabled)
+            value = value, onValueChange = { value = it }, valueText = "${(value * 100).roundToInt()}%",
+            enabled = enabled, onValueChangeFinished = { completed++ })
         Divider()
         DemoSliderPreference(title = stringResource(R.string.section_slider),
             value = section, onValueChange = { section = it }, valueText = section.roundToInt().toString(),
@@ -75,6 +95,7 @@ private fun SliderSample() {
             value = implicitStep, onValueChange = { implicitStep = it }, valueText = implicitStep.roundToInt().toString(),
             valueRange = 0f..10f, steps = 9, showTickMarks = false, enabled = enabled)
     }
+    Footer(text = stringResource(R.string.slider_finished, completed))
 }
 
 @Composable
