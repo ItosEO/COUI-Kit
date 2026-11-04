@@ -24,9 +24,9 @@
     <string name="loading_switch">加载开关</string>
     <string name="loading_switch_description">加载中</string>
     <string name="loading_switch_summary">示例将在短暂等待后完成</string>
-    <string name="menu_row_title">默认上网</string>
-    <string name="menu_row_option_one">网络 1</string>
-    <string name="menu_row_option_two">网络 2</string>
+    <string name="menu_row_title">首选网络</string>
+    <string name="menu_row_option_one">无线网络</string>
+    <string name="menu_row_option_two">移动数据</string>
     <string name="menu_row_group">列表项菜单预设</string>
     <string name="sample_enabled">可用状态</string>
     <string name="sample_disabled">不可用状态</string>
@@ -138,4 +138,13 @@
     <string name="settings_group_example">分组与行布局</string>
     <string name="settings_long_summary">这是一条较长的辅助说明，用于检查换行、行高和尾部内容是否保持对齐。</string>
     <string name="settings_color_preview">仅预览下面的颜色示例，不更改系统或全局主题。</string>
+    <string name="chip_category_recent">最近</string>
+    <string name="chip_category_favorites">收藏</string>
+    <string name="chip_category_media">图片</string>
+    <string name="chip_category_notes">便签</string>
+    <string name="chip_category_archive">归档</string>
+    <string name="chip_category_shared">共享</string>
+    <string name="chip_category_all">全部</string>
+    <string name="chip_selection">当前分类</string>
+    <string name="chip_content_summary">分类变化会更新这里的内容。</string>
 </resources>
