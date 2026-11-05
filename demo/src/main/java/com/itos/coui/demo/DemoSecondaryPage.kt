@@ -51,10 +51,13 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
                 "wheel", "timepicker", "countdownpicker", "datepicker", "calendar" -> PickerSamples(page, dark)
                 "appbar", "search", "navigation" -> ChromeDetail(page, dark)
                 "fab" -> FabSample(preset = fabPreset, onPresetChange = { fabPreset = it })
-                "about" -> Group {
-                    DemoPreference(title = stringResource(R.string.app_name), value = "1.0")
-                    Divider()
-                    DemoPreference(title = stringResource(R.string.settings_baseline), value = "ColorOS 17")
+                "about" -> {
+                    DemoAboutHero()
+                    Group {
+                        DemoPreference(title = stringResource(R.string.app_name), value = "1.0")
+                        Divider()
+                        DemoPreference(title = stringResource(R.string.settings_baseline), value = "ColorOS 17")
+                    }
                 }
             }
         }

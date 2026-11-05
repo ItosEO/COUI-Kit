@@ -68,6 +68,8 @@
     <string name="settings_dependency">Sound and reminders depend on notifications.</string>
     <string name="settings_privacy">Privacy</string>
     <string name="settings_about">About this example</string>
+    <string name="about_hero_brand" translatable="false">ColorOS</string>
+    <string name="about_hero_version" translatable="false">17.0</string>
     <string name="settings_local">Local example</string>
     <string name="settings_demo_only">Choices apply only to this demo and do not change system settings.</string>
     <string name="settings_switch_drag">Tap or drag the switch</string>
