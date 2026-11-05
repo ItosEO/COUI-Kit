@@ -89,6 +89,7 @@ CompositionLocalProvider(LocalCouiDarkTheme provides darkTheme) {
 - [效果目录](docs/effects/README.md)
 - [兼容要求](docs/guide/compatibility.md)
 - [外观与预设](docs/guide/appearance.md)
+- [与原厂的定制差异](docs/guide/customizations.md)
 - [GitHub Packages 开发快照](docs/guide/github-packages.md)
 - [更新记录与版本映射](CHANGELOG.md)
 
