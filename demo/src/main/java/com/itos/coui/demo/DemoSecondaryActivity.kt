@@ -8,8 +8,8 @@ import androidx.compose.runtime.Composable
 class DemoSecondaryActivity : DemoHostActivity() {
     @Composable
     internal override fun Page(dark: Boolean, preferences: DemoPreferences) {
-        DemoSecondaryPage(page = intent.getStringExtra(PageExtra) ?: "settings", dark = dark,
-            preferences = preferences, back = { finish() }, open = { open(this, it) })
+        DemoSecondaryPage(page = intent.getStringExtra(PageExtra) ?: "about", dark = dark,
+            preferences = preferences, back = { finish() })
     }
 
     companion object {

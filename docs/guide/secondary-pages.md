@@ -4,7 +4,7 @@ COUI 组件可以放入现有 Material、Miuix 或自有页面。纯 COUI 应用
 
 | 页面需要 | 装配方式 |
 | --- | --- |
-| 普通分组与控件 | 直接放入已有布局，见[分组与行布局](../components/settings.md) |
+| 普通分组与控件 | 直接放入已有布局，见[Group](../components/group.md) |
 | COUI 惯性与回弹 | 在实际滚动容器使用 [couiVerticalScroll](../effects/overscroll.md) |
 | 模糊顶栏、底栏或 FAB | COUI Scaffold 自动提供正文源；第三方容器显式接入 Backdrop |
 | 材质菜单或弹窗 | 按需提供窗口背景源 |

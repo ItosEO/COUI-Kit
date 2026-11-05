@@ -54,14 +54,13 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
     val contour = preferences.contour
     var leftAccessory by rememberSaveable { mutableStateOf(true) }
     var rightAccessory by rememberSaveable { mutableStateOf(true) }
-    var preset by rememberSaveable { mutableStateOf(CouiFabColor.Notes) }
     var query by rememberSaveable { mutableStateOf("") }
     var searching by rememberSaveable { mutableStateOf(false) }
     val rendering = remember { if (Build.VERSION.SDK_INT >= 34) runCatching { DemoRenderers() } else null }
     val renderers = rendering?.getOrNull()
-    val titles = listOf(stringResource(R.string.controls), stringResource(R.string.effects), stringResource(R.string.presets))
-    val navigation = listOf(CouiIcons.Components, DemoIcons.Effects, DemoIcons.Presets)
-    val selectedNavigation = listOf(CouiIcons.ComponentsSelected, DemoIcons.EffectsSelected, DemoIcons.PresetsSelected)
+    val titles = listOf(stringResource(R.string.controls), stringResource(R.string.effects), stringResource(R.string.demo_settings))
+    val navigation = listOf(CouiIcons.Components, DemoIcons.Effects, CouiIcons.Settings)
+    val selectedNavigation = listOf(CouiIcons.ComponentsSelected, DemoIcons.EffectsSelected, DemoIcons.SettingsSelected)
     val selectPage: (Int) -> Unit = { target ->
         if (target != page) { page = target; query = ""; searching = false }
     }
@@ -73,7 +72,7 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
         canScroll = { scrolls[index].maxValue > 0 }) }
     val colors = MaterialTheme.colorScheme
     val background = CouiPageDefaults.themeColors(dark).background
-    val color = CouiFabDefaults.containerColor(preset, dark)
+    val color = CouiFabDefaults.containerColor(CouiFabColor.Notes, dark)
     // 源 Activity 在窗口转场中仍可见，导航不拆掉结果行及其按压退场；返回时保留查询。
     val open: (String) -> Unit = openPage
     BackHandler(page == 0 && searching) { searching = false; query = "" }
@@ -129,9 +128,9 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
                     when (page) {
                         0 -> DemoCatalog(DemoComponentGroups, open, query = query)
                         1 -> DemoCatalog(DemoEffectGroups, open)
-                        else -> PresetsDemo(dark, contour, preferences::contour, leftAccessory, { leftAccessory = it },
-                            rightAccessory, { rightAccessory = it },
-                            preset, { preset = it }, preferences.materialTheme, preferences::materialTheme)
+                        else -> SettingsDemo(dark, preferences, leftAccessory, { leftAccessory = it },
+                            rightAccessory, { rightAccessory = it }, onAbout = { openPage("about") },
+                            onReset = { preferences.reset(); leftAccessory = true; rightAccessory = true })
                     }
                 }
             }

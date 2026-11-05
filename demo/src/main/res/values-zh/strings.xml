@@ -78,4 +78,7 @@
     <string name="record_close_actions">收起记录操作</string>
     <string name="record_restore">恢复示例记录</string>
     <string name="material_theme_toggle">使用 Material 主题配色</string>
+    <string name="demo_settings">设置</string>
+    <string name="demo_theme_settings">主题设置</string>
+    <string name="demo_navigation_settings">底栏设置</string>
 </resources>

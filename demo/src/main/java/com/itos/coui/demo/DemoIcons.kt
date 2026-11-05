@@ -6,8 +6,8 @@ import com.itos.coui.icons.CouiIcons
 internal object DemoIcons {
     val Effects get() = CouiIcons.Featured
     val EffectsSelected get() = CouiIcons.FeaturedSelected
-    val Presets get() = CouiIcons.Personalise
-    val PresetsSelected get() = CouiIcons.Personalise
+    val Settings get() = CouiIcons.Settings
+    val SettingsSelected get() = CouiIcons.Settings
     val Tune get() = CouiIcons.Brightness
     val Switch get() = CouiIcons.Settings
     val Checkbox get() = CouiIcons.Check

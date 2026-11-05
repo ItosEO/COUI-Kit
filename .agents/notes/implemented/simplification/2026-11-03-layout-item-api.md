@@ -39,6 +39,6 @@ Text 直接向 BasicText 传递可选 maxLines 和 overflow，复用平台的限
 
 ## Consequences
 
-信息行和点击行使用同一入口，宿主仍可组合独立控件。开发分支消费者需迁移名称与内容槽；这些接口尚未发布，不保留临时别名。源码与用法见[布局组件](../../../../coui/src/main/java/com/itos/coui/layout/CouiPageComponents.kt)及[分组与行](../../../../docs/components/settings.md)。
+信息行和点击行使用同一入口，宿主仍可组合独立控件。开发分支消费者需迁移名称与内容槽；这些接口尚未发布，不保留临时别名。源码与用法见[布局组件](../../../../coui/src/main/java/com/itos/coui/layout/CouiPageComponents.kt)及[Item](../../../../docs/components/item.md)。
 
 语法、引用和静态检查不能证明触摸取消、TalkBack、字体换行或 GPU 结果；这些行为仍需设备验证。实际检查结果由 PR 记录。

@@ -1,7 +1,13 @@
 package com.itos.coui.demo
 
+import android.os.Build
+import com.itos.coui.dialog.CouiDialogDefaults
+import com.itos.coui.dialog.CouiDialogActionStyle
+import com.itos.coui.dialog.CouiDialogAction
+import com.itos.coui.dialog.AlertDialog
+import com.itos.coui.theme.CouiTheme
+import com.itos.coui.menu.rememberCouiWindowBackdrop
 import com.itos.coui.icons.CouiIcons
-import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.layout.Box
@@ -15,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.semantics.Role
 import com.itos.coui.checkbox.Checkbox
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,8 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.itos.coui.floatingactionbutton.CouiFabColor
-import com.itos.coui.floatingactionbutton.CouiFabDefaults
 import com.itos.coui.menu.Menu
 import com.itos.coui.menu.CouiMenuItem
 import com.itos.coui.menu.couiMenuAnchor
@@ -149,35 +152,39 @@ private fun MenuSample(dark: Boolean) {
 }
 
 @Composable
-internal fun PresetsDemo(dark: Boolean, contour: Boolean, onContourChange: (Boolean) -> Unit,
+internal fun SettingsDemo(dark: Boolean, preferences: DemoPreferences,
     leftAccessory: Boolean, onLeftAccessoryChange: (Boolean) -> Unit,
     rightAccessory: Boolean, onRightAccessoryChange: (Boolean) -> Unit,
-    preset: CouiFabColor, onPresetChange: (CouiFabColor) -> Unit,
-    materialTheme: Boolean, onMaterialThemeChange: (Boolean) -> Unit, enabled: Boolean = true) {
-    Group(title = stringResource(R.string.presets_title)) {
-        DemoSwitchPreference(title = stringResource(R.string.material_theme_toggle), checked = materialTheme,
-            onCheckedChange = onMaterialThemeChange, enabled = enabled)
-        Divider()
-        Column(Modifier.selectableGroup()) {
-            CouiFabColor.entries.forEach { option ->
-                val label = stringResource(when (option) {
-                    CouiFabColor.Notes -> R.string.preset_notes
-                    CouiFabColor.Phone -> R.string.preset_phone
-                    CouiFabColor.InfraredRemote -> R.string.preset_remote
-                    CouiFabColor.Recorder -> R.string.preset_recorder
-                })
-                DemoSelectPreference(title = label, selected = preset == option, onSelect = { onPresetChange(option) }, enabled = enabled, icon = {
-                    Box(Modifier.size(24.dp).background(CouiFabDefaults.containerColor(option, dark), DemoShapes.capsule))
-                })
-            }
-        }
-        Divider()
-        DemoSwitchPreference(title = stringResource(R.string.contour_toggle), checked = contour, onCheckedChange = onContourChange, enabled = enabled)
+    onAbout: () -> Unit, onReset: () -> Unit) {
+    var reset by rememberSaveable { mutableStateOf(false) }
+    Group(title = stringResource(R.string.demo_theme_settings)) {
+        DemoSwitchPreference(title = stringResource(R.string.material_theme_toggle), checked = preferences.materialTheme,
+            onCheckedChange = preferences::materialTheme)
+    }
+    Group(title = stringResource(R.string.demo_navigation_settings)) {
+        DemoSwitchPreference(title = stringResource(R.string.contour_toggle), checked = preferences.contour,
+            onCheckedChange = preferences::contour)
         Divider()
         DemoSwitchPreference(title = stringResource(R.string.left_accessory_toggle), checked = leftAccessory,
-            onCheckedChange = onLeftAccessoryChange, enabled = enabled)
+            onCheckedChange = onLeftAccessoryChange)
         Divider()
         DemoSwitchPreference(title = stringResource(R.string.right_accessory_toggle), checked = rightAccessory,
-            onCheckedChange = onRightAccessoryChange, enabled = enabled)
+            onCheckedChange = onRightAccessoryChange)
     }
+    Group {
+        DemoPreference(title = stringResource(R.string.settings_about), onClick = onAbout)
+        Divider()
+        DemoPreference(title = stringResource(R.string.settings_reset), onClick = { reset = true })
+    }
+    val backdrop = rememberCouiWindowBackdrop()
+    val accent = CouiTheme.colorScheme.accent
+    if (reset) AlertDialog(onDismissRequest = { reset = false }, dark = dark,
+        title = stringResource(R.string.settings_reset), message = stringResource(R.string.settings_reset_message),
+        confirmAction = CouiDialogAction(stringResource(R.string.dialog_confirm),
+            { onReset(); reset = false }, style = CouiDialogActionStyle.Primary,
+            colors = CouiDialogDefaults.primaryActionColors(accent)),
+        dismissAction = CouiDialogAction(stringResource(R.string.dialog_cancel), { reset = false }),
+        material = if (Build.VERSION.SDK_INT >= 33 && backdrop != null)
+            CouiDialogDefaults.material(dark) else null,
+        backdrop = backdrop)
 }

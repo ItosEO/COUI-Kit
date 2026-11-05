@@ -1,13 +1,13 @@
-# 分组与行布局
+# Item
 
-`Group`、`Item`、`Divider` 和 `Footer` 用于组合设置式列表，均位于 `com.itos.coui.layout`。可以将它们放入现有 Column、LazyColumn 或其他页面容器。
+`Item` 组合图标、主文字、辅助文字、尾部内容和可选整行点击，位于 `com.itos.coui.layout`。可以放入现有 Column、LazyColumn 或 [Group](group.md)。
 
-| 组件 | 用途 |
-| --- | --- |
-| `Group` | 圆角卡片及可选的标题、标题操作和说明 |
-| `Item` | 图标、主文字、辅助文字、尾部内容及可选整行点击 |
-| `Divider` | 同组条目之间的分隔线 |
-| `Footer` | 分组下方的辅助说明 |
+| 组件        | 用途                      |
+|-----------|-------------------------|
+| [Group](group.md) | 圆角卡片及可选的标题、标题操作和说明 |
+| `Item`    | 图标、主文字、辅助文字、尾部内容及可选整行点击 |
+| [Divider](divider.md) | 同组条目之间的分隔线 |
+| [Footer](footer.md) | 分组下方的辅助说明 |
 
 ## 基本用法
 
@@ -48,33 +48,18 @@ fun AboutRow(
 
 ## 尺寸与留白
 
-`Group` 根据是否有标题选择顶部留白，并为卡片提供水平留白和平滑圆角。外部 `Modifier.padding` 会与这些留白累加。需要完全自定组间距或卡片结构时，使用普通布局与 `CouiPageDefaults` 组合。
-
-`headerActions` 位于标题行末端，仅在 `title` 非空时显示。
-
 `Item.contentPadding` 控制行内留白，`iconSize` 控制图标槽。外部尺寸使用标准 `Modifier.height` / `heightIn`；默认最小行高服从父级约束。
 
-`Divider.startIndent` 和 `endIndent` 用于对齐同组文字。分隔线默认至少占一个物理像素，实际高度服从父级约束。独立卡片之间使用间距。
-
-使用默认行布局时，带图标的分隔线起始缩进为 `CouiPageDefaults.rowPadding + CouiPageDefaults.iconSize + CouiPageDefaults.iconSpacing`。
-
-自定义行内留白或图标尺寸时，将同一组值用于 Item 和分隔线。在宿主 Composable 中计算：
-
-```kotlin
-val startIndent = contentPadding.calculateStartPadding(LocalLayoutDirection.current) +
-    if (icon != null) iconSize + CouiPageDefaults.iconSpacing else 0.dp
-```
-
-这里的 `contentPadding`、`iconSize` 和 `icon` 是传给 Item 的实际参数。将结果传给 `Divider(startIndent = startIndent)`；分隔线不会自动读取相邻行的尺寸。
+与图标和文字对齐的分隔线配置见 [Divider](divider.md)。
 
 ## 配色与文字
 
-| 入口 | 作用范围 |
-| --- | --- |
-| `Group.colors` | 本组卡片、标题和说明 |
-| `Item.dark` | 本行点击反馈 |
-| `Divider.color` | 当前分隔线 |
-| `Footer.color` | 当前说明文字 |
+| 入口              | 作用范围       |
+|-----------------|------------|
+| `Group.colors`  | 本组卡片、标题和说明 |
+| `Item.dark`     | 本行点击反馈     |
+| `Divider.color` | 当前分隔线      |
+| `Footer.color`  | 当前说明文字     |
 
 默认配色由组件读取 `CouiTheme`。`CouiPageDefaults.themeColors(dark)` 解析当前主题；`colors(accent, dark)` 从原生浅色或深色预设生成独立配色值。可用 `copy` 覆盖所需角色。`Group.colors` 不改变内容槽的主题，自定义文字和 Divider 需要显式接收对应颜色。
 
@@ -88,4 +73,4 @@ val startIndent = contentPadding.calculateStartPadding(LocalLayoutDirection.curr
 
 这些组件不安装滚动、不消费系统栏 Insets，也不创建背景采样源。页面负责布局、导航和受控值。需要 COUI 惯性与回弹时使用 [couiVerticalScroll](../effects/overscroll.md)；需要模糊顶栏或浮层时按[宿主页面接入](../guide/secondary-pages.md)装配采样。
 
-[公开布局与 Defaults](../../coui/src/main/java/com/itos/coui/layout/CouiPageComponents.kt) · [文字 API](../../coui/src/main/java/com/itos/coui/text/Text.kt) · [设置列表示例](../../demo/src/main/java/com/itos/coui/demo/DemoListSamples.kt)
+[公开布局与 Defaults](../../coui/src/main/java/com/itos/coui/layout/CouiPageComponents.kt) · [文字 API](../../coui/src/main/java/com/itos/coui/text/Text.kt) · [Demo 示例](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)

@@ -49,7 +49,7 @@ private fun NavigationSample(dark: Boolean) {
     var left by rememberSaveable { mutableStateOf(false) }
     var right by rememberSaveable { mutableStateOf(true) }
     val titles = listOf(stringResource(R.string.controls), stringResource(R.string.effects),
-        stringResource(R.string.presets))
+        stringResource(R.string.demo_settings))
     val rendering = if (Build.VERSION.SDK_INT >= 34) remember { runCatching { CouiFloatingRenderer() } } else null
     val renderer = rendering?.getOrNull()
 
@@ -67,7 +67,7 @@ private fun NavigationSample(dark: Boolean) {
                     items = listOf(
                         CouiNavigationItem(titles[0], CouiIcons.Components, CouiIcons.ComponentsSelected),
                         CouiNavigationItem(titles[1], DemoIcons.Effects, DemoIcons.EffectsSelected),
-                        CouiNavigationItem(titles[2], DemoIcons.Presets, DemoIcons.PresetsSelected)),
+                        CouiNavigationItem(titles[2], DemoIcons.Settings, DemoIcons.SettingsSelected)),
                     selectedIndex = selected, onSelection = { selected = it },
                     leftIcon = CouiIcons.Settings, leftDescription = stringResource(R.string.nav_left_description),
                     rightIcon = CouiIcons.Add, rightDescription = stringResource(R.string.nav_right_description),

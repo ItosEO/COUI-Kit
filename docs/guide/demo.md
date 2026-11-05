@@ -25,13 +25,13 @@ CI 可通过 KEYSTORE_FILE、KEYSTORE_PASSWORD、KEYSTORE_ALIAS、KEYSTORE_ALIAS
 
 ## 展示与操作
 
-首页有组件、效果、预设三页。组件与效果页显示分组目录，点击条目进入详情。组件页可搜索；效果和预设页上滑时，大标题缩成固定的小标题。
+首页有组件、效果、设置三页。组件与效果页显示分组目录，点击条目进入详情。组件页可搜索；效果和设置页上滑时，大标题缩成固定的小标题。
 
 | 页面 | 内容 |
 | --- | --- |
-| 组件 | 开关、滑条、单/复选框、菜单、弹窗、顶栏、搜索、底栏、FAB、选择器、设置列表和 ChipTab |
+| 组件 | 开关、滑条、单/复选框、菜单、弹窗、顶栏、搜索、底栏、FAB、选择器和 ChipTab |
 | 效果 | 平滑胶囊阴影、记录侧滑融合、背景模糊和材质 |
-| 预设 | Material 配色、轮廓光、底栏左右附件和右附件配色 |
+| 设置 | 主题设置、底栏设置，以及同一无标题组中的关于此示例和还原示例选项 |
 
 底栏切换页面。左附件切换深浅色，右附件打开 FAB 示例；API 34 以下使用普通底部导航。主题和轮廓选项在 Activity 之间共享。
 
@@ -50,7 +50,7 @@ CI 可通过 KEYSTORE_FILE、KEYSTORE_PASSWORD、KEYSTORE_ALIAS、KEYSTORE_ALIAS
 - 菜单页展示列表项入口、触点锚定、上下箭头行、勾选、子菜单和限高滚动；勾选项与普通操作用分隔线分组。
 - 弹窗页展示底部、居中、长文、三操作、禁用确认、主题色确认及打开时切换主题。输入型示例用于观察草稿、过滤、计数、清除和取消。
 - 滚轮选择器页通过类型菜单切换数字、时间、倒计时和日期，共用示例区域与弹窗入口，各类型保留自己的值和设置；月历独立展示。弹窗确认后才提交草稿，搜索具体类型可直接进入对应示例。
-- 设置列表展示依赖开关、单选子页、字号预览、隐私说明和还原确认；这些操作只修改 Demo 状态。
+- 设置页的主题组提供 Material 配色开关；底栏组提供轮廓光与左右附件开关。还原前需要确认，确认后恢复这四项默认值。关于页显示应用名称与参考系统版本。
 - 搜索页将常驻搜索与顶栏搜索上下排列，共用模拟列表。使用一种搜索时禁用另一种；顶栏搜索通过右侧融合分离的“取消”按钮关闭。
 - 模糊页展示原图对照和参数调节。顶栏、底栏、搜索与 ChipTab 在各自展示区域中操作。
 - FAB 页可切换配色预设；按钮固定在页面右下角，滚动正文时保持原位。
@@ -74,7 +74,7 @@ CI 可通过 KEYSTORE_FILE、KEYSTORE_PASSWORD、KEYSTORE_ALIAS、KEYSTORE_ALIAS
 | 目录与查询 | [DemoCatalog](../../demo/src/main/java/com/itos/coui/demo/DemoCatalog.kt) |
 | Activity 导航 | [DemoSecondaryActivity](../../demo/src/main/java/com/itos/coui/demo/DemoSecondaryActivity.kt) |
 | 详情分发与页面容器 | [DemoSecondaryPage](../../demo/src/main/java/com/itos/coui/demo/DemoSecondaryPage.kt)、[DemoSettingsPage](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsPage.kt) |
-| 组件与预设样例 | [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt) |
+| 组件与设置样例 | [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt) |
 | 阴影、模糊与材质 | [DemoShadowSamples](../../demo/src/main/java/com/itos/coui/demo/DemoShadowSamples.kt)、[DemoBlurTutorial](../../demo/src/main/java/com/itos/coui/demo/DemoBlurTutorial.kt)、[DemoVisualEffects](../../demo/src/main/java/com/itos/coui/demo/DemoVisualEffects.kt) |
 | 弹窗与选择器 | [DemoDialogSamples](../../demo/src/main/java/com/itos/coui/demo/DemoDialogSamples.kt)、[DemoPickerSamples](../../demo/src/main/java/com/itos/coui/demo/DemoPickerSamples.kt) |
 | 记录侧滑 | [DemoRecordSamples](../../demo/src/main/java/com/itos/coui/demo/DemoRecordSamples.kt) |

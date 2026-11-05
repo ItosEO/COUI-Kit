@@ -78,4 +78,7 @@
     <string name="record_close_actions">Close record actions</string>
     <string name="record_restore">Restore sample records</string>
     <string name="material_theme_toggle">Material theme colors</string>
+    <string name="demo_settings">Settings</string>
+    <string name="demo_theme_settings">Theme settings</string>
+    <string name="demo_navigation_settings">Navigation bar settings</string>
 </resources>

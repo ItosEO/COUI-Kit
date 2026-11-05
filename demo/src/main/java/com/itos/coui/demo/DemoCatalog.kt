@@ -39,11 +39,10 @@ internal val DemoComponentGroups = listOf(
     listOf(DemoCatalogEntry("appbar", R.string.catalog_appbar, DemoIcons.Title),
         DemoCatalogEntry("search", R.string.catalog_search, CouiIcons.Search),
         DemoCatalogEntry("navigation", R.string.catalog_navigation, CouiIcons.Featured),
+        DemoCatalogEntry("chip", R.string.chip_tab_title, CouiIcons.Components),
         DemoCatalogEntry("fab", R.string.catalog_fab, CouiIcons.Add)),
     listOf(DemoCatalogEntry("wheel", R.string.catalog_wheel, DemoIcons.Tune),
         DemoCatalogEntry("calendar", R.string.picker_calendar_title, CouiIcons.Calendar)),
-    listOf(DemoCatalogEntry("settings", R.string.settings_title, DemoIcons.Tune),
-        DemoCatalogEntry("chip", R.string.chip_tab_title, CouiIcons.Components)),
 )
 
 internal val DemoEffectGroups = listOf(
@@ -116,7 +115,6 @@ internal fun catalogDescription(page: String): Int = when (page) {
     "search" -> R.string.intro_search
     "navigation" -> R.string.intro_navigation
     "fab" -> R.string.intro_fab
-    "settings" -> R.string.intro_settings
     "wheel" -> R.string.intro_wheel
     "timepicker" -> R.string.intro_timepicker
     "countdownpicker" -> R.string.intro_countdownpicker
