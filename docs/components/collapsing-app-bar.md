@@ -37,7 +37,7 @@ Scaffold(
 
 省略 `scrollBehavior` 时保持展开。`title`、`navigationIcon` 和 `actions` 槽位与 `TopAppBar` 相同，字体由组件提供；接入 M3 适配后，M3 `Text` 可继承该字体。`expandedHeight` 与 `collapsedHeight` 不包含安全区，必须是有限正数，且展开高度大于收起高度。
 
-`LargeTopAppBar` 使用项目定制预设：展开字号与常驻搜索首页的 `HomeTitle` 一致，跟随系统字体大小；展开标题的起始边距向收起位置平滑过渡，收起字号仍使用固定 dp。带导航和操作按钮时继续预留按钮区域。
+`LargeTopAppBar` 使用项目定制预设：展开字号与常驻搜索首页的 `HomeTitle` 一致，跟随系统字体大小；有导航按钮时，展开标题位于按钮下方，折叠时沿连续弧线向逻辑末端和上方移动到按钮旁。按钮与操作区保持在标题上层。收起字号仍使用固定 dp，标题宽度保留右侧操作区。二级页装配与轨迹说明见[定制差异](../guide/customizations.md#二级页大标题与弧线收起)。
 
 完整顶栏默认处理顶部和横向系统安全区。可通过 `windowInsets` 调整，不要重复添加同一安全区。默认配色来自 `CouiTopAppBarDefaults.colors()`；局部指定深浅模式时，向 `colors(dark = dark)` 和顶栏传入同一个 `dark`。
 

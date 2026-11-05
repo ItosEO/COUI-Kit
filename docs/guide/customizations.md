@@ -12,9 +12,11 @@ COUI-Kit 以 ColorOS 17 组件为参考，并保留以下视觉与交互微调�
 
 这项定制作用于搜索胶囊与外侧按钮的组合，不是输入框内部 `trailingIcon` 的显示动画。调用方式见[顶栏搜索](../components/search.md)，绘制入口见 [TopAppBarSearchPair](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBarSearchPair.kt)。
 
-### 大标题的字号与位置
+### 二级页大标题与弧线收起
 
-`LargeTopAppBar` 的展开标题略向右收进，字号与带常驻搜索的 `CollapsingTopAppBar` 首页标题 `HomeTitle` 一致。展开标题跟随系统字体大小；收起标题仍使用固定 dp 字号。标题起始边距随折叠进度平滑过渡，并继续为导航按钮和操作区留出空间。
+Demo 二级页统一使用 `LargeTopAppBar`。参考的原厂设置二级页使用紧凑顶栏；这里的大标题装配与收起轨迹属于项目定制。
+
+`LargeTopAppBar` 的展开标题略向右收进，字号与带常驻搜索的 `CollapsingTopAppBar` 首页标题 `HomeTitle` 一致。展开标题跟随系统字体大小；收起标题仍使用固定 dp 字号。有返回按钮时，展开标题位于按钮下方，折叠时沿连续弧线向右上方移动到按钮旁，横移略领先于上移；展开沿原路径返回，RTL 布局镜像移动方向。返回按钮和操作区保持在标题上层，允许转场中轻微遮挡标题。标题宽度保留操作区。
 
 这套排版是 `LargeTopAppBar` 的默认定制，不作为所有顶栏标题的统一样式。入口见[大标题顶栏](../components/collapsing-app-bar.md)与 [TopAppBar](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBar.kt)。
 
