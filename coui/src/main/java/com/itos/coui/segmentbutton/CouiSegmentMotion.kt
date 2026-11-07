@@ -111,13 +111,22 @@ internal class CouiSegmentMotion {
         val targetWidth = next.widths[index]
         val growing = targetWidth > width.value
         widthLimit = if (growing) targetWidth + (if (next.small) 5f else 7f) * density else Float.MAX_VALUE
+        val minimumCenter = min(next.center(0), next.center(next.widths.lastIndex))
+        val maximumCenter = max(next.center(0), next.center(next.widths.lastIndex))
+        val transferRubber = rubber.value != 0f
+        val positionVelocity = position.velocity
+        if (transferRubber) {
+            // 原厂两路动画共用 mIndicatorCenterX；切项从当前可见中心接续。
+            position.snapTo((position.value.coerceIn(minimumCenter, maximumCenter) + rubber.value)
+                .coerceIn(minimumCenter, maximumCenter))
+        }
         rubber.snapTo(0f)
-        position.setBounds(min(next.center(0), next.center(next.widths.lastIndex)),
-            max(next.center(0), next.center(next.widths.lastIndex)))
+        position.setBounds(minimumCenter, maximumCenter)
         width.setBounds(0f, widthLimit)
         height.setBounds(next.indicatorHeight * .9f, Float.MAX_VALUE)
         position.animateTo(next.center(index), .4f,
             if (growing && next.small) dynamic(width.value, targetWidth, .1f, .03f, 1f) else .1f,
+            velocity = if (transferRubber) positionVelocity else null,
             onEnd = { resetRubberOrigin = true })
         width.animateTo(targetWidth, dynamic(width.value, targetWidth, .6f, .4f, 2f),
             if (growing) .5f else dynamic(width.value, targetWidth, .5f, .1f, 2f), velocity = 1000f)

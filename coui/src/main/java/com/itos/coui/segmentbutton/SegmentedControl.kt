@@ -303,6 +303,7 @@ fun SegmentedControl(
 }
 
 /** 原厂指示器的专属径向投影；轮廓仍复用公共 Drawable 后端。 */
+@RequiresApi(33)
 private fun DrawScope.drawSegmentIndicator(rect: Rect, containerHeight: Float, shape: CouiShape,
     contour: CouiContour?, paint: Paint, dark: Boolean) {
     if (rect.width <= 0f || rect.height <= 0f) return
