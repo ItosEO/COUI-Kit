@@ -35,6 +35,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -67,6 +68,9 @@ import com.itos.coui.menu.LocalCouiMenuVisibleBounds
 import com.itos.coui.menu.ProvideCouiMenuBackdrop
 import com.itos.coui.input.isCouiTouchCancelled
 import com.itos.coui.shape.CouiShape
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 private val SheetEase = CubicBezierEasing(.33f, 0f, .67f, 1f)
@@ -338,14 +342,48 @@ private fun Modifier.sheetDrag(motion: CouiSheetMotion, enabled: Boolean, onDism
     pointerInput(motion, enabled) {
         if (!enabled) return@pointerInput
         val tracker = VelocityTracker()
-        detectVerticalDragGestures(
-            onDragStart = { tracker.resetTracking() },
-            onVerticalDrag = { change, amount ->
-                // ViewDragHelper 在固定父坐标中取速度，面板自身的位移不能反向抵消手指轨迹。
-                tracker.addPosition(change.uptimeMillis, change.position + Offset(0f, motion.offset))
-                change.consume(); motion.drag(amount)
-            },
-            onDragEnd = { if (motion.release(tracker.calculateVelocity().y)) onDismiss() },
-            onDragCancel = { motion.release(0f, cancelled = true) },
-        )
+        var cancelled = false
+        fun track(change: PointerInputChange) {
+            // ViewDragHelper 在固定父坐标中取速度，包含阈值前移动及批量历史样本。
+            val translation = Offset(0f, motion.offset)
+            for (sample in change.historical) tracker.addPosition(sample.uptimeMillis, sample.position + translation)
+            tracker.addPosition(change.uptimeMillis, change.position + translation)
+        }
+        try {
+            coroutineScope {
+                // Initial 先于拖动的 Main 阶段，UP 也在释放判定前完成采样；观察器不消费事件。
+                launch(start = CoroutineStart.UNDISPATCHED) {
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                        tracker.resetTracking()
+                        cancelled = false
+                        track(down)
+                        var pointerId = down.id
+                        while (true) {
+                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                            if (event.isCouiTouchCancelled()) { cancelled = true; break }
+                            val change = event.changes.firstOrNull { it.id == pointerId }
+                            if (change == null) { cancelled = true; break }
+                            track(change)
+                            if (!change.pressed) {
+                                val next = event.changes.firstOrNull { it.pressed } ?: break
+                                // 与拖动检测器采用相同的主指接续，不能混入另一根手指的速度。
+                                pointerId = next.id
+                                tracker.resetTracking()
+                                track(next)
+                            }
+                        }
+                    }
+                }
+                detectVerticalDragGestures(
+                    onVerticalDrag = { change, amount -> change.consume(); motion.drag(amount) },
+                    onDragEnd = {
+                        if (motion.release(if (cancelled) 0f else tracker.calculateVelocity().y, cancelled)) onDismiss()
+                    },
+                    onDragCancel = { motion.release(0f, cancelled = true) },
+                )
+            }
+        } finally {
+            motion.release(0f, cancelled = true)
+        }
     }

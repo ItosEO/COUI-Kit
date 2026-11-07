@@ -1,6 +1,7 @@
 package com.itos.coui.sheet
 
 import android.graphics.Paint
+import android.os.Build
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
@@ -74,8 +75,10 @@ internal fun CouiSheetSurface(
     }
     Box(modifier.clip(shape).drawWithCache {
         val edgeSize = if (extendBottomEdge) size.copy(height = size.height + radiusPx) else size
-        edgePaint.shader = edge?.shader(edgeSize, density, radiusPx, edgeWeight,
-            Color.Transparent, innerGlowAlpha, lineAlpha, 1f, (if (dark) 2f else 4f) * density)
+        edgePaint.shader = if (Build.VERSION.SDK_INT >= 33) {
+            edge?.shader(edgeSize, density, radiusPx, edgeWeight,
+                Color.Transparent, innerGlowAlpha, lineAlpha, 1f, (if (dark) 2f else 4f) * density)
+        } else null
         onDrawWithContent {
             drawContent()
             // PanelPercentFrameLayout.draw 在清晰内容之后绘制白光。
@@ -87,7 +90,8 @@ internal fun CouiSheetSurface(
         .then(if (surfaceBackdrop != null) Modifier.couiBackdrop(surfaceBackdrop) else Modifier)
         .onGloballyPositioned { coordinates = it }.drawBehind {
         val target = sampleCoordinates?.invoke() ?: coordinates
-        if (blur != null && materialEffect != null && target != null && target.isAttached && size.width > 0f && size.height > 0f) {
+        if (Build.VERSION.SDK_INT >= 33 && blur != null && materialEffect != null &&
+            target != null && target.isAttached && size.width > 0f && size.height > 0f) {
             layer.renderEffect = surfaceEffect
             layer.record(recordingDensity, layoutDirection,
                 IntSize(size.width.toInt().coerceAtLeast(1), size.height.toInt().coerceAtLeast(1))) {
