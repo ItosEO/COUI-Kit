@@ -90,3 +90,5 @@ M3 自动模式仅从 labelLarge 接入字体族，保留 Chip 的原字号、�
 需要自定义错误界面时，可以在调用前创建 renderer 并处理创建失败。
 
 源码见 [ChipTabRow / CouiChipTabItem](../../coui/src/main/java/com/itos/coui/chip/ChipTabRow.kt)、[ChipTab / ChipTabButton](../../coui/src/main/java/com/itos/coui/chip/ChipTab.kt)、[Defaults](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabDefaults.kt)，分类菜单、图标动作和纯色背景见 [DemoChipSamples](../../demo/src/main/java/com/itos/coui/demo/DemoChipSamples.kt)。
+
+`ChipTab` 与 `ChipTabRow` 的可选 `selectedColor` 由宿主显式提供。默认保留中性材质；设置后选中背景叠加该颜色，选中文字沿选中进度过渡到白色。Sheet 的闹钟类型标签使用此选项，普通分类栏不受影响。

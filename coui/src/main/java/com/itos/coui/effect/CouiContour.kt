@@ -5,8 +5,8 @@ import androidx.annotation.RequiresApi
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 
-/** 独立轮廓预设；Menu 保留既有菜单分布，Dialog/Button 对应原厂 ShadowEdge Drawable。 */
-enum class CouiContourStyle { Menu, Dialog, Button }
+/** 独立轮廓预设；Panel 使用原厂面板的 SHADOW_STYLE_2，其余 Drawable 保留各自预设。 */
+enum class CouiContourStyle { Menu, Dialog, Button, Panel }
 
 /**
  * 在实际半透明表面上绘制轮廓与内晕, 不采样系统 Window 背景。
@@ -82,7 +82,8 @@ class CouiContour(private val floating: Boolean = false, private val style: Coui
                         width / 2f, height / 2f, radiusPx.coerceAtMost(size.minDimension / 2f), cornerWeight))
                     shader.setFloatUniform("u_edgeArray", shadowEdgeArray(width, height, density, lineWidthPx,
                         lineAlpha, style == CouiContourStyle.Button))
-                    shader.setFloatUniform("u_shadowArray", shadowGlowArray(width, height, density, innerGlowAlpha))
+                    shader.setFloatUniform("u_shadowArray", shadowGlowArray(width, height, density, innerGlowAlpha,
+                        panel = style == CouiContourStyle.Panel))
                 }
             }
         }

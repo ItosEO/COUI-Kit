@@ -1,0 +1,28 @@
+<resources>
+    <string name="sheet_title">Sheet 面板</string>
+    <string name="intro_sheets">通用 Sheet 容器，可承载编辑内容、二级设置页和现有控件。</string>
+    <string name="sheet_alarm">添加闹钟</string>
+    <string name="sheet_alarm_editor">新建闹钟</string>
+    <string name="sheet_done">完成</string>
+    <string name="sheet_alarm_until">距离下次响铃还有 %1$d 小时 %2$d 分钟</string>
+    <string name="sheet_alarm_name">闹钟名称</string>
+    <string name="sheet_ring_once">响一次</string>
+    <string name="sheet_weekdays">工作日</string>
+    <string name="sheet_quick_alarm">秒抢闹钟</string>
+    <string name="sheet_custom">自定义</string>
+    <string name="sheet_default_vibration">默认振动</string>
+    <string name="sheet_no_vibration">无振动</string>
+    <string name="sheet_silent">无铃声</string>
+    <string name="sheet_snooze">稍后提醒</string>
+    <string name="sheet_snooze_default">响铃间隔 5 分钟，响铃次数 3 次</string>
+    <string name="sheet_snooze_off">已关闭</string>
+    <string name="sheet_timer">添加倒计时</string>
+    <string name="sheet_timer_name">倒计时名称</string>
+    <string name="sheet_timer_preset">添加到常用倒计时</string>
+    <string name="sheet_usage">两个示例共用同一 Sheet 容器；取消放弃草稿，完成仅更新本 Demo。</string>
+    <string name="sheet_repeat">工作日重复</string>
+    <string name="sheet_vibrate">振动</string>
+    <string name="sheet_sound">铃声</string>
+    <string name="sheet_default_sound">默认铃声</string>
+    <string name="sheet_saved">本 Demo 已保存</string>
+</resources>
