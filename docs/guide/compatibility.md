@@ -33,6 +33,7 @@ DynamicAnimation 使用版本目录中的 **strictly** 约束，运动实现依�
 | RuntimeShader 的渐进模糊、轮廓、双主体融合        | 需要 API 33；融合没有内置旧平台替代容器。                                             |
 | 常驻 SearchBar、折叠顶栏、纵向回弹 | 按库最低系统运行；常驻搜索在 API 31–33 使用普通填色，API 34+ 使用浮动材质与融合。 |
 | 菜单 Fast Kawase                      | 工厂在 API 33 以下返回 null，菜单内部使用既有 Gaussian 分支；该分支不等价于 Fast Kawase。       |
+| ModalBottomSheet / SheetToolbar | 无材质面板按库最低系统运行；面板材质需要 API 33 和宿主背景源，SheetToolbar 需要 API 34。 |
 | 跟手光                                 | API 33 以下不提供 Shader 光效回调。 |
 | 浮动底栏、FAB、顶栏按钮/展开式搜索、ChipTab、普通 Mesh 阴影 | 需要 API 34；调用前检查版本，并处理 renderer 创建失败。                                 |
 | fast 胶囊 Shader 裁剪                   | API 35 起使用公开 Canvas.clipShader；API 34 保留 RenderNode/RenderEffect 承载。 |

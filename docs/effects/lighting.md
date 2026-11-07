@@ -60,7 +60,7 @@ fun LitSurface(
 
 ## 独立 Drawable 轮廓
 
-CouiContour 的 style 默认为 Menu。floating = true 选择 FAB 高光分支，不能与其他 style 组合。Dialog 和 Button 分别提供面板与控件的轮廓预设。
+CouiContour 的 style 默认为 Menu。floating = true 选择 FAB 高光分支，不能与其他 style 组合。Dialog 和 Button 分别提供警告窗口与控件的轮廓预设；Panel 选择底部面板的独立内晕分布，继续使用同一 Shader。
 
 shader 的 size、radiusPx、lineWidthPx 使用节点本地像素，density 为正数。Menu / floating 的 cornerWeight 至少为 2；Dialog / Button 允许胶囊权重 1。所有透明度为 0..1。独立覆盖光效传入 Color.Transparent，然后覆盖到实际表面；传入表面颜色时输出已经包含该底色，不能重复叠加。
 

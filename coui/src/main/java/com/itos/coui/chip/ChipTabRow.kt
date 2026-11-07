@@ -111,6 +111,7 @@ data class CouiChipTabItem(
  * leadingAction 位于单选组之外，为 null 时只显示分类列表；leadingActionVisible 控制其动画显隐。
  * 需要退出过渡时保留 leadingAction 内容，只切换 leadingActionVisible。
  * renderers 与项目按顺序对应，不得跨节点复用。
+ * selectedColor 透传给分类项；主题色由宿主提供，库不读取应用主题。
  */
 @RequiresApi(34)
 @Composable
@@ -131,6 +132,7 @@ fun ChipTabRow(
     textStyle: TextStyle = CouiChipTabDefaults.themeTextStyle(),
     contourGlowEnabled: Boolean = LocalCouiContourGlowEnabled.current,
     renderers: List<CouiFloatingRenderer> = remember(items.map { it.key }) { items.map { CouiFloatingRenderer.standalone() } },
+    selectedColor: Color? = null,
 ) {
     require(items.map { it.key }.distinct().size == items.size) { "分类项的 key 必须唯一" }
     val selectedIndex = items.indexOfFirst { it.key == selectedKey }
@@ -236,6 +238,7 @@ fun ChipTabRow(
                             label = item.label, backdrop = backdrop, dark = dark, enabled = enabled && item.enabled,
                             icon = item.icon, contentColor = if (enabled && item.enabled) contentColor else disabledContentColor,
                             textStyle = textStyle, contourGlowEnabled = contourGlowEnabled, renderer = renderers[index],
+                            selectedColor = selectedColor,
                         )
                     }
                 }

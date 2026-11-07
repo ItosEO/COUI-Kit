@@ -1,0 +1,28 @@
+<resources>
+    <string name="sheet_title">Sheet</string>
+    <string name="intro_sheets">A reusable Sheet container for editors, settings pages and existing controls.</string>
+    <string name="sheet_alarm">Add alarm</string>
+    <string name="sheet_alarm_editor">New alarm</string>
+    <string name="sheet_done">Done</string>
+    <string name="sheet_alarm_until">Next alarm in %1$d hours %2$d minutes</string>
+    <string name="sheet_alarm_name">Alarm name</string>
+    <string name="sheet_ring_once">Once</string>
+    <string name="sheet_weekdays">Weekdays</string>
+    <string name="sheet_quick_alarm">Quick alarm</string>
+    <string name="sheet_custom">Custom</string>
+    <string name="sheet_default_vibration">Default vibration</string>
+    <string name="sheet_no_vibration">No vibration</string>
+    <string name="sheet_silent">Silent</string>
+    <string name="sheet_snooze">Snooze</string>
+    <string name="sheet_snooze_default">Every 5 minutes, 3 times</string>
+    <string name="sheet_snooze_off">Off</string>
+    <string name="sheet_timer">Add timer</string>
+    <string name="sheet_timer_name">Timer name</string>
+    <string name="sheet_timer_preset">Add to preset timers</string>
+    <string name="sheet_usage">The same Sheet contains different content. Cancel discards drafts; Done updates this demo only.</string>
+    <string name="sheet_repeat">Repeat on weekdays</string>
+    <string name="sheet_vibrate">Vibrate</string>
+    <string name="sheet_sound">Ringtone</string>
+    <string name="sheet_default_sound">Default</string>
+    <string name="sheet_saved">Saved in this demo</string>
+</resources>

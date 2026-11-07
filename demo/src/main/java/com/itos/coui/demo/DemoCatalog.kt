@@ -34,7 +34,8 @@ internal val DemoComponentGroups = listOf(
     listOf(DemoCatalogEntry("switch", R.string.switch_title, DemoIcons.Switch),
         DemoCatalogEntry("sliders", R.string.slider_title, DemoIcons.Tune),
         DemoCatalogEntry("checkbox", R.string.checkbox_title, DemoIcons.Checkbox)),
-    listOf(DemoCatalogEntry("dialogs", R.string.dialog_title, DemoIcons.Dialogs),
+    listOf(DemoCatalogEntry("sheets", R.string.sheet_title, DemoIcons.Dialogs),
+        DemoCatalogEntry("dialogs", R.string.dialog_title, DemoIcons.Dialogs),
         DemoCatalogEntry("menu", R.string.menu_title, CouiIcons.More)),
     listOf(DemoCatalogEntry("appbar", R.string.catalog_appbar, DemoIcons.Title),
         DemoCatalogEntry("search", R.string.catalog_search, CouiIcons.Search),
@@ -105,6 +106,7 @@ private fun catalogIconColor(page: String): Color = Color(when (page) {
 })
 
 internal fun catalogDescription(page: String): Int = when (page) {
+    "sheets" -> R.string.intro_sheets
     "chip" -> R.string.intro_chip
     "switch" -> R.string.intro_switch
     "sliders" -> R.string.intro_sliders
