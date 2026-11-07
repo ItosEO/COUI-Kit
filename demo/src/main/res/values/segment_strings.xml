@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="segment_title">Segmented control</string>
+    <string name="intro_segment">Capsule selection with a moving indicator, width spring and edge rubber effect.</string>
+    <string name="segment_day">Day</string>
+    <string name="segment_week">Week</string>
+    <string name="segment_month">Month</string>
+    <string name="segment_all">All</string>
+    <string name="segment_current_week">This week</string>
+    <string name="segment_not_scheduled">Not scheduled</string>
+    <string name="segment_enabled">Enable selection</string>
+    <string name="segment_small">Compact size</string>
+    <string name="segment_commit_on_release">Commit on release</string>
+    <string name="segment_usage">Tap a label or drag from the selected indicator. Vertical gestures return to page scrolling. Cancelled gestures do not commit a new selection.</string>
+</resources>

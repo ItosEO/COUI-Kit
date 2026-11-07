@@ -32,6 +32,7 @@ internal val DemoWheelPickerEntries = listOf(
 
 internal val DemoComponentGroups = listOf(
     listOf(DemoCatalogEntry("switch", R.string.switch_title, DemoIcons.Switch),
+        DemoCatalogEntry("segment", R.string.segment_title, DemoIcons.Switch),
         DemoCatalogEntry("sliders", R.string.slider_title, DemoIcons.Tune),
         DemoCatalogEntry("checkbox", R.string.checkbox_title, DemoIcons.Checkbox)),
     listOf(DemoCatalogEntry("dialogs", R.string.dialog_title, DemoIcons.Dialogs),
@@ -108,6 +109,7 @@ internal fun catalogDescription(page: String): Int = when (page) {
     "chip" -> R.string.intro_chip
     "switch" -> R.string.intro_switch
     "sliders" -> R.string.intro_sliders
+    "segment" -> R.string.intro_segment
     "checkbox" -> R.string.intro_checkbox
     "dialogs" -> R.string.intro_dialogs
     "menu" -> R.string.intro_menu
