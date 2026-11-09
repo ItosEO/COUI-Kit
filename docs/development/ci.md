@@ -9,7 +9,7 @@
 | main 普通 push           | Demo job 跳过，不占用 Android 构建 Runner                                                |
 | main 最新提交标题以 `[ci]` 开头 | 构建 itos 签名的 release，上传 APK 与对应 mapping                                           |
 | Actions 手动运行 Demo 打包   | 构建所选受信任分支，日常使用 main                                                              |
-| 指向 main 的 PR           | 自动执行 Note、库与 Demo Lint、Demo debug/release 与库发行构建，Android 检查通过后上传 Demo Debug APK     |
+| 指向 main 的 PR           | 自动执行 Note、库与 Demo Lint、Demo debug/release 与库发行构建，Android 检查通过后上传 Demo Release APK   |
 | Actions 手动运行发布库预览版     | 构建并检查库产物，上传 GitHub Packages；见[发布指南](publishing.md)                               |
 | 推送发行 Tag               | 构建、签名并自动发布 Maven Central 库模块；版本规则与凭据见[发布指南](publishing.md#maven-central-发行与变更记录) |
 

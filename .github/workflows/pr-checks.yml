@@ -55,11 +55,11 @@ jobs:
             --stacktrace 2>&1 | tee "$RUNNER_TEMP/coui-pr-build.log"
       - name: 检查三个库的发行文件与依赖
         run: node .github/scripts/verify-maven-artifacts.cjs
-      - name: 上传 Demo Debug APK
+      - name: 上传 Demo Release APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: coui-demo-debug-${{ github.run_id }}-${{ github.run_attempt }}
-          path: demo/build/outputs/apk/debug/demo-debug.apk
+          name: coui-demo-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: demo/build/outputs/apk/release/demo-release.apk
           if-no-files-found: error
           retention-days: 3
       - name: 上传失败诊断
