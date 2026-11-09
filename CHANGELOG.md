@@ -2,6 +2,41 @@
 
 COUI-Kit 处于早期预览阶段。本文记录公开 API、行为、接入和兼容要求的变化。日期以提交合并时间为准；版本归档以真实 Git Tag 和发行产物为准。
 
+## [0.0.1-alpha9] - 2026-11-09
+
+`coui`、`coui-material3` 与 `coui-icons` 同版本发行。源码见 [v0.0.1-alpha9](https://github.com/ItosEO/COUI-Kit/tree/v0.0.1-alpha9)，Demo 下载见 [Release](https://github.com/ItosEO/COUI-Kit/releases/tag/v0.0.1-alpha9)。
+
+- 新增 7 个账号页位图，通过 `CouiIcons.Bitmap` 获取 `Painter`。`DevicePair` 提供日间和夜间原图。
+- 新增 `CouiIcons.Outlined.Scan` 和设置齿轮的 Filled、Outlined 样式。原多色设置图标改名为 `CouiIcons.Filled.SettingDetail`，升级时请更新原有引用。
+- 新增 `CouiIcons.Filled.Headset`，在原耳机轮廓上填实两个耳罩。
+- 网页图标库新增 Bitmap 筛选，图标按名称从 A 到 Z 排序。首页和图标库默认以 80% 比例显示。
+- 将 AndroidX DynamicAnimation 升至 `1.1.0`，解除严格锁版。修复关闭系统动画时 Slider 松手后仍停在按下高度的问题。[PR #22](https://github.com/ItosEO/COUI-Kit/pull/22)
+
+## [0.0.1-alpha8] - 2026-11-09
+
+`coui`、`coui-material3` 与 `coui-icons` 同版本发行。源码见 [v0.0.1-alpha8](https://github.com/ItosEO/COUI-Kit/tree/v0.0.1-alpha8)，发行附件见 [Release](https://github.com/ItosEO/COUI-Kit/releases/tag/v0.0.1-alpha8)。以下为相对 alpha7 的主要变更。
+
+### 新增与调整
+
+- 新增可选 `coui-icons` 模块，核心搜索组件不再依赖公开图标包。
+- 图标使用 VectorDrawable XML 保存，传统 View 与 Compose 读取同一份资源；支持日夜配色、多色和渐变图标。入口按 `CouiIcons.Filled`、`CouiIcons.Outlined` 提供，补充设置、隐私与安全、相册和云服务图标。
+- 新增 `CouiColor.Day`、`CouiColor.Night` 配色预设，包括 `GRAY` 和 `DARK_GRAY`。
+- 新增项目首页和图标工具网页，支持跨页主题持久化、DarkLight 日夜切换、名称搜索、Filled/Outlined 筛选、配色预览及 SVG/ImageVector 源码复制。
+- FAB 支持圆角方形与自定义圆角，统一内容、材质、光效和投影的几何；`foregroundComposition` 用于相邻 FAB 的前景合成，修复拖动时背景回填遮住其他按钮的问题。
+- FAB 提供 `contentColor`，默认日夜均为不透明白色。`onClick` 为必传参数，允许传入空回调 `{}`。
+- 底栏提供 `selectedColor` 和 `unselectedColor`，文字与图标共用状态色；选中态不透明度为 `230 / 255`，未选中态为 `184 / 255`。`selectedIcon` 省略时复用 `icon`，拖动预选仍由底栏处理。
+- `LargeTopAppBar` 支持通过 `expandedTitleSize`、`collapsedTitleSize` 分别配置展开与收起字号。
+- 修复顶栏与搜索栏的主题配色，常驻搜索材质读取当前主题的 `materialTint`。
+- Demo 的效果导航使用 `WandSpark`，选中与未选中分别使用 Filled 和 Outlined，并更新启动图标。
+- 发布流程覆盖三个库模块；Maven Central 在上传后异步校验和发布，保留上传前的 Lint 与发行产物检查。
+
+### 升级说明
+
+- 使用公开图标时，添加同版本的 `implementation("io.github.itoseo:coui-icons:0.0.1-alpha8")`，并将旧图标入口调整为 `CouiIcons.Filled.*` 或 `CouiIcons.Outlined.*`。图标需在 Composable 中获取，传统 View 使用对应的 drawable XML。
+- `Search`、`Headset`、`SliderCustom` 和 `LayoutSpliced` 仅提供 Outlined。多色图标使用 `Image` 或 `Icon(..., tint = Color.Unspecified)` 保留原色；`AppUpdate(color)` 只调整背景，保留白色前景。
+- 所有 `Fab` 调用均需提供 `onClick`。默认内容色不再取 `onAccent` 或外层颜色；使用 `contentColor` 显式覆盖，或传入 `Color.Unspecified` 继承外层内容色。
+- 预览版不保证二进制兼容，升级后重新编译使用库的模块。
+
 ## [0.0.1-alpha7] - 2026-11-06
 
 `coui` 与 `coui-material3` 同版本发行，源码见 [v0.0.1-alpha7](https://github.com/ItosEO/COUI-Kit/tree/v0.0.1-alpha7)。发行附件及更新日志见 [Release](https://github.com/ItosEO/COUI-Kit/releases/tag/v0.0.1-alpha7)。以下为相对 alpha6 的主要变更。

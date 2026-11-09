@@ -50,10 +50,10 @@ jobs:
       - name: 执行 Lint、Demo 构建与库发行构建
         run: |
           set -euo pipefail
-          ./gradlew :coui:lintDebug :coui-material3:lintDebug :demo:lintRelease :demo:assembleDebug :demo:assembleRelease \
-            :coui:publishAllPublicationsToLocalRepository :coui-material3:publishAllPublicationsToLocalRepository \
+          ./gradlew :coui:lintDebug :coui-material3:lintDebug :coui-icons:lintDebug :demo:lintRelease :demo:assembleDebug :demo:assembleRelease \
+            :coui:publishAllPublicationsToLocalRepository :coui-material3:publishAllPublicationsToLocalRepository :coui-icons:publishAllPublicationsToLocalRepository \
             --stacktrace 2>&1 | tee "$RUNNER_TEMP/coui-pr-build.log"
-      - name: 检查两个库的发行文件与依赖
+      - name: 检查三个库的发行文件与依赖
         run: node .github/scripts/verify-maven-artifacts.cjs
       - name: 上传失败诊断
         if: failure()

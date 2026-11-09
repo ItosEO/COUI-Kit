@@ -168,7 +168,7 @@ fun ModalBottomSheet(
         if (material != null && contour && Build.VERSION.SDK_INT >= 33) CouiContour(style = CouiContourStyle.Panel) else null
     }
     Dialog(onDismissRequest = { if (visible) requestDismiss() }, properties = DialogProperties(
-        usePlatformDefaultWidth = false, decorFitsSystemWindows = false, windowTitle = title,
+        dismissOnClickOutside = false, usePlatformDefaultWidth = false, decorFitsSystemWindows = false, windowTitle = title,
     )) {
         val view = LocalView.current
         SideEffect {
@@ -202,22 +202,23 @@ fun ModalBottomSheet(
         val peek = with(density) { (if (gestureNavigation) 82.dp else 110.dp).toPx() }
         val bottomPadding = if (WindowInsets.ime.getBottom(density) > 0) 16.dp else
             maxOf(CouiSheetDefaults.bottomPadding, with(density) { navigationInset.toDp() })
-        LaunchedEffect(draggable) { if (!draggable) motion.release(0f, cancelled = true) }
         val canDrag = draggable && visible && motion.entered
-        val nested = remember(motion, canDrag) { object : NestedScrollConnection {
+        val canDragNow by rememberUpdatedState(canDrag)
+        LaunchedEffect(canDrag) { if (!canDrag) motion.cancelDrag() }
+        val nested = remember(motion) { object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset =
-                if (canDrag && source == NestedScrollSource.UserInput && available.y < 0f && motion.offset > 0f)
-                    Offset(0f, motion.drag(available.y)) else Offset.Zero
+                if (canDragNow && source == NestedScrollSource.UserInput && available.y < 0f && motion.offset > 0f)
+                    Offset(0f, motion.drag(available.y, nested = true)) else Offset.Zero
             override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset =
-                if (canDrag && source == NestedScrollSource.UserInput && available.y > 0f)
-                    Offset(0f, motion.drag(available.y)) else Offset.Zero
+                if (canDragNow && source == NestedScrollSource.UserInput && available.y > 0f)
+                    Offset(0f, motion.drag(available.y, nested = true)) else Offset.Zero
             override suspend fun onPreFling(available: Velocity): Velocity {
-                if (!canDrag || motion.offset <= 0f) return Velocity.Zero
-                if (motion.release(available.y)) requestDismiss()
+                if (!canDragNow || !motion.hasNestedDrag || motion.offset <= 0f) return Velocity.Zero
+                if (motion.releaseNested(available.y)) requestDismiss()
                 return Velocity(0f, available.y)
             }
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                if (canDrag && motion.release(available.y)) requestDismiss()
+                if (canDragNow && motion.releaseNested(available.y)) requestDismiss()
                 return Velocity.Zero
             }
         } }
@@ -237,11 +238,12 @@ fun ModalBottomSheet(
                         motion.update(visible, measuredHeight, with(density) { limit.toPx() }, peek)
                     }
                     val outside = remember { MutableInteractionSource() }
+                    val dismissOnScrim = if (visible && motion.entered && dismissOnClickOutside) {
+                        Modifier.clickable(outside, null, onClickLabel = dismissDescription) { requestDismiss() }
+                            .semantics { contentDescription = dismissDescription }
+                    } else Modifier
                     Box(Modifier.fillMaxSize().graphicsLayer { alpha = motion.dim }
-                        .background(Color.Black.copy(alpha = colors.dimAmount))
-                        .clickable(outside, null, enabled = visible && motion.entered && dismissOnClickOutside,
-                            onClickLabel = dismissDescription, onClick = { requestDismiss() })
-                        .semantics { contentDescription = dismissDescription })
+                        .background(Color.Black.copy(alpha = colors.dimAmount)).then(dismissOnScrim))
                     val heightModifier = if (sheetHeight != null) Modifier.height(sheetHeight.coerceAtMost(limit)) else Modifier.heightIn(max = limit)
                     // 面板底边伸入导航区，内容仅消费一次底部 inset。底角延伸到窗口外，只露出上圆角。
                     Box(modifier.align(Alignment.BottomCenter).widthIn(max = CouiSheetDefaults.maxWidth).fillMaxWidth()
@@ -254,17 +256,17 @@ fun ModalBottomSheet(
                         }
                         .nestedScroll(nested).sheetDrag(motion, canDrag && !showDragHandle) { requestDismiss() }.pointerInput(motion) {
                             awaitEachGesture {
-                                val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                                awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
                                 var released = false
                                 try {
                                     while (true) {
-                                        val event = awaitPointerEvent(PointerEventPass.Final)
+                                        // 系统取消先于子滚动容器的释放处理，避免将 CANCEL 当作向下抬手。
+                                        val event = awaitPointerEvent(PointerEventPass.Initial)
                                         if (event.isCouiTouchCancelled()) break
-                                        val pointer = event.changes.firstOrNull { it.id == down.id } ?: break
-                                        if (!pointer.pressed) { released = true; break }
+                                        if (event.changes.none { it.pressed }) { released = true; break }
                                     }
                                 } finally {
-                                    if (!released) motion.release(0f, cancelled = true)
+                                    if (!released) motion.cancelDrag()
                                 }
                             }
                         }.semantics {
@@ -378,12 +380,13 @@ private fun Modifier.sheetDrag(motion: CouiSheetMotion, enabled: Boolean, onDism
                 detectVerticalDragGestures(
                     onVerticalDrag = { change, amount -> change.consume(); motion.drag(amount) },
                     onDragEnd = {
-                        if (motion.release(if (cancelled) 0f else tracker.calculateVelocity().y, cancelled)) onDismiss()
+                        if (cancelled) motion.cancelDrag()
+                        else if (motion.release(tracker.calculateVelocity())) onDismiss()
                     },
-                    onDragCancel = { motion.release(0f, cancelled = true) },
+                    onDragCancel = motion::cancelDrag,
                 )
             }
         } finally {
-            motion.release(0f, cancelled = true)
+            motion.cancelDrag()
         }
     }

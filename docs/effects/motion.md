@@ -53,7 +53,7 @@ Box(
 
 ### 主动控制运动
 
-手动驱动 CouiTouchMotion 时，使用 begin 开始触摸、move 更新位置、release 以输入速度回弹。cancel 只停在当前位置，保留底层速度与待处理目标；需要立即恢复未变形状态时调用 reset，它会同时清除旧动画与触摸会话。reset 不会移除坐标绑定，后续可开始新的触摸。CouiPressMotion 使用 press 和 release 控制按下与释放。
+手动驱动 `CouiTouchMotion` 时，使用 `begin` 开始触摸、`move` 更新位置、`release` 以输入速度回弹。`cancel` 停在当前位置，保留速度并清除尚未处理的目标。再次开始触摸时，由新的输入确定目标。需要立即恢复未变形状态时调用 `reset`，它会清除旧动画、速度与触摸会话，并保留坐标绑定。`CouiPressMotion` 使用 `press` 和 `release` 控制按下与释放。
 
 按压输入的 cancelOnConsumedMove 用于父容器消费移动后立即释放，并在本次触摸结束前保持取消。选择、光效、按压与滚动各自有状态 owner，不能用某一路已取消推断其他路径都已收尾。
 

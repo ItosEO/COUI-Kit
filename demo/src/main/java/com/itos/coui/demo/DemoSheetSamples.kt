@@ -52,7 +52,7 @@ internal fun SheetSamples(dark: Boolean) {
     Group(footer = stringResource(R.string.sheet_usage)) {
         labels.forEachIndexed { index, label ->
             DemoPreference(title = label, onClick = { open(index) }, icon = {
-                androidx.compose.material3.Icon(CouiIcons.Add, null, Modifier.size(24.dp),
+                androidx.compose.material3.Icon(CouiIcons.Monochrome.Add, null, Modifier.size(24.dp),
                     tint = MaterialTheme.colorScheme.onSurface)
             })
             if (index < labels.lastIndex) Divider()

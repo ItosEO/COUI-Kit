@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt" android:name="Add" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24" android:tint="@color/coui_icon_tint_neutral_ff000000_ffffffff">
+    <group>
+        <group>
+            <clip-path android:pathData="M0,0h24v24h-24z" />
+            <path android:pathData="M12.3,1.8C12.852,1.8 13.3,2.248 13.3,2.8V11.3H21.8C22.352,11.3 22.8,11.748 22.8,12.3C22.8,12.852 22.352,13.3 21.8,13.3H13.3V21.8C13.3,22.352 12.852,22.8 12.3,22.8C11.748,22.8 11.3,22.352 11.3,21.8V13.3H2.8C2.248,13.3 1.8,12.852 1.8,12.3C1.8,11.748 2.248,11.3 2.8,11.3H11.3V2.8C11.3,2.248 11.748,1.8 12.3,1.8Z" android:fillColor="#FF000000" android:fillType="evenOdd" />
+        </group>
+    </group>
+</vector>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt" android:name="AppUpdate" android:width="32dp" android:height="32dp" android:viewportWidth="32" android:viewportHeight="32">
+    <path android:pathData="M16,0a16,16 0,0 1 0,32a16,16 0,0 1 0,-32z" android:name="coui_background" android:fillColor="@color/coui_icon_app_update_background" />
+    <path android:pathData="M16,16m10,-0a10,10 0,1 1,-20 -0a10,10 0,1 1,20 -0" android:fillColor="#00000000" android:strokeColor="#FFFFFFFF" android:strokeWidth="1.4" android:strokeLineJoin="round" />
+    <path android:pathData="M16,6C10.477,6 6,10.477 6,16C6,21.523 10.477,26 16,26C21.523,26 26,21.523 26,16C26,10.477 21.523,6 16,6ZM20.707,14.293L16.707,10.293C16.317,9.902 15.683,9.902 15.293,10.293L11.293,14.293C10.902,14.683 10.902,15.317 11.293,15.707C11.683,16.098 12.317,16.098 12.707,15.707L15,13.414L15,21C15,21.552 15.448,22 16,22C16.552,22 17,21.552 17,21L17,13.414L19.293,15.707C19.683,16.098 20.317,16.098 20.707,15.707C21.098,15.317 21.098,14.683 20.707,14.293Z" android:fillColor="#FFFFFFFF" android:fillType="evenOdd" />
+</vector>

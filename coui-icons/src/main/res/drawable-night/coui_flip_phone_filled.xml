@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt" android:name="FlipPhone" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24" android:tint="@color/coui_icon_tint_blue">
+    <path android:pathData="M15.4,3H3.6C2.716,3 2,3.716 2,4.6V19.4C2,20.284 2.716,21 3.6,21H15.4C16.284,21 17,20.284 17,19.4V4.6C17,3.716 16.284,3 15.4,3ZM15.5,18.8C15.5,19.185 15.185,19.5 14.8,19.5H4.2C3.815,19.5 3.5,19.185 3.5,18.8V5.2C3.5,4.815 3.815,4.5 4.2,4.5H15.4C15.455,4.5 15.5,4.545 15.5,4.6V18.8Z" android:fillColor="#FF000000" />
+    <path android:pathData="M14.4,18.4V5.6L4.6,5.6V18.4H14.4Z" android:fillColor="#FF000000" android:fillAlpha="0.6" android:strokeAlpha="0.6" />
+    <path android:pathData="M22.18,17H10.055C9.415,17 8.837,16.619 8.584,16.03L3.268,3.626C3.141,3.33 3.359,3 3.681,3H16.945C17.585,3 18.163,3.381 18.416,3.97L23.283,15.327C23.622,16.119 23.042,17 22.18,17Z" android:fillColor="#FF000000" />
+</vector>

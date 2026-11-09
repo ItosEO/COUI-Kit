@@ -1,0 +1,8 @@
+{
+  "name": "coui-icons-pages",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "saxes": "6.0.0"
+  }
+}

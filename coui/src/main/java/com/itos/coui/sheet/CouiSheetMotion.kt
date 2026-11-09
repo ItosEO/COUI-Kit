@@ -4,7 +4,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.Velocity
 import com.itos.coui.motion.CouiSpring
+import kotlin.math.abs
 
 /** COUIBottomSheetDialog 普通底部窗口的位移与遮罩；不进入居中/锚点的缩放分支。 */
 internal class CouiSheetMotion {
@@ -20,6 +22,8 @@ internal class CouiSheetMotion {
     private var peek = 0f
     private var target: Boolean? = null
     private var dragging = false
+    private var lastNestedDelta: Float? = null
+    val hasNestedDrag get() = lastNestedDelta != null
     private var dismissVelocity: Float? = null
     var onHidden: () -> Unit = {}
     private val hideDistance: Float
@@ -40,6 +44,7 @@ internal class CouiSheetMotion {
         }
         if (target != visible || (resized && !dragging)) {
             dragging = false
+            lastNestedDelta = null
             target = visible
             if (!visible) entered = false
             val velocity = if (!visible) dismissVelocity else null
@@ -48,24 +53,46 @@ internal class CouiSheetMotion {
         }
     }
 
-    fun drag(delta: Float): Float {
+    fun drag(delta: Float, nested: Boolean = false): Float {
         if (target != true) return 0f
+        val next = (offset + delta).coerceIn(0f, hideDistance)
+        val consumed = next - offset
+        if (consumed == 0f) return 0f
         // 拖动接管几何后，旧动画的 pending 目标与速度不再属于本次手势。
-        translation.cancelComplete(); alpha.cancelComplete(); dragging = true
-        val old = offset
-        offset = (old + delta).coerceIn(0f, hideDistance)
+        if (!dragging) {
+            translation.cancelComplete()
+            alpha.cancelComplete()
+            dragging = true
+        }
+        lastNestedDelta = if (nested) delta else null
+        offset = next
         dim = 1f - offset / hideDistance
-        return offset - old
+        return consumed
     }
 
-    /** skipCollapsed 的释放规则：向下显著速度或过中线时隐藏，其余回展开位置。 */
-    fun release(velocity: Float, cancelled: Boolean = false): Boolean {
+    /** ViewDragHelper 只在纵向速度占主导或面板越过中线时请求隐藏。 */
+    fun release(velocity: Velocity): Boolean {
+        val hide = offset > 0f && velocity.y >= 0f &&
+            ((velocity.y > 500f && velocity.y > abs(velocity.x)) || offset > hideDistance * .5f)
+        return endDrag(velocity.y, hide)
+    }
+
+    /** skipCollapsed 的嵌套释放按面板最后实际消费的方向判定。 */
+    fun releaseNested(velocity: Float): Boolean {
+        val lastDelta = lastNestedDelta ?: return false
+        return endDrag(velocity, offset > 0f && lastDelta > 0f)
+    }
+
+    fun cancelDrag() {
+        endDrag(0f, hide = false)
+    }
+
+    private fun endDrag(velocity: Float, hide: Boolean): Boolean {
         if (!dragging) return false
         dragging = false
-        val hide = !cancelled && velocity >= 0f &&
-            ((velocity > 500f && offset > 0f) || offset > hideDistance * .5f)
+        lastNestedDelta = null
         // 只有宿主改变 visible 才能隐藏。宿主拒绝退出时，面板仍恢复展开。
-        dismissVelocity = if (hide) velocity else null
+        dismissVelocity = if (hide) velocity.coerceAtLeast(0f) else null
         settle(true, if (hide) 0f else velocity)
         return hide
     }
@@ -92,5 +119,10 @@ internal class CouiSheetMotion {
             onFrame = { dim = it.coerceIn(0f, 1f) })
     }
 
-    fun dispose() { translation.cancelComplete(); alpha.cancelComplete() }
+    fun dispose() {
+        dragging = false
+        lastNestedDelta = null
+        translation.cancelComplete()
+        alpha.cancelComplete()
+    }
 }

@@ -37,7 +37,7 @@ maven {
 implementation("io.github.itoseo:coui:<从发布摘要复制的版本>")
 ```
 
-保留宿主的 Android 与 Compose 插件，并启用 `buildFeatures.compose`。同一模块只选择一种 COUI 依赖，以免重复定义类。显示第一个组件的代码见[快速开始](getting-started.md#显示第一个组件)。
+保留宿主的 Android 与 Compose 插件，并启用 `buildFeatures.compose`。需要 `CouiIcons` 时，额外添加发布摘要中的 `coui-icons` 坐标，并与核心使用相同版本；仅使用核心组件不需要图标包。同一 COUI 构件只选择一个发布渠道，避免重复定义类。显示第一个组件的代码见[快速开始](getting-started.md#显示第一个组件)。
 
 预览版本由库的开发版本与提交 SHA 组成，带 `-SNAPSHOT` 后缀。SHA 用于定位源码；相同提交重新发布仍可能生成新的 SNAPSHOT 产物。需要精确回看一次发布时，同时保留 Actions run 地址。
 

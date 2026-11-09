@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="coui_icon_app_update_background">#FF24B232</color>
+    <color name="coui_icon_tint_blue">#FF1A8CFF</color>
+    <color name="coui_icon_tint_green">#FF24B232</color>
+    <color name="coui_icon_tint_neutral_ff000000_ffffffff">#FFFFFFFF</color>
+    <color name="coui_icon_tint_orange">#FFF08222</color>
+    <color name="coui_icon_tint_red">#FFEB493D</color>
+    <color name="coui_icon_tint_yellow">#FFE5A100</color>
+</resources>

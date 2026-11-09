@@ -32,8 +32,8 @@ PR 自动执行 Note、库与 Demo Lint、Demo debug/release 构建及库本地 
 本地需要执行同一检查时，先获得当前任务授权，再运行：
 
 ~~~sh
-./gradlew :coui:lintDebug :coui-material3:lintDebug :demo:lintRelease :demo:assembleDebug :demo:assembleRelease \
-  :coui:publishAllPublicationsToLocalRepository :coui-material3:publishAllPublicationsToLocalRepository
+./gradlew :coui:lintDebug :coui-material3:lintDebug :coui-icons:lintDebug :demo:lintRelease :demo:assembleDebug :demo:assembleRelease \
+  :coui:publishAllPublicationsToLocalRepository :coui-material3:publishAllPublicationsToLocalRepository :coui-icons:publishAllPublicationsToLocalRepository
 node .github/scripts/verify-maven-artifacts.cjs
 ~~~
 

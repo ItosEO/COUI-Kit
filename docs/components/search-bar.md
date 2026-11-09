@@ -59,6 +59,8 @@ SearchBar(
 
 `CouiSearchBarDefaults.colors(dark)` 读取当前主题。`foreground`、`secondary`、`clear` 分别控制文字、图标等次要内容和清除操作；通过 `copy` 覆盖颜色。`fallbackBackground` 仅作用于 API 31–33 的普通背景。
 
+API 34 起，搜索框和取消按钮的材质读取当前主题的 `materialTint`。Material 适配使用页面表面色染色；原生主题默认为透明。可通过局部 `CouiTheme` 的 `materialTint` 调整或关闭染色。
+
 | 平台 | 绘制 |
 | --- | --- |
 | API 31–32 | 普通填色、输入和宽度/取消动画 |

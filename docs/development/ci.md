@@ -4,14 +4,14 @@
 
 ## 触发与产物
 
-| 操作 | 结果 |
-|---|---|
-| main 普通 push | Demo job 跳过，不占用 Android 构建 Runner |
-| main 最新提交标题以 `[ci]` 开头 | 构建 itos 签名的 release，上传 APK 与对应 mapping |
-| Actions 手动运行 Demo 打包 | 构建所选受信任分支，日常使用 main |
-| 指向 main 的 PR | 自动执行 Note、库与 Demo Lint、Demo debug/release 与库发行构建 |
-| Actions 手动运行发布库预览版 | 构建并检查库产物，上传 GitHub Packages；见[发布指南](publishing.md) |
-| 推送发行 Tag | 构建、签名并自动发布 Maven Central 双模块；版本规则与凭据见[发布指南](publishing.md#maven-central-发行与变更记录) |
+| 操作                     | 结果                                                                               |
+|------------------------|----------------------------------------------------------------------------------|
+| main 普通 push           | Demo job 跳过，不占用 Android 构建 Runner                                                |
+| main 最新提交标题以 `[ci]` 开头 | 构建 itos 签名的 release，上传 APK 与对应 mapping                                           |
+| Actions 手动运行 Demo 打包   | 构建所选受信任分支，日常使用 main                                                              |
+| 指向 main 的 PR           | 自动执行 Note、库与 Demo Lint、Demo debug/release 与库发行构建                                 |
+| Actions 手动运行发布库预览版     | 构建并检查库产物，上传 GitHub Packages；见[发布指南](publishing.md)                               |
+| 推送发行 Tag               | 构建、签名并自动发布 Maven Central 库模块；版本规则与凭据见[发布指南](publishing.md#maven-central-发行与变更记录) |
 
 前缀判断使用本次 push 最后一个提交的标题，不扫描之前的提交。GitHub 的 startsWith 比较不区分大小写。条件在 job 层执行，因此普通 push 仍可能显示 skipped 工作流记录。PR 检查不受此前缀限制，也不按文档路径整体跳过，避免必需检查一直 Pending。
 
@@ -21,12 +21,12 @@ Demo 下载位于对应 Actions run 的 Artifacts。本地与 CI 的 versionName
 
 本地配置见 [Demo 签名](../guide/demo.md#本地签名)。CI 与维护者本地构建使用同一把 `itos` 密钥，在仓库 Actions Secrets 配置：
 
-| Secret | 内容 |
-|---|---|
-| KEYSTORE | itos keystore 的 Base64 内容 |
-| KEYSTORE_PASSWORD | keystore 密码 |
-| KEYSTORE_ALIAS | `itos` |
-| KEYSTORE_ALIAS_PASSWORD | key 密码 |
+| Secret                  | 内容                        |
+|-------------------------|---------------------------|
+| KEYSTORE                | itos keystore 的 Base64 内容 |
+| KEYSTORE_PASSWORD       | keystore 密码               |
+| KEYSTORE_ALIAS          | `itos`                    |
+| KEYSTORE_ALIAS_PASSWORD | key 密码                    |
 
 例如由维护者上传仓库外的已有密钥，命令中的路径替换为实际路径，不将 Base64 写入终端输出或 Git：
 
@@ -44,7 +44,7 @@ Demo 工作流将密钥放在 Runner 临时目录，仅在签名步骤传入同�
 - PR 同时执行 Central Tag 解析器的无凭据自检；Central 发布工作流不由 PR 触发。
 - [Note 工作流](../../.github/workflows/verify-notes.yml)检查目录、格式、链接与归档封印，归档比较使用 PR base SHA。
 - [Demo 打包工作流](../../.github/workflows/demo-ci.yml)构建 release、检查 APK 签名并上传产物，不创建 Release，不发布库。
-- PR Android 检查对 coui 与 coui-material3 分别执行 Lint，生成两个同版本的本地 Maven 产物及源码、API 文档，并运行共用的[发行检查脚本](../../.github/scripts/verify-maven-artifacts.cjs)。检查覆盖独立坐标、非空归档、核心无 M3、适配器依赖同版本核心与 M3、许可及严格版本约束。不上传远端，不读取包写入凭据；[预览发布](publishing.md)独立手动触发。
+- PR Android 检查对 `coui`、`coui-material3` 与 `coui-icons` 分别执行 Lint，生成同版本的本地 Maven 产物及源码、API 文档，并运行共用的[发行检查脚本](../../.github/scripts/verify-maven-artifacts.cjs)。检查覆盖独立坐标、非空归档、模块依赖边界、许可及核心动画依赖版本声明。不上传远端，不读取包写入凭据；[预览发布](publishing.md)独立手动触发。
 
 Demo 与 PR 检查的新任务取消同一分支的旧任务；库发布保留正在上传的任务并串行执行。失败时查看 Actions 中的报错与诊断附件，修复原因；不关闭 Lint、R8 或增加整包 keep 来使检查表面通过。Lint 警告按其实际影响处理，不新增历史问题 baseline。
 

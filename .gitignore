@@ -24,3 +24,6 @@ captures/
 *.pfx
 keystore.properties
 signing.properties
+
+# 网页生成器依赖
+Pages/node_modules/

@@ -60,8 +60,8 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
     val rendering = remember { if (Build.VERSION.SDK_INT >= 34) runCatching { DemoRenderers() } else null }
     val renderers = rendering?.getOrNull()
     val titles = listOf(stringResource(R.string.controls), stringResource(R.string.effects), stringResource(R.string.demo_settings))
-    val navigation = listOf(CouiIcons.Components, DemoIcons.Effects, CouiIcons.Settings)
-    val selectedNavigation = listOf(CouiIcons.ComponentsSelected, DemoIcons.EffectsSelected, DemoIcons.SettingsSelected)
+    val navigation = listOf(CouiIcons.Filled.Grid, DemoIcons.Effects, DemoIcons.Settings)
+    val selectedNavigation = listOf(CouiIcons.Filled.Grid, DemoIcons.EffectsSelected, DemoIcons.SettingsSelected)
     val selectPage: (Int) -> Unit = { target ->
         if (target != page) { page = target; query = ""; searching = false }
     }
@@ -90,7 +90,7 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
             topBar = {
                 if (page == 0) {
                     CollapsingTopAppBar(state = header, searchState = search, title = titles[page],
-                        color = colors.onSurface, dark = dark) {
+                        color = colors.onSurface, backgroundColor = LocalDemoTopBarGradient.current, dark = dark) {
                             SearchBar(state = search, query = query, onQueryChange = { query = it },
                                 onExpandedChange = { searching = it; if (!it) query = "" },
                                 placeholder = stringResource(R.string.catalog_search_hint),
@@ -100,16 +100,19 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
                     }
                 } else LargeTopAppBar(title = { Text(titles[page], maxLines = 1) },
                     scrollBehavior = behavior, dark = dark,
-                    colors = CouiTopAppBarDefaults.colors(titleColor = colors.onSurface, dark = dark))
+                    colors = CouiTopAppBarDefaults.colors(backgroundColor = LocalDemoTopBarGradient.current,
+                        titleColor = colors.onSurface, dark = dark))
             }, bottomBar = {
                 if (Build.VERSION.SDK_INT >= 34 && renderers != null) {
                     Box(Modifier.fillMaxWidth()) {
                         NavigationBar(
                             modifier = Modifier.align(Alignment.BottomCenter),
                             renderer = renderers.bottom,
-                            items = titles.mapIndexed { index, title -> CouiNavigationItem(title, navigation[index], selectedNavigation[index]) },
-                            selectedIndex = page, leftIcon = CouiIcons.Theme, leftDescription = stringResource(R.string.toggle_theme),
-                            rightIcon = CouiIcons.Add, rightDescription = stringResource(R.string.catalog_fab),
+                            items = titles.mapIndexed { index, title ->
+                                CouiNavigationItem(title = title, icon = navigation[index], selectedIcon = selectedNavigation[index])
+                            },
+                            selectedIndex = page, leftIcon = CouiIcons.Filled.DarkLight, leftDescription = stringResource(R.string.toggle_theme),
+                            rightIcon = CouiIcons.Filled.Add, rightDescription = stringResource(R.string.catalog_fab),
                             leftVisible = leftAccessory, rightVisible = rightAccessory,
                             onLeftClick = onToggleTheme, onRightClick = { openPage("fab") }, rightContainerColor = color,
                             dark = dark, lightColor = Color.White,

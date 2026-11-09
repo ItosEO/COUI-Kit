@@ -8,9 +8,9 @@ Status: implemented
 
 ## Decision
 
-仅将普通标量弹簧抽为内部 [CouiSpring](../../../../coui/src/main/java/com/itos/coui/motion/CouiSpring.kt)，复用已锁定的 AndroidX DynamicAnimation。Touch、Press、Slider、Switch 的普通弹簧和状态反馈共用它，不复制厂商调度框架。
+仅将普通标量弹簧抽为内部 [CouiSpring](../../../../coui/src/main/java/com/itos/coui/motion/CouiSpring.kt)，复用 AndroidX DynamicAnimation。Touch、Press、Slider、Switch 的普通弹簧和状态反馈共用它，不复制厂商调度框架。
 
-运行中重定向复用原 SpringAnimation，保留速度及 pending/半帧积分。普通 cancel 只停止；cancelComplete 清回调并在使用过的通道上重建实例，清除原厂 reset 对应的历史。无弹簧运行介入的连续 snap 不反复重建。Slider 停止位置动画、重新按下及硬定位使用完整重置，Section ValueAnimator、惯性与既有边界适配保持。
+运行中重定向复用原 SpringAnimation，保留速度及 pending/半帧积分。普通 cancel 停止并保留速度，取消时尚未处理的目标在下一次触摸前清除。cancelComplete 清回调并在使用过的通道上重建实例，清除原厂 reset 对应的历史。无弹簧运行介入的连续 snap 不反复重建。Slider 停止位置动画、重新按下及硬定位使用完整重置，Section ValueAnimator、惯性与既有边界适配保持。
 
 [TouchMotion](../../../../coui/src/main/java/com/itos/coui/motion/CouiTouchMotion.kt) 与 [PressMotion](../../../../coui/src/main/java/com/itos/coui/motion/CouiPressMotion.kt) 保留构造入口，通过原 scope 的取消释放动画；工厂也在节点移除时释放。入口及作用域均在主线程使用。四轴/按压轴公开类型收为 State<Float>，保留 .value 读取；子菜单退出改调 Touch.reset。库内 Press 调用统一使用 rememberCouiPressMotion。同一触摸组合的缩放增量相加，底栏附件外层收放仍按独立变换相乘；背景、内容、光效和投影使用一致的几何。
 
@@ -25,7 +25,7 @@ Status: implemented
 - 录音 com.coloros.soundrecorder 17.8.8 / 17008008，SHA-256 为 968c3c17c6cdcc09f9a64e6fd939bfa4382104d7afda6dffb7c2f14ccb587588。COUITouchMotionAnimator.TouchMotionCollector.put 对 scale 累加相对单位值的增量；COUIPressAnimatorUnit 按下显式设置输入速度，抬手保留运行速度。COUIDeformAnimatorUnit、COUIRubberAnimatorUnit 和 COUIITouchMotionUnit 分别持有普通取消与完整 reset。
 - StateEffectAnimator.animateToProgressUntil / setProgress 保留运行中的上行目标，跨阈值后重定向；直接达到终点时通过结束监听退场。animateToProgressFrom 清除短按阈值。此规则不推广到未启用最低进度的反馈消费者。
 - CellBroadcastReceiver 的 com.android.cellbroadcastreceiver.module 17.10.10 / 1700010010，SHA-256 为 e57ed508605794386949f90c0c288fbaacea327ba618d7bae91d4d03ac421d10。coui_btn_check 双向 transition 没有 reversible；转入 check 的缩放回落有独立插值，转出 fill 延迟退场。Android SDK 的 AnimatedStateListDrawable.selectTransition 在不可逆中断时以旧目标作为下一条转场来源，不连续倒放旧动画。
-- 锁定的 AndroidX SpringAnimation.animateToFinalPosition 在运行时设置 pending；DynamicAnimation.cancel 不清 pending 或速度。原厂菜单的独立双阈值弹簧不是此普通分支，本轮不改菜单展开后端。
+- AndroidX SpringAnimation.animateToFinalPosition 在运行时设置待定目标。1.0.0 的 cancel 保留待定目标和速度，1.1.0 的 cancel 清除待定目标并保留速度。普通停止与硬重置仍需区分。1.1.0 在 API 33 起还读取系统动画时长比例。原厂菜单使用独立双阈值弹簧。
 - Switch 的目标 Settings 参数与既有适配见[开关组件](../feature/2026-10-27-coui-switch.md)。本次回读录音包的 COUISpringDragHelper.dragTo、getAttachPosition、cancelDrag 及双轴状态收尾，核对提取边界；没有重新提取 Settings APK，不将共享 helper 的核对扩大为目标包全链路复验。
 
 ## Existing-note audit
@@ -37,6 +37,7 @@ Status: implemented
 
 ## Alternatives considered
 
+- **继续严格锁定 DynamicAnimation 1.0.0。** 可固定旧版取消行为，但无法与依赖 1.1.0 的 Material Components 共用依赖图。版本目录改为普通请求 1.1.0，保留运行中换目标的半帧积分，取消后重启时以新请求的目标为准。
 - **继续使用每次调用的 Animatable 协程。** Compose 接线最少，但中断与重定向规则不同于本轮确认的普通弹簧分支，且直接暴露轴写入口。
 - **搬入 COUIComposeMotionAnimator 与全部物理框架。** 更接近原类结构，但带入本轮没有消费者的调度、配置和单位系统；所需行为可由已有公开依赖承载。
 - **所有 cancel 都完整重建。** 容易消除旧状态，却破坏 Touch DOWN 的普通取消语义；普通停止与硬重置必须分开。
@@ -54,10 +55,10 @@ Switch 增加一个职责明确的内部实现，三个标量通道随开关实�
 
 ## Verification
 
-临时 JVM 检查直接编译生产 CouiSpring、CouiTouchMotion、CouiPressMotion、CouiStateProgress，并运行锁定版本 AndroidX 实际二进制。覆盖持续重定向保速、硬重置与直接参考弹簧逐帧一致、重复硬定位不重建、取消不回调、AndroidX 原始 pending 残留反例、短按最低进度、重按、掉帧直达终点、交接退场、Touch reset/release 及 scope 取消后不重启。时钟、Looper、Compose State/几何和 PathInterpolator 使用临时替身，不执行真实 Choreographer、Snapshot、Compose 事件或 GPU 绘制，不能证明 Android 运行等价。
+最初的临时 JVM 检查直接编译生产 CouiSpring、CouiTouchMotion、CouiPressMotion、CouiStateProgress，并运行 AndroidX 1.0.0 实际二进制。覆盖持续重定向保速、硬重置与直接参考弹簧逐帧一致、重复硬定位不重建、取消不回调、AndroidX 原始 pending 残留反例、短按最低进度、重按、掉帧直达终点、交接退场、Touch reset/release 及 scope 取消后不重启。时钟、Looper、Compose State/几何和 PathInterpolator 使用临时替身，不执行真实 Choreographer、Snapshot、Compose 事件或 GPU 绘制，不能证明 Android 运行等价。
 
 Android 构建、Sync、安装、设备视觉与性能未执行；需要用户验证按压、拖动、反向、短按、父容器接管与节点移除。不新增常驻测试框架。
 
 复选框检查提取生产帧表达式，使用缓存的 Compose Easing 执行，覆盖分组峰值、独立回落、填充延迟、方向重启和禁用/启用端点；不执行真实 Compose 时间调度。修改的 Kotlin 文件通过 PSI 语法检查，使用兼容的缓存编译器解析；开发版本的独立 PSI 环境初始化失败，不能记为源码错误。普通文档相对链接/锚点、UTF-8 无 BOM、Note 树/格式/归档与 git diff --check 通过。语法解析不包含 Android/Compose 全模块类型检查。
 
-Switch 的临时 JVM 检查直接编译生产 CouiSpring、CouiSwitchMotion、CouiSwitchDrag，与拆分前实现运行同一锁定版本 AndroidX 二进制。62 组输入逐帧比较位置、颜色进度、拉伸、完成计数及提交内容与时机，覆盖 RTL/初始值、运行中反向、两级拖动启动、停稳后重启、pending 取消再进入、禁用、程序值接管、宿主接受/拒绝、速度门槛、Y 轴收尾、分数行程、节点移除和近锚点重复 UP；另检查 helper 等距锚点及取消不回调。全部通过。这是拆分前后的回归对照，不是原厂整库执行对照。Looper、时钟与 Compose State 使用临时替身，未执行真实事件分发、Snapshot、Choreographer 或设备绘制；临时编译器首次缺少 kotlin-reflect，补齐缓存 classpath 后通过，没有修改工程依赖。
+Switch 的临时 JVM 检查直接编译生产 CouiSpring、CouiSwitchMotion、CouiSwitchDrag，与拆分前实现运行同一 AndroidX 1.0.0 二进制。62 组输入逐帧比较位置、颜色进度、拉伸、完成计数及提交内容与时机，覆盖 RTL/初始值、运行中反向、两级拖动启动、停稳后重启、pending 取消再进入、禁用、程序值接管、宿主接受/拒绝、速度门槛、Y 轴收尾、分数行程、节点移除和近锚点重复 UP；另检查 helper 等距锚点及取消不回调。全部通过。这是拆分前后的回归对照，不是原厂整库执行对照。Looper、时钟与 Compose State 使用临时替身，未执行真实事件分发、Snapshot、Choreographer 或设备绘制；临时编译器首次缺少 kotlin-reflect，补齐缓存 classpath 后通过，没有修改工程依赖。

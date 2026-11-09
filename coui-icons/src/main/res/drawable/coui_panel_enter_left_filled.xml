@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt" android:name="PanelEnterLeft" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24" android:tint="@color/coui_icon_tint_blue">
+    <path android:pathData="M8.701,5.305H2V21.351C2,21.709 2.263,22 2.586,22H8.701V5.305Z" android:fillColor="#FF000000" android:fillAlpha="0.4" android:strokeAlpha="0.4" />
+    <path android:pathData="M10,22H11.3C11.687,22 12,21.687 12,21.3V4.8C12,3.253 10.747,2 9.2,2H2.7C2.313,2 2,2.313 2,2.7V4H9.2C9.642,4 10,4.358 10,4.8V22Z" android:fillColor="#FF000000" />
+    <path android:pathData="M14,9V13" android:fillColor="#00000000" android:strokeColor="#FF000000" android:strokeWidth="1.8" android:strokeLineCap="round" />
+    <path android:pathData="M16.311,10.283L20.182,7.041C20.573,6.713 21.097,7.133 20.985,7.689C20.847,8.372 20.734,9.162 20.684,10.042H23.043C23.572,10.042 24,10.47 24,10.999C24,11.527 23.572,11.956 23.043,11.956H20.687C20.725,12.632 20.806,13.42 20.983,14.302C21.095,14.857 20.573,15.284 20.183,14.957C18.892,13.877 17.602,12.796 16.311,11.715C15.896,11.368 15.896,10.63 16.311,10.283Z" android:fillColor="#FF000000" />
+</vector>
