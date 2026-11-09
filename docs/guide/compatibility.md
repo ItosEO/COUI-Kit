@@ -36,7 +36,7 @@
 | 常驻 SearchBar、折叠顶栏、纵向回弹 | 按库最低系统运行；常驻搜索在 API 31–33 使用普通填色，API 34+ 使用浮动材质与融合。 |
 | 菜单 Fast Kawase                      | 工厂在 API 33 以下返回 null，菜单内部使用既有 Gaussian 分支；该分支不等价于 Fast Kawase。       |
 | 跟手光                                 | API 33 以下不提供 Shader 光效回调。 |
-| SegmentedControl 分段选择器 | 需要 API 34 和不含自身的背景源，复用公共浮动材质与轮廓。 |
+| SegmentedControl 分段选择器 | 需要 API 34；普通填色不使用背景源，透明模糊需要不含自身且覆盖完整采样范围的不透明 SDR 背景源。 |
 | 浮动底栏、FAB、顶栏按钮/展开式搜索、ChipTab、普通 Mesh 阴影 | 需要 API 34；调用前检查版本，并处理 renderer 创建失败。                                 |
 | fast 胶囊 Shader 裁剪                   | API 35 起使用公开 Canvas.clipShader；API 34 保留 RenderNode/RenderEffect 承载。 |
 

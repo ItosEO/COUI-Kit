@@ -2,14 +2,11 @@
 <resources>
     <string name="segment_title">分段选择器</string>
     <string name="intro_segment">胶囊分段选择，包含指示器位移、宽度回弹和边缘橡皮筋效果。</string>
-    <string name="segment_day">日</string>
-    <string name="segment_week">周</string>
-    <string name="segment_month">月</string>
     <string name="segment_all">全部</string>
     <string name="segment_current_week">本周课程</string>
-    <string name="segment_not_scheduled">尚未安排</string>
+    <string name="segment_not_scheduled">尚未安排的课程</string>
+    <string name="segment_selected">已选择：%1$s</string>
     <string name="segment_enabled">启用选择</string>
     <string name="segment_small">紧凑尺寸</string>
     <string name="segment_commit_on_release">抬手时提交</string>
-    <string name="segment_usage">点按标签，或从选中指示器开始拖动。纵向手势交还页面滚动；取消手势不会新增提交。</string>
 </resources>
