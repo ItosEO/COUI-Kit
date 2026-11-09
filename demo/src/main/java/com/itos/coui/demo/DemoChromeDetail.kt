@@ -65,12 +65,12 @@ private fun NavigationSample(dark: Boolean) {
             if (Build.VERSION.SDK_INT >= 34 && renderer != null) {
                 NavigationBar(Modifier.align(Alignment.BottomCenter), backdrop, renderer,
                     items = listOf(
-                        CouiNavigationItem(titles[0], CouiIcons.Components, CouiIcons.ComponentsSelected),
-                        CouiNavigationItem(titles[1], DemoIcons.Effects, DemoIcons.EffectsSelected),
-                        CouiNavigationItem(titles[2], DemoIcons.Settings, DemoIcons.SettingsSelected)),
+                        CouiNavigationItem(title = titles[0], icon = CouiIcons.Filled.Grid),
+                        CouiNavigationItem(title = titles[1], icon = DemoIcons.Effects, selectedIcon = DemoIcons.EffectsSelected),
+                        CouiNavigationItem(title = titles[2], icon = DemoIcons.Settings, selectedIcon = DemoIcons.SettingsSelected)),
                     selectedIndex = selected, onSelection = { selected = it },
-                    leftIcon = CouiIcons.Settings, leftDescription = stringResource(R.string.nav_left_description),
-                    rightIcon = CouiIcons.Add, rightDescription = stringResource(R.string.nav_right_description),
+                    leftIcon = CouiIcons.Filled.SettingDetail, leftDescription = stringResource(R.string.nav_left_description),
+                    rightIcon = CouiIcons.Filled.Add, rightDescription = stringResource(R.string.nav_right_description),
                     leftVisible = left, rightVisible = right,
                     rightContainerColor = CouiFabDefaults.containerColor(CouiFabColor.Notes, dark),
                     dark = dark, lightColor = Color.White,
@@ -121,12 +121,12 @@ internal fun FabSampleButton(modifier: Modifier = Modifier, dark: Boolean, prese
         val renderer = rendering.getOrNull()
         if (renderer != null) {
             val color = CouiFabDefaults.containerColor(preset, dark)
-            Fab(modifier, renderer = renderer, dark = dark,
+            Fab(modifier, renderer = renderer, onClick = {}, dark = dark,
                 shape = if (rounded) CouiFabDefaults.roundedSquareShape else CouiFabDefaults.circleShape,
                 material = CouiFabDefaults.material(color, dark),
                 shadow = CouiFabDefaults.shadow(color, LocalDensity.current.density,
                     LocalCouiContourGlowEnabled.current)) {
-                Icon(CouiIcons.Add, stringResource(R.string.catalog_fab), Modifier.size(24.dp), tint = Color.White)
+                Icon(CouiIcons.Filled.Add, stringResource(R.string.catalog_fab), Modifier.size(24.dp))
             }
         }
         rendering.exceptionOrNull()?.let { error ->

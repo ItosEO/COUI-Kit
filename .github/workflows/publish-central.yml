@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   publish:
-    name: 发布双模块到 Maven Central
+    name: 发布三模块到 Maven Central
     if: github.repository == 'ItosEO/COUI-Kit'
     runs-on: ubuntu-24.04
     timeout-minutes: 90
@@ -54,11 +54,11 @@ jobs:
           PACKAGE_VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
-          ./gradlew :coui:lintRelease :coui-material3:lintRelease \
-            :coui:publishAllPublicationsToLocalRepository :coui-material3:publishAllPublicationsToLocalRepository \
+          ./gradlew :coui:lintRelease :coui-material3:lintRelease :coui-icons:lintRelease \
+            :coui:publishAllPublicationsToLocalRepository :coui-material3:publishAllPublicationsToLocalRepository :coui-icons:publishAllPublicationsToLocalRepository \
             "-PVERSION_NAME=$PACKAGE_VERSION" --no-configuration-cache --stacktrace
           node .github/scripts/verify-maven-artifacts.cjs
-      - name: 签名并自动发布
+      - name: 签名并提交自动发布
         env:
           PACKAGE_VERSION: ${{ steps.version.outputs.version }}
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
@@ -73,28 +73,12 @@ jobs:
           ./gradlew publishAndReleaseToMavenCentral \
             "-PVERSION_NAME=$PACKAGE_VERSION" \
             -PmavenCentralPublishing=true -PsignAllPublications=true \
-            -PmavenCentralDeploymentValidation=PUBLISHED --no-configuration-cache --stacktrace
-      - name: 确认两个模块可匿名下载
-        env:
-          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          set -euo pipefail
+            -PmavenCentralDeploymentValidation=NONE --no-configuration-cache --stacktrace
           group=$(sed -n 's/^GROUP=//p' gradle.properties)
-          group_path=${group//./\/}
-          for artifact in coui coui-material3; do
-            for suffix in .aar .pom .module -sources.jar -javadoc.jar; do
-              for signature in '' .asc; do
-                file="$artifact-$PACKAGE_VERSION$suffix$signature"
-                curl --fail --silent --show-error --location \
-                  --retry 6 --retry-all-errors --retry-delay 10 --retry-max-time 180 --max-time 30 \
-                  "https://repo.maven.apache.org/maven2/$group_path/$artifact/$PACKAGE_VERSION/$file" \
-                  --output "$RUNNER_TEMP/$file"
-                test -s "$RUNNER_TEMP/$file"
-              done
-            done
-          done
           {
-            echo '## Maven Central 双模块发行完成'
+            echo '## Maven Central 三模块已提交'
+            echo
+            echo 'Central 将继续异步校验和发布。'
             echo
             echo "版本: $PACKAGE_VERSION"
             echo "源码提交: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$GITHUB_SHA"
@@ -102,5 +86,6 @@ jobs:
             echo '```kotlin'
             echo "implementation(\"$group:coui:$PACKAGE_VERSION\")"
             echo "implementation(\"$group:coui-material3:$PACKAGE_VERSION\")"
+            echo "implementation(\"$group:coui-icons:$PACKAGE_VERSION\")"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"

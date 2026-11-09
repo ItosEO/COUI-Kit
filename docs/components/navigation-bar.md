@@ -49,9 +49,21 @@ fun PageNavigationBar(
     val renderer = remember { CouiFloatingRenderer() }
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     val items = listOf(
-        CouiNavigationItem("首页", Icons.Filled.Home, Icons.Filled.Home),
-        CouiNavigationItem("组件", Icons.Filled.List, Icons.Filled.List),
-        CouiNavigationItem("设置", Icons.Filled.Settings, Icons.Filled.Settings),
+        CouiNavigationItem(
+            title = "相册",
+            icon = CouiIcons.Outlined.Album,
+            selectedIcon = CouiIcons.Filled.Album,
+        ),
+        CouiNavigationItem(
+            title = "云端数据",
+            icon = CouiIcons.Outlined.CloudData,
+            selectedIcon = CouiIcons.Filled.CloudData,
+        ),
+        CouiNavigationItem(
+            title = "创作",
+            icon = CouiIcons.Outlined.WandSpark,
+            selectedIcon = CouiIcons.Filled.WandSpark,
+        ),
     )
     NavigationBar(
         modifier = modifier,
@@ -59,9 +71,9 @@ fun PageNavigationBar(
         renderer = renderer,
         items = items,
         selectedIndex = selectedIndex,
-        leftIcon = Icons.Filled.Notifications,
-        leftDescription = "通知",
-        rightIcon = Icons.Filled.Add,
+        leftIcon = CouiIcons.Filled.DarkLight,
+        leftDescription = "切换主题",
+        rightIcon = CouiIcons.Filled.Add,
         rightDescription = "新建",
         leftVisible = true,
         rightVisible = true,
@@ -81,7 +93,11 @@ fun PageNavigationBar(
 }
 ~~~
 
-示例保存选中的索引，并通过 `onSelection` 通知页面切换。项目已有导航状态时，可以将索引作为参数传入 `PageNavigationBar`，再传给 `NavigationBar`。`items` 不能为空，选中索引必须属于列表。每项可以分别设置普通图标和选中图标；示例使用相同图标。示例中的 Material 图标需要由应用声明图标依赖。
+示例保存选中的索引，并通过 `onSelection` 通知页面切换。项目已有导航状态时，可以将索引作为参数传入 `PageNavigationBar`，再传给 `NavigationBar`。`items` 不能为空，选中索引必须属于列表。
+
+`icon` 是未选中的图形，`selectedIcon` 是选中和拖动预选时的图形；省略 `selectedIcon` 时，两种状态共用 `icon`。底栏内部选择图形、绘制 24dp 图标并应用状态色，同时处理点击、焦点、选择语义和文字标签。页面状态通过 `onSelection` 提交。
+
+示例使用可选的 `coui-icons` 图标包，原生主题和 M3 适配均可直接使用。主题接入见[外观与预设](../guide/appearance.md)。示例文案在实际应用中应使用字符串资源。
 
 使用 COUI Scaffold 时，将底栏放在 `bottomBar`。第三方容器将底栏放在背景源节点之外，例如放在页面 `Box` 的底部。
 
@@ -98,6 +114,24 @@ fun PageNavigationBar(
 右侧附件图标按设计固定为白色，包括底色自动取主题强调色的情况；它不读取 `onAccent`。选择底色时应与白色图标搭配。
 
 ## 配色和形状
+
+导航项的图标与文字默认共用状态色：日间为黑色、夜间为白色；选中态不透明度为 `230 / 255`，未选中态为 `184 / 255`。组件根据拖动预选或当前选择自动切换，无需调用方计算透明度。
+
+可在 `NavigationBar` 中传入 `selectedColor` 和 `unselectedColor` 覆盖对应状态的图标与文字颜色。显式颜色按原值使用，不额外叠加状态透明度，例如 `selectedColor = CouiColor.Day.BLUE`。这些参数只影响中间导航项，左右附件使用各自的配色规则。图标应使用不含状态透明度的资源；图形自身的半透明层仍会与 tint 相乘。
+
+例如，在现有 `NavigationBar` 调用中覆盖选中和未选中的颜色：
+
+~~~kotlin
+NavigationBar(
+    backdrop = backdrop,
+    renderer = renderer,
+    items = items,
+    selectedIndex = selectedIndex,
+    selectedColor = CouiColor.Day.BLUE,
+    unselectedColor = CouiColor.Day.GRAY,
+    onSelection = onSelection,
+)
+~~~
 
 `themeTint` 默认读取匹配模式的主题策略：原生为透明，M3 适配为宿主 surface，仅进入已有页面色相层。显式透明关闭染色；异模式自动回退也为透明。显式传入其他颜色时按该颜色染色。`lightColor` 用于高光；`circleShape` 和 `capsuleShape` 分别控制两侧按钮和中间导航栏的形状。
 

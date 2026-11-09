@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,8 @@ internal object DemoShapes {
     val couiCapsule = CouiCapsuleShape
     val effect = CouiShape(24.dp)
 }
+
+internal val LocalDemoTopBarGradient = staticCompositionLocalOf { Color.Unspecified }
 
 @Composable
 internal fun DemoTheme(dark: Boolean, materialTheme: Boolean = true, content: @Composable () -> Unit) {
@@ -72,7 +75,8 @@ internal fun DemoTheme(dark: Boolean, materialTheme: Boolean = true, content: @C
     // 切换局部外观时移动同一内容树，保留页面状态与 renderer 的生命周期。
     val scopedContent = remember { movableContentOf { currentContent() } }
     MaterialTheme(colorScheme = colors) {
-        CompositionLocalProvider(LocalCouiDarkTheme provides dark, LocalContentColor provides colors.onBackground) {
+        CompositionLocalProvider(LocalCouiDarkTheme provides dark, LocalContentColor provides colors.onBackground,
+            LocalDemoTopBarGradient provides if (materialTheme) colors.background else Color.Unspecified) {
             if (materialTheme) scopedContent()
             else CouiTheme(darkTheme = dark, content = scopedContent)
         }

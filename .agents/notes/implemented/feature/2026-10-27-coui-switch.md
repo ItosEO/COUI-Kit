@@ -20,7 +20,7 @@ Demo 的整行装配与共享触觉入口见[整行开关输入](../bug-fix/2026
 
 基准为 com.android.settings 17.0.0 / versionCode 17000000，APK SHA-256 d97df8a9227520a6f673e5d6f5efbc901b5d9d4c501d12e5d8bf717daae079d5。主要链路为 COUISwitchStyle → COUISwitch，以及 COUISwitchParamsExtKt → SpringData → COUISpringForce/Animation、COUISpringDragHelper。构建指纹和用户设备 APK 哈希未读取；版本名一致不当作包字节一致。
 
-SpringData 的构造顺序为 bounce、response、velocity，已经由 smali 字段写入确认。普通切换根据命名 getter 设置 Force，不能将构造调用的前两项读反，也不误用 SpringData.getDampingRatio 的另一条换算。拖动和吸附来自 COUISwitchParams 的独立字段。复用已有严格版本约束的 AndroidX DynamicAnimation，保持原厂闭式积分、阈值、整数可见位置与浮点拉伸/颜色。普通反向只改变目标并保留速度；吸附开始使用原始浮点速度，选锚点先量化速度，并等 X/Y 两路收尾。
+SpringData 的构造顺序为 bounce、response、velocity，已经由 smali 字段写入确认。普通切换根据命名 getter 设置 Force，不能将构造调用的前两项读反，也不误用 SpringData.getDampingRatio 的另一条换算。拖动和吸附来自 COUISwitchParams 的独立字段。复用[普通弹簧通道](../architecture/2026-10-29-persistent-motion-channels.md)，保持原厂闭式积分、阈值、整数可见位置与浮点拉伸/颜色。普通反向只改变目标并保留速度；吸附开始使用原始浮点速度，选锚点先量化速度，并等 X/Y 两路收尾。
 
 [CouiSwitchMotion](../../../../coui/src/main/java/com/itos/coui/switch/CouiSwitchMotion.kt)负责 checked 同步、普通切换、拉伸、颜色进度与单一提交；[CouiSwitchDrag](../../../../coui/src/main/java/com/itos/coui/switch/CouiSwitchDrag.kt)仅持有拖动阈值、双锚点和双轴吸附完成，不接触业务值。两者复用内部 CouiSpring，不另造物理后端或公开通用拖动框架。通道生命周期、拆分代价及逐帧回归边界见[普通弹簧持久通道](../architecture/2026-10-29-persistent-motion-channels.md)，公开 API 与加载实现保持。
 

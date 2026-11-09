@@ -72,7 +72,6 @@ import com.itos.coui.effect.couiFloatingPair
 import com.itos.coui.effect.couiToolbarFeedback
 import com.itos.coui.input.CouiSearchRelocationBoundary
 import com.itos.coui.theme.CouiTheme
-import com.itos.coui.icons.CouiIcons
 import com.itos.coui.motion.rememberCouiPressMotion
 import com.itos.coui.motion.couiPressMotion
 import com.itos.coui.motion.couiTouchMotion
@@ -175,6 +174,7 @@ fun SearchBar(
             alpha = (f / .2f).coerceIn(0f, 1f), visible = state.active)
     }
     val contour = LocalCouiContourGlowEnabled.current
+    val themeTint = CouiTheme.materialTintFor(dark)
     var normalShadow by remember { mutableFloatStateOf(shadowProgress) }
     if (!state.active) SideEffect { normalShadow = shadowProgress }
     // 首页在搜索弹簧期间暂停滚动投影回调；不能用搜索主动折叠产生的 offset 提前点亮投影。
@@ -187,9 +187,9 @@ fun SearchBar(
     val shadow = baseShadow.copy(causticColor = baseShadow.causticColor.copy(alpha = baseShadow.causticColor.alpha * drop))
     val surfaceModifier = if (Build.VERSION.SDK_INT >= 34 && renderer != null) Modifier.couiFloatingPair(
         surfaceBackdrop, renderer, listOf(CouiTopAppBarButtonDefaults.systemMaterial(dark, true).copy(index = 1,
-            blurRadius = CouiSearchBarDefaults.blurRadius, extension = with(density) { 4.dp.roundToPx() }),
+            blurRadius = CouiSearchBarDefaults.blurRadius, extension = with(density) { 4.dp.roundToPx() }, themeTint = themeTint),
             CouiTopAppBarButtonDefaults.systemMaterial(dark, true).copy(index = 2,
-                blurRadius = CouiSearchBarDefaults.blurRadius, extension = with(density) { 4.dp.roundToPx() })),
+                blurRadius = CouiSearchBarDefaults.blurRadius, extension = with(density) { 4.dp.roundToPx() }, themeTint = themeTint)),
         listOf(shadow, shadow), listOf(shape, shape), listOf(bodyLayer, cancelLayer), contour,
         // 原厂 bringChildToFront(functional) 后再提升 searchBarBackgroundView。
         // 调整整层材质与内容的顺序，不能只把透明文字层放到上面。
@@ -234,7 +234,7 @@ fun SearchBar(
                     Row(Modifier.fillMaxSize().padding(start = CouiSearchBarDefaults.iconStart,
                         end = CouiSearchBarDefaults.textEnd), verticalAlignment = Alignment.CenterVertically) {
                         Box(Modifier.size(CouiSearchBarDefaults.innerIconSlot), contentAlignment = Alignment.Center) {
-                            Icon(modifier = Modifier.size(CouiSearchBarDefaults.iconSize), imageVector = CouiIcons.SearchField,
+                            Icon(modifier = Modifier.size(CouiSearchBarDefaults.iconSize), imageVector = CouiSearchIcon.imageVector,
                                 contentDescription = null, tint = secondary)
                         }
                         Box(Modifier.weight(1f)) {

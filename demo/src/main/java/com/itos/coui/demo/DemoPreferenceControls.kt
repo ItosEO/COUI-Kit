@@ -9,12 +9,15 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.LayoutDirection
 import com.itos.coui.effect.couiButtonFeedback
 import com.itos.coui.menu.Menu
 import com.itos.coui.menu.CouiMenuItem
@@ -64,7 +67,8 @@ internal fun <T> DemoPopupPreference(
 
 @Composable
 private fun PopupArrow(modifier: Modifier, color: Color) {
-    androidx.compose.material3.Icon(CouiIcons.Popup, null, modifier, tint = color)
+    val rotation = if (LocalLayoutDirection.current == LayoutDirection.Ltr) -90f else 90f
+    androidx.compose.material3.Icon(CouiIcons.Filled.Back, null, modifier.rotate(rotation), tint = color)
 }
 
 /** 设置滑条行：标题/右值独立于滑条，48dp 触摸槽始终以自身中线绘制。 */

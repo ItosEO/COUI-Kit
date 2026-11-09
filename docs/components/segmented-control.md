@@ -28,13 +28,13 @@ fun ScheduleRange(modifier: Modifier = Modifier, labels: List<String>, dark: Boo
 
 `labels` 不能为空，`selectedIndex` 必须在标签范围内，否则抛出异常。项目增删后，宿主先同步合法选择。标签按自然文字宽度分配空间；通过 `fillMaxWidth()` 使用完整可用宽度，空间不足时显示省略号。
 
-默认高度由 `CouiSegmentedControlDefaults.height` 提供；`small = true` 选择紧凑高度与内缩。标准尺寸 Modifier 可覆盖高度，绘制和命中使用实际约束。`textStyle` 可覆盖文字外观，默认使用原厂 ButtonM 文字角色。固定高度过小时，宿主需自行保证文字可读。
+默认高度由 `CouiSegmentedControlDefaults.height` 提供，`small = true` 选择紧凑高度与内缩。标准尺寸 Modifier 可覆盖高度，绘制和命中使用实际约束。文字默认使用原厂 ButtonM 文字角色和主题前景色，`textStyle` 可覆盖字体和颜色。固定高度过小时，宿主需自行保证文字可读。
 
 ## 选择与取消
 
-普通点按在抬手时请求选择。按下当前指示器后可横向拖动，进入其他项目时即时调用 `onSelected`。选择由宿主持有，回调不能代替更新 `selectedIndex`。
+普通点按在抬手时请求选择，命中覆盖整个项目。按下当前指示器后可横向拖动，越过其他项目边缘的切换距离后即时调用 `onSelected`。选择由宿主持有，回调后由宿主更新 `selectedIndex`。
 
-`commitOnRelease = true` 仅预览拖动位置，在有效项目内抬手才提交一次。纵向手势、父容器接管、系统取消、失去主指、禁用或节点移除均收尾，取消不会新增提交。即时模式中，先前已交给宿主的选择不会回滚；延后提交模式中的未提交草稿会恢复到宿主值。
+`commitOnRelease = true` 仅预览拖动位置，在项目的有效命中区抬手才提交一次。拖动中的有效命中区同样扣除项目两侧的切换距离。纵向手势、父容器接管、系统取消、失去主指、禁用或节点移除均收尾，取消不会新增提交。即时模式保留已经交给宿主的选择，延后提交模式中的草稿恢复到宿主值。
 
 `enabled = false` 关闭触摸、键盘和无障碍选择。标签提供单选组及选中语义；Enter、方向键中心键和空格可激活焦点项。RTL 反转布局与命中，索引顺序保持传入列表的顺序。
 

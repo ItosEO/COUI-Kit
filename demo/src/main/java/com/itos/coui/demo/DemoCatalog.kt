@@ -1,6 +1,5 @@
 package com.itos.coui.demo
 
-import com.itos.coui.icons.CouiIcons
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -15,42 +14,44 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.itos.coui.layout.CouiPageDefaults
 import com.itos.coui.layout.Divider
 import com.itos.coui.layout.Group
+import com.itos.coui.icons.CouiIcons
 
-internal data class DemoCatalogEntry(val page: String, val title: Int, val icon: androidx.compose.ui.graphics.vector.ImageVector)
+internal data class DemoCatalogEntry(val page: String, val title: Int, val icon: @Composable () -> ImageVector)
 
 private val CatalogRowMinHeight = 52.dp
 
 internal val DemoWheelPickerEntries = listOf(
-    DemoCatalogEntry("wheel", R.string.picker_number_title, DemoIcons.Tune),
-    DemoCatalogEntry("timepicker", R.string.picker_time_title, CouiIcons.Time),
-    DemoCatalogEntry("countdownpicker", R.string.picker_countdown_title, CouiIcons.Countdown),
-    DemoCatalogEntry("datepicker", R.string.picker_date_title, DemoIcons.Date),
+    DemoCatalogEntry("wheel", R.string.picker_number_title) { DemoIcons.Tune },
+    DemoCatalogEntry("timepicker", R.string.picker_time_title) { CouiIcons.Filled.Health },
+    DemoCatalogEntry("countdownpicker", R.string.picker_countdown_title) { CouiIcons.Filled.Battery },
+    DemoCatalogEntry("datepicker", R.string.picker_date_title) { DemoIcons.Date },
 )
 
 internal val DemoComponentGroups = listOf(
-    listOf(DemoCatalogEntry("switch", R.string.switch_title, DemoIcons.Switch),
-        DemoCatalogEntry("segment", R.string.segment_title, DemoIcons.Switch),
-        DemoCatalogEntry("sliders", R.string.slider_title, DemoIcons.Tune),
-        DemoCatalogEntry("checkbox", R.string.checkbox_title, DemoIcons.Checkbox)),
-    listOf(DemoCatalogEntry("dialogs", R.string.dialog_title, DemoIcons.Dialogs),
-        DemoCatalogEntry("menu", R.string.menu_title, CouiIcons.More)),
-    listOf(DemoCatalogEntry("appbar", R.string.catalog_appbar, DemoIcons.Title),
-        DemoCatalogEntry("search", R.string.catalog_search, CouiIcons.Search),
-        DemoCatalogEntry("navigation", R.string.catalog_navigation, CouiIcons.Featured),
-        DemoCatalogEntry("chip", R.string.chip_tab_title, CouiIcons.Components),
-        DemoCatalogEntry("fab", R.string.catalog_fab, CouiIcons.Add)),
-    listOf(DemoCatalogEntry("wheel", R.string.catalog_wheel, DemoIcons.Tune),
-        DemoCatalogEntry("calendar", R.string.picker_calendar_title, CouiIcons.Calendar)),
+    listOf(DemoCatalogEntry("switch", R.string.switch_title) { DemoIcons.Switch },
+        DemoCatalogEntry("segment", R.string.segment_title) { DemoIcons.Switch },
+        DemoCatalogEntry("sliders", R.string.slider_title) { DemoIcons.Tune },
+        DemoCatalogEntry("checkbox", R.string.checkbox_title) { DemoIcons.Checkbox }),
+    listOf(DemoCatalogEntry("dialogs", R.string.dialog_title) { DemoIcons.Dialogs },
+        DemoCatalogEntry("menu", R.string.menu_title) { CouiIcons.Filled.Grid }),
+    listOf(DemoCatalogEntry("appbar", R.string.catalog_appbar) { DemoIcons.Title },
+        DemoCatalogEntry("search", R.string.catalog_search) { CouiIcons.Outlined.Search },
+        DemoCatalogEntry("navigation", R.string.catalog_navigation) { CouiIcons.Filled.Lab },
+        DemoCatalogEntry("chip", R.string.chip_tab_title) { CouiIcons.Filled.Grid },
+        DemoCatalogEntry("fab", R.string.catalog_fab) { CouiIcons.Filled.Add }),
+    listOf(DemoCatalogEntry("wheel", R.string.catalog_wheel) { DemoIcons.Tune },
+        DemoCatalogEntry("calendar", R.string.picker_calendar_title) { CouiIcons.Filled.Health }),
 )
 
 internal val DemoEffectGroups = listOf(
-    listOf(DemoCatalogEntry("effect_shadow", R.string.shadow_title, CouiIcons.Featured),
-        DemoCatalogEntry("effect_fusion", R.string.fusion_title, CouiIcons.Add),
-        DemoCatalogEntry("effect_backdrop", R.string.backdrop_title, CouiIcons.Components),
-        DemoCatalogEntry("effect_material", R.string.material_title, DemoIcons.Switch)),
+    listOf(DemoCatalogEntry("effect_shadow", R.string.shadow_title) { CouiIcons.Filled.Rings },
+        DemoCatalogEntry("effect_fusion", R.string.fusion_title) { CouiIcons.Filled.Add },
+        DemoCatalogEntry("effect_backdrop", R.string.backdrop_title) { CouiIcons.Filled.Radar },
+        DemoCatalogEntry("effect_material", R.string.material_title) { DemoIcons.Switch }),
 )
 
 @Composable
@@ -72,7 +73,7 @@ internal fun DemoCatalog(groups: List<List<DemoCatalogEntry>>, open: (String) ->
                     matches.forEachIndexed { index, (entry, route) -> key(entry.page) {
                         DemoPreference(Modifier.heightIn(min = CatalogRowMinHeight),
                             title = stringResource(entry.title), enabled = enabled, onClick = { open(route) }, icon = {
-                                Icon(entry.icon, null, Modifier.size(CouiPageDefaults.iconSize), tint = catalogIconColor(entry.page))
+                                Icon(entry.icon(), null, Modifier.size(CouiPageDefaults.iconSize), tint = Color.Unspecified)
                             })
                         if (index != matches.lastIndex) Divider(startIndent =
                             CouiPageDefaults.rowPadding + CouiPageDefaults.iconSize + CouiPageDefaults.iconSpacing)
@@ -93,17 +94,6 @@ private fun catalogSearchMatches(entry: DemoCatalogEntry, needle: String): Boole
         stringResource(if (entry.page == "wheel") R.string.intro_numberpicker else catalogDescription(entry.page))
             .contains(needle, ignoreCase = true) ||
         (entry.page == "wheel" && stringResource(R.string.picker_number_title).contains(needle, ignoreCase = true))
-
-/** 目录图标由 Demo 配色，几何使用随 Demo 打包的 ColorOS 原始矢量。 */
-private fun catalogIconColor(page: String): Color = Color(when (page) {
-    "timepicker", "effect_backdrop", "effect_shadow" -> 0xFF1A8CFF
-    "switch", "checkbox" -> 0xFF34B978
-    "sliders", "countdownpicker" -> 0xFFFF9B35
-    "dialogs", "calendar", "effect_material" -> 0xFFA884E7
-    "menu", "datepicker", "effect_fusion" -> 0xFF45B6AE
-    "appbar", "navigation" -> 0xFFE97697
-    else -> 0xFF7397C8
-})
 
 internal fun catalogDescription(page: String): Int = when (page) {
     "chip" -> R.string.intro_chip

@@ -135,11 +135,11 @@ private fun MenuSample(dark: Boolean) {
             modifier = Modifier.heightIn(max = 320.dp),
             style = demoMenuStyle(dark), headerText = stringResource(R.string.menu_header),
             items = if (longMenu) longLabels.mapIndexed { index, label ->
-                CouiMenuItem(index, label, icon = CouiIcons.Settings, selected = selected == index,
+                CouiMenuItem(index, label, icon = CouiIcons.Filled.SettingDetail, selected = selected == index,
                     dividerBefore = index > 0 && index % 3 == 0)
             } else listOf(
                 CouiMenuItem(-1, stringResource(R.string.menu_pinned), checked = pinned),
-                CouiMenuItem(0, first, icon = CouiIcons.Settings, selected = selected == 0, dividerBefore = true),
+                CouiMenuItem(0, first, icon = CouiIcons.Filled.SettingDetail, selected = selected == 0, dividerBefore = true),
                 CouiMenuItem(-2, stringResource(R.string.menu_more),
                     children = listOf(CouiMenuItem(1, second, selected = selected == 1),
                         CouiMenuItem(-3, stringResource(R.string.menu_disabled), enabled = false))),

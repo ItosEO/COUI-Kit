@@ -12,7 +12,7 @@ Status: implemented
 
 CouiMenuBlur 保留公开 draw 和 remember 工厂，构造器收为 internal，避免宿主组装固定数量的中间图层。顶栏按钮的 enabled/text/renderer 增加默认值，搜索状态工厂可自建单主体 renderer。显式 renderer 参数保留，默认创建不吞异常、不跨节点共享；需要创建错误控制时仍显式装配。Demo 保留此高级调用方式。
 
-库 AAR metadata 表达当前 Compose 依赖要求的编译 SDK 和 AGP 下限，数值由构建文件持有。[兼容文档](../../../../docs/guide/compatibility.md) 区分必要元数据下限与待验证组合；DynamicAnimation 严格约束保持。不猜测 Kotlin 最低消费版本，也不把 Foundation 请求值当作 BOM 最终解析版本。
+库 AAR metadata 表达当前 Compose 依赖要求的编译 SDK 和 AGP 下限，数值由构建文件持有。[兼容文档](../../../../docs/guide/compatibility.md) 区分必要元数据下限与待验证组合。不猜测 Kotlin 最低消费版本，也不把 Foundation 请求值当作 BOM 最终解析版本。
 
 [接入指南](../../../../docs/guide/getting-started.md) 提供模块依赖与第一个组件；阴影、背景与各组件装配由普通使用页分别持有。当前不配置 Maven、不检查发行 AAR 或独立消费，不声明稳定二进制 ABI。
 

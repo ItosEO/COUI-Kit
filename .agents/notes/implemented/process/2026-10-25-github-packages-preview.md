@@ -10,7 +10,7 @@ Status: implemented
 
 库采用 Vanniktech 的 Android release 单变体 publication，使用 Dokka 生成真实 HTML 文档，公共坐标与基础版本由根 Gradle 属性持有。GitHub Packages 发布版本在基础版本中加入源码提交 SHA，以 SNAPSHOT 提供开发接入；不使用 Demo Git 提交数或显示版本名。
 
-手动工作流先生成无凭据的本地 Maven 文件仓库，核对 AAR、源码、文档、许可与 Gradle 依赖元数据，再上传并读取远端版本元数据。Compose BOM 与 DynamicAnimation 严格约束由 `.module` 检查，不能以 POM 或 AAR 存在代替。PR 增加同一个本地发行目标，及早暴露打包与 Dokka 配置问题，不增加单测或远端上传。
+手动工作流先生成无凭据的本地 Maven 文件仓库，核对 AAR、源码、文档、许可与 Gradle 依赖元数据，再上传并读取远端版本元数据。Compose BOM 与 DynamicAnimation 版本声明由 `.module` 检查，不能以 POM 或 AAR 存在代替。PR 增加同一个本地发行目标，及早暴露打包与 Dokka 配置问题，不增加单测或远端上传。
 
 [可选 M3 模块](../architecture/2026-10-31-optional-material3-style.md)与核心同版本，单独 artifactId 由模块配置持有。两个模块均生成本地 Maven 目标，PR 与发布共用 `.github/scripts/verify-maven-artifacts.cjs`，同时核对核心无 M3、适配器依赖同版本核心与 M3。上传与远端确认覆盖两个 artifact；渠道和凭据规则不变。
 

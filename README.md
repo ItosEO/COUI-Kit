@@ -34,22 +34,22 @@ COUI-Kit 参考 ColorOS 17 的「凝光视效」，提供背景模糊、材质�
 
 ```kotlin
 dependencies {
-    implementation("io.github.itoseo:coui:0.0.1-alpha7")
+    implementation("io.github.itoseo:coui:0.0.1-alpha9")
 }
 ```
 
 仓库配置和工具链要求见[快速开始](docs/guide/getting-started.md)。部分效果需要更高的 Android 版本，见[兼容要求](docs/guide/compatibility.md#效果门槛)。
 
-文档与 `0.0.1-alpha7` 使用 `Text`、`Switch` 和 `Scaffold` 等无前缀组件名。旧版升级的名称和参数迁移规则见 [CHANGELOG](CHANGELOG.md#组件命名迁移)。
+使用 `CouiIcons` 时，添加可选的图标依赖，详见[图标用法](docs/components/icons.md)。
 
 ### 接入 Material 3
 
 已有 Material 3 App 可以让 COUI 的默认配色和字体跟随当前 `MaterialTheme`，插槽中的 M3 `Text`、`Icon` 直接继承组件样式，无需逐处接线或增加根主题包装。
 
-`coui` 与 `coui-material3` 采用相同版本并同步发布。通过 Maven Central 接入 M3 时，只需添加适配模块：
+`coui`、`coui-material3` 与 `coui-icons` 采用相同版本并同步发布。通过 Maven Central 接入 M3 时，只需添加适配模块：
 
 ```kotlin
-val couiVersion = "0.0.1-alpha7"
+val couiVersion = "0.0.1-alpha9"
 
 dependencies {
     implementation("io.github.itoseo:coui-material3:$couiVersion")
@@ -86,6 +86,7 @@ CompositionLocalProvider(LocalCouiDarkTheme provides darkTheme) {
 ## 文档
 
 - [组件目录](docs/components/README.md)
+- [图标用法](docs/components/icons.md)
 - [效果目录](docs/effects/README.md)
 - [兼容要求](docs/guide/compatibility.md)
 - [外观与预设](docs/guide/appearance.md)

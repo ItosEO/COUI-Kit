@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:height="24dp" android:width="24dp" android:viewportWidth="24" android:viewportHeight="24" android:name="CloudData" android:tint="@color/coui_icon_tint_neutral_ff000000_ffffffff">
+    <group>
+        <clip-path android:pathData="M0,0h24v24h-24z" />
+        <path android:fillColor="#FF000000" android:pathData="M19.701,2.3C20.806,2.3 21.701,3.196 21.701,4.3V19.7C21.701,20.805 20.806,21.7 19.701,21.7H4.301C3.197,21.7 2.301,20.805 2.301,19.7V4.3C2.301,3.196 3.197,2.3 4.301,2.3H19.701ZM3.701,15.7V19.7C3.702,20.032 3.97,20.3 4.301,20.3H19.701C20.032,20.3 20.301,20.031 20.301,19.7V15.7H3.701ZM3.701,9.7V14.3H20.301V9.7H3.701ZM4.301,3.7C3.97,3.701 3.702,3.969 3.701,4.3V8.3H20.301V4.3C20.301,3.969 20.032,3.701 19.701,3.7H4.301Z" />
+        <path android:fillColor="#FF000000" android:pathData="M6.501,5H5.501C5.225,5 5.001,5.224 5.001,5.5V6.5C5.001,6.776 5.225,7 5.501,7H6.501C6.777,7 7.001,6.776 7.001,6.5V5.5C7.001,5.224 6.777,5 6.501,5Z" />
+        <path android:fillColor="#FF000000" android:pathData="M6.501,11H5.501C5.225,11 5.001,11.224 5.001,11.5V12.5C5.001,12.776 5.225,13 5.501,13H6.501C6.777,13 7.001,12.776 7.001,12.5V11.5C7.001,11.224 6.777,11 6.501,11Z" />
+        <path android:fillColor="#FF000000" android:pathData="M6.501,17H5.501C5.225,17 5.001,17.224 5.001,17.5V18.5C5.001,18.776 5.225,19 5.501,19H6.501C6.777,19 7.001,18.776 7.001,18.5V17.5C7.001,17.224 6.777,17 6.501,17Z" />
+    </group>
+</vector>
