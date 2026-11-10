@@ -16,6 +16,9 @@ object CouiIcons {
         val Back: ImageVector
             @Composable get() = couiIconResource(R.drawable.coui_back_filled)
 
+        val Next: ImageVector
+            @Composable get() = couiIconResource(R.drawable.coui_next_filled)
+
         val Close: ImageVector
             @Composable get() = couiIconResource(R.drawable.coui_close_filled)
 
@@ -39,6 +42,10 @@ object CouiIcons {
         /** com.android.settings:drawable/coui_back_arrow_normal。 */
         val Back: ImageVector
             @Composable get() = Monochrome.Back
+
+        /** com.android.settings:drawable/coui_btn_next_normal。 */
+        val Next: ImageVector
+            @Composable get() = Monochrome.Next
 
         /** com.android.settings:drawable/ic_close。 */
         val Close: ImageVector
@@ -272,6 +279,9 @@ object CouiIcons {
 
         val Back: ImageVector
             @Composable get() = Monochrome.Back
+
+        val Next: ImageVector
+            @Composable get() = Monochrome.Next
 
         val Close: ImageVector
             @Composable get() = Monochrome.Close

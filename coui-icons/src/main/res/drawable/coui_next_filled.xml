@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:name="Next"
+    android:width="12dp"
+    android:height="24dp"
+    android:viewportWidth="12"
+    android:viewportHeight="24"
+    android:autoMirrored="true"
+    android:tint="@color/coui_icon_tint_neutral_ff000000_ffffffff">
+    <path
+        android:pathData="M5,6L10.646,11.646C10.842,11.842 10.842,12.158 10.646,12.354L5,18"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.4"
+        android:strokeLineCap="round" />
+</vector>

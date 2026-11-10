@@ -81,6 +81,86 @@ window.COUI_ICON_DATA = {
       }
     },
     {
+      "name": "Next",
+      "style": "Filled",
+      "source": "Next",
+      "day": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"24\" viewBox=\"0 0 12 24\" fill=\"none\"><path d=\"M5,6L10.646,11.646C10.842,11.842 10.842,12.158 10.646,12.354L5,18\" fill=\"none\" stroke=\"#000000\" data-coui-stroke=\"true\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"miter\"/></svg>",
+      "night": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"24\" viewBox=\"0 0 12 24\" fill=\"none\"><path d=\"M5,6L10.646,11.646C10.842,11.842 10.842,12.158 10.646,12.354L5,18\" fill=\"none\" stroke=\"#FFFFFF\" data-coui-stroke=\"true\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"miter\"/></svg>",
+      "mode": "tint",
+      "vector": {
+        "day": {
+          "name": "Next",
+          "width": 12,
+          "height": 24,
+          "viewportWidth": 12,
+          "viewportHeight": 24,
+          "autoMirror": true,
+          "tintColor": {
+            "type": "color",
+            "hex": "#000000",
+            "alpha": 1,
+            "rawAlpha": 255
+          },
+          "commands": [
+            {
+              "type": "path",
+              "d": "M5,6L10.646,11.646C10.842,11.842 10.842,12.158 10.646,12.354L5,18",
+              "fill": null,
+              "fillAlpha": 1,
+              "stroke": {
+                "type": "solid",
+                "hex": "#000000",
+                "alpha": 1,
+                "rawAlpha": 255,
+                "isBackgroundParam": false
+              },
+              "strokeAlpha": 1,
+              "strokeLineWidth": 1.4,
+              "strokeLineCap": "round",
+              "strokeLineJoin": "miter",
+              "strokeLineMiter": 4,
+              "fillRule": "nonzero"
+            }
+          ]
+        },
+        "night": {
+          "name": "Next",
+          "width": 12,
+          "height": 24,
+          "viewportWidth": 12,
+          "viewportHeight": 24,
+          "autoMirror": true,
+          "tintColor": {
+            "type": "color",
+            "hex": "#FFFFFF",
+            "alpha": 1,
+            "rawAlpha": 255
+          },
+          "commands": [
+            {
+              "type": "path",
+              "d": "M5,6L10.646,11.646C10.842,11.842 10.842,12.158 10.646,12.354L5,18",
+              "fill": null,
+              "fillAlpha": 1,
+              "stroke": {
+                "type": "solid",
+                "hex": "#000000",
+                "alpha": 1,
+                "rawAlpha": 255,
+                "isBackgroundParam": false
+              },
+              "strokeAlpha": 1,
+              "strokeLineWidth": 1.4,
+              "strokeLineCap": "round",
+              "strokeLineJoin": "miter",
+              "strokeLineMiter": 4,
+              "fillRule": "nonzero"
+            }
+          ]
+        }
+      }
+    },
+    {
       "name": "Close",
       "style": "Filled",
       "source": "Close",
@@ -8207,6 +8287,86 @@ window.COUI_ICON_DATA = {
               "strokeLineWidth": 1.399999976158142,
               "strokeLineCap": "round",
               "strokeLineJoin": "round",
+              "strokeLineMiter": 4,
+              "fillRule": "nonzero"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Next",
+      "style": "Outlined",
+      "source": "Next",
+      "day": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"24\" viewBox=\"0 0 12 24\" fill=\"none\"><path d=\"M5,6L10.646,11.646C10.842,11.842 10.842,12.158 10.646,12.354L5,18\" fill=\"none\" stroke=\"#000000\" data-coui-stroke=\"true\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"miter\"/></svg>",
+      "night": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"24\" viewBox=\"0 0 12 24\" fill=\"none\"><path d=\"M5,6L10.646,11.646C10.842,11.842 10.842,12.158 10.646,12.354L5,18\" fill=\"none\" stroke=\"#FFFFFF\" data-coui-stroke=\"true\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"miter\"/></svg>",
+      "mode": "tint",
+      "vector": {
+        "day": {
+          "name": "Next",
+          "width": 12,
+          "height": 24,
+          "viewportWidth": 12,
+          "viewportHeight": 24,
+          "autoMirror": true,
+          "tintColor": {
+            "type": "color",
+            "hex": "#000000",
+            "alpha": 1,
+            "rawAlpha": 255
+          },
+          "commands": [
+            {
+              "type": "path",
+              "d": "M5,6L10.646,11.646C10.842,11.842 10.842,12.158 10.646,12.354L5,18",
+              "fill": null,
+              "fillAlpha": 1,
+              "stroke": {
+                "type": "solid",
+                "hex": "#000000",
+                "alpha": 1,
+                "rawAlpha": 255,
+                "isBackgroundParam": false
+              },
+              "strokeAlpha": 1,
+              "strokeLineWidth": 1.4,
+              "strokeLineCap": "round",
+              "strokeLineJoin": "miter",
+              "strokeLineMiter": 4,
+              "fillRule": "nonzero"
+            }
+          ]
+        },
+        "night": {
+          "name": "Next",
+          "width": 12,
+          "height": 24,
+          "viewportWidth": 12,
+          "viewportHeight": 24,
+          "autoMirror": true,
+          "tintColor": {
+            "type": "color",
+            "hex": "#FFFFFF",
+            "alpha": 1,
+            "rawAlpha": 255
+          },
+          "commands": [
+            {
+              "type": "path",
+              "d": "M5,6L10.646,11.646C10.842,11.842 10.842,12.158 10.646,12.354L5,18",
+              "fill": null,
+              "fillAlpha": 1,
+              "stroke": {
+                "type": "solid",
+                "hex": "#000000",
+                "alpha": 1,
+                "rawAlpha": 255,
+                "isBackgroundParam": false
+              },
+              "strokeAlpha": 1,
+              "strokeLineWidth": 1.4,
+              "strokeLineCap": "round",
+              "strokeLineJoin": "miter",
               "strokeLineMiter": 4,
               "fillRule": "nonzero"
             }

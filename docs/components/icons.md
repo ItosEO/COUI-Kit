@@ -27,11 +27,11 @@ Icon(
 )
 ```
 
-图标按 `CouiIcons.Filled` 和 `CouiIcons.Outlined` 提供。`Back`、`Close`、`Add`、`DarkLight`、`ListFilter`、`More` 和 `Scan` 在两种样式中使用相同图形；`Search`、`SliderCustom` 和 `LayoutSpliced` 仅提供 `Outlined`。它们默认日间为黑色、夜间为白色，其中 `Back` 支持 RTL 自动镜像。
+图标按 `CouiIcons.Filled` 和 `CouiIcons.Outlined` 提供。`Back`、`Next`、`Close`、`Add`、`DarkLight`、`ListFilter`、`More` 和 `Scan` 在两种样式中使用相同图形；`Search`、`SliderCustom` 和 `LayoutSpliced` 仅提供 `Outlined`。它们默认日间为黑色、夜间为白色，其中 `Back` 和 `Next` 支持 RTL 自动镜像。
 
 矢量图形保存在 VectorDrawable 资源中，传统 View 可直接引用，例如 `@drawable/coui_wifi_filled`。传统 View 根据 Android 配置选择日夜资源。
 
-`Search`、`Back`、`Close`、`Add`、`DarkLight`、`CloudData`、`Album` 和 `WandSpark` 的可见图形均为不透明单色，默认日间黑色、夜间白色。底栏状态透明度由 `NavigationBar` 应用；独立 FAB 默认以不透明白色染色，可通过 `contentColor` 覆盖。
+`Search`、`Back`、`Next`、`Close`、`Add`、`DarkLight`、`CloudData`、`Album` 和 `WandSpark` 的可见图形均为不透明单色，默认日间黑色、夜间白色。底栏状态透明度由 `NavigationBar` 应用；独立 FAB 默认以不透明白色染色，可通过 `contentColor` 覆盖。
 
 ## 显示位图
 

@@ -11,7 +11,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
@@ -151,5 +150,6 @@ internal fun DemoPreferenceRow(modifier: Modifier, title: String, summary: Strin
 /** 原始 VectorDrawable 保留 RTL 镜像与原生 viewport。 */
 @Composable
 internal fun DemoSettingsArrow(modifier: Modifier, back: Boolean, color: Color) {
-    Icon(CouiIcons.Filled.Back, null, modifier.then(if (back) Modifier else Modifier.rotate(180f)), tint = color)
+    val icon = if (back) CouiIcons.Filled.Back else CouiIcons.Filled.Next
+    Icon(icon, null, modifier, tint = color)
 }
