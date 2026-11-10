@@ -57,6 +57,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -177,7 +178,8 @@ internal fun <T> CouiMenuWithSubMenu(
     val color = if (backdrop != null) Color.Transparent else LocalCouiMenuStyle.current.colors.container
     var provider by remember { mutableStateOf<CouiMenuMotionPositionProvider?>(null) }
     var windowSize by remember { mutableStateOf(IntSize.Zero) }
-    val compact = windowSize.width / density.density < 600f
+    val menuBounds = provider?.contentBoundsInPopup() ?: IntRect(IntOffset.Zero, windowSize)
+    val compact = menuBounds.width / density.density < 600f
     val parent = state.parentIndex?.let { items.getOrNull(it) }
     val childItems = if (parent == null) emptyList() else if (compact) listOf(parent.copy(dividerBefore = false)) + parent.children else parent.children
     val visible = parent != null && (state.open || state.progress.value > 0f)
@@ -266,7 +268,7 @@ internal fun <T> CouiMenuWithSubMenu(
         val index = state.parentIndex
         if (mainSize == null || index == null || windowSize.height == 0 || state.childSize.height == 0) null else {
             val rowTop = (main.itemTops.getOrNull(index) ?: 0) + main.headerHeight - mainScroll.value + with(density) { CouiMenuContentVerticalPadding.roundToPx() }
-            subMenuLayout(position.menuPosition, mainSize, state.childSize, windowSize, rowTop,
+            subMenuLayout(position.menuPosition, mainSize, state.childSize, menuBounds, rowTop,
                 position.anchorCenterX, compact, direction, density)
         }
     }
@@ -659,7 +661,7 @@ internal fun <T> CouiMenuWithSubMenu(
                                 .then(provider?.menuSize?.let { mainSize ->
                                     Modifier.width(with(density) { mainSize.width.toDp() })
                                 } ?: Modifier.widthIn(min = CouiMenuMinWidth, max = CouiMenuMaxWidth))
-                                .heightIn(max = with(density) { (windowSize.height - 48.dp.roundToPx()).coerceAtLeast(0).toDp() })
+                                .heightIn(max = with(density) { (menuBounds.height - 48.dp.roundToPx()).coerceAtLeast(0).toDp() })
                                 .width(IntrinsicSize.Max)
                                 .then(couiMenuScrollBar(child.scrollBar, expanded, state.open,
                                     dark = LocalCouiMenuStyle.current.isDark,
@@ -712,14 +714,16 @@ private data class SubMenuLayout(
 )
 
 private fun subMenuLayout(
-    main: IntOffset, mainSize: IntSize, childSize: IntSize, window: IntSize, rowTop: Int,
+    main: IntOffset, mainSize: IntSize, childSize: IntSize, bounds: IntRect, rowTop: Int,
     anchorX: Float, compact: Boolean, direction: LayoutDirection, density: Density,
 ): SubMenuLayout {
     val overlap = with(density) { 14.dp.roundToPx() }
     val gap = with(density) { 12.dp.roundToPx() }
     val padding = with(density) { CouiMenuContentVerticalPadding.toPx() }
-    val bottom = window.height - with(density) { 32.dp.roundToPx() }
-    val top = with(density) { 16.dp.roundToPx() }
+    // 面板退场时区域可小于安全留白；先保证菜单留在当前可见区域内。
+    val top = min(bounds.top + with(density) { 16.dp.roundToPx() },
+        (bounds.bottom - childSize.height).coerceAtLeast(bounds.top))
+    val bottom = max(bounds.bottom - with(density) { 32.dp.roundToPx() }, top + childSize.height)
     val width = (mainSize.width * 0.9f).toInt()
     val height = (mainSize.height * 0.9f).toInt()
     val centerX = main.x + mainSize.width / 2f
@@ -729,13 +733,14 @@ private fun subMenuLayout(
         else -> 0f
     }
     val relocatedX = main.x + ((mainSize.width - width) * pivotX).toInt()
-    val relocatedY = if (compact) min(main.y, bottom - childSize.height - gap) else main.y + (mainSize.height - height) / 2
+    val relocatedY = if (compact) min(main.y, bottom - childSize.height - gap).coerceAtLeast(bounds.top)
+        else main.y + (mainSize.height - height) / 2
     var x = if (compact) main.x else if (direction == LayoutDirection.Rtl) relocatedX + width - overlap else relocatedX + overlap - childSize.width
     if (!compact) {
-        if (direction == LayoutDirection.Rtl && x + childSize.width >= window.width) x = relocatedX + overlap - childSize.width
-        if (direction == LayoutDirection.Ltr && x <= 0) x = relocatedX + width - overlap
+        if (direction == LayoutDirection.Rtl && x + childSize.width >= bounds.right) x = relocatedX + overlap - childSize.width
+        if (direction == LayoutDirection.Ltr && x <= bounds.left) x = relocatedX + width - overlap
     }
-    x = x.coerceIn(0, (window.width - childSize.width).coerceAtLeast(0))
+    x = x.coerceIn(bounds.left, (bounds.right - childSize.width).coerceAtLeast(bounds.left))
     val candidateY = if (compact) (relocatedY + height.toFloat() / mainSize.height.coerceAtLeast(1) * rowTop).toInt() - overlap else main.y + rowTop
     val y = candidateY.coerceIn(top, (bottom - childSize.height).coerceAtLeast(top))
     val childPosition = IntOffset(x, y)

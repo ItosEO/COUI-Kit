@@ -4,6 +4,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
+import com.itos.coui.effect.CouiContourStyle
 import com.itos.coui.effect.CouiFloatingMaterial
 import com.itos.coui.effect.CouiFloatingShadow
 
@@ -17,6 +18,8 @@ data class CouiToolbarStyle(
     val textStyle: TextStyle,
     val cursorColor: Color,
     val contourGlowEnabled: Boolean,
+    /** 沿用 TopAppBarButton 的圆形/胶囊几何；null 使用浮动轮廓，Drawable 预设（不含 Menu）在材质与内容之间合成。 */
+    val contourStyle: ((capsule: Boolean) -> CouiContourStyle)? = null,
 )
 
 internal val LocalCouiToolbarStyle = staticCompositionLocalOf<CouiToolbarStyle> {

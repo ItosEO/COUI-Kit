@@ -14,7 +14,7 @@ Status: implemented
 
 独立标题的依据为便签 17.0.24 的 `collapsing_floating_appbar_layout` / todo 版、`COUICollapsingToolbarLayoutStyle`、`COUICollapsedToolbarStyle` 以及 `COUICollapsingTextHelper` 的非 fade 分支。布局未装配常驻搜索，默认同色标题仅插值位置和字号；有持久副标题时使用另一组折叠字号，当前组件不装配该分支。紧凑布局的起始边距、展开顶部位置与标题字号来自同包资源，插值使用 `COUIEaseInterpolator`。公共实现使用公开 Typeface 与 Compose 安全区，暂不接入原厂响应式大屏边距；字体文件和动画像素仍需设备验收。
 
-LargeTopAppBar 的展开排版采用用户指定的项目定制：字号复用搜索式首页的 HomeTitle，起始边距与该首页对齐，并在折叠时过渡回原紧凑位置。收起字号保持固定 dp，缩放比例以实际展开字体像素计算，避免系统字体倍率传到收起态。该预设不表示便签原厂字号；CollapsingTopAppBar 的无搜索分支继续保留便签排版。
+LargeTopAppBar 的起始边距与搜索式首页对齐，折叠时过渡回紧凑位置。展开字号参考设置 17.0.0 的首页：`homepage_toolbar` 通过 `SettingsCOUICollapsingToolbarLayoutStyle` 使用 `SettingsCollapsingTitleExpanded`，其字号覆盖便签的通用预设。带导航按钮时，默认收起字号与普通顶栏一致。折叠全程缩放同一标题，默认保持同一字体和字重，避免在端点出现笔画突变。两个端点的像素字号分别解析后再计算缩放比例，保留系统非线性字体缩放。CollapsingTopAppBar 的无搜索分支继续保留便签排版。
 
 普通大标题的背景也使用便签分支，不能混入搜索首页的滚动淡入。便签 `note_list_fragment`、`fragment_todo_list` 与 `todo_list_layout` 的 AppBarBlurOverlayView 未启用 scrollDrivenAlphaEnabled，构造默认 alpha 为 1、固定延伸 8dp。AppBarBlurOverlayBehavior.updateOverlayBounds 读取 AppBar 的 top 与 bottom，COUIViewOffsetHelper 通过 offsetTopAndBottom 平移整个 AppBar；背景保持完整高度随之移动，而非按剩余栏高缩放。页面入口经 NoteAppBarBlurUtil.resetToPageThemeDefaults 清除参数覆盖，采用 AppBarBlurParams 默认的 30px→0、speed=3。Java 的浮点值与构造分支已用 Droid ASC 和 JADX 交叉核对。
 

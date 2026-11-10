@@ -34,7 +34,7 @@ COUI-Kit 参考 ColorOS 17 的「凝光视效」，提供背景模糊、材质�
 
 ```kotlin
 dependencies {
-    implementation("io.github.itoseo:coui:0.0.1-alpha9")
+    implementation("io.github.itoseo:coui:0.0.1-alpha10")
 }
 ```
 
@@ -49,7 +49,7 @@ dependencies {
 `coui`、`coui-material3` 与 `coui-icons` 采用相同版本并同步发布。通过 Maven Central 接入 M3 时，只需添加适配模块：
 
 ```kotlin
-val couiVersion = "0.0.1-alpha9"
+val couiVersion = "0.0.1-alpha10"
 
 dependencies {
     implementation("io.github.itoseo:coui-material3:$couiVersion")

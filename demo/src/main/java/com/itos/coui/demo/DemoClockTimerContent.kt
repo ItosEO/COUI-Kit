@@ -1,9 +1,5 @@
 package com.itos.coui.demo
 
-import androidx.compose.foundation.background
-import androidx.compose.ui.draw.clip
-import com.itos.coui.layout.CouiPageDefaults
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
@@ -16,7 +12,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.itos.coui.layout.Divider
-import com.itos.coui.layout.Group
 import com.itos.coui.text.CouiTextKind
 import com.itos.coui.text.rememberCouiTextStyle
 
@@ -36,17 +31,13 @@ internal fun DemoClockTimerContent(
     options: DemoTimerOptions,
     onOptionsChange: (DemoTimerOptions) -> Unit,
 ) {
-    Column(Modifier.fillMaxWidth().padding(top = 12.dp)
-            .padding(horizontal = CouiPageDefaults.horizontalMargin)
-            .clip(CouiPageDefaults.shape).background(CouiPageDefaults.themeColors(dark).card)) {
+    DemoSheetCard(Modifier.padding(top = 12.dp), dark) {
         DemoTimerEditorPicker(Modifier.padding(top = 16.dp, bottom = 20.dp),
             DemoDuration(seconds / 3600, seconds / 60 % 60, seconds % 60), { onSecondsChange(it.totalSeconds) },
             listOf(stringResource(R.string.picker_hour), stringResource(R.string.picker_minute), stringResource(R.string.picker_second)))
     }
-    Column(Modifier.fillMaxWidth().padding(top = 14.dp)
-            .padding(horizontal = CouiPageDefaults.horizontalMargin)
-            .clip(CouiPageDefaults.shape).background(CouiPageDefaults.themeColors(dark).card)) {
-        val textStyle = rememberCouiTextStyle(CouiTextKind.PreferenceTitle)
+    DemoSheetCard(Modifier.padding(top = 14.dp), dark) {
+        val textStyle = rememberCouiTextStyle(CouiTextKind.ItemTitle)
         Box(Modifier.fillMaxWidth().heightIn(min = 50.dp).padding(horizontal = 16.dp),
             contentAlignment = Alignment.CenterStart) {
             BasicTextField(options.name, { onOptionsChange(options.copy(name = it)) }, Modifier.fillMaxWidth(),

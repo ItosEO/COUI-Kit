@@ -4,7 +4,7 @@
 
 ```kotlin
 Group(title = groupTitle, footer = description) {
-    Item(title = { Text(text = title, kind = CouiTextKind.PreferenceTitle) })
+    Item(title = { Text(text = title, kind = CouiTextKind.ItemTitle) })
 }
 ```
 

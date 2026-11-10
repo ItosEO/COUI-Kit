@@ -47,7 +47,7 @@ fun MixedPage(
             item {
                 Group(colors = colors) {
                     Item(onClick = onOpen) {
-                        Text(text = rowTitle, kind = CouiTextKind.PreferenceTitle,
+                        Text(text = rowTitle, kind = CouiTextKind.ItemTitle,
                             color = colors.title)
                     }
                 }

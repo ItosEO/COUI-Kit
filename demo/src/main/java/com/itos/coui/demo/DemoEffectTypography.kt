@@ -15,6 +15,6 @@ import com.itos.coui.text.rememberCouiTextStyle
 @Composable
 internal fun EffectText(text: String, modifier: Modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
     color: Color = MaterialTheme.colorScheme.onSurfaceVariant,
-    style: TextStyle = rememberCouiTextStyle(CouiTextKind.PreferenceSummary)) {
+    style: TextStyle = rememberCouiTextStyle(CouiTextKind.ItemSummary)) {
     BasicText(text, modifier, style = style.copy(color = color))
 }

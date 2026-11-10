@@ -6,9 +6,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontSynthesis
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.itos.coui.text.couiTextStyle
+import com.itos.coui.theme.CouiTheme
 import kotlin.math.roundToInt
 
 internal enum class SheetTextKind { Title, Button }
@@ -18,10 +22,14 @@ internal enum class SheetTextKind { Title, Button }
 internal fun rememberSheetTextStyle(kind: SheetTextKind): TextStyle {
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
-    return remember(kind, configuration, density) {
-        val title = kind == SheetTextKind.Title
-        val weight = if (title) 550 else 500
-        val typeface = Typeface.create(Typeface.create("sans-serif-medium", Typeface.NORMAL), weight, false)
+    val title = kind == SheetTextKind.Title
+    val weight = if (title) 550 else 500
+    val typography = CouiTheme.typography
+    val family = if (title) typography.dialogTitleFontFamily else typography.dialogButtonFontFamily
+    val typeface = if (family != null) {
+        LocalFontFamilyResolver.current.resolve(family, FontWeight(weight), fontSynthesis = FontSynthesis.None).value as Typeface
+    } else remember(weight) { Typeface.create(Typeface.create("sans-serif-medium", Typeface.NORMAL), weight, false) }
+    return remember(kind, configuration, density, typeface) {
         // 原厂标题使用 sp，菜单的 coui_action_text_menu_size 明确为 dp。
         val pixels = if (title) with(density) { 18.sp.toPx() } else 14f * density.density
         val spacing = if (title) {

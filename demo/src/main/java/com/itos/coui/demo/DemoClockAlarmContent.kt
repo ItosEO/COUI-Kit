@@ -1,9 +1,5 @@
 package com.itos.coui.demo
 
-import androidx.compose.foundation.background
-import androidx.compose.ui.draw.clip
-import com.itos.coui.layout.CouiPageDefaults
-
 import android.os.Build
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicText
@@ -14,7 +10,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -22,11 +17,11 @@ import androidx.compose.ui.text.style.TextAlign
 import com.itos.coui.chip.CouiChipTabItem
 import com.itos.coui.chip.ChipTabRow
 import com.itos.coui.layout.Divider
-import com.itos.coui.layout.Group
 import com.itos.coui.sheet.rememberCouiSheetSurfaceBackdrop
 import com.itos.coui.text.Text as CouiText
 import com.itos.coui.text.CouiTextKind
 import com.itos.coui.text.rememberCouiTextStyle
+import com.itos.coui.theme.CouiTheme
 import java.time.LocalTime
 import kotlinx.coroutines.delay
 
@@ -52,13 +47,11 @@ internal fun DemoClockAlarmContent(
     var now by remember { mutableStateOf(LocalTime.now()) }
     LaunchedEffect(Unit) { while (true) { delay(60_000); now = LocalTime.now() } }
     val remaining = (time - now.hour * 60 - now.minute).let { if (it <= 0) it + 24 * 60 else it }
-    val summary = Color(if (dark) 0x99FFFFFF else 0x99000000)
+    val summary = CouiTheme.colorSchemeFor(dark).onSurface.copy(alpha = .6f)
     CouiText(Modifier.fillMaxWidth().padding(top = 5.dp, bottom = 12.dp),
         stringResource(R.string.sheet_alarm_until, remaining / 60, remaining % 60),
-        CouiTextKind.Description, summary, textAlign = TextAlign.Center)
-    Column(Modifier.fillMaxWidth().padding(top = 0.dp)
-            .padding(horizontal = CouiPageDefaults.horizontalMargin)
-            .clip(CouiPageDefaults.shape).background(CouiPageDefaults.themeColors(dark).card)) {
+        CouiTextKind.GroupFooter, summary, textAlign = TextAlign.Center)
+    DemoSheetCard(dark = dark) {
         DemoTimePicker(Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
             DemoTime(time / 60, time % 60), { onTimeChange(it.hour * 60 + it.minute) },
             stringResource(R.string.picker_hour), stringResource(R.string.picker_minute),
@@ -66,10 +59,8 @@ internal fun DemoClockAlarmContent(
     }
     Spacer(Modifier.height(8.dp))
     AlarmTypeChoices(options.type, { onOptionsChange(options.copy(type = it)) }, dark)
-    Column(Modifier.fillMaxWidth().padding(top = 0.dp)
-            .padding(horizontal = CouiPageDefaults.horizontalMargin)
-            .clip(CouiPageDefaults.shape).background(CouiPageDefaults.themeColors(dark).card)) {
-        val textStyle = rememberCouiTextStyle(CouiTextKind.PreferenceTitle)
+    DemoSheetCard(dark = dark) {
+        val textStyle = rememberCouiTextStyle(CouiTextKind.ItemTitle)
         Box(Modifier.fillMaxWidth().heightIn(min = 50.dp).padding(horizontal = 16.dp),
             contentAlignment = Alignment.CenterStart) {
             BasicTextField(options.name, { onOptionsChange(options.copy(name = it)) }, Modifier.fillMaxWidth(),
@@ -109,5 +100,6 @@ private fun AlarmTypeChoices(selected: Int, onSelected: (Int) -> Unit, dark: Boo
         items = labels.mapIndexed { index, label -> CouiChipTabItem(index, label) },
         selectedKey = selected, onSelectedKeyChange = { onSelected(it as Int) },
         backdrop = rememberCouiSheetSurfaceBackdrop(), dark = dark, itemSpacing = 8.dp,
-        selectedColor = MaterialTheme.colorScheme.primary)
+        selectedColor = MaterialTheme.colorScheme.primary,
+        selectedContentColor = MaterialTheme.colorScheme.onPrimary)
 }

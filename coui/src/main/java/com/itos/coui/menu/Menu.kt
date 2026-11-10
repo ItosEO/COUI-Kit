@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -47,7 +48,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -76,6 +76,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.window.Popup
@@ -480,10 +481,12 @@ internal fun CouiMenuPopup(
     val shadow = rememberCouiMenuShadow(shape, motion, touchMotion, transitionProgress)
 
     val density = LocalDensity.current
-    val contentBounds = LocalCouiMenuVisibleBounds.current
-    val maxContentHeight = contentBounds?.invoke()?.let {
-        with(density) { (it.height - 48.dp.toPx()).coerceAtLeast(1f).toDp() }
+    val hostView = LocalView.current
+    val boundary = LocalCouiMenuVisibleBounds.current
+    val contentBounds: (() -> IntRect?)? = remember(boundary, hostView) {
+        boundary?.let { { it.boundsInWindow(hostView) } }
     }
+    val visibleContentBounds = contentBounds?.invoke()
     val materialPositionProvider = remember(offset, density) { CouiMenuPositionProvider(offset, density) }
     val touchOffsetY = with(LocalDensity.current) { offset.y.roundToPx() }
     val positionProvider = remember(materialPositionProvider, motion, anchor, touchOffsetY, contentBounds) {
@@ -496,7 +499,6 @@ internal fun CouiMenuPopup(
         )
     }
     val currentOnOutsideRequest by rememberUpdatedState(onOutsideRequest)
-    val hostView = LocalView.current
     Popup(
         popupPositionProvider = positionProvider,
         onDismissRequest = onDismissRequest,
@@ -554,8 +556,15 @@ internal fun CouiMenuPopup(
                         .then(if (properties.excludeFromSystemGesture) Modifier.systemGestureExclusion() else Modifier)
                         .background(containerColor, shape)
                         .clip(shape)
+                        .then(visibleContentBounds?.let { bounds ->
+                            with(density) {
+                                Modifier.sizeIn(
+                                    maxWidth = bounds.width.coerceAtLeast(0).toDp(),
+                                    maxHeight = (bounds.height - 48.dp.roundToPx()).coerceAtLeast(0).toDp(),
+                                )
+                            }
+                        } ?: Modifier)
                         .then(modifier)
-                        .then(if (maxContentHeight != null) Modifier.heightIn(max = maxContentHeight) else Modifier)
                         .width(IntrinsicSize.Max)
                         .then(couiMenuScrollBar(scrollBar, expanded, scrollEnabled,
                             dark = LocalCouiMenuStyle.current.isDark,

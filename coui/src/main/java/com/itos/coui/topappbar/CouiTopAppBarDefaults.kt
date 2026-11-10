@@ -1,6 +1,7 @@
 package com.itos.coui.topappbar
 
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
@@ -12,6 +13,9 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.union
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
+import androidx.compose.ui.text.TextStyle
+import com.itos.coui.text.CouiTextKind
+import com.itos.coui.text.rememberCouiSystemTextStyle
 import com.itos.coui.theme.CouiTheme
 
 @Immutable
@@ -26,12 +30,22 @@ object CouiTopAppBarDefaults {
     val height = 52.dp
     val expandedHeight = CouiCollapsingAppBarDefaults.titleOnlyHeight
     val collapsedHeight = CouiCollapsingAppBarDefaults.collapsedTitleHeight
+    internal val titleOnlyCollapsedSize = 24.sp
     internal val expandedTitleStart = CouiCollapsingAppBarDefaults.titleStart
     internal val horizontalPadding = 12.dp
     internal val titleGap = 8.dp
     val windowInsets: WindowInsets
         @Composable get() = WindowInsets.systemBars.union(WindowInsets.displayCutout)
             .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+
+    /** 普通顶栏标题样式，跟随系统字体大小和字重补偿。 */
+    @Composable
+    fun titleTextStyle(): TextStyle =
+        rememberCouiSystemTextStyle(CouiTextKind.HomeTitle, size = CouiTextKind.TopBar.size)
+
+    @Composable
+    internal fun expandedTitleTextStyle(): TextStyle =
+        rememberCouiSystemTextStyle(CouiTextKind.HomeTitle)
 
     @Composable
     fun colors(backgroundColor: Color = Color.Unspecified, titleColor: Color = Color.Unspecified,

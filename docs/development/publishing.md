@@ -42,6 +42,8 @@ Packages 按分支、Central 按 Tag 串行执行，不取消正在上传的任�
 
 发行只使用 Alpha 和正式 Release；Release 内容手写。先创建 GitHub 预发布草稿，Tag 推送会独立触发 Maven 发布。GitHub Release 可在发行内容就绪后公开，不等待 Central 发布完成。正式版不带预览后缀，并取消 GitHub 的 Pre-release 标记。
 
+Release 正文按 `demo` 和实际有改动的库模块分组。每条以“新增”“优化”“重构”“移除”“调整”或其他符合变更的动词开头。`CHANGELOG.md` 的版本条目只记录库模块的变更及升级说明。
+
 例如准备发布 `0.0.1-alpha5`：
 
 ```sh

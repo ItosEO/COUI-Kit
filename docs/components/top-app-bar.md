@@ -2,6 +2,8 @@
 
 `TopAppBar` 提供标题、导航和操作槽位，并显示渐进模糊背景。需要大标题时使用 `LargeTopAppBar`；需要自行组合布局或顶栏搜索时使用 `TopAppBarSurface`。
 
+`TopAppBar` 的标题使用 18sp、基础字重 700 和 `sans-serif-semibold`，与带导航按钮的 `LargeTopAppBar` 收起时一致。两者都跟随系统字体大小和粗体文字设置。自定义 `TopAppBarSurface` 可调用 `CouiTopAppBarDefaults.titleTextStyle()` 复用这套排版。
+
 ## 最小调用
 
 顶栏按钮需要 API 34 和页面背景源。宿主提供按钮内容与操作：
@@ -98,6 +100,8 @@ fun rememberToolbarStyle(
 `circleShape` 用于图标按钮，`capsuleShape` 用于文字按钮和搜索框。搜索框的材质配置见[顶栏搜索](search.md#搜索框样式)。
 
 `contourGlowEnabled` 与阴影工厂应使用同一个轮廓状态。
+
+`CouiToolbarStyle.contourStyle` 为 `TopAppBarButton` 选择独立 Drawable 轮廓；省略时沿用浮动材质的轮廓。此配置只替换光效预设，沿用按钮既有的圆形/胶囊几何；按当前形状返回 `CouiContourStyle`，不接受 `CouiContourStyle.Menu`。轮廓在材质之后、清晰内容之前合成，也遵守 `contourGlowEnabled`。[SheetToolbar](bottom-sheet.md) 自动选择面板内工具栏所需的预设，宿主不需要重复装配。
 
 ## 添加操作按钮
 

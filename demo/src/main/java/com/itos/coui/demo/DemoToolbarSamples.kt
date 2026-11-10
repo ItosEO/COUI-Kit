@@ -2,6 +2,9 @@ package com.itos.coui.demo
 
 import android.os.Build
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.ScrollState
 import androidx.compose.material3.MaterialTheme
@@ -17,8 +20,6 @@ import com.itos.coui.layout.Group
 import com.itos.coui.scroll.couiVerticalScroll
 import com.itos.coui.search.SearchBar
 import com.itos.coui.search.rememberCouiSearchBarState
-import com.itos.coui.text.CouiTextKind
-import com.itos.coui.text.rememberCouiTextStyle
 import com.itos.coui.topappbar.*
 
 private enum class SearchSampleMode { Persistent, Toolbar }
@@ -53,41 +54,43 @@ internal fun ToolbarSample() {
     Group(title = stringResource(R.string.catalog_appbar)) {
         ChromePreview(Modifier.height(360.dp), background = {
             Column(Modifier.fillMaxSize().couiVerticalScroll(scroll)
-                .padding(top = 64.dp, bottom = 16.dp)) {
+                .padding(top = CouiTopAppBarDefaults.height, bottom = 16.dp)) {
                 ToolbarPreviewList(query)
             }
         }) { backdrop ->
-            TopAppBarSurface(Modifier.align(Alignment.TopCenter).fillMaxWidth(), backdrop,
-                gradientColor = LocalDemoTopBarGradient.current) {
-                Row(Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically) {
-                    if (Build.VERSION.SDK_INT >= 34) {
-                        val state = rememberCouiTopAppBarSearchState(expanded)
-                        TopAppBarSearch(Modifier.weight(1f), state = state,
+            val state = if (Build.VERSION.SDK_INT >= 34) rememberCouiTopAppBarSearchState(expanded) else null
+            val style = CouiTopAppBarButtonDefaults.style(search = true).withDemoThemeTint()
+            val title: @Composable () -> Unit = { Text(stringResource(R.string.toolbar_preview_title), maxLines = 1) }
+            TopAppBar(
+                modifier = Modifier.align(Alignment.TopCenter),
+                backdrop = backdrop,
+                windowInsets = WindowInsets(0, 0, 0, 0),
+                colors = CouiTopAppBarDefaults.colors(backgroundColor = LocalDemoTopBarGradient.current,
+                    titleColor = MaterialTheme.colorScheme.onSurface),
+                title = {
+                    if (Build.VERSION.SDK_INT >= 34 && state != null) {
+                        TopAppBarSearch(state = state, style = style,
                             query = query, onQueryChange = { query = it },
                             onSearch = { keyboard?.hide() },
                             placeholder = stringResource(R.string.toolbar_search_hint),
                             focusPending = focusPending, onFocused = { focusPending = false },
                             action = { Text(stringResource(R.string.toolbar_text_action)) },
-                            onActionClick = if (enabled) closeSearch else null) {
-                            Text(stringResource(R.string.toolbar_preview_title),
-                                style = rememberCouiTextStyle(CouiTextKind.Toolbar),
-                                color = MaterialTheme.colorScheme.onSurface)
-                        }
+                            onActionClick = if (enabled) closeSearch else null,
+                            title = title)
+                    } else title()
+                },
+                actions = {
+                    if (Build.VERSION.SDK_INT >= 34 && state != null) {
                         TopAppBarButtonGroup {
                             TopAppBarActionVisibility(visible = showIcon) {
-                                TopAppBarSearchButton(state = state,
+                                TopAppBarSearchButton(state = state, style = style,
                                     onClick = { expanded = true; focusPending = true },
                                     contentDescription = stringResource(R.string.search_toolbar))
                             }
                         }
-                    } else {
-                        Text(stringResource(R.string.toolbar_preview_title),
-                            style = rememberCouiTextStyle(CouiTextKind.Toolbar),
-                            color = MaterialTheme.colorScheme.onSurface)
                     }
-                }
-            }
+                },
+            )
         }
         if (Build.VERSION.SDK_INT < 34) DemoPreference(title = stringResource(R.string.requires_api_34), enabled = false)
     }
@@ -96,6 +99,7 @@ internal fun ToolbarSample() {
 /** 两种搜索共用查询与模拟列表，当前搜索类型保证展开互斥。 */
 @Composable
 internal fun SearchSamples(dark: Boolean) {
+    val titleStyle = CouiTopAppBarDefaults.titleTextStyle()
     var enabled by remember { mutableStateOf(true) }
     var active by remember { mutableStateOf<SearchSampleMode?>(null) }
     var query by remember { mutableStateOf("") }
@@ -127,7 +131,10 @@ internal fun SearchSamples(dark: Boolean) {
                 ToolbarPreviewList(query)
             }
         }) { backdrop ->
-            Column(Modifier.align(Alignment.TopCenter).fillMaxWidth()) {
+            // 搜索控件自行处理跟手变形，纵向拖动留在预览区，避免带动详情页滚动。
+            val dragBoundary = rememberDraggableState { }
+            Column(Modifier.align(Alignment.TopCenter).fillMaxWidth()
+                .draggable(dragBoundary, Orientation.Vertical)) {
                 SearchBar(Modifier.padding(vertical = 6.dp),
                     state = persistent, query = query, onQueryChange = { query = it },
                     onExpandedChange = {
@@ -142,9 +149,10 @@ internal fun SearchSamples(dark: Boolean) {
                 if (Build.VERSION.SDK_INT >= 34) {
                     val state = rememberCouiTopAppBarSearchState(toolbarExpanded)
                     TopAppBarSurface(Modifier.fillMaxWidth(), backdrop, gradientColor = LocalDemoTopBarGradient.current) {
+                        val style = CouiTopAppBarButtonDefaults.style(search = true).withDemoThemeTint()
                         Row(Modifier.fillMaxWidth().height(64.dp).padding(horizontal = 16.dp),
                             verticalAlignment = Alignment.CenterVertically) {
-                            TopAppBarSearch(modifier = Modifier.weight(1f), state = state,
+                            TopAppBarSearch(modifier = Modifier.weight(1f), state = state, style = style,
                                 query = query, onQueryChange = { query = it },
                                 onSearch = { keyboard?.hide() },
                                 placeholder = stringResource(R.string.toolbar_search_hint),
@@ -153,11 +161,11 @@ internal fun SearchSamples(dark: Boolean) {
                                 action = { Text(stringResource(R.string.catalog_search_cancel)) },
                                 onActionClick = closeSearch) {
                                 Text(stringResource(R.string.toolbar_preview_title),
-                                    style = rememberCouiTextStyle(CouiTextKind.Toolbar),
+                                    style = titleStyle,
                                     color = MaterialTheme.colorScheme.onSurface)
                             }
                             TopAppBarButtonGroup {
-                                TopAppBarSearchButton(state = state,
+                                TopAppBarSearchButton(state = state, style = style,
                                     onClick = {
                                         if (active == null) {
                                             active = SearchSampleMode.Toolbar

@@ -127,18 +127,7 @@ internal fun rectLineFadeForSize(
     return (solid * mappedTotal / total) to (mappedTotal * fade / total)
 }
 
-// 通知描边与 COUI 菜单内晕共用距离场; 裁剪 Shape 须使用相同圆角和权重。
-internal const val CouiContourShaderFunctions = """
-        uniform float uUseLightEdgeColor;
-        uniform float uNativeWhiteEdge;
-        uniform float uContourGlowEnabled;
-        uniform float u_commonArray[8];
-        uniform float u_shadowArray[16];
-        uniform float u_edgeArray[16];
-
-       const float EPS = 1e-6;
-       const float EFFECT_PARAM_THRESHOLD = 0.001;
-
+internal const val CouiEdgeColorFunctions = """
         float colorDodge(float s, float d) {
             return d / (1.0 - s + 0.00000001);
         }
@@ -156,6 +145,35 @@ internal const val CouiContourShaderFunctions = """
             color.rgb = mix(color.rgb, colorDodge(float3(115.0 / 255.0), color.rgb), 77.0 / 255.0);
             return color;
         }
+
+        half4 couiEdgeColor(half4 rawColor, float3 lineColor, bool limitHighlights) {
+            float gray = clamp(dot(float3(0.2126, 0.7152, 0.0722), rawColor.rgb)*1.2,0.0,1.0);
+            float edgeImprove = (1.0 - gray);
+            edgeImprove *= edgeImprove;
+            edgeImprove *= edgeImprove;
+            edgeImprove *= 0.1;
+            half4 color = clamp(rawColor + half4(float3(edgeImprove), 0.0), 0.0, 1.0);
+            color.rgb = mix(2.0 * color.rgb * lineColor, 1.0 - 2.0 * (1.0 - color.rgb) * (1.0 - lineColor), step(lineColor, float3(0.5)));
+            // 等比例收回过亮描边，避免逐通道截断后变成白边。
+            if (limitHighlights) {
+                float peak = max(max(color.r, color.g), color.b);
+                color.rgb /= max(1.0, peak);
+            }
+            return color;
+        }
+"""
+
+// 通知描边与 COUI 菜单内晕共用距离场; 裁剪 Shape 须使用相同圆角和权重。
+internal const val CouiContourShaderFunctions = CouiEdgeColorFunctions + """
+        uniform float uUseLightEdgeColor;
+        uniform float uNativeWhiteEdge;
+        uniform float uContourGlowEnabled;
+        uniform float u_commonArray[8];
+        uniform float u_shadowArray[16];
+        uniform float u_edgeArray[16];
+
+       const float EPS = 1e-6;
+       const float EFFECT_PARAM_THRESHOLD = 0.001;
 
        struct CommonDataRect{
             vec2 halfResolution;
@@ -284,7 +302,7 @@ internal const val CouiContourShaderFunctions = """
             return 1.0 - smoothstep(-aa, aa, d);
         }
 
-        float4 blendMenuInnerGlow(CommonDataRect rectData, float4 color, float d, float2 fragCoord) {
+        float4 blendMenuInnerGlow(CommonDataRect rectData, float4 color, float d, float2 fragCoord, float innerCorner) {
             float3 uFadeColor = float3(u_shadowArray[0], u_shadowArray[1], u_shadowArray[2]);
             float3 uFadeAlpha = float3(u_shadowArray[3], u_shadowArray[4], u_shadowArray[5]);
             float uFadeIn = u_shadowArray[6];
@@ -305,7 +323,7 @@ internal const val CouiContourShaderFunctions = """
                 float fadeLine = uFadeIn*-1.0;
                 float fadeSdf = fadeLine;
                 float2 halfSizeFade = rectData.halfSize*uFadeScale;
-                fadeConer.x = min(min(halfSizeFade.x, halfSizeFade.y),max(uFadeIn*1.2,rectData.coner));
+                fadeConer.x = min(min(halfSizeFade.x, halfSizeFade.y),max(uFadeIn*1.2,innerCorner));
                 if(rectData.weight<2.0 || any(greaterThan(abs(pos_new), halfSizeFade - float2(fadeConer.x)))) {
                     fadeSdf = smoothSDF_D(pos_new, halfSizeFade, fadeConer.x, rectData.weight);
                     float alpha = smoothstep(fadeLine,0.0,fadeSdf);
@@ -346,6 +364,10 @@ internal const val CouiContourShaderFunctions = """
             reColor.rgb = color.rgb*(1.0-fadeColor.a)+fadeColor.rgb;
             reColor.a = color.a*(1.0-fadeColor.a)+fadeColor.a;
             return reColor;
+        }
+
+        float4 blendMenuInnerGlow(CommonDataRect rectData, float4 color, float d, float2 fragCoord) {
+            return blendMenuInnerGlow(rectData, color, d, fragCoord, rectData.coner);
         }
 
         float getDis(float2 pos,float2 halfsize) {
@@ -402,19 +424,7 @@ internal const val CouiContourShaderFunctions = """
                 return color * (1.0 - lineAlpha) + edge;
             }
 
-            float gray = clamp(dot(float3(0.2126, 0.7152, 0.0722), rawColor.rgb)*1.2,0.0,1.0);
-            float edgeImprove = (1.0 - gray);
-            edgeImprove *= edgeImprove;
-            edgeImprove *= edgeImprove;
-            edgeImprove *= 0.1;
-            half4 colorRGBA = clamp(rawColor+half4(float3(edgeImprove),0.0),0.0,1.0);
-            colorRGBA.rgb = mix(2.0 * colorRGBA.rgb * uRectLineColor.rgb, 1.0 - 2.0 * (1.0 - colorRGBA.rgb) * (1.0 - uRectLineColor.rgb), step(uRectLineColor.rgb, float3(0.5)));
-            // 浅色按比例收回过亮描边, 保留通道比例, 避免分别截断后变成白边。
-            if (uUseLightEdgeColor > 0.5) {
-                float peak = max(max(colorRGBA.r, colorRGBA.g), colorRGBA.b);
-                colorRGBA.rgb /= max(1.0, peak);
-            }
-            return mix(color, colorRGBA, lineAlpha*mix_c);
+            return mix(color, couiEdgeColor(rawColor, uRectLineColor, uUseLightEdgeColor > 0.5), lineAlpha*mix_c);
         }
 
 """

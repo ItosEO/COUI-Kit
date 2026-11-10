@@ -40,6 +40,7 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
                 "sheets" -> SheetSamples(dark)
                 "sliders", "switch", "checkbox", "dialogs", "menu" -> ComponentDetail(page, dark, toggleTheme)
                 "chip" -> ChipTabSample(dark)
+                "segment" -> SegmentedControlSample(dark)
                 "effect_backdrop" -> BlurTutorial(dark)
                 "effect_shadow" -> Group(title = stringResource(R.string.shadow_title)) {
                     if (Build.VERSION.SDK_INT >= 34) ShadowSamples(dark)

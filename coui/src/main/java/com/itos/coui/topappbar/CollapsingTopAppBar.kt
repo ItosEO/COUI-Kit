@@ -26,9 +26,7 @@ import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.backdrop.LocalCouiBackdrop
 import com.itos.coui.search.CouiSearchBarState
 import com.itos.coui.search.rememberCouiSearchBarState
-import com.itos.coui.text.CouiTextKind
 import com.itos.coui.text.couiTextStyle
-import com.itos.coui.text.rememberCouiTextStyle
 import kotlin.math.roundToInt
 
 /**
@@ -55,13 +53,14 @@ fun CollapsingTopAppBar(
     val hasSearchBar = searchBar != null
     val searchActive = hasSearchBar && searchState.active
     val titleColor = if (color == Color.Unspecified) CouiTheme.colorSchemeFor(dark).onSurface else color
-    val titleStyle = if (hasSearchBar) rememberCouiTextStyle(CouiTextKind.HomeTitle) else remember(density) {
+    val titleStyle = if (hasSearchBar) CouiTopAppBarDefaults.expandedTitleTextStyle() else remember(density) {
         val typeface = Typeface.create(Typeface.create("sans-serif-semibold", Typeface.NORMAL), 700, false)
         couiTextStyle(typeface, 700, with(density) { CouiCollapsingAppBarDefaults.expandedTitleSize.toPx() },
             1f, includeFontPadding = false, density = density)
     }
     val descent = remember(titleStyle, density) { Paint().apply {
-        typeface = Typeface.create(Typeface.create("sans-serif-semibold", Typeface.NORMAL), 700, false)
+        typeface = Typeface.create(Typeface.create("sans-serif-semibold", Typeface.NORMAL),
+            titleStyle.fontWeight?.weight ?: 700, false)
         textSize = with(density) { titleStyle.fontSize.toPx() }
     }.fontMetrics.descent }
     val titleHeight = with(density) {

@@ -16,9 +16,9 @@ COUI-Kit 以 ColorOS 17 组件为参考，并保留以下视觉与交互微调�
 
 Demo 二级页统一使用 `LargeTopAppBar`。参考的原厂设置二级页使用紧凑顶栏；这里的大标题装配与收起轨迹属于项目定制。
 
-`LargeTopAppBar` 的展开标题略向右收进，默认字号与带常驻搜索的 `CollapsingTopAppBar` 首页标题 `HomeTitle` 一致。默认展开标题跟随系统字体大小，收起标题使用固定 dp 字号；调用方可分别覆盖两端字号，单位与示例见[普通大标题](../components/collapsing-app-bar.md#普通大标题)。有返回按钮时，展开标题位于按钮下方，折叠时沿连续弧线向右上方移动到按钮旁，横移略领先于上移；展开沿原路径返回，RTL 布局镜像移动方向。返回按钮和操作区保持在标题上层，允许转场中轻微遮挡标题。标题宽度保留操作区。
+`LargeTopAppBar` 的展开标题略向右收进。展开和收起字号都跟随系统字体大小，调用方可分别覆盖两端字号。单位与示例见[普通大标题](../components/collapsing-app-bar.md#普通大标题)。有返回按钮时，展开标题位于按钮下方，折叠时沿连续弧线向右上方移动到按钮旁，横移略领先于上移。展开沿原路径返回，RTL 布局镜像移动方向。返回按钮和操作区保持在标题上层，允许转场中轻微遮挡标题。标题宽度保留操作区。
 
-这套排版是 `LargeTopAppBar` 的默认定制，不作为所有顶栏标题的统一样式。入口见[大标题顶栏](../components/collapsing-app-bar.md)与 [TopAppBar](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBar.kt)。
+展开字号参考 ColorOS 设置首页的 `SettingsCollapsingTitleExpanded`。导航槽占用空间时，默认收起字号与普通顶栏一致。默认折叠过程保留同一字体和字重，避免到达端点时笔画突变。入口见[大标题顶栏](../components/collapsing-app-bar.md)与 [TopAppBar](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBar.kt)。
 
 ### 顶栏模糊强度与渐变
 
@@ -64,6 +64,7 @@ Demo 二级页统一使用 `LargeTopAppBar`。参考的原厂设置二级页使�
 | --- | --- | --- |
 | 菜单、底栏与搜索栏 | 可叠加宿主页面色相，保留材质亮度。 | 仅在宿主提供 tint 或启用相应主题策略时生效；原生默认不加额外染色。见[外观与预设](appearance.md#菜单底栏搜索栏与-fab-的染色)。 |
 | `ChipTab` | 投影复用库内顶栏胶囊按钮预设，并随选中进度变化，减轻浅色背景上的底部亮带。 | 这是投影预设的选择，不表示分类间距、滚动或边缘渐隐属于主动视觉定制。见 [CouiChipTabDefaults](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabDefaults.kt)与[装配依据](../../.agents/notes/implemented/feature/2026-10-24-chip-tab.md)。 |
+| [分段选择器](../components/segmented-control.md) | 亮色透明模式下，胶囊外轮廓沿用本库菜单的颜色处理。过亮的描边按比例压低，内晕按透明度与模糊底色混合，减轻边缘泛白。 | 混色属于本库定制，轮廓形状沿用原厂分段选择器的胶囊预设。见[分段选择器依据](../../.agents/notes/implemented/feature/2026-11-07-coui-segmented-control.md)。 |
 | `Slider` | 默认轨道采用 G2 平滑胶囊轮廓，背景、进度与光效使用同一 Shape；拇指保持圆形。 | 宿主可覆盖 Shape；平滑轨道不称为原厂默认。见 [Slider](../../coui/src/main/java/com/itos/coui/slider/Slider.kt)与[滑条依据](../../.agents/notes/implemented/feature/2026-10-21-coui-slider.md)。 |
 | `Switch` | 轨道和滑块采用平滑胶囊轮廓，滑块拉伸时保持平滑几何。 | 参考实现的滑块使用普通 `drawRoundRect`。见[开关依据](../../.agents/notes/implemented/feature/2026-10-27-coui-switch.md)。 |
 | `Switch` | 触摸取消时不提交候选值，恢复宿主提供的 `checked`。 | 参考实现的 `CompoundButton` 在 CANCEL 后可能吸附并改变值；本库采用受控状态约定。见[开关依据](../../.agents/notes/implemented/feature/2026-10-27-coui-switch.md)。 |

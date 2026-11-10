@@ -16,11 +16,9 @@ fun NavigationBarExample(
     selectedIndex: Int,
     onSelection: (Int) -> Unit,
 ) {
-    val renderer = remember { CouiFloatingRenderer() }
     NavigationBar(
         modifier = modifier,
         backdrop = backdrop,
-        renderer = renderer,
         items = items,
         selectedIndex = selectedIndex,
         onSelection = onSelection,
@@ -46,7 +44,6 @@ fun PageNavigationBar(
     onLeftClick: () -> Unit,
     onRightClick: () -> Unit,
 ) {
-    val renderer = remember { CouiFloatingRenderer() }
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     val items = listOf(
         CouiNavigationItem(
@@ -68,7 +65,6 @@ fun PageNavigationBar(
     NavigationBar(
         modifier = modifier,
         backdrop = backdrop,
-        renderer = renderer,
         items = items,
         selectedIndex = selectedIndex,
         leftIcon = CouiIcons.Filled.DarkLight,
@@ -124,7 +120,6 @@ fun PageNavigationBar(
 ~~~kotlin
 NavigationBar(
     backdrop = backdrop,
-    renderer = renderer,
     items = items,
     selectedIndex = selectedIndex,
     selectedColor = CouiColor.Day.BLUE,
@@ -137,10 +132,10 @@ NavigationBar(
 
 M3 适配下，自有文字继承宿主 ambient 字体属性，同时保留底栏自己的字号、行高与字重。附件图标仍遵守各自配色契约。
 
-底栏使用三主体 renderer：`CouiFloatingRenderer()`。每个底栏需要独立实例，不能使用 `standalone()`。
-
 ## 版本和采样
 
 低于 API 34 时，可以显示项目自己的导航栏。
+
+每个底栏默认创建独立的三主体绘制器。宿主需要处理 Shader 初始化失败时，可以先用 `CouiFloatingRenderer()` 创建绘制器，成功后通过 `renderer` 传入底栏。每个底栏各用一个实例。
 
 完整页面示例见 [DemoApp](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)，公开参数见 [NavigationBar / CouiNavigationItem](../../coui/src/main/java/com/itos/coui/navigation/NavigationBar.kt)。

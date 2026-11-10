@@ -1,6 +1,7 @@
 package com.itos.coui.demo
 
 import android.os.Build
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -10,7 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -20,11 +21,13 @@ import com.itos.coui.icons.CouiIcons
 import com.itos.coui.menu.rememberCouiWindowBackdrop
 import com.itos.coui.layout.Divider
 import com.itos.coui.layout.Group
+import com.itos.coui.layout.CouiPageDefaults
 import com.itos.coui.sheet.ModalBottomSheet
 import com.itos.coui.sheet.CouiSheetDefaults
 import com.itos.coui.sheet.SheetToolbar
 import com.itos.coui.theme.LocalCouiContentColor
 import com.itos.coui.theme.LocalCouiTextStyle
+import com.itos.coui.theme.CouiTheme
 import com.itos.coui.topappbar.TopAppBarButton
 import java.time.LocalTime
 import java.util.Locale
@@ -65,7 +68,6 @@ internal fun SheetSamples(dark: Boolean) {
     val title = if (retainedPanel == 1) labels[1] else stringResource(R.string.sheet_alarm_editor)
     val panelHeight = LocalConfiguration.current.screenHeightDp.dp
     val materialEnabled = Build.VERSION.SDK_INT >= 33 && backdrop != null
-    val sheetColors = CouiSheetDefaults.colors(dark).copy(surface = Color(if (dark) 0xFF1E1E1E else 0xFFF0F1F2))
     val dismiss: () -> Unit = { panel = -1 }
     val saveDraft: () -> Unit = {
         if (retainedPanel == 0) {
@@ -81,7 +83,7 @@ internal fun SheetSamples(dark: Boolean) {
     ModalBottomSheet(visible = panel in labels.indices && retainedPanel in labels.indices,
         onDismissRequest = dismiss, title = title,
         dismissDescription = stringResource(R.string.dialog_cancel), dark = dark,
-        sheetHeight = panelHeight, showDragHandle = false, colors = sheetColors, isolateContent = false,
+        sheetHeight = panelHeight, showDragHandle = false, isolateContent = false,
         material = if (materialEnabled) CouiSheetDefaults.material(dark) else null, backdrop = backdrop) {
         val canSave = panel in labels.indices && (retainedPanel != 1 || draftTime > 0)
         if (Build.VERSION.SDK_INT >= 34) {
@@ -116,4 +118,15 @@ internal fun SheetSamples(dark: Boolean) {
                 draftTimerOptions, { draftTimerOptions = it })
         }
     }
+}
+
+/** 编辑页共用卡片外形，顶部间距由各内容区的 Modifier 提供。 */
+@Composable
+internal fun DemoSheetCard(
+    modifier: Modifier = Modifier,
+    dark: Boolean = CouiTheme.isDark,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(modifier.fillMaxWidth().padding(horizontal = CouiPageDefaults.horizontalMargin)
+        .clip(CouiPageDefaults.shape).background(CouiPageDefaults.themeColors(dark).card), content = content)
 }

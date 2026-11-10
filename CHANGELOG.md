@@ -2,6 +2,24 @@
 
 COUI-Kit 处于早期预览阶段。本文记录公开 API、行为、接入和兼容要求的变化。日期以提交合并时间为准；版本归档以真实 Git Tag 和发行产物为准。
 
+## [0.0.1-alpha10] - 2026-11-10
+
+以下为相对 `0.0.1-alpha9` 的变更。
+
+### 新增与改进
+
+- 新增胶囊分段选择器 `SegmentedControl`（Android 14 / API 34+）。支持点按、横向拖动、弹簧指示器、即时选择或抬手提交，以及普通填色和透明模糊两种外观。[分段选择器](docs/components/segmented-control.md)
+- 统一普通顶栏与大标题顶栏的默认标题排版。普通 `TopAppBar` 为 `18sp`。`LargeTopAppBar` 展开为 `40sp`，有起始侧导航按钮时收起为 `18sp`，没有时为 `24sp`。默认折叠过程保持基础字重 `700`。普通顶栏和大标题顶栏的默认样式跟随系统字体大小与字重补偿。
+- 常驻 `SearchBar` 的输入胶囊支持在展开、收起动画期间跟手移动和变形，松手后回弹。
+- `Fab` 和 `NavigationBar` 的 `renderer` 改为可选。省略时组件各自创建绘制器。宿主也可自行处理初始化失败，并在创建成功后显式传入。
+
+### 升级说明
+
+- `LargeTopAppBar` 移除了 `expandedTitleSize` 和 `collapsedTitleSize`。把原有字号分别传给 `expandedTitleStyle = TextStyle(fontSize = …)` 和 `collapsedTitleStyle = TextStyle(fontSize = …)`。两套样式也可各自指定字体族、字重和颜色。[大标题顶栏](docs/components/collapsing-app-bar.md#普通大标题)
+- 更新 `CouiTextKind` 枚举引用。将 `PreferenceTitle`、`PreferenceSummary`、`PreferenceValue` 分别改为 `ItemTitle`、`ItemSummary`、`ItemValue`。将 `Toolbar` 改为 `TopBar`，其字号从固定 `18dp` 改为 `18sp`。将 `Description` 改为 `GroupFooter`。
+- 移除了 `Category`、`SearchCancel`、`PageTitle`、`SectionTitle`、`Body`、`Stepper` 和 `Progress`。直接使用这些预设的调用方可改用 Compose `TextStyle`。常驻搜索的取消文字样式由 `SearchBar` 内部提供。
+- 预览版有源码不兼容变更。更新上述调用后，重新编译使用库的模块。
+
 ## [0.0.1-alpha9] - 2026-11-09
 
 `coui`、`coui-material3` 与 `coui-icons` 同版本发行。源码见 [v0.0.1-alpha9](https://github.com/ItosEO/COUI-Kit/tree/v0.0.1-alpha9)，Demo 下载见 [Release](https://github.com/ItosEO/COUI-Kit/releases/tag/v0.0.1-alpha9)。

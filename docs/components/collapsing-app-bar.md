@@ -1,6 +1,6 @@
 # 折叠顶栏
 
-`LargeTopAppBar` 将大标题缩成固定的小标题。首页需要常驻搜索时，使用 `CollapsingTopAppBar`：标题随滚动缩放、淡出，搜索停靠顶部。
+`LargeTopAppBar` 将大标题缩成固定的小标题。首页需要常驻搜索时，使用 `CollapsingTopAppBar`。带常驻搜索的标题沿用 `LargeTopAppBar` 的默认展开样式，随滚动缩放和淡出，搜索栏停靠顶部。
 
 ## 普通大标题
 
@@ -36,14 +36,18 @@ Scaffold(
 
 省略 `scrollBehavior` 时保持展开。`title`、`navigationIcon` 和 `actions` 槽位与 `TopAppBar` 相同，字体由组件提供；接入 M3 适配后，M3 `Text` 可继承该字体。`expandedHeight` 与 `collapsedHeight` 不包含安全区，必须是有限正数，且展开高度大于收起高度。
 
-`expandedTitleSize` 和 `collapsedTitleSize` 分别设置展开与收起字号，接受有限正数 `sp` 或 `TextUnit.Unspecified`。显式 `sp` 跟随系统字体大小；省略或传入 `Unspecified` 时，展开沿用 `HomeTitle`，收起沿用固定 dp 预设。标题槽位须继承组件提供的字号，不能在子文本中再次指定字号。行高随展开字号同步调整，收起过程沿用同一缩放曲线。
+默认展开字号为 40sp，基础字重为 700。收起时，起始侧导航槽占用空间则使用 18sp，导航槽为空则使用 24sp。标题槽位须继承组件提供的样式。
 
-需要让收起字号与普通 `TopAppBar` 一致时，在上面的 `LargeTopAppBar` 调用中传入：
+`expandedTitleStyle` 和 `collapsedTitleStyle` 接受 Compose `TextStyle`，可设置字体族、字重、字号、颜色等属性。收起样式中省略的属性继承展开样式，字号使用收起预设。折叠过程中缩放展开标题，完全收起后应用收起样式。标题内容始终由同一个 `title` 槽提供。
+
+在上面的调用中传入两套样式，即可单独指定展开和收起的字号与字重：
 
 ```kotlin
-expandedTitleSize = 40.sp,
-collapsedTitleSize = rememberCouiTextStyle(CouiTextKind.Toolbar).fontSize,
+expandedTitleStyle = TextStyle(fontSize = 40.sp, fontWeight = FontWeight.Bold),
+collapsedTitleStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.SemiBold),
 ```
+
+在两套样式中通过 `fontSize` 设置字号。字号须为有限正数 `sp` 或 `TextUnit.Unspecified`，并跟随系统字体大小。
 
 `LargeTopAppBar` 使用项目定制预设；有导航按钮时，展开标题位于按钮下方，折叠时沿连续弧线向逻辑末端和上方移动到按钮旁。按钮与操作区保持在标题上层，标题宽度保留右侧操作区。二级页装配与轨迹说明见[定制差异](../guide/customizations.md#二级页大标题与弧线收起)。
 

@@ -121,6 +121,11 @@ internal class CouiMenuMotionPositionProvider(
     var anchorCenterX by mutableStateOf(0f)
         private set
 
+    fun contentBoundsInPopup(): IntRect? {
+        val origin = popupOriginInHostWindow ?: return null
+        return contentBounds?.invoke()?.translate(-origin)
+    }
+
     override fun calculatePosition(
         anchorBounds: IntRect,
         windowSize: IntSize,

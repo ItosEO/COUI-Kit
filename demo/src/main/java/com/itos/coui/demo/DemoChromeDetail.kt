@@ -143,7 +143,7 @@ internal fun ChromePreview(
     background: @Composable BoxScope.() -> Unit = {
         Text(stringResource(R.string.settings_preview), Modifier.padding(18.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = rememberCouiTextStyle(CouiTextKind.PreferenceSummary))
+            style = rememberCouiTextStyle(CouiTextKind.ItemSummary))
     },
     content: @Composable BoxScope.(CouiBackdrop) -> Unit,
 ) {

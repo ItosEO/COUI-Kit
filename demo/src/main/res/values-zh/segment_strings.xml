@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="segment_title">分段选择器</string>
+    <string name="intro_segment">胶囊分段选择，包含指示器位移、宽度回弹和边缘橡皮筋效果。</string>
+    <string name="segment_all">全部</string>
+    <string name="segment_current_week">本周课程</string>
+    <string name="segment_not_scheduled">尚未安排的课程</string>
+    <string name="segment_selected">已选择：%1$s</string>
+    <string name="segment_enabled">启用选择</string>
+    <string name="segment_small">紧凑尺寸</string>
+    <string name="segment_commit_on_release">抬手时提交</string>
+</resources>

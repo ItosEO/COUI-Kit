@@ -1,5 +1,6 @@
 package com.itos.coui.search
 
+import android.graphics.Typeface
 import android.os.Build
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -45,6 +46,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -59,6 +61,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.backdrop.LocalCouiBackdrop
 import com.itos.coui.effect.CouiFloatingRenderer
@@ -77,6 +80,7 @@ import com.itos.coui.motion.couiPressMotion
 import com.itos.coui.motion.couiTouchMotion
 import com.itos.coui.motion.rememberCouiTouchMotion
 import com.itos.coui.text.CouiTextKind
+import com.itos.coui.text.couiTextStyle
 import com.itos.coui.text.rememberCouiTextStyle
 import com.itos.coui.topappbar.CouiTopAppBarButtonDefaults
 import com.itos.coui.topappbar.LocalCouiToolbarBackdrop
@@ -112,7 +116,17 @@ fun SearchBar(
     val layoutDirection = LocalLayoutDirection.current
     val rtl = layoutDirection == LayoutDirection.Rtl
     val textStyle = rememberCouiTextStyle(CouiTextKind.Search)
-    val cancelStyle = rememberCouiTextStyle(CouiTextKind.SearchCancel)
+    val configuration = LocalConfiguration.current
+    val cancelStyle = remember(configuration, density) {
+        val fontScale = configuration.fontScale
+        val pixels = with(density) { 14.sp.toPx().roundToInt() }
+        val base = (pixels / fontScale).roundToInt()
+        val size = base * if (fontScale < 1.15f) 1f else 1.15f
+        val weight = 500
+        val typeface = Typeface.create(Typeface.create("sans-serif-medium", Typeface.NORMAL), weight, false)
+        val lineSpacing = if (Build.VERSION.SDK_INT >= 35) 1.2245f else 1.1f
+        couiTextStyle(typeface, weight, size, lineSpacing, includeFontPadding = true, density = density)
+    }
     val textMeasurer = rememberTextMeasurer()
     val cancelWidth = remember(cancelText, cancelStyle, density, layoutDirection, textMeasurer) { with(density) {
         (textMeasurer.measure(cancelText, cancelStyle, maxLines = 1).size.width +
@@ -129,7 +143,8 @@ fun SearchBar(
     val cancelSource = remember { MutableInteractionSource() }
     val press = rememberCouiPressMotion()
     val touch = rememberCouiTouchMotion(enabled && state.expanded && !state.running)
-    val bodyTouch = rememberCouiTouchMotion(enabled && !state.expanded && !state.running)
+    // 输入胶囊的跟手位移与宽度动画可同时运行。
+    val bodyTouch = rememberCouiTouchMotion(enabled)
     val bodyPress = rememberCouiPressMotion()
     val (bodyLightInput, bodyLight) = rememberCouiSpotlight(enabled, SpotlightPreset.OpaqueMedium2, dark)
     val (cancelLightInput, cancelLight) = rememberCouiSpotlight(enabled && state.expanded, SpotlightPreset.OpaqueMedium2, dark)
@@ -217,7 +232,7 @@ fun SearchBar(
             translationY = bodyTouch.translationY.value
             scaleX = node.scaleX
             scaleY = node.scaleY
-        }.couiTouchMotion(bodyTouch, enabled && !state.expanded && !state.running)
+        }.couiTouchMotion(bodyTouch, enabled)
             .couiPressMotion(bodyPress, enabled && !state.expanded && !state.running)
             .then(bodyLightInput).then(recordBody).clip(shape).couiToolbarFeedback(dark, bodySource, enabled && !state.expanded)
             .then(if (!state.expanded) Modifier.semantics { contentDescription = placeholder }

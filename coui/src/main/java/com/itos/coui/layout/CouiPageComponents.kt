@@ -112,7 +112,7 @@ fun Divider(modifier: Modifier = Modifier,
 @Composable
 fun Footer(modifier: Modifier = Modifier, text: String,
     color: Color = CouiTheme.colorScheme.onSurfaceVariant) {
-    Text(text = text, kind = CouiTextKind.Description, color = color, modifier =
+    Text(text = text, kind = CouiTextKind.GroupFooter, color = color, modifier =
         modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 8.dp), textAlign = TextAlign.Start)
 }
 

@@ -56,7 +56,7 @@ internal fun <T> DemoPopupPreference(
             .clickable(source, null, enabled, role = Role.Button) { anchor.open { onExpandedChange(true) } },
             title, summary, enabled, icon) {
             BasicText(value, Modifier.padding(start = 16.dp), maxLines = 2,
-                style = rememberCouiTextStyle(CouiTextKind.PreferenceValue).copy(color = colors.summary, textAlign = TextAlign.End))
+                style = rememberCouiTextStyle(CouiTextKind.ItemValue).copy(color = colors.summary, textAlign = TextAlign.End))
             PopupArrow(Modifier.padding(start = 4.dp).size(14.dp, 24.dp),
                 Color(if (dark) 0x4DFFFFFF else 0x42000000))
         }

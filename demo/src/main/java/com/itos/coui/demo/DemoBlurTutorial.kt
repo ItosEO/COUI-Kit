@@ -13,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.itos.coui.backdrop.couiBackdrop
 import com.itos.coui.backdrop.drawCouiBackdrop
 import com.itos.coui.backdrop.rememberCouiBackdrop
@@ -35,14 +36,14 @@ internal fun BlurTutorial(dark: Boolean) {
                         .then(if (backdrop != null) Modifier.couiBackdrop(backdrop) else Modifier)
                         .background(MaterialTheme.colorScheme.surfaceBright)
                         .padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(stringResource(R.string.controls), style = rememberCouiTextStyle(CouiTextKind.PreferenceTitle))
+                        Text(stringResource(R.string.controls), style = rememberCouiTextStyle(CouiTextKind.ItemTitle))
                         listOf(DemoIcons.Switch, DemoIcons.Tune, DemoIcons.Date, DemoIcons.Dialogs).forEachIndexed { index, icon ->
                             Row(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceContainerHighest, DemoShapes.item)
                                 .padding(horizontal = 8.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Icon(icon, null, Modifier.size(16.dp), tint = Color(listOf(0xFF34B978, 0xFF1A8CFF, 0xFFA884E7, 0xFFFF9B35)[index]))
                                 Spacer(Modifier.width(8.dp))
                                 Text(stringResource(listOf(R.string.switch_title, R.string.slider_title, R.string.picker_date_title, R.string.dialog_title)[index]),
-                                    style = rememberCouiTextStyle(CouiTextKind.Category), maxLines = 1)
+                                    fontSize = 12.sp, maxLines = 1)
                             }
                         }
                     }
