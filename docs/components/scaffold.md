@@ -65,15 +65,13 @@ fun NativePage(
 
 ## 放置 FAB
 
-`floatingActionButton` 是独立的 `BoxScope` 槽位。容器已为该槽应用正文占位 Padding 并消费 Insets，不添加默认外边距。调用方通过 `align` 与 `padding` 定位；每个 FAB 仍需独立 renderer。下面片段位于 API 34 及以上的页面 Composable，`onAdd`、按钮内容 `addContent` 和正文 `content` 由页面提供：
+`floatingActionButton` 是独立的 `BoxScope` 槽位。容器已为该槽应用正文占位 Padding 并消费 Insets，不添加默认外边距。调用方通过 `align` 与 `padding` 定位。下面片段位于 API 34 及以上的页面 Composable，`onAdd`、按钮内容 `addContent` 和正文 `content` 由页面提供。
 
 ```kotlin
-val renderer = remember { CouiFloatingRenderer.standalone() }
 Scaffold(
     floatingActionButton = {
         Fab(
             modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp),
-            renderer = renderer,
             onClick = onAdd,
             content = addContent,
         )
@@ -92,8 +90,6 @@ Scaffold(
 同一个槽位可组合任意多个 FAB。下面在页面右下角竖向叠放两个按钮；`onAdd`、`onEdit`、按钮内容 `addContent`、`editContent` 和正文 `content` 由页面提供，页面运行于 API 34 及以上：
 
 ```kotlin
-val addRenderer = remember { CouiFloatingRenderer.standalone() }
-val editRenderer = remember { CouiFloatingRenderer.standalone() }
 Scaffold(
     floatingActionButton = {
         Column(
@@ -101,8 +97,8 @@ Scaffold(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.End,
         ) {
-            Fab(renderer = editRenderer, onClick = onEdit, foregroundComposition = true, content = editContent)
-            Fab(renderer = addRenderer, onClick = onAdd, foregroundComposition = true, content = addContent)
+            Fab(onClick = onEdit, foregroundComposition = true, content = editContent)
+            Fab(onClick = onAdd, foregroundComposition = true, content = addContent)
         }
     },
 ) { padding ->
@@ -112,7 +108,7 @@ Scaffold(
 }
 ```
 
-两个按钮共享容器提供的正文源，各自使用独立 renderer。横排可用 Row，重叠可用 Box 并通过 `Modifier.zIndex` 控制层级；整个组合位于正文源之外，槽位 Padding 只应用一次。
+两个按钮共享容器提供的正文源，并各自创建独立绘制器。横排可用 Row，重叠可用 Box 并通过 `Modifier.zIndex` 控制层级。整个组合位于正文源之外，槽位 Padding 只应用一次。
 
 ## 混合设计应用
 
