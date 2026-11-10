@@ -210,7 +210,7 @@ fun SegmentedControl(
                             light?.invoke(this)
                         }
                     }
-                }) {
+                }, useMenuLightEdge = !dark) {
                 CouiFloatingSurface(Rect(Offset(touch.translationX.value, touch.translationY.value),
                     Size(bounds.width.toFloat(), bounds.height.toFloat())),
                     scaleX = touch.scaleX.value + press.scale.value - 1f,
