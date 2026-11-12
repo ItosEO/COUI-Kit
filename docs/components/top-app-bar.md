@@ -101,6 +101,8 @@ fun rememberToolbarStyle(
 
 `contourGlowEnabled` 与阴影工厂应使用同一个轮廓状态。
 
+`CouiToolbarStyle.contourStyle` 为 `TopAppBarButton` 选择独立 Drawable 轮廓；省略时沿用浮动材质的轮廓。此配置只替换光效预设，沿用按钮既有的圆形/胶囊几何；按当前形状返回 `CouiContourStyle`，不接受 `CouiContourStyle.Menu`。轮廓在材质之后、清晰内容之前合成，也遵守 `contourGlowEnabled`。[SheetToolbar](bottom-sheet.md) 自动选择面板内工具栏所需的预设，宿主不需要重复装配。
+
 ## 添加操作按钮
 
 默认按钮适合放图标；设置 `text = true` 可以显示文字按钮：

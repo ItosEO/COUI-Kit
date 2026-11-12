@@ -302,7 +302,7 @@ internal const val CouiContourShaderFunctions = CouiEdgeColorFunctions + """
             return 1.0 - smoothstep(-aa, aa, d);
         }
 
-        float4 blendMenuInnerGlow(CommonDataRect rectData, float4 color, float d, float2 fragCoord) {
+        float4 blendMenuInnerGlow(CommonDataRect rectData, float4 color, float d, float2 fragCoord, float innerCorner) {
             float3 uFadeColor = float3(u_shadowArray[0], u_shadowArray[1], u_shadowArray[2]);
             float3 uFadeAlpha = float3(u_shadowArray[3], u_shadowArray[4], u_shadowArray[5]);
             float uFadeIn = u_shadowArray[6];
@@ -323,7 +323,7 @@ internal const val CouiContourShaderFunctions = CouiEdgeColorFunctions + """
                 float fadeLine = uFadeIn*-1.0;
                 float fadeSdf = fadeLine;
                 float2 halfSizeFade = rectData.halfSize*uFadeScale;
-                fadeConer.x = min(min(halfSizeFade.x, halfSizeFade.y),max(uFadeIn*1.2,rectData.coner));
+                fadeConer.x = min(min(halfSizeFade.x, halfSizeFade.y),max(uFadeIn*1.2,innerCorner));
                 if(rectData.weight<2.0 || any(greaterThan(abs(pos_new), halfSizeFade - float2(fadeConer.x)))) {
                     fadeSdf = smoothSDF_D(pos_new, halfSizeFade, fadeConer.x, rectData.weight);
                     float alpha = smoothstep(fadeLine,0.0,fadeSdf);
@@ -364,6 +364,10 @@ internal const val CouiContourShaderFunctions = CouiEdgeColorFunctions + """
             reColor.rgb = color.rgb*(1.0-fadeColor.a)+fadeColor.rgb;
             reColor.a = color.a*(1.0-fadeColor.a)+fadeColor.a;
             return reColor;
+        }
+
+        float4 blendMenuInnerGlow(CommonDataRect rectData, float4 color, float d, float2 fragCoord) {
+            return blendMenuInnerGlow(rectData, color, d, fragCoord, rectData.coner);
         }
 
         float getDis(float2 pos,float2 halfsize) {

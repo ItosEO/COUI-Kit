@@ -163,6 +163,8 @@ fun rememberMenuStyle(
 
 菜单没有默认高度上限；长菜单可以在 `Menu` 的 `modifier` 中传入 `Modifier.heightIn(max = 320.dp)`，让它在限定高度内滚动。子菜单会按窗口高度限制。
 
+在 [ModalBottomSheet](bottom-sheet.md) 内容中，主菜单与子菜单共同使用面板的可见区域限制尺寸和位置，长列表在区域内滚动。子菜单展开时，主菜单的缩小与平移也遵守这个区域；窄面板使用上下展开的布局。该边界只属于当前面板窗口，内容中新建的独立 Dialog 按自己的窗口定位菜单。
+
 自定义样式应传入 `dark`，省略时按 surface 亮度判断。默认工厂使用当前主题模式，主菜单与子菜单的文字、材质、阴影和反馈共同使用它。M3 模糊补底取 surface，无 Backdrop 的容器取 surfaceBright；selected 取 primary，checkbox 深色取 inversePrimary。
 
 ## 兼容性和滚动

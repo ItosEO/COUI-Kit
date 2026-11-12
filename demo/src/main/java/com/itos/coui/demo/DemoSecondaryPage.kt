@@ -37,6 +37,7 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
         DemoSettingsPage(title = stringResource(title), backDescription = stringResource(R.string.settings_back),
             onBack = back, dark = dark, colors = CouiPageDefaults.themeColors(dark), floatingAction = floatingAction) {
             when (page) {
+                "sheets" -> SheetSamples(dark)
                 "sliders", "switch", "checkbox", "dialogs", "menu" -> ComponentDetail(page, dark, toggleTheme)
                 "chip" -> ChipTabSample(dark)
                 "segment" -> SegmentedControlSample(dark)

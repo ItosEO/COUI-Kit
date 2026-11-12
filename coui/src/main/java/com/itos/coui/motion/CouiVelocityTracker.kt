@@ -23,9 +23,12 @@ internal class CouiVelocityTracker(private val downTime: Long) {
     }
 
     /** 原厂释放速度使用像素/毫秒，再乘 0.3。 */
-    fun releaseVelocity(): Offset {
-        tracker.computeCurrentVelocity(1, Float.MAX_VALUE)
-        return Offset(tracker.xVelocity * 0.3f, tracker.yVelocity * 0.3f)
+    fun releaseVelocity(): Offset = calculateVelocity(units = 1) * 0.3f
+
+    /** 每 units 毫秒的像素速度；拖动容器可按平台上限读取像素/秒。 */
+    fun calculateVelocity(units: Int = 1000, maximumVelocity: Float = Float.MAX_VALUE): Offset {
+        tracker.computeCurrentVelocity(units, maximumVelocity)
+        return Offset(tracker.xVelocity, tracker.yVelocity)
     }
 
     fun recycle() { tracker.recycle() }

@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -75,6 +76,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.window.Popup
@@ -479,18 +481,24 @@ internal fun CouiMenuPopup(
     val shadow = rememberCouiMenuShadow(shape, motion, touchMotion, transitionProgress)
 
     val density = LocalDensity.current
+    val hostView = LocalView.current
+    val boundary = LocalCouiMenuVisibleBounds.current
+    val contentBounds: (() -> IntRect?)? = remember(boundary, hostView) {
+        boundary?.let { { it.boundsInWindow(hostView) } }
+    }
+    val visibleContentBounds = contentBounds?.invoke()
     val materialPositionProvider = remember(offset, density) { CouiMenuPositionProvider(offset, density) }
     val touchOffsetY = with(LocalDensity.current) { offset.y.roundToPx() }
-    val positionProvider = remember(materialPositionProvider, motion, anchor, touchOffsetY) {
+    val positionProvider = remember(materialPositionProvider, motion, anchor, touchOffsetY, contentBounds) {
         CouiMenuMotionPositionProvider(
             materialPositionProvider, motion,
             anchorPosition = { anchor?.positionInWindow },
-            visibleWindowBounds = { anchor?.visibleWindowBounds },
+            visibleWindowBounds = { contentBounds?.invoke() ?: anchor?.visibleWindowBounds },
             touchOffsetY = touchOffsetY,
+            contentBounds = contentBounds,
         )
     }
     val currentOnOutsideRequest by rememberUpdatedState(onOutsideRequest)
-    val hostView = LocalView.current
     Popup(
         popupPositionProvider = positionProvider,
         onDismissRequest = onDismissRequest,
@@ -548,6 +556,14 @@ internal fun CouiMenuPopup(
                         .then(if (properties.excludeFromSystemGesture) Modifier.systemGestureExclusion() else Modifier)
                         .background(containerColor, shape)
                         .clip(shape)
+                        .then(visibleContentBounds?.let { bounds ->
+                            with(density) {
+                                Modifier.sizeIn(
+                                    maxWidth = bounds.width.coerceAtLeast(0).toDp(),
+                                    maxHeight = (bounds.height - 48.dp.roundToPx()).coerceAtLeast(0).toDp(),
+                                )
+                            }
+                        } ?: Modifier)
                         .then(modifier)
                         .width(IntrinsicSize.Max)
                         .then(couiMenuScrollBar(scrollBar, expanded, scrollEnabled,

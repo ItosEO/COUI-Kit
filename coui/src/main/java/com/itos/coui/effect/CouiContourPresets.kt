@@ -2,9 +2,11 @@ package com.itos.coui.effect
 
 import kotlin.math.max
 
-/** 原厂 Drawable 的 EDGE_STYLE_0/2 与 SHADOW_STYLE_0 映射，尺寸为完整像素。 */
+/** 原厂 Drawable 的 EDGE_STYLE_0/1/2 映射，尺寸为完整像素。 */
 internal fun shadowEdgeArray(width: Float, height: Float, density: Float, lineWidthPx: Float, lineAlpha: Float,
-    control: Boolean): FloatArray {
+    style: CouiContourStyle): FloatArray {
+    val circle = style == CouiContourStyle.CircleButton
+    val control = circle || style == CouiContourStyle.Button
     val scale = max(1f, density) * 0.34f
     val widthUnits = max(1f, width) / scale
     val heightUnits = max(1f, height) / scale
@@ -22,16 +24,17 @@ internal fun shadowEdgeArray(width: Float, height: Float, density: Float, lineWi
     out[6] = max(far[1] * factor, 2f)
     out[7] = 0.7f * lineAlpha
     out[8] = (if (control) 1f else 0.6f) * lineAlpha
+    val referenceWidth = if (circle) 160f else if (control) 400f else 600f
+    val referenceHeight = if (circle) 160f else if (control) 100f else 200f
     val (nearSolid, nearFade) = rectLineFadeForSize(
-        if (control) 0.2f else 0.18f, if (control) 0.4f else 0.35f,
-        if (control) 400f else 600f,
-        if (control) 100f else 200f,
+        if (circle) 0.06f else if (control) 0.2f else 0.18f, if (control) 0.4f else 0.35f,
+        referenceWidth, referenceHeight,
         widthUnits, heightUnits,
     )
     val (farSolid, farFade) = rectLineFadeForSize(
-        if (control) 0.15f else 0.25f, if (control) 0.35f else 0.25f,
-        if (control) 400f else 600f,
-        if (control) 100f else 200f,
+        if (circle) 0.01f else if (control) 0.15f else 0.25f,
+        if (circle) 0.28f else if (control) 0.35f else 0.25f,
+        referenceWidth, referenceHeight,
         widthUnits, heightUnits,
     )
     out[9] = nearSolid
@@ -48,8 +51,11 @@ internal fun shadowEdgeArray(width: Float, height: Float, density: Float, lineWi
     return out
 }
 
-/** InnerShadowStyleMapper.toShadowArray16 的 SHADOW_STYLE_0; 明暗只差 fadeAlphaIn。 */
-internal fun shadowGlowArray(width: Float, height: Float, density: Float, alpha: Float): FloatArray {
+/** InnerShadowStyleMapper 的 SHADOW_STYLE_0/1/2；alpha 与 fadeScale 为业务缩放值。 */
+internal fun shadowGlowArray(width: Float, height: Float, density: Float, alpha: Float,
+    style: CouiContourStyle, fadeScale: Float): FloatArray {
+    val panel = style == CouiContourStyle.Panel
+    val circle = style == CouiContourStyle.CircleButton
     val scale = max(1f, density) * 0.34f
     val widthUnits = max(1f, width) / scale
     val heightUnits = max(1f, height) / scale
@@ -57,18 +63,20 @@ internal fun shadowGlowArray(width: Float, height: Float, density: Float, alpha:
     out[0] = 1f
     out[1] = 1f
     out[2] = 1f
-    out[3] = alpha
+    out[3] = alpha * if (panel) .6f else if (circle) .4f else 1f
     out[4] = 0f
     out[5] = 0f
-    out[6] = 120f * scale
+    out[6] = (if (panel) 86f else if (circle) 140f else 120f) * fadeScale * scale
     out[7] = 0f
-    out[8] = 20f * scale
-    out[9] = (400f * (1.3f - 1f)) / widthUnits + 1f
-    out[10] = (100f * (1.15f - 1f)) / heightUnits + 1f
+    out[8] = (if (panel) 10f else 20f) * scale
+    out[9] = (if (panel) 600f * (1.1f - 1f) else if (circle) 160f * (1.4f - 1f)
+        else 400f * (1.3f - 1f)) / widthUnits + 1f
+    out[10] = (if (panel) 600f * (1.07f - 1f) else if (circle) 160f * (1.35f - 1f)
+        else 100f * (1.15f - 1f)) / heightUnits + 1f
     out[11] = 4f
-    out[12] = 0.9f
-    out[13] = 20f * scale
-    out[14] = 4f
-    out[15] = 0.7f
+    out[12] = if (panel) .7f else .9f
+    out[13] = (if (panel) 1f else 20f) * fadeScale * scale
+    out[14] = if (panel) 1f else 4f
+    out[15] = if (panel) 0f else .7f
     return out
 }

@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.draw.drawWithContent
@@ -50,6 +51,7 @@ import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
 import com.itos.coui.theme.CouiTheme
 import com.itos.coui.input.isCouiTouchCancelled
 import kotlinx.coroutines.delay
@@ -98,11 +100,14 @@ fun WheelPicker(
     repeatIntervalMillis: Long = 300,
     formatter: (Int) -> String = Int::toString,
     colors: CouiWheelColors = CouiPickerDefaults.wheelColors(dark),
+    visualWidth: Dp = Dp.Unspecified,
+    visualAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
 ) {
     require(!valueRange.isEmpty() && value in valueRange)
     require(textSize.value > 0 && focusTextSize.value > 0)
     require(repeatIntervalMillis > 0)
     require(diffusion.value >= 0f)
+    require(!visualWidth.isSpecified || (visualWidth.value.isFinite() && visualWidth > 0.dp))
     val density = LocalDensity.current
     val context = LocalContext.current
     val view = LocalView.current
@@ -244,7 +249,10 @@ fun WheelPicker(
                 paint.textSize = normal.toFloat()
                 val wide = paint.measureText(text) >= size.width
                 paint.textAlign = if (wide) Paint.Align.LEFT else Paint.Align.CENTER
-                val x = if (wide) 0f else size.width / 2
+                // 宽触摸列中的数字仍可收在固定视觉区；不缩小整列命中范围。
+                val visual = if (visualWidth.isSpecified) visualWidth.toPx().coerceAtMost(size.width) else size.width
+                val left = visualAlignment.align(visual.roundToInt(), size.width.roundToInt(), layoutDirection).toFloat()
+                val x = if (wide) 0f else left + visual / 2f
                 canvas.save(); canvas.clipOutRect(0f, center - band, size.width, center + band)
                 paint.color = normalColor.copy(alpha = normalColor.alpha * alpha).toArgb()
                 canvas.drawText(text, x, y, paint); canvas.restore()

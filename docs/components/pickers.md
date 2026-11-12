@@ -213,3 +213,5 @@ Demo 提供数字、时间、倒计时、年月日组合及月历示例。
 | 页面与弹窗共用内容、草稿及确认提交     | [DemoPickerSamples](../../demo/src/main/java/com/itos/coui/demo/DemoPickerSamples.kt) |
 
 公开 API 见 [WheelPicker / CouiWheelColors / CouiPickerDefaults](../../coui/src/main/java/com/itos/coui/picker/WheelPicker.kt)、[CalendarPicker](../../coui/src/main/java/com/itos/coui/picker/CalendarPicker.kt)及 [CouiCalendarColors / CouiCalendarDefaults](../../coui/src/main/java/com/itos/coui/picker/CouiCalendarDefaults.kt)。
+
+`visualWidth` 与 `visualAlignment` 控制宽列内部数字的位置，不改变整列输入范围；默认在整列居中。Sheet 中的时间组合使用该视觉区域让两列数字靠近组合中线，外部尺寸继续使用标准 Modifier。

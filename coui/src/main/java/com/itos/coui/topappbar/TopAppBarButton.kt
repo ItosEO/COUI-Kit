@@ -1,5 +1,6 @@
 package com.itos.coui.topappbar
 
+import android.graphics.Paint
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -27,16 +28,21 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.itos.coui.effect.CouiContour
+import com.itos.coui.effect.CouiContourStyle
 import com.itos.coui.effect.CouiFloatingRenderer
 import com.itos.coui.effect.CouiFloatingSurface
 import com.itos.coui.effect.SpotlightPreset
@@ -66,6 +72,15 @@ fun TopAppBarButton(
     val capsule = boundsSize.width != boundsSize.height
     val shape = if (capsule) style.capsuleShape else style.circleShape
     val material = remember(style, capsule) { style.material(capsule) }
+    val contourStyle = remember(style, capsule) { style.contourStyle?.invoke(capsule) }
+    require(contourStyle != CouiContourStyle.Menu) { "顶栏 Drawable 轮廓不可使用菜单组合预设" }
+    val drawableContour = remember(contour, contourStyle) {
+        if (contour && contourStyle != null) CouiContour(style = contourStyle) else null
+    }
+    val contourPaint = remember(drawableContour) { drawableContour?.let { Paint(Paint.ANTI_ALIAS_FLAG) } }
+    val surfaceMaterial = remember(material, contourStyle) {
+        if (contourStyle != null) material.copy(edgeAlpha = 0f, innerGlowAlpha = 0f) else material
+    }
     val shadow = remember(style, capsule) { style.shadow(capsule) }
     val contentLayer = rememberGraphicsLayer()
     val motion = rememberCouiTouchMotion(enabled)
@@ -100,12 +115,27 @@ fun TopAppBarButton(
             .couiFloatingSurface(
                 backdrop = backdrop,
                 renderer = renderer,
-                material = material,
+                material = surfaceMaterial,
                 shadow = shadow,
                 shape = shape,
                 contentLayer = contentLayer,
                 contourGlowEnabled = contour,
                 foregroundComposition = true,
+                beforeContent = if (drawableContour != null && contourPaint != null) { clip ->
+                    contourPaint.shader = drawableContour.shader(size, density, size.minDimension / 2f,
+                        if (capsule) 1f else 2f, Color.Transparent, material.innerGlowAlpha,
+                        material.edgeAlpha, 1f, material.edgeWidthDp * density, innerGlowScale = material.innerGlowScale)
+                    withTransform({
+                        translate(motion.translationX.value, motion.translationY.value)
+                        scale(motion.scaleX.value + press.scale.value - 1f, motion.scaleY.value + press.scale.value - 1f, center)
+                    }) {
+                        clipPath(clip) {
+                            drawIntoCanvas { canvas ->
+                                canvas.nativeCanvas.drawRect(0f, 0f, size.width, size.height, contourPaint)
+                            }
+                        }
+                    }
+                } else null,
             ) {
                 CouiFloatingSurface(
                     bounds = Rect(

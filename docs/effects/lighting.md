@@ -60,9 +60,11 @@ fun LitSurface(
 
 ## 独立 Drawable 轮廓
 
-CouiContour 的 style 默认为 Menu。floating = true 选择 FAB 高光分支，不能与其他 style 组合。Dialog 和 Button 分别提供面板与控件的轮廓预设。
+CouiContour 的 style 默认为 Menu。floating = true 选择 FAB 高光分支，不能与其他 style 组合。Dialog 提供警告窗口预设，Button 与 CircleButton 分别提供胶囊和圆形控件的 Drawable 预设；Panel 选择底部面板的独立内晕分布，继续使用同一 Shader。
 
-shader 的 size、radiusPx、lineWidthPx 使用节点本地像素，density 为正数。Menu / floating 的 cornerWeight 至少为 2；Dialog / Button 允许胶囊权重 1。所有透明度为 0..1。独立覆盖光效传入 Color.Transparent，然后覆盖到实际表面；传入表面颜色时输出已经包含该底色，不能重复叠加。
+shader 的 size、radiusPx、bottomRadiusPx、lineWidthPx 使用节点本地像素，density 为正数。bottomRadiusPx 默认等于 radiusPx；Drawable 预设在 cornerWeight 至少为 2 时可分别设置上下角，底部面板传 0 表示两个下角为直角。Menu / floating 只接受上下角相等的半径。Menu / floating 的 cornerWeight 至少为 2；Drawable 预设允许胶囊权重 1，但胶囊及其过渡形状也要求上下半径相等。
+
+innerGlowScale 为有限正值，用于缩放 Drawable / floating 的内晕渐变距离；Menu 组合预设只接受 1。所有透明度为 0..1。独立覆盖光效传入 Color.Transparent，然后覆盖到实际表面；传入表面颜色时输出已经包含该底色，不能重复叠加。
 
 每个独立节点持有自己的 CouiContour；尺寸、几何或强度变化时更新 shader 参数。外部裁剪 Shape 应与距离场匹配。独立轮廓使用白光 SrcOver；需要后景颜色参与时使用 CouiEdge。
 
