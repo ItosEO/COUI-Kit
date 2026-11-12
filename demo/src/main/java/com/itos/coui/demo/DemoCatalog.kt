@@ -42,7 +42,8 @@ internal val DemoComponentGroups = listOf(
         DemoCatalogEntry("search", R.string.catalog_search) { CouiIcons.Outlined.Search },
         DemoCatalogEntry("navigation", R.string.catalog_navigation) { CouiIcons.Filled.Lab },
         DemoCatalogEntry("chip", R.string.chip_tab_title) { CouiIcons.Filled.Grid },
-        DemoCatalogEntry("fab", R.string.catalog_fab) { CouiIcons.Filled.Add }),
+        DemoCatalogEntry("fab", R.string.catalog_fab) { CouiIcons.Filled.Add },
+        DemoCatalogEntry("floatingtoolbar", R.string.catalog_floating_toolbar) { CouiIcons.Filled.AI }),
     listOf(DemoCatalogEntry("wheel", R.string.catalog_wheel) { DemoIcons.Tune },
         DemoCatalogEntry("calendar", R.string.picker_calendar_title) { CouiIcons.Filled.Health }),
 )
@@ -107,6 +108,7 @@ internal fun catalogDescription(page: String): Int = when (page) {
     "search" -> R.string.intro_search
     "navigation" -> R.string.intro_navigation
     "fab" -> R.string.intro_fab
+    "floatingtoolbar" -> R.string.intro_floating_toolbar
     "wheel" -> R.string.intro_wheel
     "timepicker" -> R.string.intro_timepicker
     "countdownpicker" -> R.string.intro_countdownpicker

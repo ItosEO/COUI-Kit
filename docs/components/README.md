@@ -13,6 +13,7 @@
 | [折叠顶栏](collapsing-app-bar.md) | `LargeTopAppBar` 大标题折叠、`CollapsingTopAppBar` 常驻搜索联动 |
 | [底栏](navigation-bar.md) | 页面选择、左右附件和融合表面 |
 | [FAB](fab.md) | 独立浮动操作 |
+| [悬浮操作栏](floating-toolbar.md) | 胶囊玻璃上的多个同级操作 |
 
 ## 列表与内容
 

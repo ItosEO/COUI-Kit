@@ -54,6 +54,7 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
                 "appbar", "search", "navigation" -> ChromeDetail(page, dark)
                 "fab" -> FabSample(preset = fabPreset, onPresetChange = { fabPreset = it },
                     rounded = roundedFab, onRoundedChange = { roundedFab = it })
+                "floatingtoolbar" -> FloatingToolbarSample(dark)
                 "about" -> {
                     DemoAboutHero()
                     Group {

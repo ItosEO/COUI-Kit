@@ -21,8 +21,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.itos.coui.backdrop.couiBackdrop
@@ -59,9 +57,7 @@ private fun SegmentedControlContent(dark: Boolean) {
     val pageRenderer = pageRendering.getOrNull()
     Group {
         Box(Modifier.fillMaxWidth().height(128.dp)) {
-            Box(Modifier.matchParentSize().couiBackdrop(gradientBackdrop).background(Brush.linearGradient(
-                if (dark) listOf(Color(0xFF152D40), Color(0xFF49313D), Color(0xFF343B2B))
-                else listOf(Color(0xFFD7EDF9), Color(0xFFF9DFDC), Color(0xFFEAF1D2)))))
+            ChromePreviewGradient(dark, gradientBackdrop)
             Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp).align(Alignment.Center),
                 verticalArrangement = Arrangement.spacedBy(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 if (gradientRenderer != null) {

@@ -1,6 +1,6 @@
 # 浮动表面
 
-需要组合背景材质、普通投影、caustic、轮廓与内容时，使用浮动表面接口。现成装配可从[顶栏按钮](../components/top-app-bar.md)、[底栏](../components/navigation-bar.md)和 [FAB](../components/fab.md)进入。
+需要组合背景材质、普通投影、caustic、轮廓与内容时，使用浮动表面接口。现成装配可从[顶栏按钮](../components/top-app-bar.md)、[底栏](../components/navigation-bar.md)、[悬浮操作栏](../components/floating-toolbar.md)和 [FAB](../components/fab.md)进入。
 
 ## 单主体装配
 

@@ -37,7 +37,7 @@
 | 菜单 Fast Kawase                      | 工厂在 API 33 以下返回 null，菜单内部使用既有 Gaussian 分支；该分支不等价于 Fast Kawase。       |
 | 跟手光                                 | API 33 以下不提供 Shader 光效回调。 |
 | SegmentedControl 分段选择器 | 需要 API 34；普通填色不使用背景源，透明模糊需要不含自身且覆盖完整采样范围的不透明 SDR 背景源。 |
-| 浮动底栏、FAB、顶栏按钮/展开式搜索、ChipTab、普通 Mesh 阴影 | 需要 API 34；调用前检查版本，并处理 renderer 创建失败。                                 |
+| 浮动底栏、FAB、悬浮操作栏、顶栏按钮/展开式搜索、ChipTab、普通 Mesh 阴影 | 需要 API 34；调用前检查版本，并处理 renderer 创建失败。                                 |
 | fast 胶囊 Shader 裁剪                   | API 35 起使用公开 Canvas.clipShader；API 34 保留 RenderNode/RenderEffect 承载。 |
 
 具体门槛以公开声明的 `RequiresApi` 和内部版本分支为准。Shader 还受设备图形后端影响；创建 renderer 失败时，由宿主报告错误并提供替代 UI。

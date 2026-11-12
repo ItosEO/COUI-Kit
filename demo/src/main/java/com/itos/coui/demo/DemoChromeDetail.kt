@@ -12,6 +12,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -32,6 +33,7 @@ import com.itos.coui.navigation.CouiNavigationItem
 import com.itos.coui.navigation.NavigationBar
 import com.itos.coui.text.CouiTextKind
 import com.itos.coui.text.rememberCouiTextStyle
+import com.itos.coui.theme.CouiTheme
 
 @Composable
 internal fun ChromeDetail(page: String, dark: Boolean) {
@@ -134,6 +136,22 @@ internal fun FabSampleButton(modifier: Modifier = Modifier, dark: Boolean, prese
                 modifier, color = MaterialTheme.colorScheme.error)
         }
     }
+}
+
+/** 浮动组件的多彩预览背景, 让玻璃材质有可采样的内容；传入 [backdrop] 时同时录入采样源。 */
+@Composable
+internal fun BoxScope.ChromePreviewGradient(
+    dark: Boolean = CouiTheme.isDark,
+    backdrop: CouiBackdrop? = null,
+) {
+    Box(
+        Modifier.matchParentSize()
+            .then(if (backdrop != null) Modifier.couiBackdrop(backdrop) else Modifier)
+            .background(Brush.linearGradient(
+                if (dark) listOf(Color(0xFF152D40), Color(0xFF49313D), Color(0xFF343B2B))
+                else listOf(Color(0xFFD7EDF9), Color(0xFFF9DFDC), Color(0xFFEAF1D2)),
+            )),
+    )
 }
 
 /** 预览背景独立录入采样源；浮动组件不被录入自己的 Backdrop。 */
