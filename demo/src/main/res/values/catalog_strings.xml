@@ -91,6 +91,22 @@
     <string name="catalog_search">Search</string>
     <string name="catalog_navigation">Navigation bar</string>
     <string name="catalog_fab">Floating action button</string>
+    <string name="catalog_text_field">Text field</string>
+    <string name="intro_text_field">Type into rounded cards with a floating label, placeholder text and leading or trailing slots.</string>
+    <string name="text_field_location">Location</string>
+    <string name="text_field_message">Instant message</string>
+    <string name="text_field_note">Note</string>
+    <string name="text_field_clear">Clear message</string>
+    <string name="text_field_hint">Placeholder</string>
+    <string name="text_field_recipient">Recipient</string>
+    <string name="text_field_address">Address</string>
+    <string name="text_field_topic">Topic</string>
+    <string name="text_field_password">Password</string>
+    <string name="text_field_password_show">Show password</string>
+    <string name="text_field_password_hide">Hide password</string>
+    <string name="text_field_email">Email</string>
+    <string name="text_field_email_error">Enter a valid email address</string>
+    <string name="text_field_sample_value" translatable="false">ColorOS 17</string>
     <string name="catalog_appbar_behavior">Collapsing title and floating search</string>
     <string name="catalog_appbar_behavior_summary">Scroll the catalog to collapse the large title. Open search to split the cancel capsule; cancel restores the previous scroll position.</string>
     <string name="intro_wheel">Switch between number, time, countdown and date wheels.</string>

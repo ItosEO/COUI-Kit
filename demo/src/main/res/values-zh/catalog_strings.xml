@@ -89,6 +89,22 @@
     <string name="catalog_search">搜索</string>
     <string name="catalog_navigation">底部导航</string>
     <string name="catalog_fab">浮动操作按钮</string>
+    <string name="catalog_text_field">输入框</string>
+    <string name="intro_text_field">在圆角卡片中输入文字，支持浮动标签、占位提示与前后图标槽。</string>
+    <string name="text_field_location">地点</string>
+    <string name="text_field_message">即时消息</string>
+    <string name="text_field_note">备注</string>
+    <string name="text_field_clear">清空消息</string>
+    <string name="text_field_hint">占位提示</string>
+    <string name="text_field_recipient">收货人</string>
+    <string name="text_field_address">地址</string>
+    <string name="text_field_topic">主题</string>
+    <string name="text_field_password">密码</string>
+    <string name="text_field_password_show">显示密码</string>
+    <string name="text_field_password_hide">隐藏密码</string>
+    <string name="text_field_email">邮箱</string>
+    <string name="text_field_email_error">请输入有效的邮箱地址</string>
+    <string name="text_field_sample_value" translatable="false">ColorOS 17</string>
     <string name="catalog_appbar_behavior">折叠标题与悬浮搜索</string>
     <string name="catalog_appbar_behavior_summary">滚动组件目录可折叠大标题，搜索进入时分裂取消胶囊；取消后恢复进入前的滚动位置。</string>
     <string name="intro_wheel">切换数字、时间、倒计时和日期，比较不同的滚轮组合。</string>

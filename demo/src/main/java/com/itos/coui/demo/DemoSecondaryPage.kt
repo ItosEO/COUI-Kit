@@ -54,6 +54,7 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
                 "appbar", "search", "navigation" -> ChromeDetail(page, dark)
                 "fab" -> FabSample(preset = fabPreset, onPresetChange = { fabPreset = it },
                     rounded = roundedFab, onRoundedChange = { roundedFab = it })
+                "textfield" -> TextFieldSample(dark)
                 "about" -> {
                     DemoAboutHero()
                     Group {

@@ -63,7 +63,7 @@ fun AboutRow(
 
 默认配色由组件读取 `CouiTheme`。`CouiPageDefaults.themeColors(dark)` 解析当前主题；`colors(accent, dark)` 从原生浅色或深色预设生成独立配色值。可用 `copy` 覆盖所需角色。`Group.colors` 不改变内容槽的主题，自定义文字和 Divider 需要显式接收对应颜色。
 
-`Text.kind` 选择固定的 COUI 排版角色。`rememberCouiTextStyle(kind)` 将同一排版用于 BasicText 或编辑框。这些角色使用系统字体与对应度量，不读取 `CouiTypography` 的普通文字样式。`ItemTitle`、`ItemSummary` 和 `Description` 默认按逻辑起始边对齐，其他角色默认居中。可用 `textAlign` 覆盖对齐方式。`onLineCount` 返回实际布局的行数。
+`Text.kind` 选择固定的 COUI 排版角色。`rememberCouiTextStyle(kind)` 将同一排版用于 BasicText 或编辑框。这些角色使用系统字体与对应度量，不读取 `CouiTypography` 的普通文字样式。`ItemTitle`、`ItemSummary` 和 `GroupFooter` 默认按逻辑起始边对齐，其他角色默认居中。可用 `textAlign` 覆盖对齐方式。`onLineCount` 返回实际布局的行数。
 
 从旧版升级时，将 `CouiTextKind.PreferenceTitle` 改为 `CouiTextKind.ItemTitle`。
 
