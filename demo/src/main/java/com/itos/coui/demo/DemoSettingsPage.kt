@@ -60,6 +60,7 @@ internal fun DemoSettingsPage(
     actions: @Composable () -> Unit = {},
     overscrollEffect: CouiOverscrollEffect? = rememberCouiOverscrollEffect(),
     floatingAction: (@Composable BoxScope.() -> Unit)? = null,
+    bottomBar: @Composable () -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val source = remember { MutableInteractionSource() }
@@ -74,6 +75,7 @@ internal fun DemoSettingsPage(
         .nestedScroll(behavior.nestedScrollConnection),
         containerColor = colors.background,
         floatingActionButton = floatingAction,
+        bottomBar = bottomBar,
         topBar = {
             val navigation: @Composable () -> Unit = {
                     if (Build.VERSION.SDK_INT >= 34) {

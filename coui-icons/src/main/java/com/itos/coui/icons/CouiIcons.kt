@@ -277,6 +277,14 @@ object CouiIcons {
         val Search: ImageVector
             @Composable get() = couiIconResource(R.drawable.coui_search_outlined)
 
+        /** com.heytap.speechassist:drawable/aihome_cui_input_bar_btn_camera。 */
+        val Camera: ImageVector
+            @Composable get() = couiIconResource(R.drawable.coui_camera_outlined)
+
+        /** com.heytap.speechassist:drawable/aihome_input_ic_keyboard。 */
+        val Keyboard: ImageVector
+            @Composable get() = couiIconResource(R.drawable.coui_keyboard_outlined)
+
         val Back: ImageVector
             @Composable get() = Monochrome.Back
 
@@ -288,6 +296,14 @@ object CouiIcons {
 
         val Add: ImageVector
             @Composable get() = Monochrome.Add
+
+        /** com.heytap.speechassist:drawable/ai_home_input_ic_tools_normal。 */
+        val AddCircle: ImageVector
+            @Composable get() = couiIconResource(R.drawable.coui_add_circle_outlined)
+
+        /** com.heytap.speechassist:drawable/aihome_input_ic_send_enable_normal。 */
+        val Send: ImageVector
+            @Composable get() = couiIconResource(R.drawable.coui_send_outlined)
 
         val DarkLight: ImageVector
             @Composable get() = Monochrome.DarkLight

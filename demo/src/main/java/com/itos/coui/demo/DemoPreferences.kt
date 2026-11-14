@@ -17,6 +17,27 @@ internal class DemoPreferences private constructor(context: Context) {
     fun materialTheme(value: Boolean) { materialTheme = value; store.edit().putBoolean("materialTheme", value).apply() }
     var contour by mutableStateOf(store.getBoolean("contour", true))
         private set
+    var messageInputCamera by mutableStateOf(store.getBoolean("messageInputCamera", true))
+        private set
+    var messageInputMore by mutableStateOf(store.getBoolean("messageInputMore", true))
+        private set
+    var messageInputSend by mutableStateOf(store.getBoolean("messageInputSend", true))
+        private set
+
+    fun messageInputCamera(value: Boolean) {
+        messageInputCamera = value
+        store.edit().putBoolean("messageInputCamera", value).apply()
+    }
+
+    fun messageInputMore(value: Boolean) {
+        messageInputMore = value
+        store.edit().putBoolean("messageInputMore", value).apply()
+    }
+
+    fun messageInputSend(value: Boolean) {
+        messageInputSend = value
+        store.edit().putBoolean("messageInputSend", value).apply()
+    }
 
     fun dark(value: Boolean) { darkOverride = value; store.edit().putBoolean("dark", value).apply() }
     fun contour(value: Boolean) { contour = value; store.edit().putBoolean("contour", value).apply() }

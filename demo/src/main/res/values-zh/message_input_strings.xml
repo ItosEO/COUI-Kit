@@ -1,0 +1,19 @@
+<resources>
+    <string name="message_input_title">消息输入栏</string>
+    <string name="intro_message_input">带相机、附件和发送按钮转场的消息输入栏</string>
+    <string name="message_input_enabled">启用输入栏</string>
+    <string name="message_input_placeholder">发消息...</string>
+    <string name="message_input_buttons">按钮显示</string>
+    <string name="message_input_show_camera">显示相机</string>
+    <string name="message_input_show_more">显示加号</string>
+    <string name="message_input_show_send">显示发送</string>
+    <string name="message_input_camera_description">拍照</string>
+    <string name="message_input_more_description">更多操作</string>
+    <string name="message_input_send_description">发送消息</string>
+    <string name="message_input_event">最近操作</string>
+    <string name="message_input_ready">输入消息，或使用开关体验按钮转场。</string>
+    <string name="message_input_sent">消息已提交到此示例</string>
+    <string name="message_input_camera_event">已收到拍照回调</string>
+    <string name="message_input_more_event">已收到更多操作回调</string>
+    <string name="message_input_requires_api_34">消息输入栏需要 Android 14（API 34）。</string>
+</resources>
