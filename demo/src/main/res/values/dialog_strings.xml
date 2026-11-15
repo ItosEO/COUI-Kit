@@ -7,6 +7,8 @@
     <string name="dialog_disabled">Disabled confirmation</string>
     <string name="dialog_primary">Themed confirmation</string>
     <string name="dialog_input">Input dialog: rename device</string>
+    <string name="dialog_loading">Loading dialog</string>
+    <string name="dialog_loading_message">Processing…</string>
     <string name="dialog_device_name_initial">COUI Demo</string>
     <string name="dialog_device_name_title">Change phone name</string>
     <string name="dialog_device_name_message">Your phone name is visible when using Bluetooth, Wi-Fi Direct, and other connections.</string>

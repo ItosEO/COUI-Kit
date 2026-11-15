@@ -1,6 +1,7 @@
 package com.itos.coui.sheet
 
-import androidx.annotation.RequiresApi
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -14,6 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.semantics.heading
@@ -43,9 +46,9 @@ fun rememberCouiSheetSurfaceBackdrop(): CouiBackdrop =
 
 /**
  * Panel 工具栏：按钮采样面板已经绘制的背景，不采样含按钮自身的窗口内容源。
- * style 显式提供按钮外观；标题保留原厂角色并合并 titleStyle，titleColor 优先于样式中的颜色。
+ * style 显式提供按钮外观；标题保留原厂角色并合并 titleStyle（含颜色）。
+ * 布局支持库最低版本；操作槽中的按钮按其自身平台要求装配。
  */
-@RequiresApi(34)
 @Composable
 fun SheetToolbar(
     modifier: Modifier = Modifier,
@@ -53,7 +56,6 @@ fun SheetToolbar(
     dark: Boolean = CouiTheme.isDark,
     style: CouiToolbarStyle? = null,
     titleStyle: TextStyle = TextStyle.Default,
-    titleColor: Color = Color.Unspecified,
     navigation: @Composable (CouiToolbarStyle) -> Unit = {},
     actions: @Composable (CouiToolbarStyle) -> Unit = {},
 ) {
@@ -71,14 +73,24 @@ fun SheetToolbar(
             contourStyle = { capsule -> if (capsule) CouiContourStyle.Button else CouiContourStyle.CircleButton })
     }
     val resolvedTitleStyle = rememberSheetTextStyle(SheetTextKind.Title).copy(textAlign = TextAlign.Center).merge(titleStyle)
-    val resolvedTitleColor = titleColor.takeOrElse {
-        titleStyle.color.takeOrElse { (style?.contentColor ?: Color.Unspecified).takeOrElse { colors.title } }
+    val resolvedTitleColor = titleStyle.color.takeOrElse {
+        (style?.contentColor ?: Color.Unspecified).takeOrElse { colors.title }
+    }
+    val touch = LocalSheetTouchSession.current
+    val actionInput = if (touch == null) Modifier else Modifier.pointerInput(touch) {
+        awaitEachGesture {
+            val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+            if (size.width > 0 && size.height > 0 && touch.firstPointer == down.id) {
+                // 对应原厂工具栏按下后禁止父层拦截；不消费按钮自身的点击和按压事件。
+                touch.toolbarOwnsTouch = true
+            }
+        }
     }
     CompositionLocalProvider(LocalCouiToolbarBackdrop provides backdrop, LocalCouiDarkTheme provides resolvedStyle.dark) {
         Layout(modifier = modifier.fillMaxWidth().padding(top = CouiSheetDefaults.toolbarTopSpacing)
             .padding(horizontal = CouiSheetDefaults.toolbarHorizontalPadding), content = {
-            Box { navigation(resolvedStyle) }
-            Box { actions(resolvedStyle) }
+            Box(actionInput) { navigation(resolvedStyle) }
+            Box(actionInput) { actions(resolvedStyle) }
             Box(Modifier.padding(vertical = CouiSheetDefaults.toolbarTitleVerticalPadding)
                 .heightIn(min = CouiSheetDefaults.toolbarTitleMinHeight), contentAlignment = Alignment.Center) {
                 BasicText(title, Modifier.semantics { heading() },

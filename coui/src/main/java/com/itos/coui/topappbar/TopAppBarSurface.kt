@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
@@ -111,7 +112,9 @@ fun TopAppBarSurface(
     }
     SharedTransitionScope { overlayModifier ->
         Layout(
-            modifier = modifier.then(overlayModifier),
+            modifier = modifier.then(overlayModifier)
+                // 空白处也参与命中，挡住下层正文，并让栏内控件自行处理事件。
+                .pointerInput(Unit) {},
             content = {
                 Box(Modifier.couiBackdrop(destination)) {
                     Box(Modifier.matchParentSize().graphicsLayer { alpha = backgroundAlpha.coerceIn(0f, 1f) }) {

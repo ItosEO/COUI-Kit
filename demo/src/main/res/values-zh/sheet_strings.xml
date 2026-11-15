@@ -19,7 +19,13 @@
     <string name="sheet_timer">添加倒计时</string>
     <string name="sheet_timer_name">倒计时名称</string>
     <string name="sheet_timer_preset">添加到常用倒计时</string>
-    <string name="sheet_usage">两个示例共用同一 Sheet 容器；取消放弃草稿，完成仅更新本 Demo。</string>
+    <string name="sheet_usage">可打开闹钟、倒计时编辑器或半屏面板。点「完成」会在本 Demo 保存时钟草稿。</string>
+    <string name="sheet_half">半屏面板</string>
+    <string name="sheet_half_usage">向下拖动顶部手柄，或点「关闭」退出面板。</string>
+    <string name="sheet_close">关闭</string>
+    <string name="sheet_blur_title">面板背景模糊</string>
+    <string name="sheet_blur_summary">实时采样面板后方的色块与页面内容。</string>
+    <string name="sheet_blur_no_source">当前页面没有可用的背景采样源。</string>
     <string name="sheet_repeat">工作日重复</string>
     <string name="sheet_vibrate">振动</string>
     <string name="sheet_sound">铃声</string>

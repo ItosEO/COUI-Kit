@@ -145,7 +145,9 @@ TopAppBarButtonGroup {
 
 M3 模式的 `TopAppBarButton` 使用 `minimumInteractiveComponentSize()`，遵守宿主最小交互尺寸设置。SearchButton 使用固定容器。完整顶栏提供标题字体；自定义 Surface 中的 title 与 buttonGroup 沿用内容自身的文字样式。
 
-`TopAppBar` 和 `LargeTopAppBar` 默认处理顶部及横向系统安全区，可通过 `windowInsets` 调整。父级已消费的 inset 不重复添加。`TopAppBarSurface` 只提供背景，不消费 inset；自定义内容需自行处理一次安全区。渐进模糊背景会向下延伸，但不会增加布局高度或触摸范围。
+`TopAppBar` 和 `LargeTopAppBar` 默认处理顶部及横向系统安全区，可通过 `windowInsets` 调整。父级已消费的 inset 不重复添加。使用 `TopAppBarSurface` 自定义顶栏时，由内容处理安全区。
+
+顶栏的布局区域（包括空白处）会挡住发往下层正文的触摸。布局之外的渐进模糊只负责绘制，正文仍可交互。
 
 COUI Scaffold 的 `topBar` 自动提供正文背景源，`TopAppBar`、`LargeTopAppBar` 和 `TopAppBarSurface` 可省略 `backdrop`，显式参数优先。第三方容器使用 `rememberCouiBackdrop()` 创建源，在现有正文容器上添加 `.couiBackdrop(backdrop)`，再将源显式传给顶栏。不需要额外的背景容器或全局初始化；源节点不能包含顶栏。完整装配与高级作用域见[背景采样](../effects/backdrop.md#顶栏接入)。
 

@@ -17,10 +17,10 @@ COUI-Kit 参考 ColorOS 17 的「凝光视效」，提供背景模糊、材质�
 
 - 组件和效果可以分别使用，也可以组合使用。
 - 纯 COUI 页面可组合 `CouiTheme` 与可选的 [Scaffold](docs/components/scaffold.md)，统一栏位测量和安全区，无需 Material 3 等外部依赖。
-- 可以只取用单个 COUI 组件，与 Material、Miuix 或自有设计混搭；不要求替换宿主的 Scaffold、主题和导航，**灵活自由**
+- 可以只取用单个 COUI 组件，与 Material、Miuix 或自有设计混搭；不要求替换宿主的 Scaffold、主题和导航。
 - 支持接入 App 的配色、文字样式和形状，并提供常用外观预设。
 - 提供原生主题、组件默认值与可选 `coui-material3` 适配模块。核心独立于 Material 3；M3 宿主可在启动时初始化适配，见[外观与预设](docs/guide/appearance.md)。
-- 基于 Android、Compose 和 AndroidX 的公开 API，不依赖厂商 SDK 或私有 SO，**全系统可用**
+- 基于 Android、Compose 和 AndroidX 的公开 API，不依赖厂商 SDK 或私有 SO；支持 Android 12 及以上设备，部分效果要求更高版本。
 
 ## Demo
 
@@ -34,7 +34,7 @@ COUI-Kit 参考 ColorOS 17 的「凝光视效」，提供背景模糊、材质�
 
 ```kotlin
 dependencies {
-    implementation("io.github.itoseo:coui:0.0.1-alpha10")
+    implementation("io.github.itoseo:coui:0.0.1-alpha11")
 }
 ```
 
@@ -49,7 +49,7 @@ dependencies {
 `coui`、`coui-material3` 与 `coui-icons` 采用相同版本并同步发布。通过 Maven Central 接入 M3 时，只需添加适配模块：
 
 ```kotlin
-val couiVersion = "0.0.1-alpha10"
+val couiVersion = "0.0.1-alpha11"
 
 dependencies {
     implementation("io.github.itoseo:coui-material3:$couiVersion")
@@ -85,6 +85,7 @@ CompositionLocalProvider(LocalCouiDarkTheme provides darkTheme) {
 
 ## 文档
 
+- [快速开始](docs/guide/getting-started.md)
 - [组件目录](docs/components/README.md)
 - [图标用法](docs/components/icons.md)
 - [效果目录](docs/effects/README.md)

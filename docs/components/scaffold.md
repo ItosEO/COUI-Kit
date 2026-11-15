@@ -1,6 +1,6 @@
 # 页面容器
 
-`Scaffold` 测量顶栏、底栏并向正文提供 Padding，同时为浮动栏位提供正文背景源。它使用 Compose UI / Foundation，纯 COUI 页面只需依赖核心 `coui`。
+`Scaffold` 测量顶栏、底栏并向正文提供 Padding，同时为浮动栏位提供正文背景源。它位于 `com.itos.coui.layout`，使用 Compose UI / Foundation，纯 COUI 页面只需依赖核心 `coui`。
 
 ## 显示带顶栏的列表
 

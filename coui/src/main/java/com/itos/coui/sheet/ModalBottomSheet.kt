@@ -2,6 +2,7 @@ package com.itos.coui.sheet
 
 import android.graphics.drawable.ColorDrawable
 import android.graphics.BlendMode
+import android.graphics.Rect
 import android.os.Build
 import android.view.WindowManager
 import android.view.WindowInsetsController
@@ -11,9 +12,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitVerticalPointerSlopOrCancellation
+import androidx.compose.foundation.gestures.verticalDrag
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
@@ -24,20 +26,26 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntRect
@@ -46,6 +54,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
+import androidx.core.view.doOnPreDraw
+import com.itos.coui.R
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.backdrop.rememberCouiBackdrop
 import com.itos.coui.dialog.CouiDialogColors
@@ -63,6 +73,7 @@ import com.itos.coui.theme.CouiTheme
 import com.itos.coui.theme.LocalCouiDarkTheme
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import kotlin.math.abs
@@ -70,7 +81,8 @@ import kotlin.math.abs
 private val SheetEase = CubicBezierEasing(.33f, 0f, .67f, 1f)
 
 object CouiSheetDefaults {
-    val cornerRadius = 32.dp
+    // Clock 普通手机的 NEW_G2 分支，Oplus API > 37。
+    val cornerRadius = 45.dp
     val maxWidth = 540.dp
     val topSpacing = 40.dp
     val handleHeight = 16.dp
@@ -89,7 +101,7 @@ object CouiSheetDefaults {
     fun colors(dark: Boolean): CouiDialogColors = CouiDialogDefaults.colors(dark).copy(
         surface = Color(if (dark) 0xFF383838 else 0xFFFFFFFF))
 
-    /** Clock 17 的 bottomdialog 资源，与警告窗口共用模糊/混色后端。 */
+    /** Clock 17 的 bottomdialog 资源。blurRadius 是 Fast Kawase 引擎等级。 */
     fun material(dark: Boolean) = CouiDialogMaterial(
         mix = Color(if (dark) 0xA4515151 else 0xDCC8C8C8),
         blend = Color(if (dark) 0xB30F0F0F else 0x376E6E6E),
@@ -115,8 +127,10 @@ object CouiSheetDefaults {
  * sheetHeight 为包含 handle、内容及底部安全区的可见目标高度；null 按内容测量。
  * 普通手机窗口顶部使用状态栏高度，无状态栏时保留 40dp；屏外绘制余量不占内容高度。
  * 内容自行选择一个滚动容器；nested scroll 在内容到顶后接管向下拖动。顶部 handle 可直接拖动。
- * title / dismissDescription 由宿主资源提供；确认、草稿、页面导航和二级面板属于宿主。
- * 可选材质复用弹窗后端，要求 API 33 及不含面板/遮罩的窗口源。
+ * title 来自宿主资源；dismissDescription 可覆盖遮罩的默认关闭文案。
+ * 确认、草稿、页面导航和二级面板属于宿主。
+ * 可选材质先模糊窗口背景，再按 mix 逐通道混合 RGB 并执行 blendMode。
+ * 要求 API 33 及不含面板和遮罩的窗口源。
  */
 @Composable
 fun ModalBottomSheet(
@@ -124,7 +138,7 @@ fun ModalBottomSheet(
     visible: Boolean,
     onDismissRequest: () -> Unit,
     title: String,
-    dismissDescription: String,
+    dismissDescription: String = stringResource(R.string.coui_sheet_dismiss),
     dark: Boolean = CouiTheme.isDark,
     sheetHeight: Dp? = null,
     draggable: Boolean = true,
@@ -143,40 +157,56 @@ fun ModalBottomSheet(
         checkNotNull(windowBackdrop) { "面板材质需要不包含面板与遮罩的宿主窗口源" }
     }
     var mounted by remember { mutableStateOf(visible) }
-    if (visible && !mounted) SideEffect { mounted = true }
     if (!visible && !mounted) return
     val requestDismiss by rememberUpdatedState(onDismissRequest)
     val currentVisible by rememberUpdatedState(visible)
     val motion = remember { CouiSheetMotion() }
-    SideEffect { motion.onHidden = { if (!currentVisible) mounted = false } }
+    SideEffect {
+        if (visible) mounted = true
+        motion.onHidden = { if (!currentVisible) mounted = false }
+    }
     DisposableEffect(motion) { onDispose { motion.dispose() } }
     Dialog(onDismissRequest = { if (visible) requestDismiss() }, properties = DialogProperties(
         dismissOnClickOutside = false, usePlatformDefaultWidth = false, decorFitsSystemWindows = false, windowTitle = title,
     )) {
         val view = LocalView.current
-        SideEffect {
-            val window = checkNotNull((view.parent as? DialogWindowProvider)?.window)
+        val window = checkNotNull((view.parent as? DialogWindowProvider)?.window)
+        DisposableEffect(window) {
             window.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
             window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND or WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
             window.setWindowAnimations(0)
             window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
             window.isNavigationBarContrastEnforced = false
+            onDispose { }
+        }
+        SideEffect {
             val barAppearance = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
                 WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
             window.insetsController?.setSystemBarsAppearance(if (dark) 0 else barAppearance, barAppearance)
         }
         val density = LocalDensity.current
         val surfaceBackdrop = rememberCouiBackdrop(parent = windowBackdrop)
-        var panelHeight by remember { mutableStateOf<Float?>(null) }
+        var windowHeight by remember { mutableIntStateOf(-1) }
+        var parentHeight by remember { mutableIntStateOf(-1) }
+        var panelHeight by remember { mutableIntStateOf(-1) }
+        var windowCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null, neverEqualPolicy()) }
         var panelCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null, neverEqualPolicy()) }
         var viewportCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null, neverEqualPolicy()) }
-        var geometryReady by remember { mutableStateOf(false) }
+        var geometryReady by remember(view) { mutableStateOf(false) }
+        DisposableEffect(view) {
+            // 普通面板在窗口首次布局结束后启动入场。
+            val listener = view.doOnPreDraw { geometryReady = true }
+            onDispose { listener.removeListener() }
+        }
+        val sheetTranslation = remember(motion) {
+            { if (motion.height == 0f) windowHeight.coerceAtLeast(0).toFloat() else motion.offset }
+        }
         val menuBounds = remember(view, density, motion) {
             CouiMenuVisibleBounds(view) {
                 val panel = panelCoordinates?.takeIf { it.isAttached }
                 val viewport = viewportCoordinates?.takeIf { it.isAttached }?.boundsInWindow()
                 if (panel == null || viewport == null) null else if (motion.height == 0f) {
-                    // 首次隐藏帧与零高度时，表面移到窗口之外，菜单也必须保持空区域。
+                    // 几何就绪前表面在窗口之外，菜单可见区也为空。
                     val left = viewport.left.roundToInt()
                     val bottom = viewport.bottom.roundToInt()
                     IntRect(left, bottom, left, bottom)
@@ -210,83 +240,105 @@ fun ModalBottomSheet(
         } else CouiSheetDefaults.topSpacing
         val gestureNavigation = WindowInsets.tappableElement.getBottom(density) == 0
         val peek = with(density) { (if (gestureNavigation) 82.dp else 110.dp).toPx() }
-        val imeVisible = WindowInsets.ime.getBottom(density) > 0
-        val parentInsets = if (gestureNavigation) WindowInsets.ime.only(WindowInsetsSides.Bottom)
-            else WindowInsets.ime.union(WindowInsets.navigationBars).only(WindowInsetsSides.Bottom)
+        val ime = WindowInsets.ime
+        val parentInsets = if (gestureNavigation) ime.only(WindowInsetsSides.Bottom)
+            else ime.union(WindowInsets.navigationBars).only(WindowInsetsSides.Bottom)
+        val topSpacingPx = with(density) { topSpacing.toPx() }
+        LaunchedEffect(visible, density, ime, topSpacingPx, peek) {
+            snapshotFlow {
+                if (!geometryReady || windowHeight < 0 || parentHeight < 0 || panelHeight < 0) return@snapshotFlow null
+                val imeHeight = if (ime.getBottom(density) > 0) {
+                    (windowHeight - topSpacingPx - parentHeight).coerceAtLeast(0f)
+                } else 0f
+                SheetMeasurement(windowHeight, parentHeight, panelHeight, imeHeight)
+            }.filterNotNull().collect { measured ->
+                motion.update(
+                    visible = visible,
+                    height = measured.panelHeight.toFloat(),
+                    parentHeight = measured.parentHeight.toFloat(),
+                    windowHeight = measured.windowHeight.toFloat(),
+                    imeHeight = measured.imeHeight,
+                    peek = peek,
+                )
+            }
+        }
+        val heightModifier = remember(view, sheetHeight) {
+            val visibleFrame = Rect()
+            Modifier.layout { measurable, constraints ->
+                // 只有父容器可能超过面板上限时才查询窗口。上限仍包含屏外余量。
+                val frameLimit = CouiSheetDefaults.maxHeight.toPx().toInt()
+                val panelLimit = frameLimit - CouiSheetDefaults.bottomPadding.roundToPx()
+                val maxHeight = if (constraints.maxHeight > panelLimit) {
+                    view.getWindowVisibleDisplayFrame(visibleFrame)
+                    if (visibleFrame.height() > frameLimit) panelLimit.coerceAtLeast(constraints.minHeight)
+                    else constraints.maxHeight
+                } else constraints.maxHeight
+                val height = sheetHeight?.roundToPx()?.coerceIn(constraints.minHeight, maxHeight)
+                val placeable = measurable.measure(constraints.copy(
+                    minHeight = height ?: constraints.minHeight,
+                    maxHeight = height ?: maxHeight,
+                ))
+                layout(placeable.width, placeable.height) { placeable.placeRelative(0, 0) }
+            }
+        }
         val canDrag = draggable && visible && motion.entered
         val canDragNow by rememberUpdatedState(canDrag)
-        var touchActive by remember { mutableStateOf(false) }
+        val touch = remember { SheetTouchSession() }
         LaunchedEffect(canDrag) { if (!canDrag) motion.cancelDrag() }
         val nested = remember(motion) { object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset =
-                if (canDragNow && touchActive && source == NestedScrollSource.UserInput && available.y < 0f &&
+                if (canDragNow && touch.canDrag && source == NestedScrollSource.UserInput && available.y < 0f &&
                     (motion.offset > 0f || motion.hasNestedDrag))
                     Offset(0f, motion.drag(available.y, nested = true)) else Offset.Zero
             override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset =
-                if (canDragNow && touchActive && source == NestedScrollSource.UserInput && available.y > 0f)
+                if (canDragNow && touch.canDrag && source == NestedScrollSource.UserInput && available.y > 0f)
                     Offset(0f, motion.drag(available.y, nested = true)) else Offset.Zero
             override suspend fun onPreFling(available: Velocity): Velocity {
-                if (!canDragNow || !motion.hasNestedDrag || motion.offset <= 0f) return Velocity.Zero
+                if (!canDragNow || touch.firstPointer != null || !motion.hasNestedDrag) return Velocity.Zero
+                val consume = motion.offset > 0f
                 if (motion.releaseNested(available.y)) requestDismiss()
-                return Velocity(0f, available.y)
+                return if (consume) Velocity(0f, available.y) else Velocity.Zero
             }
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                if (canDragNow && motion.releaseNested(available.y)) requestDismiss()
+                if (canDragNow && touch.firstPointer == null && motion.releaseNested(available.y)) requestDismiss()
                 return Velocity.Zero
             }
         } }
         // 自身表面仍采样外层窗口；新窗口源只供内容里的后续 Popup/Dialog 使用。
         CompositionLocalProvider(LocalCouiMenuBackdrop provides windowBackdrop) {
             ProvideCouiMenuBackdrop(isolateContent = isolateContent) { source ->
-                BoxWithConstraints(Modifier.fillMaxSize().then(source)) {
-                    val windowHeight = constraints.maxHeight.toFloat()
+                Box(Modifier.fillMaxSize().onSizeChanged { windowHeight = it.height }
+                    .onGloballyPositioned { windowCoordinates = it }.then(source)) {
                     val outside = remember { MutableInteractionSource() }
                     val dismissOnScrim = if (visible && motion.entered && dismissOnClickOutside) {
                         Modifier.clickable(outside, null, onClickLabel = dismissDescription) { requestDismiss() }
                             .semantics { contentDescription = dismissDescription }
                     } else Modifier
-                    Box(Modifier.fillMaxSize().graphicsLayer { alpha = motion.dim }
+                    Box(Modifier.fillMaxSize().graphicsLayer {
+                        // 遮罩只有一个黑色矩形，直接调制 alpha 可省去整窗离屏合成。
+                        compositingStrategy = CompositingStrategy.ModulateAlpha
+                        alpha = motion.dim
+                    }
                         .background(Color.Black.copy(alpha = colors.dimAmount)).then(dismissOnScrim))
                     // 三键导航在父容器避让，手势导航在内容留白；IME 与导航取并集并由 Insets 统一消费。
-                    BoxWithConstraints(Modifier.fillMaxSize().windowInsetsPadding(parentInsets)
-                        .padding(top = topSpacing).consumeWindowInsets(PaddingValues(top = topSpacing)).clipToBounds()
-                        .onGloballyPositioned { viewportCoordinates = it }) {
-                        val parentHeight = constraints.maxHeight.toFloat()
-                        val visibleFrame = remember { android.graphics.Rect() }
-                        view.getWindowVisibleDisplayFrame(visibleFrame)
-                        // 原厂只在可见窗口超过 maxPanelHeight 时约束完整 frame（包含屏外 60dp）。
-                        val maximumFrameHeight = with(density) { CouiSheetDefaults.maxHeight.toPx().toInt() }
-                        val limit = if (visibleFrame.height() > maximumFrameHeight) {
-                            minOf(maxHeight, with(density) {
-                                (maximumFrameHeight - CouiSheetDefaults.bottomPadding.roundToPx()).toDp()
-                            })
-                        } else maxHeight
-                        val imeHeight = if (imeVisible) {
-                            (windowHeight - with(density) { topSpacing.toPx() } - parentHeight).coerceAtLeast(0f)
-                        } else 0f
-                        // 在组合阶段订阅测量结果，首轮 onSizeChanged 后必须重新发布运动目标。
-                        val measuredHeight = panelHeight
-                        LaunchedEffect(visible, measuredHeight, parentHeight, windowHeight, imeHeight, peek) {
-                            if (measuredHeight == null) return@LaunchedEffect
-                            // 首次窗口测量后先提交隐藏帧，窗口创建不占用入场弹簧的时间。
-                            if (!geometryReady && measuredHeight > 0f) { withFrameNanos { }; geometryReady = true }
-                            motion.update(visible, measuredHeight, parentHeight, windowHeight, imeHeight, peek)
-                        }
-                        val heightModifier = if (sheetHeight != null) Modifier.height(sheetHeight.coerceAtMost(limit)) else Modifier.heightIn(max = limit)
+                    Box(Modifier.fillMaxSize().windowInsetsPadding(parentInsets)
+                        // 原厂 Coordinator 不裁顶部留白，上甩回弹只在实际窗口可用区裁切。
+                        .clipToBounds().onPlaced { viewportCoordinates = it }
+                        .padding(top = topSpacing).consumeWindowInsets(PaddingValues(top = topSpacing))
+                        .onSizeChanged { parentHeight = it.height }) {
                         // motion 与菜单使用可见高度；Surface 单独保留原厂屏外绘制余量。
                         Box(modifier.align(Alignment.BottomCenter).widthIn(max = CouiSheetDefaults.maxWidth).fillMaxWidth()
-                            .then(heightModifier).onSizeChanged {
-                                panelHeight = it.height.toFloat()
-                            }
+                            .then(heightModifier).onSizeChanged { panelHeight = it.height }
                             .onGloballyPositioned { panelCoordinates = it }) {
                             Box(Modifier.fillMaxWidth().graphicsLayer {
-                                    translationY = if (motion.height == 0f) windowHeight else motion.offset
+                                    translationY = sheetTranslation()
                                 }
-                                .nestedScroll(nested).sheetDrag(motion, canDrag && !showDragHandle) { requestDismiss() }.pointerInput(motion) {
+                                .nestedScroll(nested).sheetDrag(motion, touch, canDrag && !showDragHandle) { requestDismiss() }.pointerInput(motion, touch) {
                                     awaitEachGesture {
-                                        awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                                        val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
                                         // UserInput 也包含键盘、滚轮和无障碍滚动；这些输入没有触摸释放阶段。
-                                        touchActive = true
+                                        touch.firstPointer = down.id
+                                        touch.toolbarOwnsTouch = false
                                         var released = false
                                         try {
                                             while (true) {
@@ -296,7 +348,7 @@ fun ModalBottomSheet(
                                                 if (event.changes.none { it.pressed }) { released = true; break }
                                             }
                                         } finally {
-                                            touchActive = false
+                                            touch.firstPointer = null
                                             if (!released) motion.cancelDrag()
                                         }
                                     }
@@ -306,55 +358,15 @@ fun ModalBottomSheet(
                                 }) {
                                 CouiSheetSurface(Modifier.fillMaxWidth(), material, windowBackdrop, colors, dark,
                                     surfaceBackdrop = surfaceBackdrop,
-                                    sampleCoordinates = { panelCoordinates }, sampleTranslation = { Offset(0f, motion.offset) }) {
+                                    windowCoordinates = { windowCoordinates },
+                                    panelCoordinates = { panelCoordinates }, translationY = sheetTranslation) {
                                     CompositionLocalProvider(LocalCouiDarkTheme provides dark,
                                         LocalCouiMenuVisibleBounds provides menuBounds,
+                                        LocalSheetTouchSession provides touch,
                                         LocalCouiSheetSurfaceBackdrop provides surfaceBackdrop) {
                                         Column(Modifier.fillMaxWidth().then(if (sheetHeight != null) Modifier.fillMaxHeight() else Modifier)
                                             .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))) {
-                                            if (showDragHandle) {
-                                                var handlePressed by remember { mutableStateOf(false) }
-                                                val handlePressAlpha by animateFloatAsState(
-                                                    targetValue = if (handlePressed) 1f else 0f,
-                                                    animationSpec = tween(200, easing = SheetEase),
-                                                    label = "拖手柄按压",
-                                                )
-                                                Canvas(Modifier.fillMaxWidth().height(CouiSheetDefaults.handleHeight)
-                                                    .pointerInput(canDrag) {
-                                                        if (!canDrag) return@pointerInput
-                                                        awaitEachGesture {
-                                                            awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                                                            handlePressed = true
-                                                            try {
-                                                                while (true) {
-                                                                    val event = awaitPointerEvent(PointerEventPass.Final)
-                                                                    if (event.isCouiTouchCancelled() ||
-                                                                        event.changes.none { it.pressed }) break
-                                                                }
-                                                            } finally {
-                                                                handlePressed = false
-                                                            }
-                                                        }
-                                                    }
-                                                    .sheetDrag(motion, canDrag) { requestDismiss() }) {
-                                                    val press = handlePressAlpha
-                                                    if (press > 0f) {
-                                                        val shadowWidth = 70.dp.toPx()
-                                                        val shadowHeight = 20.dp.toPx()
-                                                        val color = Color(if (dark) 0x33FFFFFF else 0x1F000000)
-                                                        drawRoundRect(
-                                                            color = color.copy(alpha = color.alpha * press),
-                                                            topLeft = Offset((size.width - shadowWidth) / 2f,
-                                                                (size.height - shadowHeight) / 2f),
-                                                            size = Size(shadowWidth, shadowHeight),
-                                                            cornerRadius = CornerRadius(16.dp.toPx()),
-                                                        )
-                                                    }
-                                                    val width = 36.dp.toPx(); val height = 4.dp.toPx()
-                                                    drawRoundRect(Color(if (dark) 0x40FFFFFF else 0x29000000),
-                                                        Offset((size.width - width) / 2f, 12.dp.toPx()), Size(width, height), CornerRadius(height / 2f))
-                                                }
-                                            }
+                                            if (showDragHandle) SheetDragHandle(motion, touch, canDrag, dark) { requestDismiss() }
                                             content()
                                         }
                                     }
@@ -369,11 +381,84 @@ fun ModalBottomSheet(
 }
 
 @Composable
-private fun Modifier.sheetDrag(motion: CouiSheetMotion, enabled: Boolean, onDismiss: () -> Unit): Modifier {
+private fun SheetDragHandle(
+    motion: CouiSheetMotion,
+    touch: SheetTouchSession,
+    canDrag: Boolean,
+    dark: Boolean,
+    onDismiss: () -> Unit,
+) {
+    var handlePressed by remember { mutableStateOf(false) }
+    val handlePressAlpha by animateFloatAsState(
+        targetValue = if (handlePressed) 1f else 0f,
+        animationSpec = tween(200, easing = SheetEase),
+        label = "拖手柄按压",
+    )
+    Canvas(Modifier.fillMaxWidth().height(CouiSheetDefaults.handleHeight)
+        .pointerInput(canDrag) {
+            if (!canDrag) return@pointerInput
+            awaitEachGesture {
+                awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                handlePressed = true
+                try {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Final)
+                        if (event.isCouiTouchCancelled() ||
+                            event.changes.none { it.pressed }) break
+                    }
+                } finally {
+                    handlePressed = false
+                }
+            }
+        }
+        .sheetDrag(motion, touch, canDrag, onDismiss)) {
+        val press = handlePressAlpha
+        if (press > 0f) {
+            val shadowWidth = 70.dp.toPx()
+            val shadowHeight = 20.dp.toPx()
+            val color = Color(if (dark) 0x33FFFFFF else 0x1F000000)
+            drawRoundRect(
+                color = color.copy(alpha = color.alpha * press),
+                topLeft = Offset((size.width - shadowWidth) / 2f,
+                    (size.height - shadowHeight) / 2f),
+                size = Size(shadowWidth, shadowHeight),
+                cornerRadius = CornerRadius(16.dp.toPx()),
+            )
+        }
+        val width = 36.dp.toPx()
+        val height = 4.dp.toPx()
+        drawRoundRect(Color(if (dark) 0x40FFFFFF else 0x29000000),
+            Offset((size.width - width) / 2f, 12.dp.toPx()), Size(width, height), CornerRadius(height / 2f))
+    }
+}
+
+private data class SheetMeasurement(
+    val windowHeight: Int,
+    val parentHeight: Int,
+    val panelHeight: Int,
+    val imeHeight: Float,
+)
+
+/** 首指的命中归属在同一次触摸期间保持，连带阻止嵌套滚动接管。 */
+internal class SheetTouchSession {
+    var firstPointer: PointerId? = null
+    var toolbarOwnsTouch = false
+    val canDrag get() = firstPointer != null && !toolbarOwnsTouch
+}
+
+internal val LocalSheetTouchSession = staticCompositionLocalOf<SheetTouchSession?> { null }
+
+@Composable
+private fun Modifier.sheetDrag(
+    motion: CouiSheetMotion,
+    touch: SheetTouchSession,
+    enabled: Boolean,
+    onDismiss: () -> Unit,
+): Modifier {
+    if (!enabled) return this
     var coordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val configuration = android.view.ViewConfiguration.get(LocalView.current.context)
-    return onGloballyPositioned { coordinates = it }.pointerInput(motion, enabled, configuration) {
-        if (!enabled) return@pointerInput
+    return onGloballyPositioned { coordinates = it }.pointerInput(motion, touch, configuration) {
         var cancelled = false
         var dragVelocity = 0f
         var releaseVelocity = Velocity.Zero
@@ -427,14 +512,22 @@ private fun Modifier.sheetDrag(motion: CouiSheetMotion, enabled: Boolean, onDism
                         }
                     }
                 }
-                detectVerticalDragGestures(
-                    onVerticalDrag = { change, amount -> change.consume(); motion.drag(amount, velocity = dragVelocity) },
-                    onDragEnd = {
-                        if (cancelled) motion.cancelDrag()
-                        else if (motion.release(releaseVelocity)) onDismiss()
-                    },
-                    onDragCancel = motion::cancelDrag,
-                )
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    // 工具栏在 Initial 标记首指，点击和反馈继续处理原事件。
+                    if (touch.toolbarOwnsTouch) return@awaitEachGesture
+                    val drag = awaitVerticalPointerSlopOrCancellation(down.id, down.type) { change, overSlop ->
+                        change.consume()
+                        motion.drag(overSlop, velocity = dragVelocity)
+                    } ?: return@awaitEachGesture
+                    val released = verticalDrag(drag.id) { change ->
+                        val delta = change.positionChange().y
+                        change.consume()
+                        motion.drag(delta, velocity = dragVelocity)
+                    }
+                    if (!released || cancelled) motion.cancelDrag()
+                    else if (motion.release(releaseVelocity)) onDismiss()
+                }
             }
         } finally {
             motion.cancelDrag()

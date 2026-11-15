@@ -30,11 +30,19 @@ COUIButtonBarLayout.setBlurBackgroundWindow 将材质门控传到 COUIButton；c
 
 取消链的共同实现依据来自录音 APK，SHA-256 为 968c3c17c6cdcc09f9a64e6fd939bfa4382104d7afda6dffb7c2f14ccb587588。`coui_center_alert_dialog_button_panel` 使用 `COUIMaxHeightNestedScrollView`，可滚动时进入 `COUINestedScrollView.onInterceptTouchEvent`；父容器接管经 `ViewGroup` 分发 CANCEL。`COUIButton.onTouchEvent` 退出状态蒙层并转发点触光熄灭，`dispatchTouchEvent` 将取消送入 `COUITouchMotionAnimator`，Press / Deform / Rubber 单元以零输入速度走抬手收尾。这条链证明原厂有对应处理，不表示日常默认布局容易触发，也不替代指定 Settings APK 的运行对照。
 
+### 加载型预设
+
+钱包 `com.finshell.wallet` 5.51.5（551053，PJZ110 `17.0.0.103(CN01)`，APK SHA-256 `529eeb967907391e509d46b792a961704c540828a81ebe6435ac5e28dc763c3d`）的 `BankManageDetailActivity.F3` 通过 `BaseActivity.showLoading` 显示删卡提示。`BaseActivityLoadingDialog` 通过 `FINUIAlertDialog.Rotating.Auto` 选择 `coui_progress_dialog_rotating`。`couiRotatingSpinnerJsonName` 为深浅主题选择各自的 `coui_rotating_loading` 动画资源。有效弧段同时受图层旋转、Trim Paths 起点和偏移控制，末帧与下一轮首帧方向一致。
+
+[LoadingDialog](../../../../coui/src/main/java/com/itos/coui/dialog/LoadingDialog.kt)复用居中窗口、遮罩与可选背景材质，以 Compose Canvas 绘制原厂圆弧关键帧。单行提示沿用弹窗排版的字体解析。选择直接绘制圆弧，因为当前两份资源均为一个圆形路径，Compose 可以表达对应的线宽、旋转和 Trim Paths，宿主无需打包动画资源或解码器。宿主持有 `visible` 和提示文案，按需提供关闭回调。Demo 的计时归 Demo 持有。
+
 ### 公共效果复用
 
-窗口复用既有 CouiBackdrop 与菜单 Fast Kawase 后端，只将半径参数化为弹窗所需的引擎等级；菜单工厂仍使用原等级，其他菜单行为不变。不使用平台 Gaussian 替代 Kawase，也不把引擎等级解释为像素半径。
+窗口复用既有 CouiBackdrop 与菜单 Fast Kawase 后端。弹窗传入自己的引擎等级，菜单工厂提供菜单等级。等级由 Fast Kawase 消费，单位见代码。
 
-材质复用 rememberCouiMaterialEffect，扩展默认保持 Overlay 的可选 ColorDodge；operateBlur → COUIBackgroundBlurBuilder → OplusBlurParam → MaterialFilter 的目标分支为浅色 ColorDodge、深色 Overlay。只过滤背景，不过滤文字与按钮。系统 DIM 不录入页面源。图层录制传入独立 Density，避免 DrawScope 成为自己的密度代理。RuntimeShader 材质创建、模糊绘制及轮廓调用点均显式检查 API 33；材质参数的入口校验继续拒绝旧平台，不增加另一种静默替代算法。
+材质复用 rememberCouiMaterialEffect。operateBlur → COUIBackgroundBlurBuilder → OplusBlurParam → MaterialFilter 的目标分支为浅色 ColorDodge、深色 Overlay，混色只作用于面板底图。图层录制传入独立 Density，避免 DrawScope 成为自己的密度代理。RuntimeShader 材质创建、模糊绘制及轮廓调用点均显式检查 API 33，材质参数的入口校验拒绝旧平台。
+
+PJZ110 `17.0.0.103(CN01)` 的 Settings 底部确认框中，SurfaceFlinger 按页面、系统遮罩、弹窗模糊区域的顺序合成。浅色和深色的面板实测颜色均与先压暗再混色的预测一致。[弹窗窗口](../../../../coui/src/main/java/com/itos/coui/dialog/CouiDialogWindow.kt)沿用系统窗口遮罩，并在[独立采样层](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenuBlur.kt)绘入同强度的黑色，供降采样、模糊和后续混色使用。宿主背景源可继续供其他控件使用。面板采样取配置的遮罩强度，窗口遮罩渐变由系统独立驱动。
 
 ColorDodge 保留原厂的 `d / (1 - s)`，不增加 epsilon 或白色通道特判。PJZ110 的 `librenderengineextimpl.so`（SHA-256：1a232042b2252c4d061296ac347f6995824003b8d2c1553a51672105ddac7850）中，Shader 位于 0x29ca0，`MaterialFilter::appendColorDodge` 位于 0xa264c；参数读取与 uniform 上传也没有白色通道限幅。自定义输入出现除零不是这条原厂分支的移植差异，不将 SystemUI 另一个同名混合函数的保护移入此处；默认弹窗预设不使用白色 blend。
 

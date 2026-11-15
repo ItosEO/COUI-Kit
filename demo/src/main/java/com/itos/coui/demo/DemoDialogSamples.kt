@@ -2,6 +2,7 @@ package com.itos.coui.demo
 
 import android.os.Build
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -13,8 +14,10 @@ import com.itos.coui.dialog.CouiDialogAction
 import com.itos.coui.dialog.CouiDialogDefaults
 import com.itos.coui.dialog.CouiDialogPlacement
 import com.itos.coui.dialog.CouiDialogActionStyle
+import com.itos.coui.dialog.LoadingDialog
 import com.itos.coui.menu.rememberCouiWindowBackdrop
 import com.itos.coui.layout.*
+import kotlinx.coroutines.delay
 
 @Composable
 internal fun DialogSample(dark: Boolean, onToggleTheme: (() -> Unit)? = null) {
@@ -28,7 +31,7 @@ internal fun DialogSample(dark: Boolean, onToggleTheme: (() -> Unit)? = null) {
     val supported = Build.VERSION.SDK_INT >= 33 && windowBackdrop != null
     val variants = listOf("primary" to R.string.dialog_primary, "bottom" to R.string.dialog_bottom, "center" to R.string.dialog_center,
         "long" to R.string.dialog_long, "three" to R.string.dialog_three, "disabled" to R.string.dialog_disabled,
-        "input" to R.string.dialog_input) +
+        "input" to R.string.dialog_input, "loading" to R.string.dialog_loading) +
         if (onToggleTheme != null) listOf("theme" to R.string.dialog_theme_live) else emptyList()
     if (supported) Group {
         DemoSwitchPreference(title = stringResource(R.string.dialog_material), checked = material, onCheckedChange = { material = it })
@@ -44,7 +47,22 @@ internal fun DialogSample(dark: Boolean, onToggleTheme: (() -> Unit)? = null) {
         val dismiss = { visible = false }
         val regularMessage = stringResource(R.string.dialog_sample_message)
         val title = stringResource(R.string.dialog_sample_title)
-        if (variant == "input") androidx.compose.runtime.key(session) {
+        if (variant == "loading") {
+            LaunchedEffect(visible, session) {
+                if (visible) {
+                    delay(2500)
+                    visible = false
+                }
+            }
+            LoadingDialog(
+                visible = visible,
+                message = stringResource(R.string.dialog_loading_message),
+                onDismissRequest = dismiss,
+                dark = dark,
+                material = if (material && supported) CouiDialogDefaults.material(dark) else null,
+                backdrop = windowBackdrop,
+            )
+        } else if (variant == "input") androidx.compose.runtime.key(session) {
             RenameDeviceDialogSample(dark = dark, initialName = deviceName, visible = visible,
             material = material && supported, backdrop = windowBackdrop, onDismissRequest = dismiss,
             onSave = { deviceName = it; visible = false })

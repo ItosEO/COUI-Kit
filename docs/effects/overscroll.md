@@ -19,7 +19,7 @@ Column(Modifier.fillMaxSize().couiVerticalScroll(scroll)) {
 
 宿主的 `ScrollState` 持有真实位置、范围和滚动互斥。`value`、`maxValue`、`isScrollInProgress`、`scrollTo`、`animateScrollTo` 和 `stopScroll` 均操作同一个状态。
 
-子内容需要横向拖动时，可暂时设置 `enabled = false`，暂停用户纵向滚动。回弹节点保持挂载，子内容的当前手势可继续；恢复为 `true` 后可再次上下滚动。
+子内容需要横向拖动时，可暂时设置 `enabled = false`，暂停用户纵向滚动。回弹节点保持挂载，子内容的当前手势可继续；恢复为 `true` 后可再次上下滚动。需要按住滑条时同时停止惯性滚动，可用[滑条与回弹的组合示例](../components/slider.md#在回弹页面中使用滑条)。
 
 此入口的手指拖动事件通过可选 `interactionSource` 发出，不发送到只读的 `ScrollState.interactionSource`。下面片段同样位于 Composable 中；`dragged` 可供宿主 UI 读取。
 

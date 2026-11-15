@@ -5,33 +5,29 @@ import android.os.Build
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.addOutline
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.asComposeRenderEffect
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.LayoutCoordinates
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.backdrop.couiBackdrop
@@ -52,53 +48,85 @@ internal fun CouiSheetSurface(
     colors: CouiDialogColors,
     dark: Boolean,
     surfaceBackdrop: CouiBackdrop,
-    sampleCoordinates: () -> LayoutCoordinates?,
-    sampleTranslation: () -> Offset,
+    windowCoordinates: () -> LayoutCoordinates?,
+    panelCoordinates: () -> LayoutCoordinates?,
+    translationY: () -> Float,
     content: @Composable BoxScope.() -> Unit,
 ) {
     // 表面在组合期间保留外层窗口源，退场结束后与面板一并释放。
-    if (material != null) checkNotNull(backdrop).RetainWhileComposed()
-    val blur = if (material != null) rememberCouiKawaseBlur(checkNotNull(backdrop), colors.surface, material.blurRadius) else null
-    val materialEffect = if (material != null) rememberCouiMaterialEffect(material.mix, material.blend, material.blendMode) else null
+    val blur = if (material != null) {
+        val source = checkNotNull(backdrop)
+        source.RetainWhileComposed()
+        rememberCouiKawaseBlur(source, colors.surface, material.blurRadius)
+    } else null
+    val materialEffect = if (Build.VERSION.SDK_INT >= 33 && material != null) {
+        rememberCouiMaterialEffect(material.mix, material.blend, material.blendMode, rgbMix = true)
+    } else null
     val surfaceEffect = remember(materialEffect) { materialEffect?.asComposeRenderEffect() }
-    val layer = rememberGraphicsLayer()
-    val recordingDensity = LocalDensity.current
-    val layoutDirection = LocalLayoutDirection.current
+    val layer = if (surfaceEffect != null) {
+        val result = rememberGraphicsLayer()
+        DisposableEffect(result, surfaceEffect) {
+            result.clip = true
+            result.renderEffect = surfaceEffect
+            onDispose { }
+        }
+        result
+    } else null
     val contour = LocalCouiContourGlowEnabled.current
     val edge = remember(material != null, contour) {
         if (material != null && contour && Build.VERSION.SDK_INT >= 33) CouiContour(style = CouiContourStyle.Panel) else null
     }
-    val edgePaint = remember { Paint(Paint.ANTI_ALIAS_FLAG) }
+    val edgePaint = remember(edge) { edge?.let { Paint(Paint.ANTI_ALIAS_FLAG) } }
     Layout(modifier = modifier.drawWithCache {
-        // 原厂先把底部 padding 纳入测量，再让这部分伸出窗口；材质与轮廓使用同一完整尺寸。
         val fullSize = size.copy(height = size.height + CouiSheetDefaults.bottomPadding.roundToPx())
-        edgePaint.shader = if (Build.VERSION.SDK_INT >= 33) {
-            edge?.shader(fullSize, density, CouiSheetDefaults.cornerRadius.toPx(), CouiSheetDefaults.edgeWeight,
+        if (Build.VERSION.SDK_INT >= 33 && edge != null && edgePaint != null) {
+            // Clock 的轮廓 Drawable 用 PixelOffset 取半径，线宽用 PixelSize。
+            val edgeRadiusPx = CouiSheetDefaults.cornerRadius.toPx().toInt().toFloat()
+            edgePaint.shader = edge.shader(fullSize, density, edgeRadiusPx, CouiSheetDefaults.edgeWeight,
                 Color.Transparent, CouiSheetDefaults.innerGlowAlpha(dark), CouiSheetDefaults.lineAlpha(dark), 1f,
-                CouiSheetDefaults.lineWidth(dark).toPx(), bottomRadiusPx = 0f)
-        } else null
+                CouiSheetDefaults.lineWidth(dark).roundToPx().toFloat(), bottomRadiusPx = 0f)
+        }
         onDrawWithContent {
             drawContent()
             // NEW_G2 分支先恢复内容的路径裁剪，再由 Drawable 自身处理轮廓覆盖率。
-            if (edge != null) drawIntoCanvas { canvas ->
+            if (edgePaint != null) drawIntoCanvas { canvas ->
                 canvas.nativeCanvas.drawRect(0f, 0f, fullSize.width, fullSize.height, edgePaint)
             }
         }
-    }.clip(SheetShape), content = {
-        // 采样位移每帧使背景失效；独立绘制节点保留清晰内容和轮廓的显示列表。
-        Box(Modifier.graphicsLayer().couiBackdrop(surfaceBackdrop).drawBehind {
-            val target = sampleCoordinates()
-            if (Build.VERSION.SDK_INT >= 33 && blur != null && materialEffect != null &&
-                target != null && target.isAttached && size.width > 0f && size.height > 0f) {
-                layer.renderEffect = surfaceEffect
-                layer.record(recordingDensity, layoutDirection,
-                    IntSize(size.width.toInt().coerceAtLeast(1), size.height.toInt().coerceAtLeast(1))) {
-                    blur.draw(this, target, 1f, sampleTranslation())
+    }, content = {
+        // 材质区域用 PixelOffset 半径；背景采样层保留完整、未裁剪的纯表面。
+        Box(Modifier.graphicsLayer().drawWithCache {
+            val radius = CouiSheetDefaults.cornerRadius.toPx()
+            val path = sheetPath(size, layoutDirection, if (blur != null) radius.toInt().toFloat() else radius)
+            onDrawWithContent { clipPath(path) { this@onDrawWithContent.drawContent() } }
+        }.couiBackdrop(surfaceBackdrop).drawWithCache {
+            val window = if (blur != null) windowCoordinates() else null
+            val panel = if (blur != null) panelCoordinates() else null
+            if (Build.VERSION.SDK_INT >= 33 && blur != null && layer != null &&
+                window?.isAttached == true && panel?.isAttached == true &&
+                window.size.width > 0 && window.size.height > 0) {
+                // RenderEngine 以窗口与显示区的交集生成模糊图，面板区域再裁出对应位置。
+                val windowToPanel = Matrix().also { panel.transformFrom(window, it) }
+                layer.record(this, layoutDirection, window.size) {
+                    blur.draw(this, window)
                 }
-                drawLayer(layer)
-            } else drawRect(colors.surface)
+                onDrawBehind {
+                    withTransform({
+                        translate(top = -translationY())
+                        transform(windowToPanel)
+                    }) {
+                        drawLayer(layer)
+                    }
+                }
+            } else {
+                onDrawBehind { drawRect(colors.surface) }
+            }
         })
-        Box(content = content)
+        Box(Modifier.drawWithCache {
+            val fullSize = size.copy(height = size.height + CouiSheetDefaults.bottomPadding.roundToPx())
+            val path = sheetPath(fullSize, layoutDirection, CouiSheetDefaults.cornerRadius.toPx())
+            onDrawWithContent { clipPath(path) { this@onDrawWithContent.drawContent() } }
+        }, content = content)
     }) { measurables, constraints ->
         val contentPlaceable = measurables[1].measure(constraints)
         val fullHeight = contentPlaceable.height + CouiSheetDefaults.bottomPadding.roundToPx()
@@ -111,13 +139,9 @@ internal fun CouiSheetSurface(
     }
 }
 
-private val SheetShape = object : Shape {
-    private val rounded = CouiShape(CouiSheetDefaults.cornerRadius, CouiSheetDefaults.edgeWeight)
-    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
-        val fullSize = size.copy(height = size.height + with(density) { CouiSheetDefaults.bottomPadding.roundToPx() })
-        val roundedPath = Path().apply { addOutline(rounded.createOutline(fullSize, layoutDirection, density)) }
-        val bottom = Path().apply { addRect(Rect(0f, fullSize.height / 2f, fullSize.width, fullSize.height)) }
-        // 下半部使用几何并集，保持两个下角为直角。
-        return Outline.Generic(Path.combine(PathOperation.Union, roundedPath, bottom))
-    }
+private fun Density.sheetPath(size: Size, layoutDirection: LayoutDirection, radiusPx: Float): Path {
+    val shape = CouiShape(radiusPx.toDp(), CouiSheetDefaults.edgeWeight)
+    val roundedPath = Path().apply { addOutline(shape.createOutline(size, layoutDirection, this@sheetPath)) }
+    val bottom = Path().apply { addRect(Rect(0f, size.height / 2f, size.width, size.height)) }
+    return Path.combine(PathOperation.Union, roundedPath, bottom)
 }

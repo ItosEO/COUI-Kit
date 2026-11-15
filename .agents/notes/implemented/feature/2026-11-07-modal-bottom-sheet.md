@@ -12,17 +12,23 @@ Status: implemented
 
 普通底部窗口只执行位移与遮罩，不套用居中或锚点分支的缩放。程序开关的位移响应取可见面板高度、实际父容器高度与导航 peek，遮罩使用同一响应。手势回弹使用 Behavior 的响应，每帧先按移动前的位置和父容器高度计算遮罩，再放置面板；手势隐藏的位移按剩余可见高度取响应，Dialog 的独立遮罩动画承接当前透明度。不能把程序开关、手势回弹与手势隐藏合成一个动画分支。
 
-窗口根高度、Coordinator 高度、面板完整测量高度与可见高度各有消费者。父容器遵守顶部边距及导航区域，不能直接用限制面板内容的工具值替代它。原厂测量先扩展底部 padding，计算可见高度时再减去；这部分属于屏外外形，不是内容安全留白。Compose 对父级报告可见高度，纯背景与轮廓使用完整高度。正常反向保留速度，手势接管清除旧目标和速度；取消及未达到隐藏条件的释放回到展开位置，只有宿主接受退出才隐藏。
+窗口根高度、Coordinator 高度、面板完整测量高度与可见高度各有消费者。父容器遵守顶部边距及导航区域，不能直接用限制面板内容的工具值替代它。原厂测量先扩展底部 padding，计算可见高度时再减去；这部分属于屏外外形，不是内容安全留白。Compose 对父级报告可见高度，纯背景的裁剪和轮廓使用完整高度。正常反向保留速度，手势接管清除旧目标和速度；取消及未达到隐藏条件的释放回到展开位置，只有宿主接受退出才隐藏。
 
 直接拖动沿 `onViewReleased` 检查双轴速度和越过中线的条件，速度样本复用公共平台跟踪器。ViewDragHelper 的直接 MOVE 逐次截断像素增量，再执行快速拖动调整，不能累积小数后才截断终点。嵌套滚动沿 `onStopNestedScroll` 检查剩余位移和面板最后消费的方向，子滚动容器剩余的甩动速度不用于决定方向。到达边界后的零消费 MOVE 仍刷新位置遮罩，不重新接管弹簧；嵌套回到展开位后也保留这一补帧路径。只有实际指针会话能启动嵌套拖动；Compose 的 UserInput 也用于键盘、鼠标滚轮和无障碍滚动，不能据此等待一个并不存在的释放回调。面板在子滚动的释放回调前处理系统取消，UP 后保留已有嵌套会话的收尾。Clock 两个 Fragment 的退出拦截属于编辑页业务，通用面板通过受控退出把决定留给宿主。
 
-首轮测量在组合阶段订阅，测得高度后先提交隐藏帧，再启动入场弹簧。固定外框持有未动画的采样锚点，位移只在内层 graphicsLayer 和背景绘制阶段读取；背景逆位移与显示使用同一帧。纯背景有独立 Auto 绘制节点，避免采样失效牵连清晰滚轮和内容的显示列表。实时背景、模糊网格与轮数不冻结或降级，净性能收益仍需设备数据。
+面板在 Initial 阶段记录首指，工具栏操作槽只标记自己的首指命中，不消费事件。面板的直接拖动和嵌套接管在本次触摸中尊重该归属，第二指加入也不改写它。按钮可继续处理点触光、按压、位移和点击。已经拖回展开点时，释放直接复位位移、遮罩及旧弹簧状态。离开展开点时，上甩仍按 `panelHeightVerticalMoving` 衰减越位。留白属于展开布局，裁剪应放在顶部留白之外的实际视口，避免截掉回弹时的圆角。
+
+窗口与 Coordinator 使用普通布局。面板高度按父约束和窗口上限测量，父约束可能超过上限时读取系统可见窗口。首次 pre-draw 确认窗口已完成布局，运动协程从同一份快照读取各层实测高度和 IME 状态，再驱动普通底部入场。同一窗口的高度变化和反向继续使用现有运动通道。
+
+[Demo 入口行](../../../../demo/src/main/java/com/itos/coui/demo/DemoSheetSamples.kt) 的点击与列表反馈共用交互源。宿主接受对应面板的打开目标后，通过 `pressFeedback` 结束该行的按压蒙层，避免宿主列表的退场弹簧与独立窗口入场同时请求绘制。按压收尾由 Demo 的打开状态控制。
+
+窗口根提供固定的采样坐标，宿主背景或窗口几何更新时录制材质。面板位移时，用同帧逆位移从窗口坐标的材质图取出可见部分。背景与清晰内容各自绘制，纯背景源保留面板内的材质结果。滤镜与录制层随材质组合建立和释放，固定尺寸下复用各轮绘制指令。
 
 面板表面消费进入 Dialog 前取得的外层窗口源。Dialog 内部提供以外层源为 parent 的完整窗口源，供后续独立菜单和弹窗使用；工具栏和分类项则消费不含自身的纯面板背景源。已经提供窗口源的同窗口内容不再重复包装 provider。默认保留内容隔离；isolateContent=false 只用于已自行隔离目标混合的内容，无消费者时允许 Auto，实际浮层消费者仍恢复原分辨率离屏。
 
-菜单可见边界携带所属窗口与稳定读取函数，在消费端计算，不按每帧矩形重组整棵内容树。完整面板四角先随动画转换到窗口，再与实际父视口求交；不能先裁静态可见高度再平移，也不能由面板底边反推父视口，以免上回弹或宿主 padding/offset/scale 破坏边界。无交集时保留视口内的零尺寸区域。同窗口的主菜单、子菜单和主菜单缩移使用这一可见区域；换算到 Popup 局部坐标后再定位。独立 Dialog 虽可继承 CompositionLocal，也不能使用外层窗口的矩形；未提供该 Local 的普通菜单行为保持。内容消费面板已处理的顶部和底部 inset，IME 只在窗口外层处理，避免重复安全留白。
+菜单可见边界携带所属窗口与稳定读取函数。主菜单在测量时取可见区域的宽高，在放置时取定位边界。完整面板四角先随动画转换到窗口，再与实际父视口求交；不能先裁静态可见高度再平移，也不能由面板底边反推父视口，以免上回弹或宿主 padding/offset/scale 破坏边界。无交集时保留视口内的零尺寸区域。同窗口的主菜单、子菜单和主菜单缩移使用这一可见区域；换算到 Popup 局部坐标后再定位。独立 Dialog 虽可继承 CompositionLocal，也不能使用外层窗口的矩形；未提供该 Local 的普通菜单行为保持。内容消费面板已处理的顶部和底部 inset，IME 只在窗口外层处理，避免重复安全留白。
 
-外形复用 CouiShape，平滑上圆角与下半部矩形用 PathOperation.Union 做真正并集，不能以追加反向轮廓代替。背景、裁剪和轮廓共用完整测量边界，两个下角为直角；不能用增加圆角矩形高度来隐藏下圆角。当前采用的 NEW_G2 分支在清晰内容绘制后恢复路径裁剪，再绘制 SHADOW_STYLE_2；公共 Contour 自行处理边缘覆盖率，不能再乘一次内容裁剪的边缘。距离场按当前点分别选择上下角，位移后的内晕也按自身坐标选择。材质仍复用公共 Fast Kawase 和混色后端，不复制 Shader。
+外形复用 CouiShape，平滑上圆角与下半部矩形用 PathOperation.Union 合并。内容路径保留浮点半径，模糊区域与轮廓光采用 PixelOffset 取整，三个绘制阶段使用完整测量边界和两个直角下角。清晰内容绘制完成后，由公共 Contour 绘制 SHADOW_STYLE_2 并处理边缘覆盖率，线宽采用 PixelSize 取整。
 
 Panel 工具栏按其窗口内 Drawable 分支选择按钮底色和 CAPSULE_8 / CIRCLE_4，胶囊与圆形的描边、内晕分别使用对应 Drawable 预设。TopAppBarButton 在公共浮动表面的材质之后、清晰内容之前装配公共 Contour，保留按压、跟手光与阴影；普通顶栏未选择该配置时保持自己的浮动轮廓。标题与菜单文字持有各自原厂角色和字体留白，不能借用警告弹窗按钮字号。主题只提供默认颜色与字体族，显式 Style 和标题配置优先。两侧操作先测量，居中标题对称避让较宽一侧；长标题可增加高度。
 
@@ -32,11 +38,17 @@ WheelPicker 的 visualWidth / visualAlignment 只控制数字绘制，不缩小�
 
 基准为 Clock 17.6.94，APK SHA-256 为 231b22b01cee3783259bdf896399308c0b9cd7e279b0ba226d6735f0075a778d。实际消费者是 AddAlarmPanelFragment 与 TimerPanelFragment，经 COUIPanelFragment / COUIBottomSheetDialog 装配；普通手机使用最大可用高度、隐藏拖动条，并设置 Panel 工具栏。Demo 只展示本地闹钟和倒计时草稿，不访问系统提醒或复制铃声、振动等完整子页。
 
-doParentViewTranslationShowingAnim / isFadeInCenter 区分普通位移与居中缩放；initCoordinateInsets、IgnoreWindowInsetsFrameLayout、COUIBottomSheetBehavior.onMeasureChild、updatePaddingBottom、getTranslationDistance / getTranslationResponse 共同决定高度语义。手势沿 startSettleRunnable、calculatePanelOutsideAlpha 追到 PullUpToDismissPanelListener 与 dismissWithAlphaAnim，不能遗漏独立遮罩的接管。PanelPercentFrameLayout.draw、applyShadowEdgeParams 与 refreshShadowEdgeDrawableCorner 决定前景轮廓、STYLE_2 和下角。ToolbarMaterialEffectDelegate.applyBlurWindowBackground、shadowedge 的预设及映射器决定工具栏 Drawable 分支；Title.Panel / HeadlineS 与 COUIMenuItemStyle 决定文字。关键公式及分支交叉核对对应字节码。
+doParentViewTranslationShowingAnim / isFadeInCenter 区分普通位移与居中缩放。initCoordinateInsets、IgnoreWindowInsetsFrameLayout、COUIBottomSheetBehavior.onMeasureChild、updatePaddingBottom、getTranslationDistance / getTranslationResponse 共同决定高度语义。手势沿 startSettleRunnable、calculatePanelOutsideAlpha 追到 PullUpToDismissPanelListener 与 dismissWithAlphaAnim。`COUIViewDragHelper.forceSettleCapturedViewAt` 在位移为零时直接完成，`panelHeightVerticalMoving` 对从展开点下方起步的高速上甩保留 40% 越位。实际 `design_bottom_sheet_dialog` 的容器和 Coordinator 都声明 `clipChildren=false`。`ToolbarMaterialEffectDelegate.handleTouch` 在工具栏触摸动画分支的 DOWN 调用 `requestDisallowInterceptTouchEvent`。关键公式及分支交叉核对对应字节码。
 
-TimeLimitPicker.onMeasure 与 NumberPicker.onDraw 说明宽点击列内部的数字位置；TimeLimitPicker.dispatchDraw 和 MiniTimePickerView.onDraw 说明选择线内缩。设备原厂控件树曾与相同 APK 的资源核对，但不能据此宣布当前移植的视觉和性能已经通过。
+`COUIBottomSheetDialog.initBlurParams` 读取 `coui_bottomdialog_*`，`onAttachedToWindow` 将 type 2 背景模糊 Drawable 附到面板 View，首次 pre-draw 以实测高度启动普通入场。普通 `doParentViewTranslationShowingAnim` 将面板 alpha 置 1，只驱动位移与遮罩。AddAlarm 和 Timer 显式取 Clock 的 `elevatedWithCard` 作无模糊底色。该固件的 `appendOverlay` 和 `appendColorDodge` 均先调用 `appendMixShader`，按 mix alpha 逐通道插值 RGB，再执行对应的第二层混合；亮度混色位于 `appendGlowMixShader` 分支。[公共材质工厂](../../../../coui/src/main/java/com/itos/coui/effect/CouiMaterial.kt)由 Sheet 内部选择 RGB 路径。ToolbarMaterialEffectDelegate 的 Panel Drawable 分支、shadowedge 预设及映射器决定按钮几何，Title.Panel / HeadlineS 与 COUIMenuItemStyle 决定文字。
 
-公开 Android/Compose 窗口与应用内背景源承担移植，不等价于 OEM 系统合成端。原厂资料未包含父容器实际加载的 design_bottom_sheet_dialog 布局，无法确认 Coordinator 最终的顶部裁剪配置；当前父容器限制屏外绘制余量，顶边回弹的中间帧仍需设备核验。当前不实现居中、锚点跟手、多窗、小折叠屏、多级 Fragment 合并、collapsed 状态或拖动条折线形变；这些边界由使用页明确说明。
+同一固件的 RenderEngine `BlurGenerator::generate` 将 type 2 分派到 `fastKawaseGenerator`。超过 250 的等级进入 `oneSixteenthKawaseBlur`。400 先减 26，以 `ceil(extent / 16) * 4`、`ceil(extent / 16)` 执行两次四点下采样，再做九轮五点滤波。公共 [Fast Kawase](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenuBlur.kt) 用首轮的两倍网格承载四个取样点，以应用内背景源和公开 RenderEffect 表达该链。原厂 SurfaceFlinger 先将窗口矩形映射到显示区求交，将该范围传给 BlurRegion 的图像生成，随后按独立的区域参数绘制。滤波结果在两个小尺寸 Surface 间交替写入。固件提供 RenderEngine shader 预编译入口与 SurfaceFlinger 缓存，具体 Clock 命中情况仍需原厂运行时序。
+
+同一固件的 Oplus API 值为 40。`COUIPanelPercentFrameLayout.initRadiusAndWeight` 的 NEW_G2 高版本分支读取 `coui_round_corner_xxxxl_radius_large_16_1` 与 `weight_16_1_large`，对应 45dp 与 3.0。`COUIBottomSheetDialog` 在该版本也从同一 radius 资源取值，普通手机 ratio=1 的 `refresBlurCorner`、`refreshShadowEdgeDrawableCorner` 将下角置零。`32dp` 来自旧分支的 `couiRoundCornerXXXXL`，更早的 smooth Outline 则解析主题的 25dp 和 1.1。`PanelPercentFrameLayout.draw` 和 `applyShadowEdgeParams` 确定轮廓及内晕的层序和预设。设备上参与 `v2.a.e()` 的动画等级及默认权重属性仍需读取，不能由固件版本推断其运行时门控。
+
+TimeLimitPicker.onMeasure 与 NumberPicker.onDraw 说明宽点击列内部的数字位置。TimeLimitPicker.dispatchDraw 和 MiniTimePickerView.onDraw 说明选择线内缩。倒计时由 TimerSetFragment 实际加载 oplus_timer_settings，三列滚轮由 MiniTimePickerView 装配。普通手机两张卡片使用 20dp 圆角。第二张卡片在铃声与常用开关之间绘制分隔线，名称输入的起始位置由独立的顶部、侧边和底部留白决定。Demo 用主题色承载这些控件和本地草稿。设备原厂控件树曾与相同 APK 的资源核对，当前移植的视觉和帧时仍需实机核验。
+
+公开 Android/Compose 窗口与应用内背景源承担移植，设备仍需对照 OEM 窗口采样与裁剪的覆盖率。顶边回弹、全高度和半屏的浅深色中间帧都需要设备核验。当前支持普通底部的展开与隐藏位置，其余窗口和 Fragment 分支见使用页。
 
 ## Existing-note audit
 

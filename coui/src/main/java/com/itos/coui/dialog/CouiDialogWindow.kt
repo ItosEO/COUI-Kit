@@ -110,6 +110,8 @@ internal fun CouiDialogWindow(
     material: CouiDialogMaterial? = null,
     backdrop: CouiBackdrop? = null,
     visible: Boolean? = null,
+    maxWidth: Dp = CouiDialogDefaults.maxWidth,
+    horizontalMargin: Dp = CouiDialogDefaults.horizontalMargin,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val hostView = LocalView.current
@@ -265,7 +267,7 @@ internal fun CouiDialogWindow(
         // 实时输入弹窗固定窗口，只移动内部卡片；窗口合成层的位置无法用于当前帧采样。
         val viewport = if (ownsImePosition) Modifier.fillMaxSize().windowInsetsPadding(
             WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal))
-        else Modifier.widthIn(max = CouiDialogDefaults.maxWidth).fillMaxWidth()
+        else Modifier.widthIn(max = maxWidth).fillMaxWidth()
         BoxWithConstraints(viewport.onGloballyPositioned {
             outerCoordinates = it
         }
@@ -285,9 +287,9 @@ internal fun CouiDialogWindow(
             else maxCardHeight
             val imeTranslation = if (placement == CouiDialogPlacement.Bottom) imeOffset else imeOffset / 2f
             // maxWidth 包含左右留白；入场距离只取卡片外框高度，不取全屏窗口高度。
-            Box(Modifier.widthIn(max = CouiDialogDefaults.maxWidth).fillMaxWidth()
+            Box(Modifier.widthIn(max = maxWidth).fillMaxWidth()
                 .onGloballyPositioned { windowSize = it.size }
-                .padding(horizontal = CouiDialogDefaults.horizontalMargin).padding(bottom = padding)) {
+                .padding(horizontal = horizontalMargin).padding(bottom = padding)) {
                 DialogCard(modifier.fillMaxWidth().heightIn(max = minOf(maxCardHeight, availableHeight)),
                     material, windowBackdrop, colors, shape, edge, dark, radiusPx, edgeWeight,
                     frameScale, frameTranslation?.minus(imeTranslation), frameAlpha,
@@ -344,7 +346,7 @@ private fun DialogCard(
             layer.renderEffect = materialEffect.asComposeRenderEffect()
             layer.record(recordingDensity, layoutDirection,
                 IntSize(size.width.toInt().coerceAtLeast(1), size.height.toInt().coerceAtLeast(1))) {
-                blur.draw(this, target, frameScale, sampleTranslation)
+                blur.draw(this, target, frameScale, sampleTranslation, dimAmount = colors.dimAmount)
             }
             drawLayer(layer)
         } else drawRect(colors.surface)

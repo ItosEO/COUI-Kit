@@ -7,6 +7,8 @@
     <string name="dialog_disabled">禁用确认操作</string>
     <string name="dialog_primary">主题色确认弹窗</string>
     <string name="dialog_input">输入型弹窗：重命名设备</string>
+    <string name="dialog_loading">加载弹窗</string>
+    <string name="dialog_loading_message">正在处理…</string>
     <string name="dialog_device_name_initial">COUI Demo</string>
     <string name="dialog_device_name_title">更改手机名称</string>
     <string name="dialog_device_name_message">在使用蓝牙，WLAN 直连等操作时，都会看到你的手机名称</string>

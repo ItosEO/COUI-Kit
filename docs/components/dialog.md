@@ -1,59 +1,46 @@
 # 💬弹窗
 
-`Dialog` 用于显示确认、提示等弹窗，可以放在屏幕底部或居中显示。需要单行输入时，可以使用 `InputDialog`。
+`Dialog` 用于显示确认、提示等弹窗，可以放在屏幕底部或居中显示。需要单行输入时，可以使用 `InputDialog`。任务执行期间可以使用 `LoadingDialog` 显示加载动画和提示。这些组件位于 `com.itos.coui.dialog`。
 
-## 最小调用
-
-页面提供显隐状态、操作文案和回调；`confirmAction` 是宿主用文案和业务回调构造的 `CouiDialogAction`：
-
-~~~kotlin
-Dialog(
-    visible = visible,
-    onDismissRequest = onDismiss,
-    confirmAction = confirmAction,
-)
-~~~
-
-需要移动过程中实时采样背景时，传入 `visible`，并将调用持续保留在组合中。`true` 开始入场，`false` 开始退场；库在退场结束后释放窗口。移动和背景采样使用同一帧的位移、缩放，动画中途可以反向。
-
-`Dialog` 和两个 `InputDialog` 重载均支持此参数。不要再用 `if (visible)` 包裹这类调用，否则退场内容会立即移除。省略参数（默认 `null`）时，由外层条件控制窗口，使用系统窗口动画；此方式不提供移动过程中的实时采样。下文外层条件示例展示该调用方式。
-
-`dark` 和 `colors` 默认读取局部 `CouiTheme` 或初始化策略；未初始化时使用原生预设，模式来自 Local 或系统。M3 模式使用对应文字角色的字体族，字号、字重、行距和 fontScale 由组件控制。自定义正文使用宿主样式。通用规则见[外观与预设](../guide/appearance.md)。
+[确认弹窗](#显示一个简单确认弹窗) · [输入弹窗](#输入型弹窗) · [加载弹窗](#显示加载弹窗) · [背景材质](#使用背景材质)
 
 ## 显示一个简单确认弹窗
 
-下面的弹窗包含标题、正文、确认和取消按钮：
+### 最小调用
+
+在页面的 Composable 中加入下面的代码。示例进入组合时显示弹窗；`title`、`confirmLabel`、`cancelLabel` 和 `onConfirm` 由页面提供：
 
 ~~~kotlin
-@Composable
-fun ConfirmDialog(
-    modifier: Modifier = Modifier,
-    visible: Boolean,
-    dark: Boolean,
-    title: String?,
-    message: String?,
-    confirmLabel: String,
-    cancelLabel: String,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit,
-) {
-    if (visible) {
-        Dialog(
-            modifier = modifier,
-            onDismissRequest = onDismiss,
-            dark = dark,
-            title = title,
-            message = message,
-            confirmAction = CouiDialogAction(confirmLabel, onConfirm),
-            dismissAction = CouiDialogAction(cancelLabel, onDismiss),
-        )
-    }
-}
+var visible by remember { mutableStateOf(true) }
+
+Dialog(
+    visible = visible,
+    title = title,
+    onDismissRequest = { visible = false },
+    confirmAction = CouiDialogAction(confirmLabel, onClick = {
+        onConfirm()
+        visible = false
+    }),
+    dismissAction = CouiDialogAction(cancelLabel, onClick = { visible = false }),
+)
 ~~~
 
-`visible` 为 `true` 时显示弹窗。点击按钮会调用对应的回调；需要关闭弹窗时，在回调中将页面的 `visible` 设为 `false`。返回键和点击外部通过 `onDismissRequest` 请求关闭。此例显式提供 `dark`；省略时使用默认值。
+确认时示例先调用 `onConfirm`，再将 `visible` 设为 `false`；取消时直接设为 `false`。返回键和点击外部会调用 `onDismissRequest`。组件不会自动更新页面的显隐状态。要从按钮打开弹窗，可以将 `visible` 的初值设为 `false`，再在按钮回调中设为 `true`。标题和正文可以传 `null`，对应区域不会显示。两个短按钮横排；单个按钮、三个按钮或文案放不下时自动竖排。
 
-标题和正文可以传 `null`，对应区域不会显示。两个短按钮横排；单个按钮、三个按钮或文案放不下时自动竖排。
+### 控制显隐
+
+传入 `visible` 时，将调用持续保留在组合中。`true` 开始入场，`false` 开始退场；库在退场结束后释放窗口。需要背景材质时，移动和背景采样使用同一帧的位移、缩放，动画中途可以反向。`Dialog` 和两个 `InputDialog` 重载均支持此参数。不要再用 `if (visible)` 包裹这类调用，否则退场内容会立即移除。
+
+也可以省略 `visible`，由外层条件创建窗口。此时使用系统窗口动画，不提供移动过程中的实时采样。下面的 `visible`、`onDismiss`、`confirmLabel` 和 `onConfirm` 由页面提供；需要关闭时，由相应回调更新页面状态：
+
+~~~kotlin
+if (visible) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        confirmAction = CouiDialogAction(confirmLabel, onConfirm),
+    )
+}
+~~~
 
 ## 添加第三个操作
 
@@ -77,7 +64,23 @@ Dialog(
 )
 ~~~
 
-三个按钮竖排时，`neutralAction` 在最上方，默认使用破坏性文字色。设置 `CouiDialogActionStyle.Primary` 时，需要像示例一样提供 `colors`。`enabled = false` 只禁用对应按钮。
+三个按钮竖排时，从上到下依次是 `neutralAction`、`confirmAction` 和 `dismissAction`。红字是 `neutralAction` 的默认文字色，取自弹窗的 `colors.destructive`。三个按钮都可以各自传入 `CouiDialogAction.colors`，分别指定底色、文字色和禁用态配色。选择 `Primary` 样式时需显式传入按钮配色。`enabled = false` 只禁用对应按钮。
+
+如果三个按钮都使用普通配色，让它们沿用默认的 `Secondary` 样式，并把 `destructive` 设为普通操作的文字色 `action`。下面的文案和操作回调由宿主提供。
+
+~~~kotlin
+val colors = CouiDialogDefaults.themeColors(dark)
+
+Dialog(
+    onDismissRequest = onDismiss,
+    dark = dark,
+    title = title,
+    colors = colors.copy(destructive = colors.action),
+    confirmAction = CouiDialogAction(confirmLabel, onConfirm),
+    dismissAction = CouiDialogAction(cancelLabel, onDismiss),
+    neutralAction = CouiDialogAction(alternativeLabel, onAlternative),
+)
+~~~
 
 ## 使用自定义正文
 
@@ -160,32 +163,54 @@ val imePadding = if (LocalWindowInfo.current.isWindowFocused) {
 val pageModifier = Modifier.fillMaxSize().then(imePadding)
 ~~~
 
-## 使用背景材质
+## 显示加载弹窗
 
-默认弹窗使用不透明表面。API 33 及以上可以传入 `material`，采样页面背景。先按[快速开始](../guide/getting-started.md#浮动组件的背景源)创建 `backdrop`，再将弹窗放在背景源节点之外：
+`LoadingDialog` 在屏幕中央显示循环转动的弧线和一行提示。把调用留在组合中，由宿主在任务开始和结束时更新 `visible`。
 
 ~~~kotlin
-if (visible) {
-    Dialog(
-        onDismissRequest = onDismiss,
-        dark = dark,
-        title = title,
-        message = message,
-        confirmAction = CouiDialogAction(confirmLabel, onConfirm),
-        dismissAction = CouiDialogAction(cancelLabel, onDismiss),
-        material = if (CouiDialogDefaults.isMaterialSupported()) {
-            CouiDialogDefaults.material(dark)
-        } else {
-            null
-        },
-        backdrop = backdrop,
-    )
+LoadingDialog(
+    visible = isWorking,
+    message = loadingMessage,
+)
+~~~
+
+`isWorking` 由宿主的任务状态提供，`loadingMessage` 是宿主的提示文案。提示过长时以省略号收尾。默认屏蔽外点关闭。传入 `onDismissRequest` 后，返回键可请求宿主关闭。需要让点击外部也请求关闭时，同时设置 `dismissOnClickOutside = true`。宿主处理任务和关闭请求，通过 `visible` 控制窗口显隐。
+
+## 使用背景材质
+
+要让背景模糊随弹窗一起移动，在 API 33 及以上提供窗口背景源，并把显隐状态传给 `visible`。下面的 `page` 是原有宿主页，可以包含 COUI `Scaffold`。把背景修饰符挂到页面容器上，弹窗留在该容器之外。
+
+~~~kotlin
+@Composable
+fun BlurredDialogPage(
+    modifier: Modifier = Modifier,
+    visible: Boolean,
+    title: String,
+    confirmLabel: String,
+    onDismiss: () -> Unit,
+    page: @Composable () -> Unit,
+) {
+    val supported = CouiDialogDefaults.isMaterialSupported()
+    ProvideCouiMenuBackdrop { windowSource ->
+        Box(modifier.fillMaxSize().then(if (supported) windowSource else Modifier)) {
+            page()
+        }
+        Dialog(
+            visible = visible,
+            title = title,
+            onDismissRequest = onDismiss,
+            confirmAction = CouiDialogAction(confirmLabel, onDismiss),
+            material = if (supported) CouiDialogDefaults.material(CouiTheme.isDark) else null,
+        )
+    }
 }
 ~~~
 
-`visible`、文案和回调沿用前面的确认弹窗示例。`material` 非空时要求 API 33 及以上，并须通过 `backdrop` 或 `ProvideCouiMenuBackdrop` 提供有效背景源；缺少系统支持或背景源时会报错。不支持材质时传入 `material = null`，使用不透明表面。
+宿主打开弹窗时将 `visible` 设为 `true`，在 `onDismiss` 中改为 `false`。保留弹窗调用与窗口背景源，让库在退场结束后释放窗口。`InputDialog` 和 `LoadingDialog` 使用相同的材质接入方式。普通弹窗与输入弹窗也可以省略 `visible`，由外层条件创建窗口，此时系统移动整个窗口，COUI 会采样弹窗到位时的位置。
 
-背景模糊采样自页面，窗口遮罩由系统独立渐变。传入 `visible` 时，入场等待窗口完成布局后开始；底部弹窗按卡片外框高度进入，按显示区域高度退出，位移与背景采样共用当前帧的位置。
+`material` 非空时须通过 `backdrop` 或 `ProvideCouiMenuBackdrop` 提供有效窗口源。COUI `Scaffold` 自动提供的是栏位使用的正文源。窗口源的作用域见[宿主页面接入](../guide/secondary-pages.md#正文源与窗口源)。Android 12 上传入 `material = null`，使用不透明表面。
+
+启用材质时，`colors.dimAmount` 同时控制窗口遮罩与面板采样的压暗强度。面板先压暗采样，再做模糊和混色。
 
 ## 位置和外观
 
@@ -199,6 +224,8 @@ Dialog(
     placement = CouiDialogPlacement.Center,
 )
 ~~~
+
+`dark` 和 `colors` 默认读取局部 `CouiTheme` 或初始化策略；未初始化时使用原生预设，模式来自 Local 或系统。M3 模式使用对应文字角色的字体族，字号、字重、行距和 fontScale 由组件控制。自定义正文使用宿主样式。通用规则见[外观与预设](../guide/appearance.md)。
 
 默认 `colors` 使用 `CouiDialogDefaults.themeColors(dark)`。显式自定义时可从该入口复制调整；主操作配色可以使用 `CouiDialogDefaults.primaryActionColors(accent)`。
 
@@ -214,8 +241,8 @@ Dialog(
 
 ## Demo 中的样式与示例
 
-Demo 的“组件 → 弹窗”分组包含底部、居中、长内容、多个操作和输入弹窗示例。
+Demo 的“组件 → 弹窗”分组包含底部、居中、长内容、多个操作、输入和加载弹窗示例。加载示例会在模拟任务结束后自动关闭。
 
 支持的设备可以通过“弹窗背景材质”开关比较模糊材质和不透明表面。
 
-Demo 源码见 [DemoDialogSamples.kt](../../demo/src/main/java/com/itos/coui/demo/DemoDialogSamples.kt) 与[输入型示例](../../demo/src/main/java/com/itos/coui/demo/DemoDialogInputSample.kt)。公开参数见 [Dialog / CouiDialogAction](../../coui/src/main/java/com/itos/coui/dialog/Dialog.kt)、[CouiDialogActionStyle / CouiDialogActionColors](../../coui/src/main/java/com/itos/coui/dialog/CouiDialogButton.kt)、[InputDialog](../../coui/src/main/java/com/itos/coui/dialog/InputDialog.kt) 与 [CouiDialogDefaults](../../coui/src/main/java/com/itos/coui/dialog/CouiDialogDefaults.kt)。
+Demo 源码见 [DemoDialogSamples.kt](../../demo/src/main/java/com/itos/coui/demo/DemoDialogSamples.kt) 与[输入型示例](../../demo/src/main/java/com/itos/coui/demo/DemoDialogInputSample.kt)。公开参数见 [Dialog / CouiDialogAction](../../coui/src/main/java/com/itos/coui/dialog/Dialog.kt)、[CouiDialogActionStyle / CouiDialogActionColors](../../coui/src/main/java/com/itos/coui/dialog/CouiDialogButton.kt)、[InputDialog](../../coui/src/main/java/com/itos/coui/dialog/InputDialog.kt)、[LoadingDialog](../../coui/src/main/java/com/itos/coui/dialog/LoadingDialog.kt) 与 [CouiDialogDefaults](../../coui/src/main/java/com/itos/coui/dialog/CouiDialogDefaults.kt)。

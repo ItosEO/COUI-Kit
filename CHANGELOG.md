@@ -2,6 +2,19 @@
 
 COUI-Kit 处于早期预览阶段。本文记录公开 API、行为、接入和兼容要求的变化。日期以提交合并时间为准；版本归档以真实 Git Tag 和发行产物为准。
 
+## [0.0.1-alpha11] - 2026-11-12
+
+### 新增与改进
+
+- 新增 `LoadingDialog`，居中显示加载动画和单行提示。宿主通过 `visible` 控制显隐。默认屏蔽外点关闭，可通过 `dismissOnClickOutside` 启用。[加载弹窗](docs/components/dialog.md#显示加载弹窗)
+- 修正弹窗材质的合成顺序。先按窗口遮罩强度压暗采样底图，再做模糊和混色。[背景材质](docs/components/dialog.md#使用背景材质)
+- 修复顶栏空白处的触摸穿透。顶栏布局之外的渐隐区域仍可与正文交互。[顶栏](docs/components/top-app-bar.md)
+- 新增支持 RTL 自动镜像的 `CouiIcons.Filled.Next` 和 `CouiIcons.Outlined.Next`。[图标](docs/components/icons.md)
+
+### 升级说明
+
+- `coui`、`coui-material3` 和 `coui-icons` 使用同一版本。alpha10 的公开调用可沿用，升级后重新编译宿主模块。
+
 ## [0.0.1-alpha10] - 2026-11-10
 
 以下为相对 `0.0.1-alpha9` 的变更。

@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 
-/** BackgroundBlurDrawable 的普通材质模式，亮度混色后执行第二层混合。 */
+/** 材质的第二层混合模式。 */
 enum class CouiMaterialBlendMode { Overlay, ColorDodge }
 
 /** 两层材质混色, 只作用于背景输入。组件负责选择颜色和模式预设。 */
@@ -15,8 +15,18 @@ enum class CouiMaterialBlendMode { Overlay, ColorDodge }
 @Composable
 fun rememberCouiMaterialEffect(mix: Color, blend: Color,
     blendMode: CouiMaterialBlendMode = CouiMaterialBlendMode.Overlay): RenderEffect =
-    remember(mix, blend, blendMode) {
-        val shader = RuntimeShader(CouiMaterialShader)
+    rememberCouiMaterialEffect(mix, blend, blendMode, rgbMix = false)
+
+@RequiresApi(33)
+@Composable
+internal fun rememberCouiMaterialEffect(
+    mix: Color,
+    blend: Color,
+    blendMode: CouiMaterialBlendMode,
+    rgbMix: Boolean,
+): RenderEffect =
+    remember(mix, blend, blendMode, rgbMix) {
+        val shader = RuntimeShader("const bool RGB_MIX = $rgbMix;\n" + CouiMaterialShader)
         shader.setFloatUniform("uMixColor", mix.red, mix.green, mix.blue, mix.alpha)
         shader.setFloatUniform("uBlendColor", blend.red, blend.green, blend.blue, blend.alpha)
         shader.setFloatUniform("uColorDodge", if (blendMode == CouiMaterialBlendMode.ColorDodge) 1f else 0f)
@@ -73,10 +83,13 @@ private const val CouiMaterialShader = CouiMaterialShaderFunctions + """
 
     half4 main(float2 coordinate) {
         half4 color = content.eval(coordinate);
-        if (uColorDodge < 0.5) return couiMaterial(color, uMixColor, uBlendColor);
-        color.rgb = mix(color.rgb, luminosity(uMixColor.rgb, color.rgb), uMixColor.a);
+        float3 tint = RGB_MIX ? uMixColor.rgb : luminosity(uMixColor.rgb, color.rgb);
+        color.rgb = mix(color.rgb, tint, uMixColor.a);
         // MaterialFilter::appendColorDodge：不提前限幅；在最终 SDR 输出处合成。
-        color.rgb = mix(color.rgb, color.rgb / (1.0 - uBlendColor.rgb), uBlendColor.a);
+        float3 blend = uColorDodge < 0.5
+            ? overlay(uBlendColor.rgb, color.rgb)
+            : color.rgb / (1.0 - uBlendColor.rgb);
+        color.rgb = mix(color.rgb, blend, uBlendColor.a);
         return color;
     }
 """

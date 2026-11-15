@@ -25,11 +25,11 @@ android {
 }
 
 dependencies {
-    implementation("io.github.itoseo:coui:0.0.1-alpha10")
+    implementation("io.github.itoseo:coui:0.0.1-alpha11")
 }
 ```
 
-`0.0.1-alpha10` 需要 Android 12（API 31）及以上，编译时需要 `compileSdk` 37 和 AGP 9.1.0 或更高版本。应用仍需配置自己的 Android 与 Compose 插件。组件的具体系统要求见[兼容要求](compatibility.md)。
+`0.0.1-alpha11` 需要 Android 12（API 31）及以上，编译时需要 `compileSdk` 37 和 AGP 9.1.0 或更高版本。应用仍需配置自己的 Android 与 Compose 插件。组件的具体系统要求见[兼容要求](compatibility.md)。
 
 当前版本为早期预览版，API 可能发生不兼容的变化。
 
@@ -43,7 +43,7 @@ dependencies {
 
 ## 显示第一个组件
 
-在 Compose 页面中加入下面的滑条，拖动时更新 `value`：
+在 Compose 页面中加入下面的滑条，拖动时更新 `value`。示例使用 `com.itos.coui.slider.Slider`：
 
 ~~~kotlin
 @Composable

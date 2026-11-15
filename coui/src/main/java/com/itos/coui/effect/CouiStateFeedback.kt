@@ -10,8 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
@@ -119,6 +121,11 @@ fun Modifier.couiButtonFeedback(dark: Boolean = CouiTheme.isDark, interactionSou
         }
     }
     val press = if (listPress == null) rememberMaskProgress(enabled && pressed && pressFeedback) else null
+    val pressTint = if (dark) 0x33FFFFFF else 0x1F000000
+    val listPressColor = if (listPress != null) remember(listPress, pressTint) {
+        // 弹簧的相邻进度可能得到相同的 ARGB，绘制只观察最终色值。
+        derivedStateOf(structuralEqualityPolicy()) { maskColor(listPress.progress, pressTint) }
+    } else null
     val observer = if (listPress != null && enabled) Modifier.pointerInput(listPress) {
         awaitEachGesture {
             val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
@@ -137,7 +144,7 @@ fun Modifier.couiButtonFeedback(dark: Boolean = CouiTheme.isDark, interactionSou
     return hoverable(interactionSource, enabled).then(observer).drawBehind {
         drawRect(maskColor(hover.value, if (dark) 0x26FFFFFF else 0x14000000))
         drawRect(maskColor(focus.value, if (dark) 0x331A8CFF else 0x1F0080FF))
-        drawRect(maskColor(listPress?.progress ?: checkNotNull(press).value, if (dark) 0x33FFFFFF else 0x1F000000))
+        drawRect(listPressColor?.value ?: maskColor(checkNotNull(press).value, pressTint))
     }
 }
 

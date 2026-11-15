@@ -1,25 +1,37 @@
 # 📋菜单
 
-`Menu` 可以显示普通菜单项、勾选项和一级子菜单。菜单的展开状态和选择结果由页面保存。
-
-## 最小调用
-
-页面提供展开状态、菜单项和回调：
-
-~~~kotlin
-Menu(
-    expanded = expanded,
-    onDismissRequest = onDismissRequest,
-    items = items,
-    onItemClick = onItemClick,
-)
-~~~
-
-需要采样页面背景时，把菜单调用放在[背景材质 Provider](#使用背景材质)的 `ProvideCouiMenuBackdrop` 内容中；默认样式不会创建背景源。样式默认使用 `CouiMenuDefaults.style()`，显式传入的样式仍优先。原生默认 `themeTint` 透明；M3 适配取 host surface，显式透明可关闭。通用主题规则见[外观与预设](../guide/appearance.md)。
+`Menu` 可以显示普通菜单项、勾选项和一级子菜单。菜单的展开状态和选择结果由页面保存。组件位于 `com.itos.coui.menu`。
 
 ## 显示一个菜单
 
-下面的按钮会打开菜单。选择项目后调用 `onSelect`，然后关闭菜单：
+### 最小调用
+
+下面的代码位于页面的 Composable 中。点击按钮打开菜单，选择项目后调用页面提供的 `onSelect: (Int) -> Unit` 并关闭菜单。`menuLabel` 和 `itemLabel` 由页面提供：
+
+~~~kotlin
+var expanded by remember { mutableStateOf(false) }
+
+Box {
+    Button(onClick = { expanded = true }) { Text(menuLabel) }
+    Menu(
+        expanded = expanded,
+        onDismissRequest = { expanded = false },
+        items = listOf(CouiMenuItem(0, itemLabel)),
+        onItemClick = { item ->
+            onSelect(item.value)
+            expanded = false
+        },
+    )
+}
+~~~
+
+`Box` 只包住按钮和菜单，菜单按父布局范围定位。示例中的 `Button` 和 `Text` 来自 Material 3，需要由应用声明该依赖；也可以使用宿主已有的可点击组件。`Menu` 本身不需要 Material 3。
+
+需要采样页面背景时，按[背景材质](#使用背景材质)接入 `ProvideCouiMenuBackdrop`；默认样式不会创建背景源。样式默认使用 `CouiMenuDefaults.style()`，显式传入的样式仍优先。通用主题规则见[外观与预设](../guide/appearance.md)。
+
+### 按触点定位
+
+需要让菜单根据按钮上的触点定位时，创建 `anchor` 并将它连接到按钮和菜单：
 
 ~~~kotlin
 @Composable
@@ -54,7 +66,7 @@ fun MenuButton(
 }
 ~~~
 
-`anchor` 记录按钮上的触点，菜单根据触点和窗口可见范围定位。通过键盘或无障碍服务打开时，没有触点，菜单使用默认锚点。示例中的 Material3 `Button` 和 `Text` 需要由应用声明 Material3 依赖；最小调用不需要该依赖。自定义 `style` 的创建方式见[菜单样式](#菜单样式)。
+`anchor` 记录按钮上的触点，菜单根据触点和窗口可见范围定位。通过键盘或无障碍服务打开时，没有触点，菜单使用默认锚点。示例中的 Material 3 `Button` 和 `Text` 需要由应用声明 Material 3 依赖。自定义 `style` 的创建方式见[菜单样式](#菜单样式)。
 
 顶栏按钮与菜单放在同一个 Box 时，可省略 `anchor`，直接用按钮回调更新 `expanded`。菜单按 Popup 父布局的范围定位，因此 Box 应只包住对应按钮。需要按触点定位时再使用 `rememberCouiMenuAnchor()`；触点锚点只观察输入，点击仍由按钮或列表项处理。
 
@@ -161,18 +173,28 @@ fun rememberMenuStyle(
 
 使用其他自定义 Shape 时，须显式提供有限非负的 `radius`，轮廓权重使用菜单预设。普通投影使用圆角矩形轮廓。
 
-菜单没有默认高度上限；长菜单可以在 `Menu` 的 `modifier` 中传入 `Modifier.heightIn(max = 320.dp)`，让它在限定高度内滚动。子菜单会按窗口高度限制。
+自定义样式应传入 `dark`，省略时按 surface 亮度判断。默认工厂使用当前主题模式，主菜单与子菜单的文字、材质、阴影和反馈共同使用它。
 
-在 [ModalBottomSheet](bottom-sheet.md) 内容中，主菜单与子菜单共同使用面板的可见区域限制尺寸和位置，长列表在区域内滚动。子菜单展开时，主菜单的缩小与平移也遵守这个区域；窄面板使用上下展开的布局。该边界只属于当前面板窗口，内容中新建的独立 Dialog 按自己的窗口定位菜单。
+启用 M3 适配时，菜单的模糊材质使用 `surface` 补底；没有背景源时，菜单容器使用 `surfaceBright`。选中项使用 `primary`，复选框在深色模式使用 `inversePrimary`。
 
-自定义样式应传入 `dark`，省略时按 surface 亮度判断。默认工厂使用当前主题模式，主菜单与子菜单的文字、材质、阴影和反馈共同使用它。M3 模糊补底取 surface，无 Backdrop 的容器取 surfaceBright；selected 取 primary，checkbox 深色取 inversePrimary。
+原生默认 `themeTint` 透明；M3 适配使用宿主的 `surface`。设为透明时关闭采样材质上的页面色相叠加；显式样式可以提供非透明色。
+
+在 [ModalBottomSheet](bottom-sheet.md) 中，主菜单和子菜单共用面板的可见区域，长列表可在区域内滚动。子菜单展开时，主菜单的缩小和平移也受该区域约束。窄面板内的子菜单上下展开，独立 Dialog 内的菜单按自己的窗口定位。
+
+## 设置菜单标题
+
+`headerText` 用于显示提示文案，不参与选择。
+
+标题字体默认来自 `CouiTheme.typography.label`。修改主题的 `label` 或显式传入 `CouiMenuStyle.headerTextStyle` 可以调整字体、字号、字重和行距。标题颜色、对齐和最多两行由菜单控制。
 
 ## 兼容性和滚动
 
+### 限制菜单高度
+
+菜单没有默认高度上限；长菜单可以在 `Menu` 的 `modifier` 中传入 `Modifier.heightIn(max = 320.dp)`，让它在限定高度内滚动。子菜单会按窗口高度限制。
+
+### 平台兼容性
+
 API 33 以下的菜单模糊效果与较新系统不同，见[兼容要求](../guide/compatibility.md)。
-
-`headerText` 用于显示提示文案，不参与选择。`themeTint` 透明时关闭采样材质上的页面色相叠加；显式样式可以提供非透明色。
-
-标题字体默认来自 `CouiTheme.typography.label`。修改主题的 `label` 或显式传入 `CouiMenuStyle.headerTextStyle` 可以调整字体、字号、字重和行距。标题颜色、对齐和最多两行由菜单控制。
 
 源码见 [Menu / CouiMenuItem](../../coui/src/main/java/com/itos/coui/menu/Menu.kt)、[样式](../../coui/src/main/java/com/itos/coui/menu/CouiMenuStyle.kt)、[触点锚点](../../coui/src/main/java/com/itos/coui/menu/CouiMenuAnchor.kt)，选中、勾选、子菜单和限高示例见 [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)。

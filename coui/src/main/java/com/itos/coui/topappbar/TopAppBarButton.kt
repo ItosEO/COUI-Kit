@@ -16,10 +16,12 @@ import androidx.compose.foundation.layout.widthIn
 import com.itos.coui.theme.Coui
 import com.itos.coui.theme.ProvideCouiContent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -69,7 +71,13 @@ fun TopAppBarButton(
     val dark = style.dark
     val contour = style.contourGlowEnabled
     var boundsSize by remember { mutableStateOf(IntSize.Zero) }
-    val capsule = boundsSize.width != boundsSize.height
+    // 首次测量前按默认按钮尺寸选择材质，测量后只在实际形状切换时更新材质。
+    val capsule by remember(text) {
+        derivedStateOf(structuralEqualityPolicy()) {
+            val size = boundsSize
+            if (size == IntSize.Zero) text else size.width != size.height
+        }
+    }
     val shape = if (capsule) style.capsuleShape else style.circleShape
     val material = remember(style, capsule) { style.material(capsule) }
     val contourStyle = remember(style, capsule) { style.contourStyle?.invoke(capsule) }

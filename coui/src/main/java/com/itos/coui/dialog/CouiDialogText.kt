@@ -29,6 +29,7 @@ import com.itos.coui.theme.CouiTheme
 internal enum class DialogTextKind(internal val size: Float, internal val family: String, internal val weight: Int) {
     Title(18f, "sans-serif-semibold", 550),
     Message(13f, "sans-serif", 400),
+    Loading(14f, "sans-serif", 400),
     Button(16f, "sans-serif-medium", 500),
     Input(15f, "sans-serif", 400),
     Counter(10f, "sans-serif", 400),
@@ -58,7 +59,7 @@ internal fun rememberDialogTextStyle(kind: DialogTextKind): TextStyle {
     val typography = CouiTheme.typography
     val family = when (kind) {
         DialogTextKind.Title -> typography.dialogTitleFontFamily
-        DialogTextKind.Message -> typography.dialogMessageFontFamily
+        DialogTextKind.Message, DialogTextKind.Loading -> typography.dialogMessageFontFamily
         DialogTextKind.Button -> typography.dialogButtonFontFamily
         DialogTextKind.Input -> typography.dialogInputFontFamily
         DialogTextKind.Counter -> typography.dialogCounterFontFamily
@@ -83,6 +84,7 @@ private fun couiLineSpacing(kind: DialogTextKind, configuration: Configuration):
     DialogTextKind.Title -> if (configuration.locales[0].language == "my" && configuration.locales[0].country == "MM")
         1.2f else if (Build.VERSION.SDK_INT >= 35) 1.1429f else 1.15f
     DialogTextKind.Message -> if (Build.VERSION.SDK_INT >= 35) 1.1739f else 1.1f
+    DialogTextKind.Loading -> if (Build.VERSION.SDK_INT >= 35) 1.2245f else 1.1f
     DialogTextKind.Button -> if (Build.VERSION.SDK_INT >= 35) 1.1579f else 1.2f
     DialogTextKind.Input -> if (Build.VERSION.SDK_INT >= 35) 1.1321f else 1.1f
     DialogTextKind.Counter -> 1f

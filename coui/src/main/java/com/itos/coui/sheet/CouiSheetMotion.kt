@@ -133,6 +133,15 @@ internal class CouiSheetMotion {
         lastNestedDelta = null
         // 只有宿主改变 visible 才能隐藏；拒绝或异步处理期间先按 Behavior 的展开分支复位。
         dismissVelocity = if (hide) velocity.coerceAtLeast(0f) else null
+        if (offset == 0f) {
+            // 原厂 settleCapturedViewAt 在当前位置已经是目标时直接结束，不把抬手速度带进弹簧。
+            translation.snapTo(0f)
+            alpha.snapTo(1f)
+            dim = 1f
+            settlingFromDrag = false
+            softenReturn = false
+            return false
+        }
         settle(show = true, fromDrag = true, velocity = if (hide) 0f else velocity)
         return hide
     }

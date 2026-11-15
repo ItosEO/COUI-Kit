@@ -1,6 +1,6 @@
 # 单/复选框
 
-`RadioButton` 显示互斥选择状态，`Checkbox` 显示可独立切换的勾选状态。两者只负责绘制，由外层添加点击和无障碍语义。
+`RadioButton` 显示互斥选择状态，`Checkbox` 显示可独立切换的勾选状态。两者只负责绘制，由外层添加点击和无障碍语义。组件分别位于 `com.itos.coui.radiobutton` 和 `com.itos.coui.checkbox`。
 
 ## 单选框
 

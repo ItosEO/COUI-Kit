@@ -19,7 +19,13 @@
     <string name="sheet_timer">Add timer</string>
     <string name="sheet_timer_name">Timer name</string>
     <string name="sheet_timer_preset">Add to preset timers</string>
-    <string name="sheet_usage">The same Sheet contains different content. Cancel discards drafts; Done updates this demo only.</string>
+    <string name="sheet_usage">Try the alarm editor, timer editor, or half-height sheet. Done saves clock drafts in this demo.</string>
+    <string name="sheet_half">Half-height sheet</string>
+    <string name="sheet_half_usage">Drag the handle down or use Close to leave the sheet.</string>
+    <string name="sheet_close">Close</string>
+    <string name="sheet_blur_title">Sheet background blur</string>
+    <string name="sheet_blur_summary">Samples the colors and content behind the sheet.</string>
+    <string name="sheet_blur_no_source">Background sampling is unavailable on this page.</string>
     <string name="sheet_repeat">Repeat on weekdays</string>
     <string name="sheet_vibrate">Vibrate</string>
     <string name="sheet_sound">Ringtone</string>
