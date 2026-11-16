@@ -1,45 +1,47 @@
 # 组件目录
 
-需要在布局中直接使用控件时，从这里选择。可以只使用一个组件，也可以和其他设计体系混搭；不要求替换宿主 Scaffold、主题或导航。首次接入见[快速开始](../guide/getting-started.md)，页面装配见[宿主页面接入](../guide/secondary-pages.md)。
+需要直接在布局中使用控件时，可从下表按场景选择。每个组件均可单独接入，也可与 Material 3、Miuix 等现有设计体系混搭，无需替换宿主的 `Scaffold`、主题或导航框架。
 
-## 页面与导航
+- 首次接入环境与依赖配置见[快速开始](../guide/getting-started.md)。
+- 第三方页面容器集成方法见[宿主页面接入](../guide/secondary-pages.md)。
+- 浮动材质所需的公共背景采样见[背景采样](../effects/backdrop.md)；单独调用底层绘制算法见[效果目录](../effects/README.md)。
 
-| 组件 | 用途 |
+## 页面容器与栏位
+
+| 组件 | 定位与核心能力 | 最低版本 / 前置依赖 |
+| --- | --- | --- |
+| [页面容器](scaffold.md) | 可选的 `Scaffold`，统一顶栏、底栏与正文 `PaddingValues`、安全区及自动背景源 | API 31+；无需 Material 3 |
+| [顶栏与按钮](top-app-bar.md) | `TopAppBar` 标题与操作槽位、`TopAppBarSurface` 自定义渐进模糊背景容器、`TopAppBarButton` 浮动按钮 | 容器 API 31+；按钮需 API 34+ 与 `backdrop` |
+| [折叠顶栏](collapsing-app-bar.md) | `LargeTopAppBar` 大标题弧线收起、`CollapsingTopAppBar` 联动常驻搜索折叠 | 容器 API 31+；需滚动连接与 `backdrop` |
+| [顶栏搜索](search.md) | `TopAppBarSearch` 顶栏搜索按钮到胶囊输入框的融合展开转场 | API 34+；需位于顶栏作用域内 |
+| [常驻搜索](search-bar.md) | `SearchBar` 常驻搜索胶囊与分裂取消按钮，支持联动页面与结果层 | API 31+（API 34+ 启用浮动模糊材质）；需 `backdrop` |
+| [底栏](navigation-bar.md) | `NavigationBar` 底部胶囊导航项与左右可折叠融合附件 | API 34+；需 `backdrop`（可选独立三主体 `renderer`） |
+| [FAB](fab.md) | `Fab` 独立浮动操作按钮，支持主题强调色、内置配色预设与自定义形状 | API 34+；需 `backdrop`（可选独立 `standalone` `renderer`） |
+
+## 列表与分组
+
+| 组件 | 定位与核心能力 |
 | --- | --- |
-| [页面容器](scaffold.md) | 可选的 `Scaffold`，统一顶栏、底栏、正文 Padding 与安全区 |
-| [顶栏与按钮](top-app-bar.md) | `TopAppBar` 标题与操作、`TopAppBarSurface` 自定义背景容器 |
-| [顶栏搜索](search.md) | 搜索按钮与输入框之间的转场 |
-| [常驻搜索](search-bar.md) | 搜索胶囊与独立取消按钮 |
-| [折叠顶栏](collapsing-app-bar.md) | `LargeTopAppBar` 大标题折叠、`CollapsingTopAppBar` 常驻搜索联动 |
-| [底栏](navigation-bar.md) | 页面选择、左右附件和融合表面 |
-| [FAB](fab.md) | 独立浮动操作 |
+| [Group](group.md) | 分组卡片容器、组标题操作与说明布局 |
+| [Item](item.md) | 列表行容器、文本角色与点击/选择装配 |
+| [Divider](divider.md) | 分组卡片内部条目分隔线 |
+| [Footer](footer.md) | 分组卡片底部辅助说明 |
 
-## 列表与内容
+## 选择与输入
 
-| 组件 | 用途 |
+| 组件 | 定位与核心能力 |
 | --- | --- |
-| [Group](group.md) | 分组卡片、标题操作与说明 |
-| [Item](item.md) | 行内容与点击、选择装配 |
-| [Divider](divider.md) | 组内分隔线 |
-| [Footer](footer.md) | 分组辅助说明 |
-| [系统功能图标](icons.md) | 有实际调用来源的矢量子集 |
-
-## 输入与选择
-
-| 组件 | 用途 |
-| --- | --- |
-| [滑动选择条](slider.md) | 连续、分段与隐藏点位的步进选择 |
-| [分段选择器](segmented-control.md) | 胶囊内的单选滑块、不等宽标签与拖动回弹 |
-| [单/复选框](checkbox.md) | 单选、复选状态与切换动画 |
 | [开关](switch.md) | 二值切换、拖动吸附与加载状态 |
-| [ChipTab](chip-tab.md) | 单选分类、横向滚动与独立图标动作 |
-| [选择器](pickers.md) | 受控整数滚轮与月历；时间、日期和弹窗由宿主组合 |
+| [单/复选框](checkbox.md) | 单选、复选状态与切换动画 |
+| [滑动选择条](slider.md) | 连续、分段与隐藏点位的步进选择 |
+| [ChipTab](chip-tab.md) | 单选分类标签栏、横向滚动与独立图标动作 |
+| [分段选择器](segmented-control.md) | 胶囊内单选滑块、不等宽标签与拖动回弹 |
 
-## 弹窗与菜单
+## 浮层、选择器与图标
 
-| 组件 | 用途 |
+| 组件 | 定位与核心能力 |
 | --- | --- |
-| [菜单](menu.md) | 选择、勾选、分组与子菜单 |
+| [菜单](menu.md) | 弹出菜单、勾选、分组与一级子菜单 |
 | [弹窗](dialog.md) | 底部/居中窗口、受控操作、输入与加载预设 |
-
-浮动材质需要的公共准备见[背景采样](../effects/backdrop.md)；单独使用算法见[效果目录](../effects/README.md)。
+| [选择器](pickers.md) | 受控整数滚轮与月历（时间、日期与弹窗由宿主组合） |
+| [图标](icons.md) | `coui-icons` 矢量与位图图标集，支持日夜资源与自定义染色 |

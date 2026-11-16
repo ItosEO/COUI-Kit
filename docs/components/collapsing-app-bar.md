@@ -1,160 +1,234 @@
 # 折叠顶栏
 
-`LargeTopAppBar` 将大标题缩成固定的小标题。首页需要常驻搜索时，使用 `CollapsingTopAppBar`。带常驻搜索的标题沿用 `LargeTopAppBar` 的默认展开样式，随滚动缩放和淡出，搜索栏停靠顶部。
+`LargeTopAppBar` 用于二级页的大标题滚动折叠（展开大标题沿弧线收起为固定小标题）；`CollapsingTopAppBar` 用于首页等需要大标题与常驻搜索框联动的场景（带常驻搜索的标题沿用 `LargeTopAppBar` 的默认展开样式，随滚动缩放并淡出，搜索栏停靠顶部）。
+
+- **最低系统版本**：顶栏容器本身支持库最低版本（**API 31+**）；API 33+ 使用 `RuntimeShader` 渐进模糊，API 31–32 使用分层模糊。
+- **内部子控件门槛**：内部放入 `TopAppBarButton` 需 **API 34+**；搭配 `SearchBar` 时，API 31–33 渲染普通填色胶囊，API 34+ 启用浮动模糊融合材质。
+- **前置依赖**：放入 COUI `Scaffold` 的 `topBar` 时自动获取正文 `backdrop`；放在 Material 3 `Scaffold` 等第三方容器时，需手动创建并挂载 `.couiBackdrop(backdrop)`。
 
 ## 普通大标题
 
-下面片段放在页面 Composable 中。宿主提供 `title`、不透明 `background` 和正文 `content`；示例使用 COUI Scaffold，自动向顶栏提供正文背景源。纯 Compose 标题从顶栏槽位读取字体和颜色：
+在二级页中使用 COUI `Scaffold` 与 `LargeTopAppBar` 时，按以下三步完成接线：
 
-```kotlin
-val density = LocalDensity.current
-val scroll = rememberScrollState()
-val behavior = CouiTopAppBarDefaults.exitUntilCollapsedScrollBehavior(
-    canScroll = { scroll.maxValue > 0 },
-)
-Scaffold(
-    modifier = Modifier.nestedScroll(behavior.nestedScrollConnection),
-    containerColor = background,
-    topBar = {
-        LargeTopAppBar(
-            title = { BasicText(title, style = LocalCouiTextStyle.current) },
-            scrollBehavior = behavior,
-        )
-    },
-) { padding ->
-    val contentPadding = remember(behavior.state, padding, density) {
-        behavior.state.contentPadding(padding, density)
-    }
-    Column(Modifier.fillMaxSize()
-        .verticalScroll(scroll).padding(contentPadding).consumeWindowInsets(padding)) {
-        content()
+1. 创建滚动状态 `scroll` 与 `CouiTopAppBarDefaults.exitUntilCollapsedScrollBehavior(canScroll = ...)`。
+2. 将 `Modifier.nestedScroll(behavior.nestedScrollConnection)` 挂到实际滚动容器的单个祖先节点（通常是 `Scaffold`）。
+3. 正文使用 `behavior.state.contentPadding(padding, density)` 作为顶部补偿留白，而 `consumeWindowInsets(padding)` 仍传入 `Scaffold` 提供的原始 `padding`。
+
+~~~kotlin
+@Composable
+fun LargeTopAppBarPageExample(
+    modifier: Modifier = Modifier,
+    title: String,
+    background: Color,
+    content: @Composable () -> Unit,
+) {
+    val density = LocalDensity.current
+    val scroll = rememberScrollState()
+    val behavior = CouiTopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+        canScroll = { scroll.maxValue > 0 },
+    )
+    Scaffold(
+        modifier = modifier.nestedScroll(behavior.nestedScrollConnection),
+        containerColor = background,
+        topBar = {
+            LargeTopAppBar(
+                title = { BasicText(title, style = LocalCouiTextStyle.current) },
+                scrollBehavior = behavior,
+            )
+        },
+    ) { padding ->
+        val contentPadding = remember(behavior.state, padding, density) {
+            behavior.state.contentPadding(padding, density)
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scroll)
+                .padding(contentPadding)
+                .consumeWindowInsets(padding),
+        ) {
+            content()
+        }
     }
 }
-```
+~~~
 
-`scrollBehavior` 持有折叠 state 和嵌套滚动连接。连接只挂到实际滚动正文的一个祖先；`canScroll` 读取实际滚动范围，LazyColumn 可使用 `canScrollForward || canScrollBackward`。正文必须保留 `state.contentPadding(padding, density)` 补偿，Insets 仍消费 Scaffold 返回的原始 Padding。
+接入要点：
 
-省略 `scrollBehavior` 时保持展开。`title`、`navigationIcon` 和 `actions` 槽位与 `TopAppBar` 相同，字体由组件提供；接入 M3 适配后，M3 `Text` 可继承该字体。`expandedHeight` 与 `collapsedHeight` 不包含安全区，必须是有限正数，且展开高度大于收起高度。
+- **`canScroll` 判定**：需反映正文是否具备滚动范围。普通 `ScrollState` 用 `{ scroll.maxValue > 0 }`；`LazyListState` 可使用 `{ listState.canScrollForward || listState.canScrollBackward }`。
+- **保持展开与高度限制**：省略 `scrollBehavior` 时顶栏保持展开。`expandedHeight` 与 `collapsedHeight` 不包含安全区，必须为有限正数且 `expandedHeight > collapsedHeight`。
+- **标题样式与字号（`expandedTitleStyle` / `collapsedTitleStyle`）**：默认展开字号为 `40.sp`、基础字重为 `700`；收起时若存在导航按钮为 `18.sp`，导航槽为空则为 `24.sp`。可通过 `expandedTitleStyle` 与 `collapsedTitleStyle` 传入 `TextStyle`（如 `TextStyle(fontSize = 40.sp, fontWeight = FontWeight.Bold)`）覆盖字体族、字重、字号或颜色；`collapsedTitleStyle` 省略的属性继承展开样式，`fontSize` 须为有限正数 `sp` 或 `TextUnit.Unspecified` 并跟随系统字体大小。折叠过程连续缩放展开标题，完全收起后应用收起样式。
+- **弧线标题轨迹**：存在 `navigationIcon` 时，展开标题位于导航按钮下方，折叠时沿连续弧线移动至按钮旁；按钮与操作区始终位于标题上层，标题宽度预留右侧操作区，细节见[定制差异](../guide/customizations.md#二级页大标题与弧线收起)。
+- **槽位与深浅模式**：`title`、`navigationIcon`、`actions` 与 `TopAppBar` 一致，标题槽位须继承组件提供的样式（M3 适配下 `Text` 可直接继承）。局部覆盖深浅模式时，请向 `CouiTopAppBarDefaults.colors(dark = dark)` 与 `LargeTopAppBar` 传入同一个 `dark`。
 
-默认展开字号为 40sp，基础字重为 700。收起时，起始侧导航槽占用空间则使用 18sp，导航槽为空则使用 24sp。标题槽位须继承组件提供的样式。
+## 联动常驻搜索（`CollapsingTopAppBar`）
 
-`expandedTitleStyle` 和 `collapsedTitleStyle` 接受 Compose `TextStyle`，可设置字体族、字重、字号、颜色等属性。收起样式中省略的属性继承展开样式，字号使用收起预设。折叠过程中缩放展开标题，完全收起后应用收起样式。标题内容始终由同一个 `title` 槽提供。
+首页需要“大标题随滚动折叠淡出 + 搜索框停靠顶部 + 点击搜索展开独立结果层”时，使用 `CollapsingTopAppBar` 搭配 `SearchBar`。以下示例演示如何在 Material 3 `Scaffold` 中完整装配：
 
-在上面的调用中传入两套样式，即可单独指定展开和收起的字号与字重：
+1. 创建背景源 `backdrop`、滚动状态 `scroll`、折叠状态 `header`、搜索状态 `search`，并在 `expanded` 时拦截系统返回键。
+2. 将 `header.nestedScrollConnection` 挂到宿主 `Scaffold`，在 `topBar` 中放入 `CollapsingTopAppBar` 与 `SearchBar`，将 `header.collapsedFraction` 传给搜索框的 `shadowProgress`。
+3. 在正文根容器挂载 `.couiBackdrop(backdrop)` 与不透明背景色，并用 `header.contentPadding(padding, density)` 排版滚动正文。
+4. 在 `search.active` 期间同步淡出原正文并禁用其滚动、点击与无障碍语义，同时按 `search.resultsAlpha` 与偏移量显示上层结果容器。
 
-```kotlin
-expandedTitleStyle = TextStyle(fontSize = 40.sp, fontWeight = FontWeight.Bold),
-collapsedTitleStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.SemiBold),
-```
+~~~kotlin
+@Composable
+fun CollapsingSearchPageExample(
+    modifier: Modifier = Modifier,
+    dark: Boolean,
+    title: String,
+    rowTitle: String,
+    searchLabel: String,
+    cancelLabel: String,
+    clearLabel: String,
+    query: String,
+    expanded: Boolean,
+    rowTextStyle: TextStyle,
+    onQueryChange: (String) -> Unit,
+    onExpandedChange: (Boolean) -> Unit,
+    onOpenDetail: () -> Unit,
+    results: @Composable (query: String, interactive: Boolean) -> Unit,
+) {
+    val density = LocalDensity.current
+    val backdrop = rememberCouiBackdrop()
+    val scroll = rememberScrollState()
+    val header = rememberCouiCollapsingAppBarState(canScroll = { scroll.maxValue > 0 })
+    val search = rememberCouiSearchBarState(expanded)
+    val colors = CouiPageDefaults.themeColors(dark)
 
-在两套样式中通过 `fontSize` 设置字号。字号须为有限正数 `sp` 或 `TextUnit.Unspecified`，并跟随系统字体大小。
+    BackHandler(enabled = expanded) { onExpandedChange(false) }
 
-`LargeTopAppBar` 使用项目定制预设；有导航按钮时，展开标题位于按钮下方，折叠时沿连续弧线向逻辑末端和上方移动到按钮旁。按钮与操作区保持在标题上层，标题宽度保留右侧操作区。二级页装配与轨迹说明见[定制差异](../guide/customizations.md#二级页大标题与弧线收起)。
-
-完整顶栏默认处理顶部和横向系统安全区。可通过 `windowInsets` 调整，不要重复添加同一安全区。默认配色来自 `CouiTopAppBarDefaults.colors()`；局部指定深浅模式时，向 `colors(dark = dark)` 和顶栏传入同一个 `dark`。
-
-## 只显示标题
-
-使用 `CollapsingTopAppBar` 的页面也可省略 `searchBar` 和 `searchState`，保留固定小标题：
-
-```kotlin
-CollapsingTopAppBar(
-    state = header,
-    title = title,
-    backdrop = backdrop,
-)
-```
-
-`header` 和 `backdrop` 由页面按下节方式创建；正文使用同一个 `header.nestedScrollConnection` 和 `contentPadding`。标题保持可见，字号和位置随折叠变化，最终保留固定栏位。预设见 `CouiCollapsingAppBarDefaults`；无搜索模式的字号使用 dp，不额外按系统字体倍率放大。普通大标题页面优先使用上面的 `LargeTopAppBar` 槽位接口。
-
-省略 `searchBar` 或传入 `null` 时使用纯标题布局；传入空 lambda 也会使用搜索式布局。
-
-## 基本装配
-
-下面在 Material 3 Scaffold 中组合折叠标题、搜索框和结果层。片段放在页面 Composable 中，页面提供模式、文案、查询状态和回调；`openDetail` 打开详情，`results(query, enabled)` 显示结果并控制其滚动与交互。
-
-```kotlin
-val density = LocalDensity.current
-val backdrop = rememberCouiBackdrop()
-val scroll = rememberScrollState()
-val header = rememberCouiCollapsingAppBarState(canScroll = { scroll.maxValue > 0 })
-val search = rememberCouiSearchBarState(expanded)
-val colors = CouiPageDefaults.themeColors(dark)
-BackHandler(enabled = expanded) { updateExpanded(false) }
-androidx.compose.material3.Scaffold(
-    modifier = Modifier.nestedScroll(header.nestedScrollConnection),
-    containerColor = colors.background,
-    topBar = {
-        CollapsingTopAppBar(
-            modifier = Modifier.windowInsetsPadding(
-                WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
-            state = header, searchState = search, title = title,
-            color = colors.title, backdrop = backdrop,
-            dark = dark,
-        ) {
-            SearchBar(state = search, query = query, onQueryChange = updateQuery,
-                onExpandedChange = updateExpanded, placeholder = searchLabel,
-                cancelText = cancelLabel, clearDescription = clearLabel,
-                dark = dark, backdrop = backdrop, shadowProgress = header.collapsedFraction)
+    androidx.compose.material3.Scaffold(
+        modifier = modifier.nestedScroll(header.nestedScrollConnection),
+        containerColor = colors.background,
+        topBar = {
+            CollapsingTopAppBar(
+                modifier = Modifier.windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
+                ),
+                state = header,
+                searchState = search,
+                title = title,
+                color = colors.title,
+                backdrop = backdrop,
+                dark = dark,
+            ) {
+                SearchBar(
+                    state = search,
+                    query = query,
+                    onQueryChange = onQueryChange,
+                    onExpandedChange = onExpandedChange,
+                    placeholder = searchLabel,
+                    cancelText = cancelLabel,
+                    clearDescription = clearLabel,
+                    dark = dark,
+                    backdrop = backdrop,
+                    shadowProgress = header.collapsedFraction,
+                )
+            }
+        },
+    ) { padding ->
+        val contentPadding = remember(header, padding, density) {
+            header.contentPadding(padding, density)
         }
-    },
-) { padding ->
-    val contentPadding = remember(header, padding, density) {
-        header.contentPadding(padding, density)
-    }
-    Box(Modifier.fillMaxSize().couiBackdrop(backdrop).background(colors.background)) {
-        Column(Modifier.fillMaxSize()
-            .verticalScroll(scroll, enabled = !search.active)
-            .padding(contentPadding).consumeWindowInsets(padding)
-            .graphicsLayer { alpha = search.contentAlpha }
-            .then(if (search.active) Modifier.clearAndSetSemantics {} else Modifier)) {
-            Group(colors = colors) {
-                Item(onClick = openDetail, enabled = !search.active, dark = dark) {
-                    BasicText(rowTitle, style = rowTextStyle)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .couiBackdrop(backdrop)
+                .background(colors.background),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scroll, enabled = !search.active)
+                    .padding(contentPadding)
+                    .consumeWindowInsets(padding)
+                    .graphicsLayer { alpha = search.contentAlpha }
+                    .then(if (search.active) Modifier.clearAndSetSemantics {} else Modifier),
+            ) {
+                Group(colors = colors) {
+                    Item(onClick = onOpenDetail, enabled = !search.active, dark = dark) {
+                        BasicText(rowTitle, style = rowTextStyle)
+                    }
+                }
+            }
+            if (search.active) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .padding(contentPadding)
+                        .consumeWindowInsets(padding)
+                        .then(if (search.expanded) Modifier else Modifier.clearAndSetSemantics {})
+                        .graphicsLayer {
+                            alpha = search.resultsAlpha
+                            translationY = with(density) {
+                                CouiCollapsingAppBarDefaults.resultsStartOffset.toPx()
+                            } * (1f - search.resultsAlpha)
+                        },
+                ) {
+                    results(query, search.expanded)
                 }
             }
         }
-        if (search.active) {
-            Box(Modifier.matchParentSize()
-                .padding(contentPadding).consumeWindowInsets(padding)
-                .then(if (search.expanded) Modifier else Modifier.clearAndSetSemantics {})
-                .graphicsLayer {
-                    alpha = search.resultsAlpha
-                    translationY = with(density) {
-                        CouiCollapsingAppBarDefaults.resultsStartOffset.toPx()
-                    } * (1f - search.resultsAlpha)
-                }) {
-                results(query, search.expanded)
-            }
-        }
     }
 }
-```
+~~~
 
-这里使用宿主的普通惯性。需要 COUI 惯性与同帧触边交接时，用 [couiVerticalScroll](../effects/overscroll.md) 替换 `verticalScroll`。使用 [Scaffold](scaffold.md) 时，横向安全区由容器处理，可省略顶栏的横向 `windowInsetsPadding`。
+### 关键机制拆解
 
-## 状态与正文布局
+- **滚动连接与 `contentPadding`**：
+  - 向上滚动时 `nestedScrollConnection` 先折叠顶栏，到达折叠态后再滚动列表；向下滚动在列表到顶后重新展开顶栏，停止时自动执行半程吸附。
+  - `header.contentPadding(padding, density)` 仅修正顶部留白，保留左右与底部值；请用 `remember` 缓存并在布局阶段读取，而 `consumeWindowInsets(padding)` 必须继续传入宿主原始的 `padding`。
+  - 如需 COUI 弹性过界回弹与同帧触边交接，可将 `verticalScroll` 替换为 [couiVerticalScroll](../effects/overscroll.md)。
+  - 若宿主换用 COUI [Scaffold](scaffold.md)，横向安全区与默认 `backdrop` 均由容器自动处理，可省略顶栏上的横向 `windowInsetsPadding` 和手动 `.couiBackdrop(backdrop)`。
+- **搜索遮罩与无障碍控制**：
+  - `CollapsingTopAppBar` 与 `SearchBar` 共享同一个 `search` 状态。展开搜索前会记录恢复位置（完全折叠时恢复折叠，其余恢复展开），且搜索激活期间锁定顶栏普通滚动。
+  - 仅靠 `alpha = 0f` **无法**阻止触摸或焦点穿透。`search.active` 为 `true` 时，必须同步禁用底层正文的滚动、点击和焦点，并附加 `Modifier.clearAndSetSemantics {}` 移除无障碍子树。
+  - 上层结果容器在 `search.active` 期间保持组合以播放退场动画，交互权限应绑定到 `search.expanded`（退场期间不可点击且清除语义）。更多输入与返回规则见[常驻搜索](search-bar.md)。
 
-`state.nestedScrollConnection` 连接到实际列表的祖先：向上滚动先折叠标题，反向滚动在列表到顶后展开；停止时执行吸附。`canScroll` 读取实际列表是否存在滚动范围，带搜索槽的短内容在滚动结束后恢复展开；只有标题时，短内容也可以保留折叠的小标题。LazyColumn 可读取 `canScrollForward || canScrollBackward`。
+### 仅显示标题（无搜索槽）
 
-顶栏回传实际测量占位。`state.contentPadding(padding, density)` 只修正正文顶部，保留两侧和底部 Padding；将返回对象记住，供布局阶段读取。不要用 `contentTranslationY` 平移整个视口，否则背景和底部边界也会移动；该像素值只适用于宿主明确控制的局部布局。
+使用 `CollapsingTopAppBar` 时若省略 `searchBar`（或传 `null`）与 `searchState`，标题在折叠后会缩小并停留在固定顶栏位置而不淡出（普通大标题页面优先使用前文的 `LargeTopAppBar`）：
 
-LazyColumn 使用补偿后的 `contentPadding`，但 `consumeWindowInsets` 仍接收宿主原始 Padding。顶栏内部消费剩余状态栏 Insets，宿主处理横向安全区和底栏，具体分工见[宿主页面接入](../guide/secondary-pages.md)。
+~~~kotlin
+@Composable
+fun CollapsingTitleOnlyExample(
+    modifier: Modifier = Modifier,
+    header: CouiCollapsingAppBarState,
+    title: String,
+    backdrop: CouiBackdrop,
+) {
+    CollapsingTopAppBar(
+        modifier = modifier,
+        state = header,
+        title = title,
+        backdrop = backdrop,
+    )
+}
+~~~
 
-## 搜索与输入
+注意：**省略 `searchBar` 或传入 `null` 才会进入纯标题布局**；传入空 lambda `{}` 仍会按搜索式布局测量并淡出标题。无搜索模式的字号固定使用 `dp`，不随系统字体倍率额外放大。
 
-顶栏和 `SearchBar` 使用同一个搜索 state。搜索展开前记录恢复位置：完全折叠的顶栏恢复折叠，中间位置恢复展开。搜索活动期间锁住普通顶栏滚动。
+## 参数与行为速查
 
-宿主用 `contentAlpha` 和 `resultsAlpha` 绘制正文与结果，并在 `search.active` 期间禁用正文交互、移除其无障碍子树。示例同时处理滚动和行点击；增加其他控件时，也要禁用其输入与焦点。结果内容以 `search.expanded` 控制交互，关闭时禁用输入并保留退场绘制。透明度不能代替这些处理。输入与返回规则见[常驻搜索](search-bar.md)。
+| 组件 / 状态 | 参数 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `LargeTopAppBar` | `scrollBehavior` | `null` | 持有折叠状态与滚动连接；`null` 时顶栏保持展开 |
+| `LargeTopAppBar` | `expandedHeight` / `collapsedHeight` | `110.dp` / `52.dp` | 不含安全区的展开与收起高度，必须为有限正数且前者大于后者 |
+| `LargeTopAppBar` | `expandedTitleStyle` / `collapsedTitleStyle` | `TextStyle.Default` | 分别控制展开与收起态的标题 `TextStyle`；收起样式未指定的属性继承展开样式 |
+| `CollapsingTopAppBar` | `searchState` | `rememberCouiSearchBarState(false)` | 与 `SearchBar` 共享同一个状态以联动标题动画与滚动锁定 |
+| `CollapsingTopAppBar` | `color` / `backgroundColor` | `Color.Unspecified` | `color` 为标题色（alpha 与动画相乘）；`backgroundColor` 同 `TopAppBarSurface` 的 `gradientColor` |
+| `CollapsingTopAppBar` | `dark` | `CouiTheme.isDark` | 仅控制顶栏自身配色；内部 `SearchBar` 需同步传入相同 `dark` 或共处同一局部 `CouiTheme` |
+| `CollapsingTopAppBar` | `searchBar` | `null` | 传入 `null` 显示固定小标题；需要排列多个搜索区控件时可在槽内组合 `Row` 或 `Column` |
+| `CouiCollapsingAppBarState` | `collapsedFraction` / `contentPadding(...)` | — | `collapsedFraction` 范围为 `0f..1f`，可传给 `SearchBar.shadowProgress` |
 
-`searchBar` 放置搜索内容；需要排列多个组件时，在槽内使用 Row 或 Column。无搜索槽时，顶栏不读取搜索状态的展开目标与动画进度，也不会锁住列表滚动。
+## 装配注意事项
 
-## 外观与采样
+- **不要用 `contentTranslationY` 平移整个视口**：整体平移会导致背景与底部边界一并移动，产生黑边或安全区错位；正文补偿请统一使用 `state.contentPadding(padding, density)`，`contentTranslationY` 仅适合宿主明确控制的局部布局。
+- **独立背景采样**：在 COUI `Scaffold` 中无需手动传 `backdrop`；在 Material 3 等第三方容器中，需将 `.couiBackdrop(backdrop)` 挂在正文外层并传给顶栏，不可把顶栏包进源节点内，详见[背景采样](../effects/backdrop.md#顶栏接入)。自定义 `TopAppBarSurface` 参数见[顶栏与按钮](top-app-bar.md#背景参数)。
+- **短内容行为**：带搜索槽的短内容（`canScroll() == false`）在滚动松手后会自动恢复展开；无搜索槽的纯标题模式允许短内容保留折叠态。
 
-`color` 默认按实际 `dark` 解析，显式颜色优先，其 alpha 与标题动画相乘。`dark` 只控制顶栏自身；需要搜索采用同一模式时，显式传入相同 `dark`，或将二者放入同一个局部 `CouiTheme`。
+## 源码与完整示例
 
-`backgroundColor` 省略或传入 `Color.Unspecified` 时，背景遮罩在浅色模式使用白色、深色模式使用黑色，并向下渐隐。显式颜色覆盖默认遮罩；`Color.Transparent` 关闭遮罩并保留模糊。模糊背景使用固定的下沿延伸，并随折叠向上平移；完整背景高度不随当前栏高缩放。普通大标题保持不透明；带常驻搜索时，背景淡入跟随正文实际位置，搜索活动期间保持显示。这些绘制范围不改变布局或命中高度。
-
-COUI Scaffold 自动录制正文与结果，不包含顶栏或其浮动消费者；`LargeTopAppBar` 和 `CollapsingTopAppBar` 放在 `topBar` 时可省略 `backdrop`，显式参数优先。上面的 Material 3 示例仍需创建源，在现有正文容器添加 `.couiBackdrop(backdrop)`，并将源显式传给顶栏。图层由库管理，无需全局初始化，见[背景采样](../effects/backdrop.md#顶栏接入)。自定义背景容器 `TopAppBarSurface` 的参数见[顶栏与按钮](top-app-bar.md#背景参数)。
-
-[LargeTopAppBar](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBar.kt) · [滚动行为与 Defaults](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarDefaults.kt) · [CollapsingTopAppBar](../../coui/src/main/java/com/itos/coui/topappbar/CollapsingTopAppBar.kt) · [状态](../../coui/src/main/java/com/itos/coui/topappbar/CouiCollapsingAppBarState.kt) · [首页 Demo](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)
+- **大标题与滚动行为**：[TopAppBar.kt](../../coui/src/main/java/com/itos/coui/topappbar/TopAppBar.kt)、[CouiTopAppBarDefaults.kt](../../coui/src/main/java/com/itos/coui/topappbar/CouiTopAppBarDefaults.kt)
+- **折叠搜索顶栏与状态**：[CollapsingTopAppBar.kt](../../coui/src/main/java/com/itos/coui/topappbar/CollapsingTopAppBar.kt)、[CouiCollapsingAppBarState.kt](../../coui/src/main/java/com/itos/coui/topappbar/CouiCollapsingAppBarState.kt)
+- **首页完整示例**：[DemoApp.kt](../../demo/src/main/java/com/itos/coui/demo/DemoApp.kt)

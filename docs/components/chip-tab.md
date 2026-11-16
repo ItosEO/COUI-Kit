@@ -1,92 +1,110 @@
-# 🏷️ChipTab 分类栏
+# ChipTab 分类栏
 
-`ChipTabRow` 用于横向排列单选分类。分类较多时可以左右滚动，也可以在分类栏前放一个独立按钮。
+`ChipTabRow` 用于横向排列单选分类胶囊，支持超宽惯性滚动、边缘渐隐与前置独立动作按钮（`ChipTabButton`）；也提供可单独使用的 `ChipTab`。
 
-## 最小调用
+- **系统版本要求**：要求 Android 14（**API 34+**），公开组件均标注 `@RequiresApi(34)`。
+- **前置依赖**：必须传入覆盖不透明页面内容的 `CouiBackdrop` 背景源，且分类栏自身必须位于采样源节点之外。
 
-分类项、选中 key、选择回调和背景源由宿主提供：
+## 基本用法
 
-~~~kotlin
-ChipTabRow(
-    items = items,
-    selectedKey = selectedKey,
-    onSelectedKeyChange = onSelectedKeyChange,
-    backdrop = backdrop,
-)
-~~~
-
-`dark` 默认跟随 `LocalCouiDarkTheme` 或系统；局部 `CouiTheme` 会提供自身模式。通用主题规则见[外观与预设](../guide/appearance.md)。
-
-## 显示一个分类栏
-
-下面创建三个分类，并在点击时更新选中项。分类栏需要 API 34，以及一个覆盖页面内容的背景源。
+构造稳定的 `CouiChipTabItem` 列表，由宿主保存 `selectedKey` 并在回调中更新：
 
 ~~~kotlin
 @RequiresApi(34)
 @Composable
-fun Categories(
+fun CategoryChipTabExample(
     modifier: Modifier = Modifier,
+    items: List<CouiChipTabItem>,
+    selectedKey: Any?,
+    onSelectedKeyChange: (Any) -> Unit,
     backdrop: CouiBackdrop,
 ) {
-    val items = listOf(
-        CouiChipTabItem("all", "全部"),
-        CouiChipTabItem("photos", "照片"),
-        CouiChipTabItem("files", "文件"),
-    )
-    var selectedKey by remember { mutableStateOf<Any?>("all") }
-
     ChipTabRow(
         modifier = modifier.fillMaxWidth(),
         items = items,
         selectedKey = selectedKey,
-        onSelectedKeyChange = { selectedKey = it },
+        onSelectedKeyChange = onSelectedKeyChange,
         backdrop = backdrop,
     )
 }
 ~~~
 
-`backdrop` 由页面提供。示例在组件内保存 `selectedKey`；需要用分类筛选内容时，可以将状态提到页面中。每个分类的 `key` 必须唯一，并在重排时保持稳定。选中项更换位置后，分类栏会滚动到对应项目。非空列表的 `selectedKey` 必须属于列表；空列表传 `null`。重复点击不会取消选择。
+创建 `items` 时传入唯一且稳定的 `key` 与展示文案（如 `CouiChipTabItem("all", allLabel)`）：
 
-背景源应覆盖不透明的页面内容，分类栏放在源节点之外。创建方法见[快速开始](../guide/getting-started.md#浮动组件的背景源)。
+1. **`key` 与选中合法性**：`items` 中每个 `key` 必须唯一；非空列表的 `selectedKey` 必须属于 `items`，空列表必须传 `null`，否则会抛出异常。
+2. **受控单选行为**：重复点击已选项不会取消选中，也不重复触发 `onSelectedKeyChange`；点击、获得焦点或外部修改 `selectedKey` 时会自动平滑滚动使对应项目露出。
+3. **有限宽度与背景源**：`ChipTabRow` 必须获得有限宽度约束；`backdrop` 应采样分类栏背后的兄弟节点或底层容器内容（配置方法见[浮动组件的背景源](../guide/getting-started.md#浮动组件的背景源)）。
 
-## 添加独立动作
+## 添加前置独立动作（`leadingAction`）
 
-使用 `leadingAction` 可以在分类组前添加按钮。例如，将上一节的 `ChipTabRow` 替换为下面的代码，点击按钮打开分类管理：
+通过 `leadingAction` 配合 `ChipTabButton` 可在分类列表前放置独立图标按钮（例如打开分类管理菜单）：
 
 ~~~kotlin
-ChipTabRow(
-    modifier = modifier.fillMaxWidth(),
-    items = items,
-    selectedKey = selectedKey,
-    onSelectedKeyChange = { selectedKey = it },
-    backdrop = backdrop,
-    leadingAction = {
-        ChipTabButton(
-            onClick = onOpenCategories,
-            contentDescription = categoriesLabel,
-            backdrop = backdrop,
-        ) {
-            Icon(Icons.Default.Menu, contentDescription = null)
-        }
-    },
-    leadingActionVisible = categoriesVisible,
-)
+@RequiresApi(34)
+@Composable
+fun CategoryChipTabWithActionExample(
+    modifier: Modifier = Modifier,
+    items: List<CouiChipTabItem>,
+    selectedKey: Any?,
+    onSelectedKeyChange: (Any) -> Unit,
+    backdrop: CouiBackdrop,
+    categoriesVisible: Boolean,
+    categoriesLabel: String,
+    onOpenCategories: () -> Unit,
+) {
+    ChipTabRow(
+        modifier = modifier.fillMaxWidth(),
+        items = items,
+        selectedKey = selectedKey,
+        onSelectedKeyChange = onSelectedKeyChange,
+        backdrop = backdrop,
+        leadingAction = {
+            ChipTabButton(
+                onClick = onOpenCategories,
+                contentDescription = categoriesLabel,
+                backdrop = backdrop,
+            ) {
+                Icon(Icons.Default.Menu, contentDescription = null)
+            }
+        },
+        leadingActionVisible = categoriesVisible,
+    )
+}
 ~~~
 
-`onOpenCategories`、`categoriesLabel` 和 `categoriesVisible` 由页面提供。需要退出动画时，保留 `leadingAction` 的内容，只切换 `leadingActionVisible`。示例假定已接入可选 M3 适配，ChipSurface 自动同步最终内容色，M3 `Icon` 可直接继承；leadingAction 本身只转发内容。应用需要声明示例使用的 Material3 和图标依赖。
+- **退场动画保持内容**：`leadingAction` 位于单选组之外。需要显隐动画时，请**保留 `leadingAction` lambda 内容，仅切换 `leadingActionVisible`**。
+- **内容色继承**：`ChipTabButton` 会向下提供适配当前明暗模式与启用态的内容色，示例中的 Material 3 `Icon` 可直接继承（使用示例中的图标需宿主声明 Material 3 图标依赖；若传入图标自身显式设置了 `tint`，以显式颜色优先）。
 
-## 文字、间距和动画
+## 参数速查
 
-可以通过 `textStyle` 和 `contentColor` 修改文字样式与颜色。分类间距默认遵循原厂布局，可通过 `itemSpacing` 调整；`animationLevel` 从 1 到 4，1 的动画最明显，4 最弱。
+### `ChipTabRow` 与 `CouiChipTabItem`
 
-M3 自动模式仅从 labelLarge 接入字体族，保留 Chip 的原字号、字重和排版。显式 textStyle 仍完整生效，图标显式 tint 优先。
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `modifier` | `Modifier` | 外层修饰符（要求父级提供有限宽度）。 |
+| `items` | 必填 | `CouiChipTabItem(key, label, enabled, icon)` 列表；`key` 须唯一且稳定。 |
+| `selectedKey` | 必填 | 当前选中的 `key`；非空列表须有效，空列表须为 `null`。 |
+| `onSelectedKeyChange` | 必填 | 点击未选中分类项时的选择回调。 |
+| `backdrop` | 必填 | 覆盖不透明背景内容的采样源，严禁包含分类栏自身。 |
+| `dark` | `CouiTheme.isDark` | 明暗外观模式。 |
+| `enabled` | `true` | 整栏启用状态（单项可由 `CouiChipTabItem.enabled` 单独禁用）。 |
+| `leadingAction` | `null` | 前置独立动作槽位，通常放置 `ChipTabButton`。 |
+| `leadingActionVisible` | `true` | 控制 `leadingAction` 的动画显隐并联动列表起始留白。 |
+| `itemSpacing` | `8.dp` | 分类胶囊间距，必须为有限非负 `Dp`。 |
+| `animationLevel` | `1` | 横向滚动物理动画等级，范围 `1..4`（`1` 最明显，`4` 最弱）。 |
+| `contentColor` / `disabledContentColor` | `CouiChipTabDefaults.contentColor(...)` | 正常态与禁用态前景颜色。 |
+| `textStyle` | `CouiChipTabDefaults.themeTextStyle()` | 文字排版样式（可选 M3 适配仅接入 `labelLarge` 字体族，保留 `14.sp` 字号与 `Medium` 字重；显式传入则完整覆盖）。 |
+| `contourGlowEnabled` | `LocalCouiContourGlowEnabled.current` | 是否启用边缘轮廓光效。 |
+| `renderers` | 自动按 `items.key` 创建 | 各个 `ChipTab` 对应的 `CouiFloatingRenderer` 列表；显式传入时数量须与 `items` 一致且实例不可重复。 |
+| `selectedColor` | `null` | 可选选中填充色。为 `null` 时保留中性玻璃材质；设置颜色后选中背景叠加该色，前景随选中进度向白色过渡。 |
 
-每个分类项和独立图标按钮各自持有单主体 renderer。显式传 `renderers` 时，数量要和 `items` 一致，实例不能重复。
+## 装配注意事项
 
-## 尺寸和 renderer
+- **文字超宽与边缘渐隐**：单个 `ChipTab` 胶囊高度固定为 `32.dp`、宽度限制在 `52.dp..300.dp`（文本最大 `200.dp`），超宽自动显示省略号。列表边缘渐隐在停靠边界外 `12.dp` 完成，停靠后的完整胶囊不会被淡化。
+- **渲染器生命周期与异常兜底**：每个分类项与 `ChipTabButton` 各自持有单主体 `CouiFloatingRenderer`，不可跨节点共享。若需自定义渲染器创建失败时的降级界面，可在调用前用 `runCatching { CouiFloatingRenderer.standalone() }` 创建后传入 `renderers` / `renderer`（参见 Demo 示例）。
+- **通用主题规则**：省略 `dark` 或显式颜色时，跟随当前 `CouiTheme` 或系统深浅色（详见[外观与预设](../guide/appearance.md)）。
 
-文字超宽时会省略，分类项会在点击、获得焦点或选中后滚动到可见区域。滚动终点保留列表内边距，边缘渐隐在停靠边界外完成，不额外增加留白或淡化停靠后的完整胶囊。
+## 源码与完整示例
 
-需要自定义错误界面时，可以在调用前创建 renderer 并处理创建失败。
-
-源码见 [ChipTabRow / CouiChipTabItem](../../coui/src/main/java/com/itos/coui/chip/ChipTabRow.kt)、[ChipTab / ChipTabButton](../../coui/src/main/java/com/itos/coui/chip/ChipTab.kt)、[Defaults](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabDefaults.kt)，分类菜单、图标动作和纯色背景见 [DemoChipSamples](../../demo/src/main/java/com/itos/coui/demo/DemoChipSamples.kt)。
+- **公开入口与预设**：[ChipTabRow.kt](../../coui/src/main/java/com/itos/coui/chip/ChipTabRow.kt)、[ChipTab.kt](../../coui/src/main/java/com/itos/coui/chip/ChipTab.kt)、[CouiChipTabDefaults.kt](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabDefaults.kt)
+- **Demo 完整示例（含分类菜单与错误兜底）**：[DemoChipSamples.kt](../../demo/src/main/java/com/itos/coui/demo/DemoChipSamples.kt)
