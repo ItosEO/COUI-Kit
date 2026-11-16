@@ -5,6 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.itos.coui.R as CouiR
 
 /**
  * COUI 的矢量与位图图标，来源见 ICON_SOURCES.md。
@@ -18,6 +19,9 @@ object CouiIcons {
 
         val Next: ImageVector
             @Composable get() = couiIconResource(R.drawable.coui_next_filled)
+
+        val Popup: ImageVector
+            @Composable get() = couiIconResource(CouiR.drawable.coui_pop_up_next)
 
         val Close: ImageVector
             @Composable get() = couiIconResource(R.drawable.coui_close_filled)
@@ -46,6 +50,10 @@ object CouiIcons {
         /** com.android.settings:drawable/coui_btn_next_normal。 */
         val Next: ImageVector
             @Composable get() = Monochrome.Next
+
+        /** 设置选择行和子菜单使用的上下双箭头。颜色由调用方指定。 */
+        val Popup: ImageVector
+            @Composable get() = Monochrome.Popup
 
         /** com.android.settings:drawable/ic_close。 */
         val Close: ImageVector
@@ -282,6 +290,10 @@ object CouiIcons {
 
         val Next: ImageVector
             @Composable get() = Monochrome.Next
+
+        /** 设置选择行和子菜单使用的上下双箭头。颜色由调用方指定。 */
+        val Popup: ImageVector
+            @Composable get() = Monochrome.Popup
 
         val Close: ImageVector
             @Composable get() = Monochrome.Close

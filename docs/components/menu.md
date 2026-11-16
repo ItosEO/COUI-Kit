@@ -72,6 +72,12 @@ fun MenuButton(
 
 `expanded` 控制菜单显隐。点击菜单项时调用 `onItemClick`；点击外部或按返回键时调用 `onDismissRequest`。需要在选中后关闭菜单时，在 `onItemClick` 中将 `expanded` 设为 `false`，如上例所示。
 
+### 菜单选择行的图标
+
+设置行显示当前值且点击后弹出菜单时，在行尾使用 COUI 上下双箭头。菜单关闭和打开时都使用同一个图标，避免把选择入口误读为展开或收起正文的控件。宿主绘制设置行时使用 `CouiIcons.Outlined.Popup` 或 `CouiIcons.Filled.Popup`，并按页面主题设置颜色。两个入口共用同一矢量，对应 ColorOS「音量键默认调节」使用的 `coui_pop_up_next_normal`。[图标用法](icons.md#指定颜色与特殊图标)
+
+弹出菜单里，带 `children` 的父项由 `Menu` 自动绘制同样的上下双箭头。普通选项只显示各自的内容和选择状态。
+
 ## 添加勾选和子菜单
 
 每个 `CouiMenuItem` 对应一个选项：
@@ -179,8 +185,6 @@ fun rememberMenuStyle(
 
 原生默认 `themeTint` 透明；M3 适配使用宿主的 `surface`。设为透明时关闭采样材质上的页面色相叠加；显式样式可以提供非透明色。
 
-在 [ModalBottomSheet](bottom-sheet.md) 中，主菜单和子菜单共用面板的可见区域，长列表可在区域内滚动。子菜单展开时，主菜单的缩小和平移也受该区域约束。窄面板内的子菜单上下展开，独立 Dialog 内的菜单按自己的窗口定位。
-
 ## 设置菜单标题
 
 `headerText` 用于显示提示文案，不参与选择。
@@ -192,6 +196,8 @@ fun rememberMenuStyle(
 ### 限制菜单高度
 
 菜单没有默认高度上限；长菜单可以在 `Menu` 的 `modifier` 中传入 `Modifier.heightIn(max = 320.dp)`，让它在限定高度内滚动。子菜单会按窗口高度限制。
+
+在 [ModalBottomSheet](bottom-sheet.md) 中，主菜单和子菜单共用面板的可见区域，长列表可在区域内滚动。子菜单展开时，主菜单的缩小和平移也受该区域约束。窄面板内的子菜单上下展开，独立 Dialog 内的菜单按自己的窗口定位。
 
 ### 平台兼容性
 

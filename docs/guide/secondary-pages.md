@@ -90,7 +90,7 @@ ProvideCouiMenuBackdrop { windowSource ->
 }
 ```
 
-`rememberCouiWindowBackdrop()` 读取最近提供的窗口源，未提供时返回 null。只在有相应消费者时安装窗口源；每个源挂到一个实际节点，每个绘制节点持有独立可变 renderer。资源和失败处理见[背景采样](../effects/backdrop.md)，具体消费见[菜单](../components/menu.md)与[弹窗](../components/dialog.md)。
+`rememberCouiWindowBackdrop()` 读取最近提供的窗口源，未提供时返回 null。只在有相应消费者时安装窗口源；每个源挂到一个实际节点，每个绘制节点持有独立可变 renderer。资源和失败处理见[背景采样](../effects/backdrop.md)，具体消费见[菜单](../components/menu.md)、[弹窗](../components/dialog.md)与 [Sheet 面板](../components/bottom-sheet.md)。
 
 ## 状态与导航
 

@@ -9,8 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
-import androidx.annotation.DrawableRes
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
@@ -19,6 +18,7 @@ import com.itos.coui.layout.CouiPageDefaults
 import com.itos.coui.layout.Divider
 import com.itos.coui.layout.Group
 import com.itos.coui.icons.CouiIcons
+import com.itos.coui.icons.R as CouiIconsR
 
 internal data class DemoCatalogEntry(val page: String, val title: Int, val icon: @Composable () -> ImageVector)
 
@@ -38,7 +38,7 @@ internal val DemoComponentGroups = listOf(
         DemoCatalogEntry("checkbox", R.string.checkbox_title) { DemoIcons.Checkbox }),
     listOf(DemoCatalogEntry("sheets", R.string.sheet_title) { DemoIcons.Dialogs },
         DemoCatalogEntry("dialogs", R.string.dialog_title) { DemoIcons.Dialogs },
-        DemoCatalogEntry("menu", R.string.menu_title) { CouiIcons.Filled.Grid }),
+        DemoCatalogEntry("menu", R.string.menu_title) { CouiIcons.Outlined.Popup }),
     listOf(DemoCatalogEntry("appbar", R.string.catalog_appbar) { DemoIcons.Title },
         DemoCatalogEntry("search", R.string.catalog_search) { CouiIcons.Outlined.Search },
         DemoCatalogEntry("navigation", R.string.catalog_navigation) { CouiIcons.Filled.Lab },
@@ -74,7 +74,9 @@ internal fun DemoCatalog(groups: List<List<DemoCatalogEntry>>, open: (String) ->
                     matches.forEachIndexed { index, (entry, route) -> key(entry.page) {
                         DemoPreference(Modifier.heightIn(min = CatalogRowMinHeight),
                             title = stringResource(entry.title), enabled = enabled, onClick = { open(route) }, icon = {
-                                Icon(entry.icon(), null, Modifier.size(CouiPageDefaults.iconSize), tint = Color.Unspecified)
+                                Icon(entry.icon(), null, Modifier.size(CouiPageDefaults.iconSize),
+                                    tint = if (entry.page == "menu") colorResource(CouiIconsR.color.coui_icon_tint_green)
+                                    else Color.Unspecified)
                             })
                         if (index != matches.lastIndex) Divider(startIndent =
                             CouiPageDefaults.rowPadding + CouiPageDefaults.iconSize + CouiPageDefaults.iconSpacing)

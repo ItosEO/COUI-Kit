@@ -1,6 +1,6 @@
 # 图标网页数据生成指南
 
-`Pages/data.js` 由网页生成器从 `coui-icons/src/main/res` 的 VectorDrawable、PNG 和颜色资源生成。
+网页生成器读取 `coui-icons/src/main/res` 中的 VectorDrawable、PNG 和颜色资源，以及 `CouiIcons` 从核心模块共享的矢量资源，生成 `Pages/data.js`。
 
 ## 本地生成与预览
 

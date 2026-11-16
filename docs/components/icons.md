@@ -63,6 +63,7 @@ Icon(
 ```
 
 - **多色图标**：`AI`、`Google`、`SettingDetail`、`Phone` 内置多色或渐变路径，应使用 `Image` 或 `Icon(..., tint = Color.Unspecified)`，避免整体 `tint` 覆盖原有配色。
+- **菜单选择箭头**。`CouiIcons.Outlined.Popup` 和 `CouiIcons.Filled.Popup` 使用同一份上下双箭头矢量。使用 `Icon` 时，按页面主题传入 `tint`。[使用规则](menu.md#菜单选择行的图标)
 - **应用更新图标（`AppUpdate`）**：自定义圆形背景色时调用 `CouiIcons.Filled.AppUpdate(color = ...)`，并在 `Icon` 中传 `tint = Color.Unspecified` 以保留白色前景：
 
 ```kotlin

@@ -26,7 +26,6 @@
     <string name="sheet_blur_title">Sheet background blur</string>
     <string name="sheet_blur_summary">Samples the colors and content behind the sheet.</string>
     <string name="sheet_blur_no_source">Background sampling is unavailable on this page.</string>
-    <string name="sheet_repeat">Repeat on weekdays</string>
     <string name="sheet_vibrate">Vibrate</string>
     <string name="sheet_sound">Ringtone</string>
     <string name="sheet_default_sound">Default</string>

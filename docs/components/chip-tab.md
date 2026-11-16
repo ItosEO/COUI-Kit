@@ -75,9 +75,13 @@ ChipTabRow(
 
 `onOpenCategories`、`categoriesLabel` 和 `categoriesVisible` 由页面提供。需要退出动画时，保留 `leadingAction` 的内容，只切换 `leadingActionVisible`。示例假定已接入可选 M3 适配，ChipSurface 自动同步最终内容色，M3 `Icon` 可直接继承；leadingAction 本身只转发内容。应用需要声明示例使用的 Material3 和图标依赖。
 
-## 文字、间距和动画
+## 文字、间距、颜色和动画
 
 可以通过 `textStyle` 和 `contentColor` 修改文字样式与颜色。分类间距默认遵循原厂布局，可通过 `itemSpacing` 调整；`animationLevel` 从 1 到 4，1 的动画最明显，4 最弱。
+
+`ChipTab` 与 `ChipTabRow` 的可选 `selectedColor` 只覆盖选中背景；省略时保留中性材质。`selectedContentColor` 独立控制选中前景，默认沿用 `contentColor`，并随选中进度过渡。两种前景传 `Color.Unspecified` 时继承当前内容色。需要强调色分类时，可成对传入 `CouiTheme.colorScheme.accent` 与 `CouiTheme.colorScheme.onAccent`；M3 宿主也可显式传入自己的 `primary` 与 `onPrimary`。
+
+禁用的 `ChipTabRow` 项目统一使用 `disabledContentColor`，选中前景不会覆盖禁用色。图标和文字的显式颜色仍优先于插槽默认色。
 
 M3 自动模式仅从 labelLarge 接入字体族，保留 Chip 的原字号、字重和排版。显式 textStyle 仍完整生效，图标显式 tint 优先。
 
@@ -90,7 +94,3 @@ M3 自动模式仅从 labelLarge 接入字体族，保留 Chip 的原字号、�
 需要自定义错误界面时，可以在调用前创建 renderer 并处理创建失败。
 
 源码见 [ChipTabRow / CouiChipTabItem](../../coui/src/main/java/com/itos/coui/chip/ChipTabRow.kt)、[ChipTab / ChipTabButton](../../coui/src/main/java/com/itos/coui/chip/ChipTab.kt)、[Defaults](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabDefaults.kt)，分类菜单、图标动作和纯色背景见 [DemoChipSamples](../../demo/src/main/java/com/itos/coui/demo/DemoChipSamples.kt)。
-
-`ChipTab` 与 `ChipTabRow` 的可选 `selectedColor` 只覆盖选中背景；省略时保留中性材质。`selectedContentColor` 独立控制选中前景，默认沿用 `contentColor`，并随选中进度过渡。两种前景传 `Color.Unspecified` 时继承当前内容色。需要强调色分类时，可成对传入 `CouiTheme.colorScheme.accent` 与 `CouiTheme.colorScheme.onAccent`；M3 宿主也可显式传入自己的 `primary` 与 `onPrimary`。
-
-禁用的 `ChipTabRow` 项目统一使用 `disabledContentColor`，选中前景不会覆盖禁用色。图标和文字的显式颜色仍优先于插槽默认色。

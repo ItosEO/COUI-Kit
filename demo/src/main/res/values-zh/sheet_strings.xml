@@ -26,7 +26,6 @@
     <string name="sheet_blur_title">面板背景模糊</string>
     <string name="sheet_blur_summary">实时采样面板后方的色块与页面内容。</string>
     <string name="sheet_blur_no_source">当前页面没有可用的背景采样源。</string>
-    <string name="sheet_repeat">工作日重复</string>
     <string name="sheet_vibrate">振动</string>
     <string name="sheet_sound">铃声</string>
     <string name="sheet_default_sound">默认铃声</string>

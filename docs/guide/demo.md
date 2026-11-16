@@ -24,7 +24,7 @@ CI 可通过 KEYSTORE_FILE、KEYSTORE_PASSWORD、KEYSTORE_ALIAS、KEYSTORE_ALIAS
 
 | 页面 | 内容 |
 | --- | --- |
-| 组件 | 开关、滑条、单/复选框、菜单、弹窗、顶栏、搜索、底栏、FAB、选择器和 ChipTab |
+| 组件 | 开关、分段选择器、滑条、单/复选框、Sheet 面板、弹窗、菜单、顶栏、搜索、底栏、FAB、选择器和 ChipTab |
 | 效果 | 平滑胶囊阴影、记录侧滑融合、背景模糊和材质 |
 | 设置 | 主题设置、底栏设置，以及同一无标题组中的关于此示例和还原示例选项 |
 
@@ -40,11 +40,10 @@ CI 可通过 KEYSTORE_FILE、KEYSTORE_PASSWORD、KEYSTORE_ALIAS、KEYSTORE_ALIAS
 
 二级页统一使用 Large 大标题顶栏：展开标题位于返回按钮下方，上滑时沿弧线缩至按钮旁，返回按钮和操作区位于标题上层。此行为属于[项目定制](customizations.md#二级页大标题与弧线收起)。
 
-- Sheet 页提供闹钟、倒计时草稿和半屏示例。页顶及半屏内的开关控制面板背景模糊，可对照宿主页面的色块。保存仅更新 Demo 草稿。
-
+- Sheet 页提供闹钟、倒计时草稿和半屏示例。页顶及半屏内的开关控制面板背景模糊，可对照宿主页面的色块。点「完成」仅更新 Demo 本地状态，不写入系统闹钟或计时器。
 - 开关页展示点击、拖动、加载、独立开关和禁用状态。
 - 单/复选框页展示互斥单选、禁用单选，以及独立、整行和禁用复选框。
-- 菜单页展示列表项入口、触点锚定、上下箭头行、勾选、子菜单和限高滚动；勾选项与普通操作用分隔线分组。
+- 菜单页展示列表项入口、触点锚定、勾选、子菜单和限高滚动。勾选项与普通操作用分隔线分组。菜单页和滚轮选择器的设置行遵循[菜单选择行的图标规范](../components/menu.md#菜单选择行的图标)。
 - 弹窗页展示底部、居中、长文、三操作、禁用确认、主题色确认及打开时切换主题。输入型示例用于观察草稿、过滤、计数、清除和取消。加载示例在模拟任务结束后自动关闭。
 - 滚轮选择器页通过类型菜单切换数字、时间、倒计时和日期，共用示例区域与弹窗入口，各类型保留自己的值和设置；月历独立展示。弹窗确认后才提交草稿，搜索具体类型可直接进入对应示例。
 - 设置页的主题组提供 Material 配色开关；底栏组提供轮廓光与左右附件开关。还原前需要确认，确认后恢复这四项默认值。关于页显示应用名称与参考系统版本。
@@ -74,7 +73,7 @@ CI 可通过 KEYSTORE_FILE、KEYSTORE_PASSWORD、KEYSTORE_ALIAS、KEYSTORE_ALIAS
 | 详情分发与页面容器 | [DemoSecondaryPage](../../demo/src/main/java/com/itos/coui/demo/DemoSecondaryPage.kt)、[DemoSettingsPage](../../demo/src/main/java/com/itos/coui/demo/DemoSettingsPage.kt) |
 | 组件与设置样例 | [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt) |
 | 阴影、模糊与材质 | [DemoShadowSamples](../../demo/src/main/java/com/itos/coui/demo/DemoShadowSamples.kt)、[DemoBlurTutorial](../../demo/src/main/java/com/itos/coui/demo/DemoBlurTutorial.kt)、[DemoVisualEffects](../../demo/src/main/java/com/itos/coui/demo/DemoVisualEffects.kt) |
-| 弹窗与选择器 | [DemoDialogSamples](../../demo/src/main/java/com/itos/coui/demo/DemoDialogSamples.kt)、[DemoPickerSamples](../../demo/src/main/java/com/itos/coui/demo/DemoPickerSamples.kt) |
+| 弹窗、Sheet 与选择器 | [DemoDialogSamples](../../demo/src/main/java/com/itos/coui/demo/DemoDialogSamples.kt)、[DemoSheetSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSheetSamples.kt)、[DemoPickerSamples](../../demo/src/main/java/com/itos/coui/demo/DemoPickerSamples.kt) |
 | 记录侧滑 | [DemoRecordSamples](../../demo/src/main/java/com/itos/coui/demo/DemoRecordSamples.kt) |
 
 Demo 展示宿主装配，内部行包装和路由不是库 API。接入从[组件目录](../components/README.md)或[效果目录](../effects/README.md)开始。
