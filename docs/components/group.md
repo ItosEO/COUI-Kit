@@ -1,27 +1,69 @@
 # Group
 
-`Group` 将相邻条目放入同一张平滑圆角卡片，可提供标题、标题右侧操作和底部说明。组件位于 `com.itos.coui.layout`。
+`Group` 将相邻设置条目放入同一张平滑圆角卡片，并支持可选分组标题、标题栏右侧操作与底部说明。
 
-```kotlin
-Group(title = groupTitle, footer = description) {
-    Item(title = { Text(text = title, kind = CouiTextKind.ItemTitle) })
+- **系统版本要求**：支持库最低系统版本（API 31+）。
+- **核心特性**：平滑圆角卡片（`CouiPageDefaults.shape`）、自动水平边距与组间距、局部配色覆盖；不依赖背景采样源。
+
+## 基本用法
+
+在宿主 Composable 中组合 `Group` 与 [Item](item.md)，分组标题、条目文案与底部说明均由宿主传入：
+
+~~~kotlin
+@Composable
+fun SettingsGroupExample(
+    modifier: Modifier = Modifier,
+    groupTitle: String,
+    rowTitle: String,
+    footerText: String,
+    onRowClick: () -> Unit,
+) {
+    val colors = CouiPageDefaults.themeColors()
+    Group(
+        modifier = modifier,
+        title = groupTitle,
+        footer = footerText,
+        colors = colors,
+    ) {
+        Item(onClick = onRowClick) {
+            Text(
+                text = rowTitle,
+                kind = CouiTextKind.ItemTitle,
+                color = colors.title,
+            )
+        }
+    }
 }
-```
+~~~
 
-`groupTitle`、`description` 和 `title` 由宿主提供。条目装配见 [Item](item.md)，组内分隔见 [Divider](divider.md)。
+组内多条设置项之间使用 [Divider](divider.md) 分隔；需要独立放在卡片外的辅助说明请使用 [Footer](footer.md)。
 
-## 标题与操作
+## 标题与操作（`headerActions`）
 
-`headerActions` 位于标题行末端，仅在 `title` 非空时显示。槽位参与标题行高度测量；紧凑图标操作可使用 20dp 容器与 18dp 图标，避免按钮默认最小尺寸撑高标题行。图标操作可使用强调色并隐藏点击涟漪，同时保留按钮语义和操作描述。
+当 `title` 非空时，`Group` 会在卡片上方渲染标题行，并将 `headerActions` 放在标题行末端（`RowScope`）：
 
-`footer` 非空时在卡片下方显示说明，独立说明使用 [Footer](footer.md)。
+- **条件渲染**：`title` 为 `null` 或空字符串时，整行标题（含 `headerActions`）都不会渲染。
+- **视觉尺寸与点击热区**：`headerActions` 参与标题行高度测量。可使用约 `18.dp` 的图标配合紧凑视觉容器，但**视觉尺寸不等于有效点击热区**。交互目标建议保留至少 `48.dp` 的可点击区域与完整按钮语义、无障碍描述；若默认最小交互尺寸使标题行变高，应调整标题行布局或将操作放到独立区域，而不是仅为减小高度将实际点击区域压到 `20.dp`。
 
-## 尺寸与配色
+## 参数速查
 
-`Group` 根据是否有标题选择顶部留白，并为卡片提供水平留白和平滑圆角。外部 `Modifier.padding` 会与这些留白累加。需要完全自定组间距或卡片结构时，使用普通布局与 `CouiPageDefaults` 组合。
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `modifier` | `Modifier` | 外层修饰符；若包含 `padding`，会在组件内置留白基础上累加。 |
+| `title` | `null` | 分组标题。非空时显示标题行并使用 `CouiTextKind.GroupTitle` 样式与 `heading()` 语义。 |
+| `footer` | `null` | 分组底部说明。非空时自动在卡片下方装配 `Footer` 并使用 `colors.summary`。 |
+| `headerActions` | `{}` | 标题行末端操作槽位（`RowScope`），仅在 `title` 非空时渲染。 |
+| `colors` | `CouiPageDefaults.themeColors()` | 控制本组卡片底色、组标题与底部说明颜色，**不会改变** `content` 槽位内子组件的主题。 |
+| `content` | 必填 | 卡片内容槽位（`ColumnScope`），通常放入 `Item` 与 `Divider`。 |
 
-`colors` 控制本组卡片、标题和说明，不改变内容槽的主题。自定义文字和 Divider 需要显式接收对应颜色。默认使用 `CouiPageDefaults.themeColors()`；配色规则见[外观与预设](../guide/appearance.md)。
+## 装配注意事项
 
-组件不安装滚动、不消费系统栏 Insets，也不创建背景采样源。页面装配见[宿主页面接入](../guide/secondary-pages.md)。
+- **条件隐藏子条目**：按条件省略卡片内的某个 `Item` 时，组件不会为其保留空白或额外圆角端点。
+- **留白累加规则**：`Group` 会根据 `title` 是否为空自动选择顶部间距（有标题取 `CouiPageDefaults.categoryTopSpacing`，无标题取 `CouiPageDefaults.groupSpacing`），并为卡片添加水平边距（`CouiPageDefaults.horizontalMargin`）。需要完全自定义组间距或卡片结构时，请直接使用普通布局配合 `CouiPageDefaults`。
+- **内容槽显式着色**：`colors` 不向下覆盖子组件主题；使用自定义 `Text` 或 `Divider` 时，请显式传入对应的 `colors.title`、`colors.summary` 或 `colors.divider`（配色规则详见[外观与预设](../guide/appearance.md)）。
+- **页面职责边界**：`Group` 不安装滚动、不消费系统栏 Insets，也不创建背景采样源；整页装配请见[宿主页面接入](../guide/secondary-pages.md)。
 
-[公开布局与 Defaults](../../coui/src/main/java/com/itos/coui/layout/CouiPageComponents.kt) · [Demo 示例](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)
+## 源码与完整示例
+
+- **公开布局与预设**：[CouiPageComponents.kt](../../coui/src/main/java/com/itos/coui/layout/CouiPageComponents.kt)
+- **Demo 完整示例**：[DemoSamples.kt](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)

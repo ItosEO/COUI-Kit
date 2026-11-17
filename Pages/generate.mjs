@@ -9,6 +9,7 @@ const ROOT_DIR = path.resolve(__dirname, '..');
 const COUI_COLOR_PATH = path.join(ROOT_DIR, 'coui/src/main/java/com/itos/coui/theme/CouiColor.kt');
 const COUI_ICONS_PATH = path.join(ROOT_DIR, 'coui-icons/src/main/java/com/itos/coui/icons/CouiIcons.kt');
 const RESOURCE_DIR = path.join(ROOT_DIR, 'coui-icons/src/main/res');
+const CORE_DRAWABLE_DIR = path.join(ROOT_DIR, 'coui/src/main/res/drawable');
 const DRAWABLE_DIR = path.join(RESOURCE_DIR, 'drawable');
 const DRAWABLE_NIGHT_DIR = path.join(RESOURCE_DIR, 'drawable-night');
 const DAY_COLORS_PATH = path.join(RESOURCE_DIR, 'values/coui_icon_colors.xml');
@@ -110,9 +111,9 @@ function parseIconOrder(source) {
       }
     } else if (style === 'Monochrome') {
       for (const [, name, getter] of properties) {
-        const resource = getter.trim().match(/^couiIconResource\(R\.drawable\.(coui_[a-z0-9_]+)\)$/);
+        const resource = getter.trim().match(/^couiIconResource\((R|CouiR)\.drawable\.(coui_[a-z0-9_]+)\)$/);
         if (!resource || sharedResources.has(name)) throw new Error(`Invalid Monochrome icon ${name}`);
-        sharedResources.set(name, resource[1]);
+        sharedResources.set(name, { core: resource[1] === 'CouiR', resource: resource[2] });
       }
     } else {
       order[style] = properties.map((match) => match[1]);
@@ -754,15 +755,27 @@ function main() {
     if (!dayFiles.has(key)) throw new Error(`Night icon resource has no day resource: ${key}`);
   }
 
-  for (const [name, resource] of sharedResources) {
-    const match = resource.match(/^coui_(.+)_(filled|outlined)$/);
-    if (!match || match[1] !== snakeCase(name)) throw new Error(`Invalid Monochrome resource for ${name}: ${resource}`);
-    const sourceStyle = match[2] === 'filled' ? 'Filled' : 'Outlined';
-    const source = specs.get(`${match[1]}:${sourceStyle}`);
+  for (const [name, { core, resource }] of sharedResources) {
+    const key = snakeCase(name);
+    let source;
+    if (core) {
+      const filePath = path.join(CORE_DRAWABLE_DIR, `${resource}.xml`);
+      source = {
+        name,
+        daySpec: parseVectorXml(filePath, rawDayColors),
+        nightSpec: parseVectorXml(filePath, rawNightColors),
+      };
+      if (source.daySpec.name !== name) throw new Error(`Resource ${resource} does not match icon name ${name}`);
+    } else {
+      const match = resource.match(/^coui_(.+)_(filled|outlined)$/);
+      if (!match || match[1] !== key) throw new Error(`Invalid Monochrome resource for ${name}: ${resource}`);
+      const sourceStyle = match[2] === 'filled' ? 'Filled' : 'Outlined';
+      source = specs.get(`${key}:${sourceStyle}`);
+    }
     if (!source) throw new Error(`Missing Monochrome resource for ${name}: ${resource}`);
     for (const style of ['Filled', 'Outlined']) {
       if (!aliases[style].has(name)) throw new Error(`CouiIcons.${style}.${name} must refer to Monochrome.${name}`);
-      specs.set(`${match[1]}:${style}`, { ...source, style, source: name });
+      specs.set(`${key}:${style}`, { ...source, style, source: name });
     }
   }
   for (const style of ['Filled', 'Outlined']) {
