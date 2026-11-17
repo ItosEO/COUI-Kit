@@ -3,6 +3,7 @@
     <string name="intro_message_input">带相机、附件和发送按钮转场的消息输入栏</string>
     <string name="message_input_enabled">启用输入栏</string>
     <string name="message_input_placeholder">发消息...</string>
+    <string name="message_input_editing_placeholder">请输入消息</string>
     <string name="message_input_buttons">按钮显示</string>
     <string name="message_input_show_camera">显示相机</string>
     <string name="message_input_show_more">显示加号</string>

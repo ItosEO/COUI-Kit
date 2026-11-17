@@ -14,7 +14,9 @@ Status: implemented
 
 材质、背景采样、轮廓与投影复用公共单主体浮动表面，配置归 [CouiMessageInputBarDefaults](../../../../coui/src/main/java/com/itos/coui/messageinput/CouiMessageInputBarDefaults.kt)。每个输入栏独立持有 renderer 和内容层，宿主负责创建失败的提示以及系统栏、IME 与背景源装配。
 
-页面通过 [rememberCouiImeInsets](../../../../coui/src/main/java/com/itos/coui/layout/CouiImeInsets.kt) 在测量阶段读取当前键盘高度，窗口失焦时保留最近一次占位。统一缩小页面视口后，现有底栏和底部对齐内容跟随可用底边。Demo 在底栏编辑且正文已到末端时，通过既有 ScrollState 随视口变化保持末端可见，动画时序沿用系统 IME。
+[MessageInputBarSurface](../../../../coui/src/main/java/com/itos/coui/messageinput/MessageInputBarSurface.kt) 持有底部全宽遮罩及导航栏补色。遮罩属于页面底部区域，不能裁剪在输入框胶囊内。其录制节点与输入栏分离，并通过现有 `CouiBackdrop.parent` 叠加正文源，使输入栏材质采样包含遮罩而不形成自采样。Surface 消费剩余导航栏占位，宿主继续持有页面的 IME 避让。
+
+页面通过 [rememberCouiImeInsets](../../../../coui/src/main/java/com/itos/coui/layout/CouiImeInsets.kt) 在测量阶段读取当前键盘高度。失焦时仍读取 IME 并允许占位随收起动画减小至零，避免切换小窗后残留键盘空间；失焦期间不增加占位，防止其他窗口的键盘抬高宿主页。重新获焦后跟随当前 IME 高度。统一缩小页面视口后，现有底栏和底部对齐内容跟随可用底边。Demo 在底栏编辑且正文已到末端时，通过既有 ScrollState 随视口变化保持末端可见，动画时序沿用系统 IME。
 
 输入栏与 IME 占位共用库内窗口配置，将所属窗口的调整位设为 adjustResize。库内 WeakHashMap 按窗口保存使用计数、原调整位与原 isScrollContainer 标记，记录仅在 Compose 副作用的主线程生命周期中访问，使同页输入栏和占位的移除顺序保持一致结果。使用期间将根 View 声明为可随 IME 缩小的容器。最后一个使用者退出时恢复原标记和调整位并删除记录，同时保留宿主当前的其他 softInputMode 位。窗口通过 Compose Dialog 的窗口提供者或 Activity 上下文取得，获取失败时明确报错。
 

@@ -2,10 +2,13 @@ package com.itos.coui.demo
 
 import android.os.Build
 import androidx.compose.foundation.background
-import androidx.compose.foundation.focusGroup
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -13,6 +16,7 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -22,12 +26,19 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.itos.coui.effect.CouiFloatingRenderer
 import com.itos.coui.icons.CouiIcons
 import com.itos.coui.layout.CouiPageDefaults
@@ -39,17 +50,46 @@ import com.itos.coui.messageinput.MessageInputBar
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun MessageInputSample(dark: Boolean, preferences: DemoPreferences, back: () -> Unit) {
     val state = rememberTextFieldState()
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+    val windowInfo = LocalWindowInfo.current
+    val inputInteractions = remember { MutableInteractionSource() }
+    val inputFocused by inputInteractions.collectIsFocusedAsState()
+    val imeVisible = WindowInsets.isImeVisible
+    val hasText = state.text.isNotEmpty()
+    var pageOrigin by remember { mutableStateOf(Offset.Zero) }
+    var inputBounds by remember { mutableStateOf(Rect.Zero) }
     val colors = CouiPageDefaults.themeColors(dark)
-    var bottomHasFocus by remember { mutableStateOf(false) }
-    val followBottom = bottomHasFocus
+    val followBottom = inputFocused
+    // 只响应 IME 与草稿变化，避免刚获焦、键盘尚未弹出时立即清焦点。
+    LaunchedEffect(imeVisible, hasText) {
+        if (!imeVisible && !hasText && inputFocused && windowInfo.isWindowFocused) {
+            focusManager.clearFocus()
+        }
+    }
+    val idle = !hasText && !inputFocused && !imeVisible
     val pageModifier = Modifier.background(colors.background)
-        .windowInsetsPadding(rememberCouiImeInsets()).layout { measurable, constraints ->
+        .windowInsetsPadding(rememberCouiImeInsets())
+        .onGloballyPositioned { pageOrigin = it.positionInRoot() }
+        .pointerInput(focusManager, keyboard) {
+            awaitEachGesture {
+                val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                val position = pageOrigin + down.position
+                val inInputBar = position.x > inputBounds.left && position.x < inputBounds.right &&
+                    position.y > inputBounds.top && position.y < inputBounds.bottom
+                if (inputFocused && !inInputBar) {
+                    // 原厂在输入区域外的 DOWN 清焦点并收键盘，事件继续交给页面控件。
+                    focusManager.clearFocus()
+                    keyboard?.hide()
+                }
+            }
+        }.layout { measurable, constraints ->
             // 固定底栏编辑时，由示例宿主沿用同一 ScrollState 保持末端可见。
             val keepBottom = Snapshot.withoutReadObservation {
                 followBottom && scrollState.viewportSize > 0 && scrollState.value == scrollState.maxValue
@@ -63,7 +103,6 @@ internal fun MessageInputSample(dark: Boolean, preferences: DemoPreferences, bac
             }
             layout(placeable.width, placeable.height) { placeable.placeRelative(0, 0) }
         }
-    val hasText = state.text.isNotEmpty()
     var enabled by rememberSaveable { mutableStateOf(true) }
     var event by rememberSaveable { mutableIntStateOf(R.string.message_input_ready) }
     var message by rememberSaveable { mutableStateOf("") }
@@ -84,25 +123,28 @@ internal fun MessageInputSample(dark: Boolean, preferences: DemoPreferences, bac
         backDescription = stringResource(R.string.settings_back), onBack = back,
         dark = dark, colors = colors, scrollState = scrollState, bottomBar = {
             if (Build.VERSION.SDK_INT >= 34 && renderer != null) {
-                Box(Modifier.onFocusChanged { bottomHasFocus = it.hasFocus }.focusGroup()) {
-                    MessageInputBar(Modifier.fillMaxWidth().navigationBarsPadding()
-                        .padding(horizontal = 16.dp).padding(top = 22.dp, bottom = 16.dp),
-                        state = state, onSubmit = submit,
-                        placeholder = stringResource(R.string.message_input_placeholder),
-                        enabled = enabled, dark = dark, renderer = renderer,
-                        leadingAction = CouiMessageInputAction(rememberVectorPainter(CouiIcons.Outlined.Camera),
-                            stringResource(R.string.message_input_camera_description),
-                            onClick = { event = R.string.message_input_camera_event }),
-                        trailingAction = CouiMessageInputAction(rememberVectorPainter(CouiIcons.Outlined.AddCircle),
-                            stringResource(R.string.message_input_more_description),
-                            onClick = { event = R.string.message_input_more_event }),
-                        primaryAction = CouiMessageInputAction(rememberVectorPainter(CouiIcons.Outlined.Send),
-                            stringResource(R.string.message_input_send_description), onClick = submit,
-                            enabled = state.text.isNotBlank()),
-                        showLeadingAction = preferences.messageInputCamera && !hasText,
-                        showTrailingAction = preferences.messageInputMore,
-                        showPrimaryAction = preferences.messageInputSend && hasText)
+                val placeholderId = if (idle) {
+                    R.string.message_input_placeholder
+                } else {
+                    R.string.message_input_editing_placeholder
                 }
+                MessageInputBar(Modifier.onGloballyPositioned { inputBounds = it.boundsInRoot() },
+                    state = state, onSubmit = submit,
+                    interactionSource = inputInteractions,
+                    placeholder = stringResource(placeholderId),
+                    enabled = enabled, renderer = renderer,
+                    leadingAction = if (preferences.messageInputCamera && !hasText) CouiMessageInputAction(
+                        rememberVectorPainter(CouiIcons.Outlined.Camera),
+                        stringResource(R.string.message_input_camera_description),
+                        onClick = { event = R.string.message_input_camera_event }) else null,
+                    trailingAction = if (preferences.messageInputMore) CouiMessageInputAction(
+                        rememberVectorPainter(CouiIcons.Outlined.AddCircle),
+                        stringResource(R.string.message_input_more_description),
+                        onClick = { event = R.string.message_input_more_event }) else null,
+                    primaryAction = if (preferences.messageInputSend && hasText) CouiMessageInputAction(
+                        rememberVectorPainter(CouiIcons.Outlined.Send),
+                        stringResource(R.string.message_input_send_description), onClick = submit,
+                        enabled = state.text.isNotBlank()) else null)
             }
         }) {
         Group {

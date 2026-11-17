@@ -36,7 +36,7 @@
 | [滑动选择条](slider.md) | 连续、分段与隐藏点位的步进选择 |
 | [ChipTab](chip-tab.md) | 单选分类标签栏、横向滚动与独立图标动作 |
 | [分段选择器](segmented-control.md) | 胶囊内单选滑块、不等宽标签与拖动回弹 |
-| [消息输入栏](message-input-bar.md) | `MessageInputBar` 消息编辑、前置操作、尾部操作与主操作 |
+| [消息输入栏](message-input-bar.md) | `MessageInputBar` 消息编辑、操作与底部渐变遮罩 |
 
 ## 浮层、选择器与图标
 

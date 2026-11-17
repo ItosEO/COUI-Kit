@@ -2,15 +2,16 @@ package com.itos.coui.messageinput
 
 import android.graphics.BlendMode
 import android.graphics.Typeface
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.itos.coui.effect.CouiFloatingMaterial
 import com.itos.coui.effect.CouiFloatingShadow
 import com.itos.coui.shape.CouiShape
@@ -29,6 +30,8 @@ object CouiMessageInputBarDefaults {
     val cornerRadius = 24.dp
     val shape = CouiShape(cornerRadius, cornerWeight = 2f)
     val minHeight = 50.dp
+    val surfacePadding = PaddingValues(start = 16.dp, top = 28.dp, end = 16.dp, bottom = 16.dp)
+    internal val surfaceGradientTop = 6.dp
     internal val leadingActionSize = 40.dp
     internal val actionSize = 48.dp
     internal val iconSize = 24.dp
@@ -41,9 +44,24 @@ object CouiMessageInputBarDefaults {
     internal val actionsEnd = 2.dp
     internal val actionsBottom = 1.dp
     internal val actionSpacing = (-10).dp
-    internal val textPadding = 12.dp
+    internal val textPadding = 14.dp
+    internal val placeholderOffsetY = (-.5).dp
     internal const val actionDurationMillis = 280
     internal const val hiddenIconScale = .8f
+    internal fun backgroundColor(dark: Boolean): Color = Color(if (dark) 0xFA1E1E1E else 0xFAFAFAFA)
+
+    @Composable
+    internal fun surfaceColors(dark: Boolean, blurEnabled: Boolean): List<Color> {
+        val background = CouiTheme.colorSchemeFor(dark).background
+        return remember(dark, blurEnabled, background) {
+            when {
+                dark && !blurEnabled -> listOf(background, background)
+                dark -> listOf(Color.Transparent, Color(0xCC19191A))
+                blurEnabled -> listOf(Color(0x00F0F1F2), Color(0xFFF0F1F2))
+                else -> listOf(Color(0x00C2C2C2), Color(0xCCF0F1F2))
+            }
+        }
+    }
 
     @Composable
     fun colors(dark: Boolean = CouiTheme.isDark): CouiMessageInputBarColors {
@@ -55,15 +73,26 @@ object CouiMessageInputBarDefaults {
 
     @Composable
     fun textStyle(): TextStyle {
-        val configuration = LocalConfiguration.current
         val density = LocalDensity.current
         val family = CouiTheme.typography.body.fontFamily
-        return remember(configuration, density, family) {
+        return remember(density, family) {
             val typeface = Typeface.create(Typeface.create("sans-serif-medium", Typeface.NORMAL), 500, false)
-            val pixels = 16f * density.density * configuration.fontScale.coerceAtMost(1.15f)
+            val pixels = 16f * density.density
             val style = couiTextStyle(typeface, 500, pixels, 1f, includeFontPadding = true, density = density)
             style.copy(fontFamily = family ?: style.fontFamily,
                 lineHeight = with(density) { (style.lineHeight.toPx() + 3.dp.toPx()).toSp() })
+        }
+    }
+
+    @Composable
+    fun placeholderStyle(): TextStyle {
+        val density = LocalDensity.current
+        val family = CouiTheme.typography.body.fontFamily
+        return remember(density, family) {
+            val typeface = Typeface.create(Typeface.create("sans-serif-medium", Typeface.NORMAL), 500, false)
+            val pixels = with(density) { 16.sp.toPx() }
+            val style = couiTextStyle(typeface, 500, pixels, 1f, includeFontPadding = true, density = density)
+            style.copy(fontFamily = family ?: style.fontFamily)
         }
     }
 

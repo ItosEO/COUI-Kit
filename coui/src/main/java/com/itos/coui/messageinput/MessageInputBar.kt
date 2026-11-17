@@ -1,5 +1,6 @@
 package com.itos.coui.messageinput
 
+import android.graphics.BlendMode
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
@@ -39,11 +40,11 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -54,30 +55,37 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.toSize
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.backdrop.LocalCouiBackdrop
 import com.itos.coui.effect.CouiFloatingMaterial
 import com.itos.coui.effect.CouiFloatingRenderer
-import com.itos.coui.effect.CouiFloatingShadow
 import com.itos.coui.effect.CouiFloatingSurface
 import com.itos.coui.effect.LocalCouiContourGlowEnabled
 import com.itos.coui.effect.couiFloatingSurface
 import com.itos.coui.layout.ConfigureCouiImeWindow
+import com.itos.coui.shape.CouiShape
 import com.itos.coui.theme.CouiIcon
 import com.itos.coui.theme.CouiTheme
 
 /**
- * 消息输入栏。放在所属页面的底栏或浮层，backdrop 只录制下方正文。
+ * 底部消息输入栏，包含全宽渐变遮罩、预设留白和胶囊编辑区。
+ * backdrop 录制下方正文，不包含输入栏自身；组件内部叠加单独录制的遮罩供胶囊采样。
  *
  * state 由宿主持有，onSubmit 接收 IME 提交事件，业务校验与草稿修改由宿主处理。
- * placeholder 默认空字符串，提示文案由宿主按需提供。
+ * placeholder 是空草稿时显示的提示文字，默认单行省略。
+ * textStyle 与 placeholderStyle 分别合并覆盖编辑和提示排版预设，文字颜色由 colors 控制。
+ * placeholderMaxLines 必须大于 0，placeholderOverflow 控制提示的溢出方式。
+ * lineLimits 控制编辑区的可见行数，默认最多三行，超出后滚动而不省略内容。
+ * 模糊与描边跟随系统材质设置，省电模式关闭材质；未提供厂商设置的系统默认开启。
+ * contourGlowEnabled 可额外关闭描边和光晕；阴影按有效光晕状态选择预设。
+ * interactionSource 仅观察文本编辑区的交互，宿主可据此区分编辑焦点与操作按钮焦点。
  * leadingAction、trailingAction 和 primaryAction 分别配置前置、尾部和主操作。
- * 对应 show 参数控制显隐，操作为空时释放该位置，显隐规则和设置持久化由宿主处理。
+ * 传入操作时显示，传 null 时退场并释放该位置；显隐规则和设置持久化由宿主处理。
  * 退场时立即释放点击和无障碍入口，图标及文本留白连续过渡。
- * 系统栏与 IME 占位由宿主容器处理，shape 应与 surfaceCornerRadius 对应。
+ * modifier 作用于含遮罩和留白的整个底部区域，shape 只控制胶囊的裁剪与材质几何。
+ * 组件消费剩余的底部导航栏占位，IME 避让由宿主容器处理。
  * 库自动配置所属窗口的 IME 调整模式，同窗最后一个输入栏或 IME 占位使用者退出时恢复。
  */
 @RequiresApi(34)
@@ -93,29 +101,50 @@ fun MessageInputBar(
     colors: CouiMessageInputBarColors = CouiMessageInputBarDefaults.colors(dark),
     material: CouiFloatingMaterial = CouiMessageInputBarDefaults.material(dark),
     contourGlowEnabled: Boolean = LocalCouiContourGlowEnabled.current,
-    shadow: CouiFloatingShadow = CouiMessageInputBarDefaults.shadow(dark, LocalDensity.current.density, contourGlowEnabled),
-    shape: Shape = CouiMessageInputBarDefaults.shape,
-    surfaceCornerRadius: Dp = CouiMessageInputBarDefaults.cornerRadius,
-    textStyle: TextStyle = CouiMessageInputBarDefaults.textStyle(),
+    shape: CouiShape = CouiMessageInputBarDefaults.shape,
+    textStyle: TextStyle = TextStyle.Default,
     placeholder: String = "",
     inputTransformation: InputTransformation? = null,
     leadingAction: CouiMessageInputAction? = null,
     trailingAction: CouiMessageInputAction? = null,
     primaryAction: CouiMessageInputAction? = null,
-    showLeadingAction: Boolean = true,
-    showTrailingAction: Boolean = true,
-    showPrimaryAction: Boolean = true,
+    interactionSource: MutableInteractionSource? = null,
+    placeholderStyle: TextStyle = TextStyle.Default,
+    placeholderMaxLines: Int = 1,
+    placeholderOverflow: TextOverflow = TextOverflow.Ellipsis,
+    lineLimits: TextFieldLineLimits = TextFieldLineLimits.MultiLine(maxHeightInLines = 3),
 ) {
+    require(placeholderMaxLines > 0) { "提示文字的最大行数必须大于 0" }
     ConfigureCouiImeWindow()
     val focusManager = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
     val density = LocalDensity.current
+    val materialSettings = rememberMessageInputMaterialSettings()
+    val contour = contourGlowEnabled && materialSettings.stroke
+    val shadow = CouiMessageInputBarDefaults.shadow(dark, density.density, contour)
+    val resolvedMaterial = if (materialSettings.blur) material else material.copy(
+        blurRadius = 0f,
+        firstColor = CouiMessageInputBarDefaults.backgroundColor(dark),
+        firstBlendMode = BlendMode.SRC_OVER,
+        secondColor = Color.Transparent,
+        secondBlendMode = BlendMode.SRC_OVER,
+    )
+    val fontScale = LocalConfiguration.current.fontScale
+    var multiline by remember(state) { mutableStateOf(false) }
+    val textPadding = with(density) {
+        val base = CouiMessageInputBarDefaults.textPadding.roundToPx()
+        when {
+            fontScale <= 1f -> base
+            multiline -> (base * fontScale).toInt()
+            else -> 0
+        }.toDp()
+    }
     var ownsFocus by remember { mutableStateOf(false) }
     var boundsSize by remember { mutableStateOf(IntSize.Zero) }
     val contentLayer = rememberGraphicsLayer()
-    val leadingVisible = showLeadingAction && leadingAction != null
-    val trailingVisible = showTrailingAction && trailingAction != null
-    val primaryVisible = showPrimaryAction && primaryAction != null
+    val leadingVisible = leadingAction != null
+    val trailingVisible = trailingAction != null
+    val primaryVisible = primaryAction != null
     val leadingPresence by animateFloatAsState(if (leadingVisible) 1f else 0f,
         tween(CouiMessageInputBarDefaults.actionDurationMillis, easing = FastOutSlowInEasing), label = "MessageLeadingAction")
     val trailingPresence by animateFloatAsState(if (trailingVisible) 1f else 0f,
@@ -137,58 +166,72 @@ fun MessageInputBar(
         }
     }
     val contentColor = if (enabled) colors.content else colors.content.copy(alpha = colors.content.alpha * .38f)
-    Box(modifier.fillMaxWidth().heightIn(min = CouiMessageInputBarDefaults.minHeight)
-        .onSizeChanged { boundsSize = it }
-        .couiFloatingSurface(backdrop, renderer, material, shadow, shape, contentLayer, contourGlowEnabled,
-            foregroundComposition = true) {
-            CouiFloatingSurface(Rect(Offset.Zero, boundsSize.toSize()), cornerWeight = 2f,
-                cornerRadius = with(density) { surfaceCornerRadius.toPx() })
-        }) {
-        Box(Modifier.fillMaxWidth()
-            .drawWithContent { contentLayer.record { this@drawWithContent.drawContent() } }
-            .clip(shape)) {
-            Box(Modifier.fillMaxWidth().padding(start = textStart, end = textEnd)
-                .heightIn(min = CouiMessageInputBarDefaults.minHeight),
-                contentAlignment = Alignment.CenterStart) {
-                BasicTextField(state = state,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = CouiMessageInputBarDefaults.textPadding)
-                        .onFocusChanged { ownsFocus = it.hasFocus },
-                    enabled = enabled, textStyle = textStyle.copy(color = contentColor),
-                    cursorBrush = SolidColor(colors.cursor), inputTransformation = inputTransformation,
-                    lineLimits = TextFieldLineLimits.MultiLine(maxHeightInLines = 3),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                    onKeyboardAction = { if (enabled) onSubmit() },
-                    decorator = { field ->
-                        Box {
-                            if (state.text.isEmpty()) BasicText(placeholder,
-                                style = textStyle.copy(color = colors.hint), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            field()
-                        }
-                    })
-            }
-            // 裁剪边界与输入留白使用同一帧尺寸，退场图标随占位收拢，避免覆盖文字。
-            // 子项保留按钮原尺寸和起止锚点，区域变窄时由外围裁剪。
-            Box(Modifier.align(Alignment.BottomStart).width(textStart)
-                .height(CouiMessageInputBarDefaults.minHeight).clipToBounds()) {
-                MessageAction(Modifier.align(Alignment.BottomStart)
-                    .wrapContentSize(Alignment.BottomStart, unbounded = true)
-                    .padding(start = CouiMessageInputBarDefaults.leadingActionStart, bottom = CouiMessageInputBarDefaults.leadingActionBottom)
-                    .size(CouiMessageInputBarDefaults.leadingActionSize), leadingAction, colors.content, enabled,
-                    visible = leadingVisible, presence = leadingPresence)
-            }
-            Box(Modifier.align(Alignment.BottomEnd).width(textEnd)
-                .height(CouiMessageInputBarDefaults.minHeight).clipToBounds()) {
-                MessageAction(Modifier.align(Alignment.BottomEnd)
-                    .wrapContentSize(Alignment.BottomEnd, unbounded = true)
-                    .padding(end = CouiMessageInputBarDefaults.actionsEnd, bottom = CouiMessageInputBarDefaults.actionsBottom)
-                    .offset(x = -(CouiMessageInputBarDefaults.actionSize + CouiMessageInputBarDefaults.actionSpacing) * primaryPresence)
-                    .size(CouiMessageInputBarDefaults.actionSize), trailingAction, colors.content, enabled,
-                    visible = trailingVisible, presence = trailingPresence)
-                MessageAction(Modifier.align(Alignment.BottomEnd)
-                    .wrapContentSize(Alignment.BottomEnd, unbounded = true)
-                    .padding(end = CouiMessageInputBarDefaults.actionsEnd, bottom = CouiMessageInputBarDefaults.actionsBottom)
-                    .size(CouiMessageInputBarDefaults.actionSize), primaryAction, colors.content, enabled,
-                    visible = primaryVisible, presence = primaryPresence, pressedColor = colors.pressedIcon)
+    val resolvedTextStyle = CouiMessageInputBarDefaults.textStyle().merge(textStyle).copy(color = contentColor)
+    val resolvedPlaceholderStyle = CouiMessageInputBarDefaults.placeholderStyle().merge(placeholderStyle).copy(color = colors.hint)
+    MessageInputBarSurface(modifier, backdrop,
+        colors = CouiMessageInputBarDefaults.surfaceColors(dark, materialSettings.blur)) { surfaceBackdrop ->
+        Box(Modifier.padding(CouiMessageInputBarDefaults.surfacePadding).fillMaxWidth()
+            .heightIn(min = CouiMessageInputBarDefaults.minHeight)
+            .onSizeChanged { boundsSize = it }
+            .couiFloatingSurface(surfaceBackdrop, renderer, resolvedMaterial, shadow, shape, contentLayer, contour,
+                foregroundComposition = true, beforeContent = null, useMenuLightEdge = false,
+                sampleDrawnSurfaces = true) {
+                CouiFloatingSurface(Rect(Offset.Zero, boundsSize.toSize()), cornerWeight = shape.cornerWeight,
+                    cornerRadius = with(density) { shape.radius.toPx() })
+            }) {
+            Box(Modifier.fillMaxWidth()
+                .drawWithContent { contentLayer.record { this@drawWithContent.drawContent() } }
+                .clip(shape)) {
+                Box(Modifier.fillMaxWidth().padding(start = textStart, end = textEnd)
+                    .heightIn(min = CouiMessageInputBarDefaults.minHeight),
+                    contentAlignment = Alignment.CenterStart) {
+                    BasicTextField(state = state,
+                        modifier = Modifier.fillMaxWidth()
+                            .onFocusChanged { ownsFocus = it.hasFocus },
+                        enabled = enabled, textStyle = resolvedTextStyle,
+                        interactionSource = interactionSource,
+                        cursorBrush = SolidColor(colors.cursor), inputTransformation = inputTransformation,
+                        lineLimits = lineLimits,
+                        onTextLayout = { result -> multiline = (result()?.lineCount ?: 1) > 1 },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                        onKeyboardAction = { if (enabled) onSubmit() },
+                        decorator = { field ->
+                            Box(Modifier.heightIn(min = CouiMessageInputBarDefaults.minHeight),
+                                contentAlignment = Alignment.CenterStart) {
+                                Box(Modifier.fillMaxWidth().padding(vertical = textPadding)) { field() }
+                                if (state.text.isEmpty() && placeholder.isNotEmpty()) BasicText(placeholder,
+                                    modifier = Modifier.graphicsLayer {
+                                        translationY = CouiMessageInputBarDefaults.placeholderOffsetY.toPx()
+                                    },
+                                    style = resolvedPlaceholderStyle,
+                                    maxLines = placeholderMaxLines, overflow = placeholderOverflow)
+                            }
+                        })
+                }
+                // 裁剪边界与输入留白使用同一帧尺寸，退场图标随占位收拢，避免覆盖文字。
+                // 子项保留按钮原尺寸和起止锚点，区域变窄时由外围裁剪。
+                Box(Modifier.align(Alignment.BottomStart).width(textStart)
+                    .height(CouiMessageInputBarDefaults.minHeight).clipToBounds()) {
+                    MessageAction(Modifier.align(Alignment.BottomStart)
+                        .wrapContentSize(Alignment.BottomStart, unbounded = true)
+                        .padding(start = CouiMessageInputBarDefaults.leadingActionStart, bottom = CouiMessageInputBarDefaults.leadingActionBottom)
+                        .size(CouiMessageInputBarDefaults.leadingActionSize), leadingAction, colors.content, enabled,
+                        visible = leadingVisible, presence = leadingPresence)
+                }
+                Box(Modifier.align(Alignment.BottomEnd).width(textEnd)
+                    .height(CouiMessageInputBarDefaults.minHeight).clipToBounds()) {
+                    MessageAction(Modifier.align(Alignment.BottomEnd)
+                        .wrapContentSize(Alignment.BottomEnd, unbounded = true)
+                        .padding(end = CouiMessageInputBarDefaults.actionsEnd, bottom = CouiMessageInputBarDefaults.actionsBottom)
+                        .offset(x = -(CouiMessageInputBarDefaults.actionSize + CouiMessageInputBarDefaults.actionSpacing) * primaryPresence)
+                        .size(CouiMessageInputBarDefaults.actionSize), trailingAction, colors.content, enabled,
+                        visible = trailingVisible, presence = trailingPresence)
+                    MessageAction(Modifier.align(Alignment.BottomEnd)
+                        .wrapContentSize(Alignment.BottomEnd, unbounded = true)
+                        .padding(end = CouiMessageInputBarDefaults.actionsEnd, bottom = CouiMessageInputBarDefaults.actionsBottom)
+                        .size(CouiMessageInputBarDefaults.actionSize), primaryAction, colors.content, enabled,
+                        visible = primaryVisible, presence = primaryPresence, pressedColor = colors.pressedIcon)
+                }
             }
         }
     }

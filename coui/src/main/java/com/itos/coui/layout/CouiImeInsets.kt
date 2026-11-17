@@ -20,8 +20,8 @@ import java.util.WeakHashMap
 /**
  * 当前窗口的底部 IME 占位，长度由 WindowInsets 的像素接口提供。
  *
- * 在测量阶段随系统键盘动画读取当前高度，窗口失焦期间保留最近一次使用的高度。
- * 重新获焦后读取当前 IME，截图浮层及输入弹窗取得焦点期间保留宿主视口。
+ * 在测量阶段随系统键盘动画读取当前高度；窗口失焦时只允许占位减小。
+ * 键盘收起后释放占位，其他窗口的键盘不能抬高本页；重新获焦后读取当前 IME。
  * 宿主通过 Modifier.windowInsetsPadding 消费，可用于页面容器或底部组件。
  * 库在使用期间将 Activity 或 Compose Dialog 所属窗口设为 adjustResize，
  * 窗口根 View 同时声明可随 IME 缩小，同窗最后一个使用者退出时恢复原标记和调整模式。
@@ -87,7 +87,9 @@ private class FocusRetainedImeInsets(private val ime: WindowInsets, private val 
     override fun getRight(density: Density, layoutDirection: LayoutDirection): Int = 0
 
     override fun getBottom(density: Density): Int {
-        if (windowInfo.isWindowFocused) bottom = ime.getBottom(density)
+        // 失焦后仍读取 IME，保持测量对收起动画的订阅；其他窗口只不能增加本页占位。
+        val currentBottom = ime.getBottom(density)
+        bottom = if (windowInfo.isWindowFocused) currentBottom else minOf(bottom, currentBottom)
         return bottom
     }
 }

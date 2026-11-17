@@ -3,6 +3,7 @@
     <string name="intro_message_input">Message editor with animated camera, attachment and send actions</string>
     <string name="message_input_enabled">Enable input bar</string>
     <string name="message_input_placeholder">Send a message...</string>
+    <string name="message_input_editing_placeholder">Enter a message</string>
     <string name="message_input_buttons">Button visibility</string>
     <string name="message_input_show_camera">Show camera</string>
     <string name="message_input_show_more">Show plus</string>
