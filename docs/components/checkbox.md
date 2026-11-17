@@ -155,7 +155,17 @@ fun StandaloneCheckboxExample(
 
 - **尺寸等比缩放**：`RadioButton` 与 `Checkbox` 默认均以 `24.dp` 为基准等比缩放内部路径与线宽；至少 `48.dp` 的触控热区及行内留白由外层容器保证。
 - **切换动画与禁用行为**：切换中途反向时，动画会从新方向的起点重新播放；`enabled = false` 时直接显示静态目标状态，重新启用后不会补播历史切换动画。
-- **示例依赖说明**：上述行示例中的 `Text` 来自 Material 3，若只使用 COUI 与 Foundation，可替换为 `com.itos.coui.text.Text` 或 `BasicText`。
+- **示例依赖说明**：上述行示例中的 `Text(label, Modifier.weight(1f))` 属于 Material 3。若只使用 COUI 与 Foundation，不能仅替换 `Text` 的 import：COUI `Text` 必须提供 `kind`，且参数顺序不同。可将行内文字改为：
+
+~~~kotlin
+com.itos.coui.text.Text(
+    modifier = Modifier.weight(1f),
+    text = label,
+    kind = CouiTextKind.ItemTitle,
+)
+~~~
+
+也可使用 `BasicText(text = label, modifier = Modifier.weight(1f))`，并自行提供文字样式。
 
 ## 源码与完整示例
 

@@ -1,6 +1,6 @@
 # 外观与预设
 
-COUI 组件的所有外观参数均提供默认值，也可显式传入颜色、`Style`、`Shape`、`material` 和 `shadow`。未全局初始化时默认使用原生 COUI 预设；引入可选 `coui-material3` 模块后，默认值会自动跟随宿主的 `MaterialTheme`。
+COUI 组件可省略有默认值的外观参数，也可显式传入颜色、`Style`、`Shape`、`material` 和 `shadow`。未初始化时使用原生 COUI 预设。**仅添加 `coui-material3` 依赖不会启用适配**；还须在 `Application.onCreate()` 调用一次 `Coui.initialize(defaultStyle = CouiMaterial3Style())`，此后组件才会在 Compose 作用域中读取当前 `MaterialTheme` 的默认配色与字体。
 
 ## 不配置主题
 

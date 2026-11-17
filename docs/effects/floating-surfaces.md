@@ -35,9 +35,15 @@ fun FloatingSurfaceSample(
     shadow: CouiFloatingShadow,
     shape: Shape,
     contourGlowEnabled: Boolean,
+    errorContent: @Composable (Throwable) -> Unit,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    val renderer = remember { CouiFloatingRenderer.standalone() }
+    val rendering = remember { runCatching { CouiFloatingRenderer.standalone() } }
+    val renderer = rendering.getOrNull()
+    if (renderer == null) {
+        errorContent(checkNotNull(rendering.exceptionOrNull()))
+        return
+    }
     val contentLayer = rememberGraphicsLayer()
     var boundsSize by remember { mutableStateOf(IntSize.Zero) }
     Box(
@@ -100,7 +106,7 @@ fun FloatingSurfaceSample(
 ## 资源与错误
 
 - **状态更新与释放**：主题、轮廓、几何或位置变化后，更新当前节点传入的配置与 `surfaces()`；内部创建的 `shadowLayers`、`causticLayers`、`materialLayers` 与录制层随节点生命周期自动释放。
-- **平台门槛与构造失败**：`CouiFloatingRenderer` 在构造时即直接编译原生 `RuntimeShader`，不会在绘制时吞没错误。调用前先检查 **API 34+**，并在 `remember { runCatching { CouiFloatingRenderer.standalone() } }` 工厂中捕获构造异常，详见[资源与失败处理](backdrop.md#资源与失败处理)。
+- **平台门槛与构造失败**：`CouiFloatingRenderer` 在构造时即编译原生 `RuntimeShader`，不会在绘制时吞没错误。调用前须检查 **API 34+**。上方示例在 `remember` 中通过 `runCatching` 捕获构造异常，创建失败时交由宿主提供的 `errorContent` 显示替代 UI；不要在构造失败后继续创建并使用浮动表面。详见[资源与失败处理](backdrop.md#资源与失败处理)。
 
 ## 公开入口
 

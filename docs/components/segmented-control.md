@@ -26,13 +26,19 @@ fun RangeInGroupExample(
     labels: List<String>,
 ) {
     var selected by rememberSaveable { mutableIntStateOf(0) }
+    if (labels.isEmpty()) return
+
+    val safeSelected = selected.coerceIn(0, labels.lastIndex)
+    LaunchedEffect(labels.size) {
+        if (selected != safeSelected) selected = safeSelected
+    }
     Group(modifier = modifier) {
         SegmentedControl(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp),
             labels = labels,
-            selectedIndex = selected,
+            selectedIndex = safeSelected,
             onSelected = { selected = it },
         )
     }
@@ -89,7 +95,7 @@ fun ScheduleRangeExample(
 }
 ~~~
 
-- **标签校验**：`labels` 不能为空且 `selectedIndex` 必须处于 `labels.indices` 范围内，否则直接抛出 `IllegalArgumentException`。动态增删选项时，宿主须先同步修正 `selectedIndex`。
+- **标签校验**：`labels` 不能为空且 `selectedIndex` 必须处于 `labels.indices` 范围内，否则直接抛出 `IllegalArgumentException`。上方示例在列表为空时不渲染，在列表缩短后先以有效下标绘制，再同步修正保存的状态。实际页面动态增删、重排选项时，建议以稳定选项 ID 保存选择，再映射为下标，避免仅保留下标导致选错项。
 - **尺寸与空间分配**：各分段按自然文字宽度分配（单段最小 `52.dp`、左右各 `12.dp` 内边距），整体在父级约束内自适应；传入 `Modifier.fillMaxWidth()` 时占满可用宽度，空间不足时单行省略。
 - **高度预设**：默认高度由 `CouiSegmentedControlDefaults.height`（`40.dp`）提供，`small = true` 切换为紧凑高度 `CouiSegmentedControlDefaults.smallHeight`（`32.dp`）。外部尺寸 Modifier 可覆盖高度，指示器、采样与命中区域均使用实际约束尺寸。
 

@@ -6,6 +6,8 @@
 - **可选依赖**：图标位于独立的 `coui-icons` 模块，使用时需在调用模块添加依赖并与核心库保持相同版本（仅使用核心组件时无需引入）：
 
 ~~~kotlin
+val couiVersion = "0.0.1-alpha11"
+
 dependencies {
     implementation("io.github.itoseo:coui-icons:$couiVersion")
 }
