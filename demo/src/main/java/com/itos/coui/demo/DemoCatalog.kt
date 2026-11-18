@@ -36,7 +36,8 @@ internal val DemoComponentGroups = listOf(
         DemoCatalogEntry("segment", R.string.segment_title) { DemoIcons.Switch },
         DemoCatalogEntry("sliders", R.string.slider_title) { DemoIcons.Tune },
         DemoCatalogEntry("message_input", R.string.message_input_title) { CouiIcons.Outlined.Keyboard },
-        DemoCatalogEntry("checkbox", R.string.checkbox_title) { DemoIcons.Checkbox }),
+        DemoCatalogEntry("checkbox", R.string.checkbox_title) { DemoIcons.Checkbox },
+        DemoCatalogEntry("textfield", R.string.catalog_text_field) { CouiIcons.Filled.BookOpen }),
     listOf(DemoCatalogEntry("dialogs", R.string.dialog_title) { DemoIcons.Dialogs },
         DemoCatalogEntry("menu", R.string.menu_title) { CouiIcons.Outlined.Popup }),
     listOf(DemoCatalogEntry("appbar", R.string.catalog_appbar) { DemoIcons.Title },
@@ -111,6 +112,7 @@ internal fun catalogDescription(page: String): Int = when (page) {
     "search" -> R.string.intro_search
     "navigation" -> R.string.intro_navigation
     "fab" -> R.string.intro_fab
+    "textfield" -> R.string.intro_text_field
     "wheel" -> R.string.intro_wheel
     "timepicker" -> R.string.intro_timepicker
     "countdownpicker" -> R.string.intro_countdownpicker
