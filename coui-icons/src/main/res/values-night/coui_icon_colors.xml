@@ -5,6 +5,7 @@
     <color name="coui_icon_tint_green">#FF24B232</color>
     <color name="coui_icon_tint_neutral_ff000000_ffffffff">#FFFFFFFF</color>
     <color name="coui_icon_tint_neutral_e6000000_e5ffffff">#E5FFFFFF</color>
+    <color name="coui_icon_tint_neutral_e6000000_e6ffffff">#E6FFFFFF</color>
     <color name="coui_icon_tint_orange">#FFF08222</color>
     <color name="coui_icon_tint_red">#FFEB493D</color>
     <color name="coui_icon_tint_yellow">#FFE5A100</color>

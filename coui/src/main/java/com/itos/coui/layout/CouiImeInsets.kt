@@ -2,6 +2,7 @@ package com.itos.coui.layout
 
 import android.app.Activity
 import android.content.ContextWrapper
+import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import androidx.compose.foundation.layout.WindowInsets
@@ -23,9 +24,8 @@ import java.util.WeakHashMap
  * 在测量阶段随系统键盘动画读取当前高度；窗口失焦时只允许占位减小。
  * 键盘收起后释放占位，其他窗口的键盘不能抬高本页；重新获焦后读取当前 IME。
  * 宿主通过 Modifier.windowInsetsPadding 消费，可用于页面容器或底部组件。
- * 库在使用期间将 Activity 或 Compose Dialog 所属窗口设为 adjustResize，
- * 窗口根 View 同时声明可随 IME 缩小，同窗最后一个使用者退出时恢复原标记和调整模式。
- * 其他 softInputMode 位由宿主管理。
+ * Activity 在使用期间采用 adjustResize，同窗最后一个使用者退出时恢复原调整位和根 View 的滚动容器标记。
+ * Compose Dialog 自行管理窗口模式，页面使用该弹窗收到的 IME Insets。
  * 宿主使用边到边布局，导航栏由宿主另行处理。无法取得所属窗口时抛出 IllegalStateException。
  */
 @Composable
@@ -40,33 +40,30 @@ fun rememberCouiImeInsets(): WindowInsets {
 internal fun ConfigureCouiImeWindow() {
     val view = LocalView.current
     val window = remember(view) {
-        val dialogWindow = (view.parent as? DialogWindowProvider)?.window
-        if (dialogWindow != null) dialogWindow else {
-            var context = view.context
-            while (context is ContextWrapper && context !is Activity) context = context.baseContext
-            checkNotNull((context as? Activity)?.window) { "IME 避让需要 Activity 或 Compose Dialog 窗口" }
-        }
-    }
+        // 弹窗或其嵌套 ComposeView 沿用 DialogProperties 管理的窗口模式。
+        if (generateSequence(view) { it.parent as? View }.any { it is DialogWindowProvider }) return@remember null
+        var context = view.context
+        while (context is ContextWrapper && context !is Activity) context = context.baseContext
+        checkNotNull((context as? Activity)?.window) { "IME 避让需要 Activity 或 Compose Dialog 窗口" }
+    } ?: return
     DisposableEffect(window) {
         val decorView = window.decorView
-        val adjustmentMask = WindowManager.LayoutParams.SOFT_INPUT_MASK_ADJUST
         // 输入栏与页面占位可共享同一窗口，最后一个使用者退出时才恢复配置。
         val adjustment = imeWindowAdjustments.getOrPut(window) {
-            ImeWindowAdjustment(window.attributes.softInputMode and adjustmentMask, decorView.isScrollContainer)
+            val original = ImeWindowAdjustment(window.attributes.softInputMode and
+                WindowManager.LayoutParams.SOFT_INPUT_MASK_ADJUST, decorView.isScrollContainer)
+            // ViewRootImpl 在首次测量后仍会按初始模式和容器标记选择 resize/pan。
+            decorView.isScrollContainer = true
+            @Suppress("DEPRECATION")
+            window.setImeAdjustment(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+            original
         }
         adjustment.users++
-        // ViewRootImpl 在首次测量后仍会按初始模式和容器标记选择 resize/pan。
-        decorView.isScrollContainer = true
-        // 窗口调整位用于兼容系统模式选择，实际键盘占位由 Insets 处理。
-        @Suppress("DEPRECATION")
-        window.setSoftInputMode((window.attributes.softInputMode and adjustmentMask.inv()) or
-            WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         onDispose {
             adjustment.users--
             if (adjustment.users == 0) {
                 decorView.isScrollContainer = adjustment.originalScrollContainer
-                window.setSoftInputMode((window.attributes.softInputMode and adjustmentMask.inv()) or
-                    adjustment.originalAdjustment)
+                window.setImeAdjustment(adjustment.originalAdjustment)
                 imeWindowAdjustments.remove(window)
             }
         }
@@ -74,6 +71,13 @@ internal fun ConfigureCouiImeWindow() {
 }
 
 private val imeWindowAdjustments = WeakHashMap<Window, ImeWindowAdjustment>()
+
+private fun Window.setImeAdjustment(adjustment: Int) {
+    // setSoftInputMode(0) 仅清除显式配置标记。写回 LayoutParams 才能恢复零值。
+    val params = attributes
+    params.softInputMode = (params.softInputMode and WindowManager.LayoutParams.SOFT_INPUT_MASK_ADJUST.inv()) or adjustment
+    attributes = params
+}
 
 private class ImeWindowAdjustment(val originalAdjustment: Int, val originalScrollContainer: Boolean) {
     var users = 0

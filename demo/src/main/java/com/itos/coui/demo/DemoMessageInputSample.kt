@@ -67,11 +67,12 @@ internal fun MessageInputSample(dark: Boolean, preferences: DemoPreferences, bac
     var inputBounds by remember { mutableStateOf(Rect.Zero) }
     val colors = CouiPageDefaults.themeColors(dark)
     val followBottom = inputFocused
-    // 只响应 IME 与草稿变化，避免刚获焦、键盘尚未弹出时立即清焦点。
-    LaunchedEffect(imeVisible, hasText) {
-        if (!imeVisible && !hasText && inputFocused && windowInfo.isWindowFocused) {
+    var imeWasVisible by remember { mutableStateOf(imeVisible) }
+    LaunchedEffect(imeVisible) {
+        if (imeWasVisible && !imeVisible && state.text.isEmpty() && inputFocused && windowInfo.isWindowFocused) {
             focusManager.clearFocus()
         }
+        imeWasVisible = imeVisible
     }
     val idle = !hasText && !inputFocused && !imeVisible
     val pageModifier = Modifier.background(colors.background)

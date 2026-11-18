@@ -52,7 +52,7 @@ internal fun MessageInputBarSurface(
                 if (gap > 0f) drawRect(colors.last(), topLeft = Offset(0f, bottom), size = Size(size.width, gap))
             }
         })
-        Box(Modifier.windowInsetsPadding(remaining)) {
+        Box(Modifier.windowInsetsPadding(navigation)) {
             content(surfaceBackdrop)
         }
     }

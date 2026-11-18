@@ -59,7 +59,7 @@ fun ChatComposer(
 
 需要在激活前后显示不同提示时，传入记住的 `MutableInteractionSource`，通过 `collectIsFocusedAsState()` 观察文本框焦点，再将对应的本地化字符串传给 `placeholder`。`interactionSource` 只关联编辑区，不包含操作按钮；省略时由 Foundation 在内部管理交互。
 
-Demo 在草稿为空、文本框未获焦且键盘隐藏时显示待输入文案，其余状态使用编辑文案。键盘隐藏或草稿清空后，若窗口仍有焦点且草稿为空、键盘已隐藏，会清除编辑焦点；有草稿时收起键盘保留焦点。完整处理见下方 Demo 链接。
+Demo 在草稿为空、文本框未获焦且软键盘隐藏时显示待输入文案。软键盘从显示变为隐藏时，如果窗口仍有焦点且草稿为空，Demo 会清除编辑焦点，恢复待输入文案。有草稿时收起软键盘会保留焦点。使用实体键盘删空草稿后也可以继续输入。
 
 点击输入栏外收起键盘也由宿主页处理。Demo 在页面的 `PointerEventPass.Initial` 观察首次按下，排除整个底栏区域后清除焦点并隐藏键盘，保留草稿。观察器不消费事件，正文仍可点击和滚动；有附件面板时，应将面板一并排除。
 
@@ -142,9 +142,9 @@ Scaffold(
 }
 ~~~
 
-页面视口随键盘动画缩小，底栏、底部对齐内容与浮动操作随可用底边抬升。Foundation 扣除父级已消费的 Insets，输入栏只补足剩余导航栏占位。窗口因小窗等浮层失焦后，IME 占位仍随键盘收起而减小至零，不会被其他窗口的键盘重新抬高。
+页面视口随键盘动画缩小，底栏、底部对齐内容与浮动操作随可用底边抬升。父级已避让部分底部导航栏时，胶囊与遮罩都只补足剩余高度。窗口因小窗等浮层失焦后，IME 占位仍随键盘收起而减小至零，其他窗口弹出键盘时本页保持原位。
 
-`MessageInputBar` 与 `rememberCouiImeInsets` 自动配置所属窗口为 `adjustResize`，同窗最后一个使用者退出时恢复原调整模式，其他 `softInputMode` 位仍由宿主管理。支持 Activity 和 Compose Dialog；无法取得所属窗口时抛出 `IllegalStateException`。
+在 Activity 中，输入栏与 `rememberCouiImeInsets` 共用临时的 `adjustResize` 配置。同窗最后一个使用者退出时恢复原调整位，包括系统默认的 `adjustUnspecified`。在 Compose Dialog 中，窗口模式由 `DialogProperties` 管理。边到边弹窗可在内容容器使用同一占位方法，读取弹窗自身的 IME Insets。无法识别 Activity 或 Compose Dialog 时抛出 `IllegalStateException`。
 
 正文滚动跟随由宿主决定。Demo 在正文原本已处于末端时保持末端可见，用户滚到其他位置后保留其滚动位置。页面装配见[宿主页面接入](../guide/secondary-pages.md)，输入弹窗场景见[宿主页的键盘避让](dialog.md#宿主页的键盘避让)。
 

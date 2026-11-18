@@ -88,7 +88,7 @@ fun BitmapIconExample(
 
 - **多色图标**：`AI`、`Google`、`SettingDetail`、`Phone` 内置多色或渐变路径，应使用 `Image` 或 `Icon(..., tint = Color.Unspecified)`，避免整体 `tint` 覆盖原有配色。
 - **菜单选择箭头（`Popup`）**：`CouiIcons.Outlined.Popup` 与 `CouiIcons.Filled.Popup` 共用同一份上下双箭头矢量。在弹出菜单的设置行尾部使用时按页面主题传入 `tint`，详见[菜单选择行的图标](menu.md#菜单选择行的图标)。
-- **消息输入栏图标**：`CouiIcons.Outlined` 下的 `Camera`、`AddCircle` 和 `Send` 用于[消息输入栏](message-input-bar.md)示例，默认日间黑色、夜间白色。`AddCircle` 是圆圈加号，`Add` 是普通加号。`Keyboard` 用于 Demo 的消息输入栏目录入口，保留日夜资源原有的透明度。
+- **消息输入栏图标**：`CouiIcons.Outlined` 下的 `Camera`、`AddCircle` 和 `Send` 用于[消息输入栏](message-input-bar.md)，`Keyboard` 用于 Demo 目录入口。四个图标都保留原厂约 90% 不透明度的日间黑色和夜间白色。使用 `Icon` 显示原色时传入 `tint = Color.Unspecified`。`AddCircle` 是圆圈加号，`Add` 是普通加号。
 - **应用更新图标（`AppUpdate`）**：自定义圆形背景色时调用 `CouiIcons.Filled.AppUpdate(color = ...)`，并在 `Icon` 中传 `tint = Color.Unspecified` 以保留白色前景：
 
   ~~~kotlin

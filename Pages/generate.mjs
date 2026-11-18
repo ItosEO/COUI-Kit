@@ -615,6 +615,9 @@ function renderSvg(vectorSpec, iconName, style, themeKey, mode) {
     `viewBox="0 0 ${formatNum(vectorSpec.viewportWidth)} ${formatNum(vectorSpec.viewportHeight)}"`,
     'fill="none"',
   ];
+  if (mode === 'tint' && hasTintColor && vectorSpec.tintColor.alpha < 1) {
+    attrs.push(`opacity="${formatNum(vectorSpec.tintColor.alpha)}"`);
+  }
   const defsXml = defs.length > 0 ? `<defs>${defs.join('')}</defs>` : '';
   return `<svg ${attrs.join(' ')}>${defsXml}${bodyElements.join('')}</svg>`;
 }

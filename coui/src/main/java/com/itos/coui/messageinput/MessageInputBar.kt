@@ -86,7 +86,7 @@ import com.itos.coui.theme.CouiTheme
  * 退场时立即释放点击和无障碍入口，图标及文本留白连续过渡。
  * modifier 作用于含遮罩和留白的整个底部区域，shape 只控制胶囊的裁剪与材质几何。
  * 组件消费剩余的底部导航栏占位，IME 避让由宿主容器处理。
- * 库自动配置所属窗口的 IME 调整模式，同窗最后一个输入栏或 IME 占位使用者退出时恢复。
+ * Activity 的 IME 调整模式在同窗最后一个使用者退出时恢复，Compose Dialog 自行管理窗口模式。
  */
 @RequiresApi(34)
 @Composable

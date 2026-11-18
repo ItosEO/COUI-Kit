@@ -18,7 +18,9 @@ Status: implemented
 
 页面通过 [rememberCouiImeInsets](../../../../coui/src/main/java/com/itos/coui/layout/CouiImeInsets.kt) 在测量阶段读取当前键盘高度。失焦时仍读取 IME 并允许占位随收起动画减小至零，避免切换小窗后残留键盘空间；失焦期间不增加占位，防止其他窗口的键盘抬高宿主页。重新获焦后跟随当前 IME 高度。统一缩小页面视口后，现有底栏和底部对齐内容跟随可用底边。Demo 在底栏编辑且正文已到末端时，通过既有 ScrollState 随视口变化保持末端可见，动画时序沿用系统 IME。
 
-输入栏与 IME 占位共用库内窗口配置，将所属窗口的调整位设为 adjustResize。库内 WeakHashMap 按窗口保存使用计数、原调整位与原 isScrollContainer 标记，记录仅在 Compose 副作用的主线程生命周期中访问，使同页输入栏和占位的移除顺序保持一致结果。使用期间将根 View 声明为可随 IME 缩小的容器。最后一个使用者退出时恢复原标记和调整位并删除记录，同时保留宿主当前的其他 softInputMode 位。窗口通过 Compose Dialog 的窗口提供者或 Activity 上下文取得，获取失败时明确报错。
+在 Activity 内，输入栏与页面 IME 占位共用 adjustResize 配置。第一个使用者保存原调整位和根 View 的滚动容器标记，最后一个退出时恢复。写回窗口属性可恢复零值的默认模式，同时保留宿主当前的其他 softInputMode 位。
+
+Compose Dialog 会在更新 DialogProperties 时配置自己的窗口模式。通过 View 祖先识别弹窗，让嵌套 ComposeView 也沿用弹窗自己的 Insets，避免误改背景 Activity。
 
 ViewRootImpl 在首次 measureHierarchy 之后，根据建窗时保存的 mSoftInputMode 和可见滚动容器重新选择调整模式。初始模式为 UNSPECIFIED 时，Compose 首次测量期间设置的 adjustResize 仍可能被自动选择的 pan 覆盖。根 View 的容器标记使原生自动选择与库的运行时配置一致。入口见 [ViewRootImpl.performTraversals](https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/core/java/android/view/ViewRootImpl.java) 和 [View.setScrollContainer](https://developer.android.com/reference/android/view/View#setScrollContainer(boolean))。
 
