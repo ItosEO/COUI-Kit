@@ -2,6 +2,19 @@
 
 COUI-Kit 处于早期预览阶段。本文记录公开 API、行为、接入和兼容要求的变化。日期以提交合并时间为准；版本归档以真实 Git Tag 和发行产物为准。
 
+## [0.0.1-alpha12] - 2026-11-18
+
+### 新增与改进
+
+- 新增消息输入栏 `MessageInputBar`（Android 14 / API 34+），自带随深浅主题切换的底部渐变遮罩和留白。宿主可按焦点切换提示文案，也可按草稿内容切换操作按钮。切换按钮时保留光标位置和选区。[消息输入栏](docs/components/message-input-bar.md)
+- 新增 `rememberCouiImeInsets()`，供宿主页随软键盘调整布局。编辑时切到小窗，键盘收起后输入栏随之回落。[底部放置与键盘抬升](docs/components/message-input-bar.md#底部放置与键盘抬升)
+- 新增 `CouiIcons.Outlined` 下的 `Camera`、`AddCircle`、`Send` 和 `Keyboard`，保留原厂日夜配色与透明度。新增菜单选择行的上下双箭头 `Filled.Popup` 和 `Outlined.Popup`，调整 `Outlined.Setting` 的描边。[图标](docs/components/icons.md)
+
+### 升级说明
+
+- `coui`、`coui-material3` 和 `coui-icons` 使用同一版本。alpha11 的公开调用可沿用，升级后重新编译宿主模块。
+- 接入消息输入栏时，将 `MessageInputBar` 放入页面底栏，由宿主页统一处理键盘避让。组件会补足底部导航栏留白。
+
 ## [0.0.1-alpha11] - 2026-11-12
 
 ### 新增与改进

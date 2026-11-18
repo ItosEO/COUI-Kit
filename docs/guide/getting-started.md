@@ -31,11 +31,11 @@
    }
 
    dependencies {
-       implementation("io.github.itoseo:coui:0.0.1-alpha11")
+       implementation("io.github.itoseo:coui:0.0.1-alpha12")
    }
    ~~~
 
-   需要自动跟随宿主 `MaterialTheme` 时，可改为引入同版本的 `io.github.itoseo:coui-material3:0.0.1-alpha11`，详见[接入 Material 3](../../README.md#接入-material-3)；需要 `CouiIcons` 时可额外添加同版本的 `io.github.itoseo:coui-icons:0.0.1-alpha11`，见[图标用法](../components/icons.md)。
+   需要自动跟随宿主 `MaterialTheme` 时，可改为引入同版本的 `io.github.itoseo:coui-material3:0.0.1-alpha12`，详见[接入 Material 3](../../README.md#接入-material-3)；需要 `CouiIcons` 时可额外添加同版本的 `io.github.itoseo:coui-icons:0.0.1-alpha12`，见[图标用法](../components/icons.md)。
 
 ### GitHub Packages 预览版
 
