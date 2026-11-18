@@ -1,5 +1,6 @@
 package com.itos.coui.layout
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ContextWrapper
 import android.view.View
@@ -72,6 +73,8 @@ internal fun ConfigureCouiImeWindow() {
 
 private val imeWindowAdjustments = WeakHashMap<Window, ImeWindowAdjustment>()
 
+// 反向掩码只用于保留窗口的其他位，调整位取自系统常量或原窗口属性。
+@SuppressLint("WrongConstant")
 private fun Window.setImeAdjustment(adjustment: Int) {
     // setSoftInputMode(0) 仅清除显式配置标记。写回 LayoutParams 才能恢复零值。
     val params = attributes
