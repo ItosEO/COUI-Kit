@@ -137,12 +137,14 @@ internal fun Modifier.couiFloatingSurface(
     foregroundComposition: Boolean,
     beforeContent: (DrawScope.(Path) -> Unit)?,
     useMenuLightEdge: Boolean,
+    sampleDrawnSurfaces: Boolean = false,
     surface: () -> CouiFloatingSurface,
 ): Modifier {
     require(renderer.standalone)
     return floatingSurfaces(backdrop, renderer, listOf(material), listOf(shadow), listOf(shape),
         listOf(contentLayer), contourGlowEnabled, foregroundComposition,
         useMenuLightEdge = useMenuLightEdge,
+        sampleDrawnSurfaces = sampleDrawnSurfaces,
         beforeContent = beforeContent?.let { draw -> { _, path -> draw(path) } }) { listOf(surface()) }
 }
 
@@ -202,6 +204,7 @@ private fun Modifier.floatingSurfaces(
     contourGlowEnabled: Boolean,
     foregroundComposition: Boolean = false,
     useMenuLightEdge: Boolean = false,
+    sampleDrawnSurfaces: Boolean = false,
     beforeContent: (DrawScope.(Int, Path) -> Unit)? = null,
     drawOrder: List<Int>? = null,
     surfaces: () -> List<CouiFloatingSurface>,
@@ -337,7 +340,7 @@ private fun Modifier.floatingSurfaces(
                     val material = materials[index]
                     appendPatch(materialLayers[index], node.materialRect(material.extension),
                         blendMode = if (foregroundComposition) ComposeBlendMode.SrcOver else ComposeBlendMode.Src,
-                        includePrefix = !foregroundComposition) { bounds ->
+                        includePrefix = !foregroundComposition || sampleDrawnSurfaces) { bounds ->
                         val height = bounds.height
                         val origin = bounds.topLeft
                         val ball = node.ball(height, origin)
@@ -383,7 +386,7 @@ private fun Modifier.floatingSurfaces(
                             RenderEffect.createRuntimeShaderEffect(shader, "u_originShader"), materialInputs[index],
                         )
                         // 分开材质前景与完整背景, 不让材质 patch 外沿覆盖实际 destination。
-                        // shortcut: 采样源不含兄弟前景; 需严格对齐重叠光效时应补全 destination 绘制顺序。
+                        // shortcut: 独立兄弟节点不自动录制；重叠时由宿主加入 backdrop。
                         if (foregroundComposition) effect else
                             RenderEffect.createBlendModeEffect(renderer.destinationEffect, effect, BlendMode.SRC_OVER)
                     }

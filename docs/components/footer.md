@@ -1,13 +1,37 @@
 # Footer
 
-`Footer` 显示分组下方的辅助说明，位于 `com.itos.coui.layout`。
+`Footer` 用于在分组下方展示辅助说明文字。
 
-```kotlin
-Footer(text = description)
-```
+- **系统版本要求**：支持库最低系统版本（API 31+）。
+- **核心特性**：使用 `CouiTextKind.GroupFooter` 排版角色并按逻辑起始边对齐，内置水平与垂直留白；不依赖背景采样源。
 
-`description` 由宿主提供。`text` 必填，采用 `Description` 文字角色并按逻辑起始边对齐；组件自带水平和垂直留白，外部 `Modifier.padding` 会累加。
+## 基本用法
 
-`color` 控制说明文字，默认读取 `CouiTheme.colorScheme.onSurfaceVariant`。使用 [Group](group.md) 的 `footer` 参数时，由 Group 自动装配说明并使用该组的说明颜色。
+在需要独立放置说明文字的位置调用 `Footer`，说明文案由宿主传入：
 
-[公开布局与 Defaults](../../coui/src/main/java/com/itos/coui/layout/CouiPageComponents.kt)
+~~~kotlin
+@Composable
+fun SectionFooterExample(
+    modifier: Modifier = Modifier,
+    description: String,
+) {
+    Footer(
+        modifier = modifier,
+        text = description,
+    )
+}
+~~~
+
+若说明文字直接跟随某张分组卡片，更推荐在 [Group](group.md) 中传入 `footer` 参数——`Group` 会自动在卡片下方装配 `Footer` 并复用该组的 `colors.summary`。
+
+## 参数速查
+
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `modifier` | `Modifier` | 外层修饰符；外部 `padding` 会与组件自带留白（水平 `32.dp`、垂直 `8.dp`）累加。 |
+| `text` | 必填 | 辅助说明文案，采用 `CouiTextKind.GroupFooter` 角色并按 `TextAlign.Start` 对齐。 |
+| `color` | `CouiTheme.colorScheme.onSurfaceVariant` | 说明文字颜色。 |
+
+## 源码与完整示例
+
+- **公开布局与预设**：[CouiPageComponents.kt](../../coui/src/main/java/com/itos/coui/layout/CouiPageComponents.kt)

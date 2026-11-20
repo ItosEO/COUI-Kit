@@ -21,6 +21,12 @@ import com.itos.coui.layout.Group
 @Composable
 internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPreferences,
     back: () -> Unit) {
+    if (page == "message_input") {
+        CompositionLocalProvider(LocalCouiContourGlowEnabled provides preferences.contour) {
+            MessageInputSample(dark, preferences, back)
+        }
+        return
+    }
     val toggleTheme = { preferences.dark(!dark) }
     var fabPreset by rememberSaveable { mutableStateOf(CouiFabColor.Notes) }
     var roundedFab by rememberSaveable { mutableStateOf(false) }

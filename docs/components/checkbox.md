@@ -1,22 +1,17 @@
 # 单/复选框
 
-`RadioButton` 显示互斥选择状态，`Checkbox` 显示可独立切换的勾选状态。两者只负责绘制，由外层添加点击和无障碍语义。组件分别位于 `com.itos.coui.radiobutton` 和 `com.itos.coui.checkbox`。
+`RadioButton` 用于互斥单选，`Checkbox` 用于独立复选勾选。两者均为纯绘制组件，点击热区、交互反馈与无障碍语义由外层容器提供；组件分别位于 `com.itos.coui.radiobutton` 和 `com.itos.coui.checkbox`。
 
-## 单选框
+- **系统版本要求**：支持库最低系统版本（API 31+）。
+- **核心特性**：24dp 基准矢量几何与双向切换动画、禁用态静态展示；不依赖背景采样源。
 
-在 Compose 作用域中传入当前选中状态：
+## 单选框（`RadioButton`）
 
-~~~kotlin
-RadioButton(selected = selected)
-~~~
-
-默认配色跟随 COUI 主题。单选组由宿主持有一个选中值，点击已选项不取消选择。
-
-整行交互时，父容器使用 `selectableGroup`，每行使用 `selectable` 和 `Role.RadioButton`。下面的函数在页面内调用；`labels` 来自宿主文案，`selectedIndex` 和 `onSelect` 由页面状态提供：
+单选组由宿主持有一个当前选中的索引或选项，外层容器使用 `selectableGroup()`，每行使用 `selectable` 与 `Role.RadioButton`：
 
 ~~~kotlin
 @Composable
-fun RadioButtonGroup(
+fun RadioButtonGroupExample(
     modifier: Modifier = Modifier,
     labels: List<String>,
     selectedIndex: Int,
@@ -27,14 +22,17 @@ fun RadioButtonGroup(
         labels.forEachIndexed { index, label ->
             val selected = selectedIndex == index
             Row(
-                Modifier.fillMaxWidth().selectable(
-                    selected = selected,
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    enabled = enabled,
-                    role = Role.RadioButton,
-                    onClick = { onSelect(index) },
-                ).padding(12.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .selectable(
+                        selected = selected,
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        enabled = enabled,
+                        role = Role.RadioButton,
+                        onClick = { onSelect(index) },
+                    )
+                    .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(label, Modifier.weight(1f))
@@ -45,29 +43,16 @@ fun RadioButtonGroup(
 }
 ~~~
 
-在 `onSelect` 中把选中值设为点击项的索引。行和单选框必须使用相同的 `selected` 和 `enabled`。只由父项处理点击，不给绘制组件添加第二个点击入口。示例中的 `Text` 来自 Material3，项目需要声明该依赖。
+- **单选语义与状态同步**：点击已选中项不取消选择。行容器与 `RadioButton` 必须传入相同的 `selected` 与 `enabled`，不要再给 `RadioButton` 叠加第二个点击入口。
+- **最小调用与自定义配色**：仅绘制时可调用 `RadioButton(selected = selected)`；需要覆盖强调色与深浅模式时传入 `colors = CouiRadioButtonDefaults.colors(selected = accent, dark = dark)`。
 
-单选框默认尺寸为 24dp，点击范围由父项提供。公开参数见 [RadioButton](../../coui/src/main/java/com/itos/coui/radiobutton/RadioButton.kt)。
+## 复选框整行装配（`Checkbox`）
 
-`colors` 可覆盖配色，`CouiRadioButtonDefaults.colors(selected = accent, dark = dark)` 根据强调色与深浅模式生成默认值，见[单选框配色](../../coui/src/main/java/com/itos/coui/radiobutton/CouiRadioButtonDefaults.kt)。禁用时直接显示静态状态，重新启用不补播切换动画。
-
-## 复选框最小调用
-
-页面提供当前勾选状态：
-
-~~~kotlin
-Checkbox(checked = checked)
-~~~
-
-组件没有点击回调或 `dark` 参数。默认配色使用 COUI checkbox 角色；原生主题使用强调色，M3 适配在浅色使用 primary、深色使用 inversePrimary。交互由外层提供。通用主题规则见[外观与预设](../guide/appearance.md)。
-
-## 显示一个整行复选框
-
-给整行添加 `toggleable`，点击文字或复选框都可以切换：
+给整行添加 `toggleable` 与 `Role.Checkbox`，点击整行文字或复选框均可切换：
 
 ~~~kotlin
 @Composable
-fun CheckboxRow(
+fun CheckboxRowExample(
     modifier: Modifier = Modifier,
     label: String,
     checked: Boolean,
@@ -77,14 +62,17 @@ fun CheckboxRow(
     enabled: Boolean = true,
 ) {
     Row(
-        modifier.fillMaxWidth().toggleable(
-            value = checked,
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
-            enabled = enabled,
-            role = Role.Checkbox,
-            onValueChange = onCheckedChange,
-        ).padding(12.dp),
+        modifier
+            .fillMaxWidth()
+            .toggleable(
+                value = checked,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                enabled = enabled,
+                role = Role.Checkbox,
+                onValueChange = onCheckedChange,
+            )
+            .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(label, Modifier.weight(1f))
@@ -100,47 +88,87 @@ fun CheckboxRow(
 }
 ~~~
 
-在 `onCheckedChange` 中更新页面的 `checked`，并将 `checked` 和 `enabled` 同时传给行和复选框。不要再给复选框添加单独的点击处理，以免与整行争用点击。
-
-`indication = null` 关掉整行涟漪，但保留 `toggleable` 的点击和 Checkbox 语义。示例中的 `Text` 来自 Material3，项目需要声明该依赖。
+- **默认主题解析**：省略 `colors` 时，`Checkbox(checked = checked)` 读取 `CouiTheme.colorScheme.checkboxAccent`（原生主题为强调色；M3 适配在浅色取 `primary`、深色取 `inversePrimary`，详见[外观与预设](../guide/appearance.md)）。
+- **自定义形状**：`shape` 控制选中时的内部填充块形状（默认 `CouiCheckboxDefaults.shape`，即 `CouiShape(4.dp)`），`borderShape` 控制未选中时的外框形状（默认 `CouiCheckboxDefaults.borderShape`，即 `CouiShape(3.2.dp)`）。
 
 ## 只放一个复选框
 
-没有整行文案时，可以用 48dp 的 `Box` 包住复选框，并提供无障碍描述。外层 `toggleable` 必须设置 `indication = null`，隐藏点击涟漪，保留点击和复选语义。下面的片段位于 Compose 作用域，使用整行复选框示例中的参数：
+没有整行文案时，使用至少 `48.dp` 的 `Box` 包裹 `Checkbox`，通过 `semantics` 提供无障碍描述，并在外层 `toggleable` 设置 `indication = null` 隐藏点击涟漪：
 
 ~~~kotlin
-Box(
-    Modifier
-        .size(48.dp)
-        .semantics { contentDescription = label }
-        .toggleable(
-            value = checked,
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
-            enabled = enabled,
-            role = Role.Checkbox,
-            onValueChange = onCheckedChange,
-        ),
-    contentAlignment = Alignment.Center,
+@Composable
+fun StandaloneCheckboxExample(
+    modifier: Modifier = Modifier,
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    dark: Boolean,
+    accent: Color,
+    enabled: Boolean = true,
 ) {
-    Checkbox(
-        checked = checked,
-        enabled = enabled,
-        shape = CouiShape(4.dp),
-        borderShape = CouiShape(3.2.dp),
-        colors = CouiCheckboxDefaults.colors(checked = accent, dark = dark),
-    )
+    Box(
+        modifier = modifier
+            .size(48.dp)
+            .semantics { contentDescription = label }
+            .toggleable(
+                value = checked,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                enabled = enabled,
+                role = Role.Checkbox,
+                onValueChange = onCheckedChange,
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Checkbox(
+            checked = checked,
+            enabled = enabled,
+            colors = CouiCheckboxDefaults.colors(checked = accent, dark = dark),
+        )
+    }
 }
 ~~~
 
-## 颜色和形状
+## 参数速查
 
-`CouiCheckboxDefaults.colors(checked = accent, dark = dark)` 根据强调色和深浅色生成配色。`shape` 控制内部填充块，`borderShape` 控制外框。
+### `RadioButton`
 
-切换中反向时，动画会按新方向重新播放。禁用时直接显示目标状态；重新启用后不会补播切换动画。
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `modifier` | `Modifier` | 外层修饰符（基准绘制尺寸为 `24.dp`）。 |
+| `selected` | 必填 | 当前是否处于选中状态。 |
+| `enabled` | `true` | 控制启用态或禁用态外观。 |
+| `colors` | `CouiRadioButtonDefaults.colors(CouiTheme.colorScheme.accent, CouiTheme.isDark)` | 选中、未选中、中心圆点及禁用态配色。 |
 
-## 尺寸和语义
+### `Checkbox`
 
-复选框以 24dp 为基准等比缩放，外层尺寸和留白由页面决定。
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `modifier` | `Modifier` | 外层修饰符（基准绘制尺寸为 `24.dp`）。 |
+| `checked` | 必填 | 当前是否处于勾选状态。 |
+| `enabled` | `true` | 控制启用态或禁用态外观。 |
+| `shape` | `CouiCheckboxDefaults.shape` | 勾选内部填充块形状。 |
+| `borderShape` | `CouiCheckboxDefaults.borderShape` | 复选框外框描边形状。 |
+| `colors` | `CouiCheckboxDefaults.colors(CouiTheme.colorScheme.checkboxAccent, CouiTheme.isDark)` | 勾选块、边框、对勾及禁用态配色。 |
 
-示例见 [DemoSamples](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)，公开参数见 [Checkbox](../../coui/src/main/java/com/itos/coui/checkbox/Checkbox.kt) 和 [Defaults](../../coui/src/main/java/com/itos/coui/checkbox/CouiCheckboxDefaults.kt)。
+## 交互职责与装配注意事项
+
+- **尺寸等比缩放**：`RadioButton` 与 `Checkbox` 默认均以 `24.dp` 为基准等比缩放内部路径与线宽；至少 `48.dp` 的触控热区及行内留白由外层容器保证。
+- **切换动画与禁用行为**：切换中途反向时，动画会从新方向的起点重新播放；`enabled = false` 时直接显示静态目标状态，重新启用后不会补播历史切换动画。
+- **示例依赖说明**：上述行示例中的 `Text(label, Modifier.weight(1f))` 属于 Material 3。若只使用 COUI 与 Foundation，不能仅替换 `Text` 的 import：COUI `Text` 必须提供 `kind`，且参数顺序不同。可将行内文字改为：
+
+~~~kotlin
+com.itos.coui.text.Text(
+    modifier = Modifier.weight(1f),
+    text = label,
+    kind = CouiTextKind.ItemTitle,
+)
+~~~
+
+也可使用 `BasicText(text = label, modifier = Modifier.weight(1f))`，并自行提供文字样式。
+
+## 源码与完整示例
+
+- **单选框源码与预设**：[RadioButton.kt](../../coui/src/main/java/com/itos/coui/radiobutton/RadioButton.kt)、[CouiRadioButtonDefaults.kt](../../coui/src/main/java/com/itos/coui/radiobutton/CouiRadioButtonDefaults.kt)
+- **复选框源码与预设**：[Checkbox.kt](../../coui/src/main/java/com/itos/coui/checkbox/Checkbox.kt)、[CouiCheckboxDefaults.kt](../../coui/src/main/java/com/itos/coui/checkbox/CouiCheckboxDefaults.kt)
+- **Demo 完整示例**：[DemoSamples.kt](../../demo/src/main/java/com/itos/coui/demo/DemoSamples.kt)

@@ -1,0 +1,20 @@
+<resources>
+    <string name="message_input_title">Message input bar</string>
+    <string name="intro_message_input">Message editor with animated camera, attachment and send actions</string>
+    <string name="message_input_enabled">Enable input bar</string>
+    <string name="message_input_placeholder">Send a message...</string>
+    <string name="message_input_editing_placeholder">Enter a message</string>
+    <string name="message_input_buttons">Button visibility</string>
+    <string name="message_input_show_camera">Show camera</string>
+    <string name="message_input_show_more">Show plus</string>
+    <string name="message_input_show_send">Show send</string>
+    <string name="message_input_camera_description">Camera</string>
+    <string name="message_input_more_description">More actions</string>
+    <string name="message_input_send_description">Send message</string>
+    <string name="message_input_event">Latest action</string>
+    <string name="message_input_ready">Enter a message or use the switches to try the button transitions.</string>
+    <string name="message_input_sent">Message submitted to this sample</string>
+    <string name="message_input_camera_event">Camera callback received</string>
+    <string name="message_input_more_event">More actions callback received</string>
+    <string name="message_input_requires_api_34">The message input bar requires Android 14 (API 34).</string>
+</resources>

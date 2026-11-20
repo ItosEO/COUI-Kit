@@ -48,3 +48,10 @@ coui/RESOURCE_SOURCES.md。该图像不适用本项目的 MPL-2.0 声明；原�
 常驻搜索图标 SearchField（Settings 的 coui_search_view_icon_normal）与 Close（ic_close）来自用户提供的 ColorOS 17 系统矢量，原厂及 Android 上游权利保留；未检出附带的独立许可，不改标为 MPL-2.0。图标只保留几何，颜色由消费者提供。
 
 系统矢量图标子集来自用户提供的 ColorOS 系统材料；图标来源见 [coui/ICON_SOURCES.md](coui/ICON_SOURCES.md)。这些第三方资源保留原权利，不适用本项目 MPL-2.0 自有源码许可。
+
+消息输入栏矢量图标
+----------------------
+
+coui-icons/src/main/res/drawable/coui_camera_outlined.xml、coui_add_circle_outlined.xml、
+coui_send_outlined.xml 和 coui_keyboard_outlined.xml 的图形来自小布助手（com.heytap.speechassist）主页输入栏。来源说明见 coui/ICON_SOURCES.md。
+原厂及上游权利保留，未检出附带的独立许可，这些图形不适用本项目自有源码的 MPL-2.0 声明。

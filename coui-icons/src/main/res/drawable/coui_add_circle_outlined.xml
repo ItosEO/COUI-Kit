@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:name="AddCircle"
+    android:tint="@color/coui_icon_tint_neutral_e6000000_e5ffffff"
+    android:height="24dp"
+    android:width="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <group>
+        <clip-path android:pathData="M0,0h24v24h-24z"/>
+        <path
+            android:fillColor="#FF000000"
+            android:pathData="M11.999,0.899C18.129,0.899 23.098,5.869 23.099,11.999C23.099,18.129 18.129,23.099 11.999,23.099C5.869,23.098 0.899,18.129 0.899,11.999C0.9,5.869 5.869,0.9 11.999,0.899ZM11.999,3.099C7.084,3.099 3.099,7.084 3.099,11.999C3.099,16.914 7.084,20.899 11.999,20.899C16.914,20.899 20.899,16.914 20.899,11.999C20.899,7.084 16.914,3.099 11.999,3.099ZM12,7C12.552,7 13,7.448 13,8V11.005H16.005C16.557,11.005 17.005,11.453 17.005,12.005C17.005,12.557 16.557,13.005 16.005,13.005H13V16C13,16.552 12.552,17 12,17C11.448,17 11,16.552 11,16V13.005H8.005C7.453,13.005 7.005,12.557 7.005,12.005C7.005,11.453 7.453,11.005 8.005,11.005H11V8C11,7.448 11.448,7 12,7Z"/>
+    </group>
+</vector>

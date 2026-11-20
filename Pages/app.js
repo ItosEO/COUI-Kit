@@ -116,6 +116,7 @@
       : null;
 
     if (activeHex) {
+      if (icon.mode === "tint") svg.removeAttribute("opacity");
       const fillTargets = svg.querySelectorAll('[data-coui-fill="true"]');
       fillTargets.forEach((node) => {
         node.setAttribute("fill", activeHex);
@@ -192,6 +193,7 @@
       `    viewportWidth = ${kotlinFloat(spec.viewportWidth)},`,
       `    viewportHeight = ${kotlinFloat(spec.viewportHeight)},`,
       `    autoMirror = ${Boolean(spec.autoMirror)},`,
+      ...(icon.mode === "tint" ? [`    tintColor = ${kotlinColor(tint, state.colorSelection ? 1 : spec.tintColor.alpha)},`] : []),
       ").apply {"
     ];
     const caps = { butt: "Butt", round: "Round", square: "Square" };
@@ -216,8 +218,8 @@
       } else if (command.type === "clearGroup") {
         lines.push("    clearGroup()");
       } else if (command.type === "path") {
-        const fillColor = icon.mode === "tint" || command.fill?.isBackgroundParam ? tint : null;
-        const strokeColor = icon.mode === "tint" || command.stroke?.isBackgroundParam ? tint : null;
+        const fillColor = command.fill?.isBackgroundParam ? tint : null;
+        const strokeColor = command.stroke?.isBackgroundParam ? tint : null;
         lines.push(
           "    addPath(",
           `        pathData = PathParser().parsePathString(${JSON.stringify(command.d)}).toNodes(),`,
