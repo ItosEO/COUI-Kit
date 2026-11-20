@@ -52,7 +52,7 @@ fun DraftSheetExample(
 
 1. **不要用 `if (visible)` 包裹组件**：`visible = false` 时组件会先执行退场动画，动画结束后自动释放底层 `Dialog` 窗口。如果在外层写 `if (visible) { ModalBottomSheet(...) }`，关闭时会直接销毁窗口、跳过退场动画。
 2. **高度与容器约束**：`title` 仅用于系统窗口标题与无障碍 `paneTitle`，不会自动绘制可见标题栏；`modifier` 作用于面板容器本身（居中贴底并受 `CouiSheetDefaults.maxWidth` 约束），不作用于全屏遮罩。`sheetHeight` 指定具体 `Dp` 时包含顶部拖动条、正文与底部安全区；传入 `null`（默认）时按内容高度自适应，且始终受父容器可用高度与顶部留白限制（横屏及键盘弹出时同样生效）。
-3. **单层纵向滚动**：`content` 槽位运行在 `ColumnScope` 中（可直接使用 `Modifier.weight(1f)`）。长内容请放入单个滚动容器（如 `verticalScroll` 或 `LazyColumn`），固定标题或底部操作区放在滚动容器外，避免嵌套多层纵向滚动。示例中的 `Text` 和 `TextButton` 来自 Material 3，可按宿主设计体系替换或使用 `BasicText`（`ModalBottomSheet` 本身不依赖 Material 3）。
+3. **单层纵向滚动**：`content` 槽位运行在 `ColumnScope` 中（可直接使用 `Modifier.weight(1f)`）。长内容请放入单个滚动容器（如 `verticalScroll`、`LazyColumn` 或 [couiVerticalScroll](../effects/overscroll.md)），固定标题或底部操作区放在滚动容器外，避免嵌套多层纵向滚动。需要在内容区保留上下越界回弹而不触发面板下拉关闭时，使用 `Modifier.clipToBounds().couiVerticalScroll(...)` 并将 `nestedScrollEnabled` 设为 `false`（或在完全禁用面板拖动时将 `draggable` 设为 `false`）。示例中的 `Text` 和 `TextButton` 来自 Material 3，可按宿主设计体系替换或使用 `BasicText`（`ModalBottomSheet` 本身不依赖 Material 3）。
 
 ## 搭配面板工具栏（`SheetToolbar`）
 
@@ -194,7 +194,8 @@ fun HostPageWithSheet(
 | `dark` | `CouiTheme.isDark` | 控制面板深浅色，并通过 `LocalCouiDarkTheme` 向面板内容提供一致模式。 |
 | `sheetHeight` | `null` | `null` 时按内容测量；指定有限正数 `Dp` 时固定面板高度（含拖动条、内容与底部安全留白）。 |
 | `showDragHandle` | `true` | 是否在顶部显示拖动条（按下显示 `200ms` 按压阴影）。设为 `false` 时，内容区除 `SheetToolbar` 两侧操作槽外的区域也可直接拖动。 |
-| `draggable` | `true` | 是否允许手势下拉关闭。开启时拖动条可直接拖动；内容滚到顶部后继续下拉会交接给面板，上推则优先推回展开位再滚动内容。 |
+| `draggable` | `true` | 是否允许手势下拉关闭。开启时拖动条（或 `showDragHandle = false` 时的非滚动头部区域）可直接拖动；配合 `nestedScrollEnabled = true` 时，内容滚到顶部后继续下拉也会交接给面板，上推优先推回展开位再滚动内容。 |
+| `nestedScrollEnabled` | `true` | 是否允许可滚动子内容把到顶后的向下拖动交接给面板（仅在 `draggable = true` 时生效）。设为 `false` 时，内容区搭配 [couiVerticalScroll](../effects/overscroll.md) 保留上下双向越界回弹，不拉动或关闭面板；顶部拖动条与工具栏标题区的直接拖动仍受 `draggable` 控制。搭配 `SheetToolbar` 使用 `couiVerticalScroll` 时，应在 `couiVerticalScroll` 前加 `Modifier.clipToBounds()`，避免上拉回弹时内容盖过工具栏。 |
 | `dismissOnClickOutside` | `true` | 是否允许点击暗色遮罩触发 `onDismissRequest`。设为 `false` 仅屏蔽遮罩点击，系统返回键与无障碍关闭仍有效。 |
 | `colors` | `CouiDialogDefaults.themeColors(dark)` | 控制面板不透明底色与遮罩最大透明度（`dimAmount`）。需要固定原生面板配色时传入 `CouiSheetDefaults.colors(dark)`。 |
 | `material` | `null` | 传 `CouiSheetDefaults.material(dark)` 启用 API 33+ 半透明模糊与轮廓光；切回 `null` 可释放模糊图层与源引用。 |

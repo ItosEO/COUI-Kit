@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -15,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalConfiguration
@@ -29,6 +29,7 @@ import com.itos.coui.menu.rememberCouiWindowBackdrop
 import com.itos.coui.layout.Divider
 import com.itos.coui.layout.Group
 import com.itos.coui.layout.CouiPageDefaults
+import com.itos.coui.scroll.couiVerticalScroll
 import com.itos.coui.sheet.ModalBottomSheet
 import com.itos.coui.sheet.CouiSheetDefaults
 import com.itos.coui.sheet.SheetToolbar
@@ -138,6 +139,7 @@ internal fun SheetSamples(dark: Boolean) {
         colors = colors,
         sheetHeight = if (halfScreen) screenHeight / 2 else screenHeight,
         showDragHandle = halfScreen, isolateContent = false,
+        nestedScrollEnabled = false,
         material = if (blurAvailable && blurEnabled) CouiSheetDefaults.material(dark) else null) {
         SheetToolbar(title = title, navigation = { style ->
             SheetEditorAction(stringResource(if (halfScreen) R.string.sheet_close else R.string.dialog_cancel),
@@ -146,7 +148,8 @@ internal fun SheetSamples(dark: Boolean) {
             if (!halfScreen) SheetEditorAction(stringResource(R.string.sheet_done), onClick = saveDraft,
                 enabled = opened && (retainedPanel != TimerSheet || draftTime > 0), style = style)
         })
-        Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(bottom = 16.dp)) {
+        Column(Modifier.weight(1f).fillMaxWidth().clipToBounds()
+            .couiVerticalScroll(rememberScrollState()).padding(bottom = 16.dp)) {
             when (retainedPanel) {
                 AlarmSheet -> DemoClockAlarmContent(dark, draftTime, { draftTime = it },
                     draftAlarmOptions, { draftAlarmOptions = it })

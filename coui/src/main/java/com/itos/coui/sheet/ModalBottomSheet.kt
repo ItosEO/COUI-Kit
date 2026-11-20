@@ -126,7 +126,8 @@ object CouiSheetDefaults {
  * COUI 底部面板，提供一个展开位置及隐藏位置。visible 由宿主持有，必须持续调用本组件以完成退场。
  * sheetHeight 为包含 handle、内容及底部安全区的可见目标高度；null 按内容测量。
  * 普通手机窗口顶部使用状态栏高度，无状态栏时保留 40dp；屏外绘制余量不占内容高度。
- * 内容自行选择一个滚动容器；nested scroll 在内容到顶后接管向下拖动。顶部 handle 可直接拖动。
+ * 内容自行选择一个滚动容器；nestedScrollEnabled 为 true 时内容到顶后交接向下拖动，
+ * 设为 false 时仅保留拖动条或非滚动头部区域的直接拖动，便于内容区配合 couiVerticalScroll 保留双向越界回弹。
  * title 来自宿主资源；dismissDescription 可覆盖遮罩的默认关闭文案。
  * 确认、草稿、页面导航和二级面板属于宿主。
  * 可选材质先模糊窗口背景，再按 mix 逐通道混合 RGB 并执行 blendMode。
@@ -148,6 +149,7 @@ fun ModalBottomSheet(
     backdrop: CouiBackdrop? = null,
     showDragHandle: Boolean = true,
     isolateContent: Boolean = true,
+    nestedScrollEnabled: Boolean = true,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     require(sheetHeight == null || (sheetHeight.value.isFinite() && sheetHeight > 0.dp)) { "面板高度必须为有限正值" }
@@ -282,25 +284,27 @@ fun ModalBottomSheet(
             }
         }
         val canDrag = draggable && visible && motion.entered
-        val canDragNow by rememberUpdatedState(canDrag)
+        val canNestedDrag = canDrag && nestedScrollEnabled
+        val canNestedDragNow by rememberUpdatedState(canNestedDrag)
         val touch = remember { SheetTouchSession() }
         LaunchedEffect(canDrag) { if (!canDrag) motion.cancelDrag() }
+        LaunchedEffect(canNestedDrag) { if (!canNestedDrag && motion.hasNestedDrag) motion.cancelDrag() }
         val nested = remember(motion) { object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset =
-                if (canDragNow && touch.canDrag && source == NestedScrollSource.UserInput && available.y < 0f &&
+                if (canNestedDragNow && touch.canDrag && source == NestedScrollSource.UserInput && available.y < 0f &&
                     (motion.offset > 0f || motion.hasNestedDrag))
                     Offset(0f, motion.drag(available.y, nested = true)) else Offset.Zero
             override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset =
-                if (canDragNow && touch.canDrag && source == NestedScrollSource.UserInput && available.y > 0f)
+                if (canNestedDragNow && touch.canDrag && source == NestedScrollSource.UserInput && available.y > 0f)
                     Offset(0f, motion.drag(available.y, nested = true)) else Offset.Zero
             override suspend fun onPreFling(available: Velocity): Velocity {
-                if (!canDragNow || touch.firstPointer != null || !motion.hasNestedDrag) return Velocity.Zero
+                if (!canNestedDragNow || touch.firstPointer != null || !motion.hasNestedDrag) return Velocity.Zero
                 val consume = motion.offset > 0f
                 if (motion.releaseNested(available.y)) requestDismiss()
                 return if (consume) Velocity(0f, available.y) else Velocity.Zero
             }
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                if (canDragNow && touch.firstPointer == null && motion.releaseNested(available.y)) requestDismiss()
+                if (canNestedDragNow && touch.firstPointer == null && motion.releaseNested(available.y)) requestDismiss()
                 return Velocity.Zero
             }
         } }
