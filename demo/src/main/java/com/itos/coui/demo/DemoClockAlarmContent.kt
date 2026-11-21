@@ -17,7 +17,6 @@ import androidx.compose.ui.text.style.TextAlign
 import com.itos.coui.chip.CouiChipTabItem
 import com.itos.coui.chip.ChipTabRow
 import com.itos.coui.layout.Divider
-import com.itos.coui.sheet.rememberCouiSheetSurfaceBackdrop
 import com.itos.coui.text.Text as CouiText
 import com.itos.coui.text.CouiTextKind
 import com.itos.coui.text.rememberCouiTextStyle
@@ -99,7 +98,7 @@ private fun AlarmTypeChoices(selected: Int, onSelected: (Int) -> Unit, dark: Boo
     ChipTabRow(Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 10.dp),
         items = labels.mapIndexed { index, label -> CouiChipTabItem(index, label) },
         selectedKey = selected, onSelectedKeyChange = { onSelected(it as Int) },
-        backdrop = rememberCouiSheetSurfaceBackdrop(), dark = dark, itemSpacing = 8.dp,
+        dark = dark, itemSpacing = 8.dp,
         selectedColor = MaterialTheme.colorScheme.primary,
         selectedContentColor = MaterialTheme.colorScheme.onPrimary)
 }

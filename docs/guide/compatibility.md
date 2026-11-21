@@ -32,7 +32,7 @@
 | `RuntimeShader` 渐进模糊、轮廓光、双主体融合 | 需要 **API 33+**；双主体融合没有内置旧平台替代容器。 |
 | 常驻 `SearchBar`、折叠顶栏、纵向回弹 | 按库最低系统（API 31+）运行；常驻 `SearchBar` 在 API 31–33 使用普通填色，API 34+ 自动启用浮动材质与融合。 |
 | 菜单 Fast Kawase 模糊 | 工厂在 API 33 以下返回 `null`，菜单内部使用既有 Gaussian 分支（该分支不等价于 Fast Kawase）。 |
-| [ModalBottomSheet / SheetToolbar](../components/bottom-sheet.md) | 无材质面板与工具栏布局按库最低系统（API 31+）运行；面板材质需要 **API 33+** 和宿主窗口背景源，操作槽中的 `TopAppBarButton` 需要 **API 34+**。 |
+| [ModalBottomSheet](../components/bottom-sheet.md) | 基础面板和顶部按钮支持 **API 31+**。面板材质需要 **API 33+** 和宿主窗口背景源，顶部按钮的浮动材质需要 **API 34+**。 |
 | 跟手光（`Spotlight`） | API 33 以下不提供 Shader 光效回调。 |
 | 浮动 `NavigationBar`、`Fab`、`TopAppBarButton`、顶栏展开式搜索、`ChipTab`、`SegmentedControl`、普通 Mesh 阴影 | 需要 **API 34+**（标记 `@RequiresApi(34)`）；调用前须检查系统版本，并处理 `renderer` 创建失败。 |
 | [消息输入栏 `MessageInputBar`](../components/message-input-bar.md) | 需要 **API 34+** 和所属页面的不透明 SDR 正文背景源。输入栏补足底部导航栏占位，宿主页处理 IME 避让和其余安全区。 |

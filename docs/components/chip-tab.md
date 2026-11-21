@@ -85,7 +85,7 @@ fun CategoryChipTabWithActionExample(
 | `items` | 必填 | `CouiChipTabItem(key, label, enabled, icon)` 列表；`key` 须唯一且稳定。 |
 | `selectedKey` | 必填 | 当前选中的 `key`；非空列表须有效，空列表须为 `null`。 |
 | `onSelectedKeyChange` | 必填 | 点击未选中分类项时的选择回调。 |
-| `backdrop` | 必填 | 覆盖不透明背景内容的采样源，严禁包含分类栏自身。 |
+| `backdrop` | 容器提供的背景源 | 在 Sheet 内可省略，自动使用面板底图。容器未提供背景源时必填。源须覆盖不透明背景，并排除分类栏自身。 |
 | `dark` | `CouiTheme.isDark` | 明暗外观模式。 |
 | `enabled` | `true` | 整栏启用状态（单项可由 `CouiChipTabItem.enabled` 单独禁用）。 |
 | `leadingAction` | `null` | 前置独立动作槽位，通常放置 `ChipTabButton`。 |

@@ -1,11 +1,16 @@
 package com.itos.coui.sheet
 
+import android.os.Build
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -13,31 +18,32 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.constrainHeight
+import androidx.compose.ui.unit.dp
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.dialog.CouiDialogDefaults
 import com.itos.coui.effect.CouiContourStyle
 import com.itos.coui.effect.LocalCouiContourGlowEnabled
 import com.itos.coui.shape.CouiCapsuleShape
-import com.itos.coui.text.CouiTextKind
-import com.itos.coui.text.rememberCouiTextStyle
+import com.itos.coui.theme.Coui
 import com.itos.coui.theme.CouiTheme
-import com.itos.coui.theme.LocalCouiDarkTheme
+import com.itos.coui.theme.LocalCouiContentColor
+import com.itos.coui.theme.LocalCouiTextStyle
+import com.itos.coui.theme.ProvideCouiContent
 import com.itos.coui.topappbar.CouiToolbarStyle
 import com.itos.coui.topappbar.CouiTopAppBarButtonDefaults
 import com.itos.coui.topappbar.LocalCouiToolbarBackdrop
+import com.itos.coui.topappbar.TopAppBarButton
 
 internal val LocalCouiSheetSurfaceBackdrop = staticCompositionLocalOf<CouiBackdrop?> { null }
 
@@ -46,37 +52,39 @@ internal val LocalCouiSheetSurfaceBackdrop = staticCompositionLocalOf<CouiBackdr
 fun rememberCouiSheetSurfaceBackdrop(): CouiBackdrop =
     checkNotNull(LocalCouiSheetSurfaceBackdrop.current) { "面板背景源必须在 ModalBottomSheet 内容中读取" }
 
-/**
- * Panel 工具栏：按钮采样面板已经绘制的背景，不采样含按钮自身的窗口内容源。
- * style 显式提供按钮外观；标题保留原厂角色并合并 titleStyle（含颜色）。
- * 布局支持库最低版本；操作槽中的按钮按其自身平台要求装配。
- */
+/** 面板顶部的单个操作按钮。label 和 icon 选其一，modifier 可用于安装菜单锚点。 */
+data class CouiSheetButton(
+    val onClick: () -> Unit,
+    val label: String? = null,
+    val icon: (@Composable () -> Unit)? = null,
+    val enabled: Boolean = true,
+    val modifier: Modifier = Modifier,
+) {
+    init {
+        require((label != null) xor (icon != null)) { "按钮必须提供文字或图标之一" }
+    }
+}
+
+/** 顶部按钮只采样面板底图，避免采入按钮自身。 */
 @Composable
-fun SheetToolbar(
-    modifier: Modifier = Modifier,
-    title: String,
-    dark: Boolean = CouiTheme.isDark,
-    style: CouiToolbarStyle? = null,
-    titleStyle: TextStyle = TextStyle.Default,
-    navigation: @Composable (CouiToolbarStyle) -> Unit = {},
-    actions: @Composable (CouiToolbarStyle) -> Unit = {},
+internal fun SheetToolbar(
+    leadingButton: CouiSheetButton?,
+    titleContent: @Composable (() -> Unit)?,
+    trailingButton: CouiSheetButton?,
 ) {
     val backdrop = rememberCouiSheetSurfaceBackdrop()
+    val dark = CouiTheme.isDark
     val density = LocalDensity.current.density
     val contour = LocalCouiContourGlowEnabled.current
     val buttonTextStyle = rememberSheetButtonTextStyle()
     val colors = CouiDialogDefaults.themeColors(dark)
-    val resolvedStyle = style ?: remember(dark, density, contour, buttonTextStyle, colors.action) {
+    val style = remember(dark, density, contour, buttonTextStyle, colors.action) {
         CouiToolbarStyle(dark, CouiTopAppBarButtonDefaults.circleShape, CouiCapsuleShape,
             material = { CouiSheetDefaults.toolbarMaterial(dark, it) },
             shadow = { CouiTopAppBarButtonDefaults.shadow(dark, it, density, contour, alphaScale = 1f) },
             contentColor = colors.action, textStyle = buttonTextStyle,
             cursorColor = colors.action, contourGlowEnabled = contour,
             contourStyle = { capsule -> if (capsule) CouiContourStyle.Button else CouiContourStyle.CircleButton })
-    }
-    val resolvedTitleStyle = rememberCouiTextStyle(CouiTextKind.SheetTitle).copy(textAlign = TextAlign.Center).merge(titleStyle)
-    val resolvedTitleColor = titleStyle.color.takeOrElse {
-        (style?.contentColor ?: Color.Unspecified).takeOrElse { colors.title }
     }
     val touch = LocalSheetTouchSession.current
     val actionInput = if (touch == null) Modifier else Modifier.pointerInput(touch) {
@@ -88,16 +96,17 @@ fun SheetToolbar(
             }
         }
     }
-    CompositionLocalProvider(LocalCouiToolbarBackdrop provides backdrop, LocalCouiDarkTheme provides resolvedStyle.dark) {
-        Layout(modifier = modifier.fillMaxWidth().padding(top = CouiSheetDefaults.toolbarTopSpacing)
+    CompositionLocalProvider(LocalCouiToolbarBackdrop provides backdrop) {
+        Layout(modifier = Modifier.fillMaxWidth().padding(top = CouiSheetDefaults.toolbarTopSpacing)
             .padding(horizontal = CouiSheetDefaults.toolbarHorizontalPadding), content = {
-            Box(actionInput) { navigation(resolvedStyle) }
-            Box(actionInput) { actions(resolvedStyle) }
+            Box(actionInput) { if (leadingButton != null) SheetToolbarButton(leadingButton, style) }
+            Box(actionInput) { if (trailingButton != null) SheetToolbarButton(trailingButton, style) }
             Box(Modifier.padding(vertical = CouiSheetDefaults.toolbarTitleVerticalPadding)
-                .heightIn(min = CouiSheetDefaults.toolbarTitleMinHeight), contentAlignment = Alignment.Center) {
-                BasicText(title, Modifier.semantics { heading() },
-                    style = resolvedTitleStyle.copy(color = resolvedTitleColor),
-                    maxLines = 1, overflow = TextOverflow.Ellipsis)
+                .heightIn(min = CouiSheetDefaults.toolbarTitleMinHeight)
+                .semantics { if (titleContent != null) heading() }, contentAlignment = Alignment.Center) {
+                if (titleContent != null) {
+                    CompositionLocalProvider(LocalCouiContentColor provides colors.title, content = titleContent)
+                }
             }
         }) { measurables, constraints ->
             val width = constraints.maxWidth
@@ -117,6 +126,34 @@ fun SheetToolbar(
                 actionPlaceable.placeRelative(width - actionPlaceable.width, (height - actionPlaceable.height) / 2)
                 titlePlaceable.placeRelative((width - titlePlaceable.width) / 2, (height - titlePlaceable.height) / 2)
             }
+        }
+    }
+}
+
+@Composable
+private fun SheetToolbarButton(button: CouiSheetButton, style: CouiToolbarStyle) {
+    val label = button.label
+    val content: @Composable () -> Unit = {
+        if (label != null) {
+            BasicText(
+                text = label,
+                style = LocalCouiTextStyle.current.copy(color = LocalCouiContentColor.current, textAlign = TextAlign.Center),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        } else button.icon?.invoke()
+    }
+    if (Build.VERSION.SDK_INT >= 34) {
+        TopAppBarButton(button.modifier, button.onClick, enabled = button.enabled, text = label != null, style = style) {
+            content()
+        }
+    } else {
+        val size = if (label != null) Modifier.widthIn(min = 60.dp).height(40.dp) else Modifier.size(40.dp)
+        val color = if (button.enabled) style.contentColor else style.contentColor.copy(alpha = style.contentColor.alpha * .38f)
+        Box(button.modifier.then(Coui.defaultStyle.minimumInteractiveComponentSize()).then(size)
+            .clickable(enabled = button.enabled, role = Role.Button, onClick = button.onClick)
+            .padding(horizontal = if (label != null) 12.dp else 0.dp), contentAlignment = Alignment.Center) {
+            ProvideCouiContent(color = color, textStyle = style.textStyle, content = content)
         }
     }
 }

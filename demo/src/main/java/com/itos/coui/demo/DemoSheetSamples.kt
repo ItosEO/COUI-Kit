@@ -5,27 +5,23 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.style.TextOverflow
 import com.itos.coui.dialog.CouiDialogDefaults
 import com.itos.coui.effect.couiButtonFeedback
 import com.itos.coui.icons.CouiIcons
+import com.itos.coui.menu.CouiMenuAnchor
 import com.itos.coui.menu.CouiMenuItem
 import com.itos.coui.menu.Menu
 import com.itos.coui.menu.couiMenuAnchor
@@ -34,13 +30,14 @@ import com.itos.coui.menu.rememberCouiWindowBackdrop
 import com.itos.coui.layout.Divider
 import com.itos.coui.layout.Group
 import com.itos.coui.layout.CouiPageDefaults
-import com.itos.coui.scroll.couiVerticalScroll
-import com.itos.coui.sheet.ModalBottomSheet
+import com.itos.coui.segmentbutton.SegmentedControl
+import com.itos.coui.sheet.CouiSheetButton
 import com.itos.coui.sheet.CouiSheetDefaults
-import com.itos.coui.sheet.SheetToolbar
+import com.itos.coui.sheet.ModalBottomSheet
+import com.itos.coui.text.CouiTextKind
+import com.itos.coui.text.Text as CouiText
 import com.itos.coui.theme.CouiTheme
-import com.itos.coui.topappbar.CouiToolbarStyle
-import com.itos.coui.topappbar.TopAppBarButton
+import com.itos.coui.theme.LocalCouiContentColor
 import java.time.LocalTime
 import java.util.Locale
 
@@ -61,6 +58,7 @@ internal fun SheetSamples(dark: Boolean) {
     var saved by rememberSaveable { mutableStateOf("") }
     var blurEnabled by rememberSaveable { mutableStateOf(true) }
     var halfSheetMenuExpanded by remember { mutableStateOf(false) }
+    val halfSheetMenuAnchor = rememberCouiMenuAnchor()
     val windowBackdrop = rememberCouiWindowBackdrop()
     val blurAvailable = Build.VERSION.SDK_INT >= 33 && windowBackdrop != null
     val blurTitle = stringResource(R.string.sheet_blur_title)
@@ -146,98 +144,111 @@ internal fun SheetSamples(dark: Boolean) {
         }
         dismiss()
     }
-    ModalBottomSheet(visible = opened,
-        onDismissRequest = dismiss, title = title,
+    ModalBottomSheet(
+        visible = opened,
+        onDismissRequest = dismiss,
+        title = title,
         colors = colors,
         sheetHeight = if (halfScreen) screenHeight / 2 else screenHeight,
         showDragHandle = halfScreen,
-        nestedScrollEnabled = false,
-        material = if (blurAvailable && blurEnabled) CouiSheetDefaults.material(dark) else null) {
-        SheetToolbar(title = title, navigation = { style ->
-            SheetEditorAction(stringResource(if (halfScreen) R.string.sheet_close else R.string.dialog_cancel),
-                onClick = dismiss, enabled = opened, style = style)
-        }, actions = { style ->
-            if (halfScreen) {
-                HalfSheetMoreMenu(
-                    style = style,
-                    enabled = opened,
-                    expanded = halfSheetMenuExpanded,
-                    onExpandedChange = { halfSheetMenuExpanded = it },
-                    blurAvailable = blurAvailable,
-                    blurEnabled = blurAvailable && blurEnabled,
-                    onToggleBlur = { blurEnabled = !blurEnabled },
-                    onClose = dismiss,
-                )
-            } else {
-                SheetEditorAction(stringResource(R.string.sheet_done), onClick = saveDraft,
-                    enabled = opened && (retainedPanel != TimerSheet || draftTime > 0), style = style)
-            }
-        })
+        material = if (blurAvailable && blurEnabled) CouiSheetDefaults.material(dark) else null,
+        leadingButton = CouiSheetButton(
+            label = stringResource(if (halfScreen) R.string.sheet_close else R.string.dialog_cancel),
+            onClick = dismiss,
+            enabled = opened,
+            modifier = Modifier.widthIn(max = 104.dp),
+        ),
+        titleContent = { CouiText(text = title, kind = CouiTextKind.SheetTitle) },
+        trailingButton = if (halfScreen) CouiSheetButton(
+            onClick = { halfSheetMenuAnchor.open { halfSheetMenuExpanded = true } },
+            icon = {
+                Icon(CouiIcons.Outlined.More, stringResource(R.string.sheet_more_actions),
+                    Modifier.size(24.dp), tint = LocalCouiContentColor.current)
+            },
+            enabled = opened,
+            modifier = Modifier.couiMenuAnchor(halfSheetMenuAnchor),
+        ) else CouiSheetButton(
+            label = stringResource(R.string.sheet_done),
+            onClick = saveDraft,
+            enabled = opened && (retainedPanel != TimerSheet || draftTime > 0),
+            modifier = Modifier.widthIn(max = 104.dp),
+        ),
+    ) {
         if (halfScreen) {
-            Group(modifier = Modifier.couiVerticalScroll(rememberScrollState()),
-                footer = stringResource(R.string.sheet_half_usage)) { blurControl() }
-        } else {
-            // 长表单的滚动范围由正文决定，视口单独负责裁剪上拉回弹。
-            Box(Modifier.weight(1f).fillMaxWidth().clipToBounds()) {
-                Column(Modifier.fillMaxWidth().couiVerticalScroll(rememberScrollState()).padding(bottom = 16.dp)) {
-                    if (retainedPanel == AlarmSheet) {
-                        DemoClockAlarmContent(dark, draftTime, { draftTime = it },
-                            draftAlarmOptions, { draftAlarmOptions = it })
-                    } else {
-                        DemoClockTimerContent(dark, draftTime, { draftTime = it },
-                            draftTimerOptions, { draftTimerOptions = it })
-                    }
+            HalfSheetMoreMenu(
+                anchor = halfSheetMenuAnchor,
+                dark = dark,
+                expanded = halfSheetMenuExpanded,
+                onDismissRequest = { halfSheetMenuExpanded = false },
+                blurAvailable = blurAvailable,
+                blurEnabled = blurAvailable && blurEnabled,
+                onToggleBlur = { blurEnabled = !blurEnabled },
+                onClose = dismiss,
+            )
+            Group(footer = stringResource(R.string.sheet_half_usage)) {
+                blurControl()
+                Divider()
+                if (Build.VERSION.SDK_INT >= 34) {
+                    var selected by rememberSaveable { mutableIntStateOf(0) }
+                    SegmentedControl(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
+                        labels = listOf(
+                            stringResource(R.string.segment_all),
+                            stringResource(R.string.segment_current_week),
+                            stringResource(R.string.segment_not_scheduled),
+                        ),
+                        selectedIndex = selected,
+                        onSelected = { selected = it },
+                    )
+                } else {
+                    Text(stringResource(R.string.requires_api_34), Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
+        } else {
+            if (retainedPanel == AlarmSheet) {
+                DemoClockAlarmContent(dark, draftTime, { draftTime = it },
+                    draftAlarmOptions, { draftAlarmOptions = it })
+            } else {
+                DemoClockTimerContent(dark, draftTime, { draftTime = it },
+                    draftTimerOptions, { draftTimerOptions = it })
+            }
+            Spacer(Modifier.height(16.dp))
         }
     }
 }
 
 @Composable
 private fun HalfSheetMoreMenu(
-    style: CouiToolbarStyle,
-    enabled: Boolean,
+    anchor: CouiMenuAnchor,
+    dark: Boolean,
     expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
+    onDismissRequest: () -> Unit,
     blurAvailable: Boolean,
     blurEnabled: Boolean,
     onToggleBlur: () -> Unit,
     onClose: () -> Unit,
 ) {
-    val anchor = rememberCouiMenuAnchor()
     var selectedItem by remember { mutableIntStateOf(1) }
-    val anchorModifier = Modifier.couiMenuAnchor(anchor)
-    val openMenu = { anchor.open { onExpandedChange(true) } }
-    val moreIcon: @Composable () -> Unit = {
-        Icon(CouiIcons.Outlined.More, stringResource(R.string.sheet_more_actions),
-            Modifier.size(24.dp), tint = style.contentColor)
-    }
-    Box {
-        if (Build.VERSION.SDK_INT >= 34) {
-            TopAppBarButton(anchorModifier, onClick = openMenu, enabled = enabled, style = style) { moreIcon() }
-        } else {
-            IconButton(onClick = openMenu, modifier = anchorModifier, enabled = enabled) { moreIcon() }
-        }
-        Menu(
-            expanded = expanded,
-            onDismissRequest = { onExpandedChange(false) },
-            anchor = anchor,
-            style = demoMenuStyle(style.dark),
-            items = buildList {
-                add(CouiMenuItem(onToggleBlur, stringResource(R.string.sheet_blur_title),
-                    checked = blurEnabled, enabled = blurAvailable))
-                for (index in 1..3) {
-                    add(CouiMenuItem({ selectedItem = index }, stringResource(R.string.menu_item_number, index),
-                        selected = selectedItem == index))
-                }
-                add(CouiMenuItem(onClose, stringResource(R.string.sheet_close), dividerBefore = true))
-            },
-            onItemClick = { item ->
-                onExpandedChange(false)
-                item.value()
-            },
-        )
-    }
+    Menu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        anchor = anchor,
+        style = demoMenuStyle(dark),
+        items = buildList {
+            add(CouiMenuItem(onToggleBlur, stringResource(R.string.sheet_blur_title),
+                checked = blurEnabled, enabled = blurAvailable))
+            for (index in 1..3) {
+                add(CouiMenuItem({ selectedItem = index }, stringResource(R.string.menu_item_number, index),
+                    selected = selectedItem == index))
+            }
+            add(CouiMenuItem(onClose, stringResource(R.string.sheet_close), dividerBefore = true))
+        },
+        onItemClick = {
+            onDismissRequest()
+            it.value()
+        },
+    )
 }
 
 @Composable
@@ -259,17 +270,6 @@ private fun SheetEntry(
         icon = icon,
         showChevron = true,
     )
-}
-
-@Composable
-private fun SheetEditorAction(text: String, onClick: () -> Unit, enabled: Boolean, style: CouiToolbarStyle) {
-    if (Build.VERSION.SDK_INT >= 34) {
-        TopAppBarButton(Modifier.widthIn(max = 104.dp), onClick = onClick, enabled = enabled, text = true, style = style) {
-            Text(text, maxLines = 2, overflow = TextOverflow.Ellipsis)
-        }
-    } else {
-        TextButton(onClick = onClick, enabled = enabled) { Text(text) }
-    }
 }
 
 /** 编辑页共用卡片外形，顶部间距由各内容区的 Modifier 提供。 */

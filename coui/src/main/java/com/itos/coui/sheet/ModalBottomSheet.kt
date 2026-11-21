@@ -19,6 +19,7 @@ import androidx.compose.foundation.gestures.verticalDrag
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.overscroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,6 +59,7 @@ import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.doOnPreDraw
 import com.itos.coui.R
 import com.itos.coui.backdrop.CouiBackdrop
+import com.itos.coui.backdrop.LocalCouiBackdrop
 import com.itos.coui.backdrop.rememberCouiBackdrop
 import com.itos.coui.dialog.CouiDialogColors
 import com.itos.coui.dialog.CouiDialogDefaults
@@ -70,6 +72,9 @@ import com.itos.coui.menu.CouiMenuVisibleBounds
 import com.itos.coui.menu.ProvideCouiMenuBackdrop
 import com.itos.coui.input.isCouiTouchCancelled
 import com.itos.coui.motion.CouiVelocityTracker
+import com.itos.coui.scroll.LocalCouiClipUpwardOverscroll
+import com.itos.coui.scroll.couiVerticalScroll
+import com.itos.coui.scroll.couiVerticalScrollInput
 import com.itos.coui.scroll.rememberCouiOverscrollEffect
 import com.itos.coui.theme.CouiTheme
 import com.itos.coui.theme.LocalCouiDarkTheme
@@ -126,12 +131,14 @@ object CouiSheetDefaults {
  * COUI 底部面板，提供一个展开位置及隐藏位置。visible 由宿主持有，必须持续调用本组件以完成退场。
  * sheetHeight 为包含 handle、内容及底部安全区的可见目标高度；null 按内容测量。
  * 普通手机窗口顶部使用状态栏高度，无状态栏时保留 40dp；屏外绘制余量不占内容高度。
- * draggable 开启时，面板可接收未被内容消费的直接拖动。nestedScrollEnabled 控制滚动内容到顶后的手势交接。
- * fullPageOverscroll 开启时，正文留白也能触发回弹，纵向越界交给正文处理。
+ * leadingButton、titleContent、trailingButton 位于正文上方。正文默认由面板负责滚动、回弹和上沿裁剪；
+ * 正文自带纵向滚动容器时传 scrollableContent = false。
+ * draggable 开启时可从留白处下拉关闭。nestedScrollEnabled 开启后，正文到顶后的下拉也可交给面板关闭。
+ * fullPageOverscroll 开启时，顶部与正文共享回弹，留白也可发起回弹。内置拖动条保持在回弹区域之外。
  * title 默认为空；提供非空白标题时用于窗口与无障碍。dismissDescription 可覆盖遮罩的默认关闭文案。
  * 确认、草稿、页面导航和二级面板属于宿主。
- * 可选材质先模糊窗口背景，再按 mix 逐通道混合 RGB 并执行 blendMode。
- * 要求 API 33 及不含面板和遮罩的窗口源。
+ * API 33 及以上且有宿主窗口源时，默认模糊背景并应用材质混色，material = null 可关闭。
+ * 窗口源须排除当前面板和遮罩。
  */
 @Composable
 fun ModalBottomSheet(
@@ -145,11 +152,17 @@ fun ModalBottomSheet(
     draggable: Boolean = true,
     dismissOnClickOutside: Boolean = true,
     colors: CouiDialogColors = CouiDialogDefaults.themeColors(dark),
-    material: CouiDialogMaterial? = null,
     backdrop: CouiBackdrop? = null,
+    material: CouiDialogMaterial? = if (
+        CouiDialogDefaults.isMaterialSupported() && (backdrop ?: LocalCouiMenuBackdrop.current) != null
+    ) CouiSheetDefaults.material(dark) else null,
     showDragHandle: Boolean = false,
-    nestedScrollEnabled: Boolean = true,
+    nestedScrollEnabled: Boolean = false,
     fullPageOverscroll: Boolean = false,
+    scrollableContent: Boolean = true,
+    leadingButton: CouiSheetButton? = null,
+    titleContent: @Composable (() -> Unit)? = null,
+    trailingButton: CouiSheetButton? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     require(sheetHeight == null || (sheetHeight.value.isFinite() && sheetHeight > 0.dp)) { "面板高度必须为有限正值" }
@@ -374,17 +387,24 @@ fun ModalBottomSheet(
                                     CompositionLocalProvider(LocalCouiDarkTheme provides dark,
                                         LocalCouiMenuVisibleBounds provides menuBounds,
                                         LocalSheetTouchSession provides touch,
+                                        LocalCouiClipUpwardOverscroll provides true,
+                                        LocalCouiBackdrop provides surfaceBackdrop,
                                         LocalCouiSheetSurfaceBackdrop provides surfaceBackdrop) {
                                         Column(Modifier.fillMaxWidth().then(if (sheetHeight != null) Modifier.fillMaxHeight() else Modifier)
                                             .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))) {
                                             if (showDragHandle) SheetDragHandle(dark)
-                                            if (fullPageOverscroll) {
-                                                SheetOverscrollContent(
-                                                    modifier = if (sheetHeight != null) Modifier.weight(1f) else Modifier,
-                                                    enabled = interactive,
-                                                    content = content,
-                                                )
-                                            } else content()
+                                            SheetContent(
+                                                fixedHeight = sheetHeight != null,
+                                                enabled = interactive,
+                                                fullPageOverscroll = fullPageOverscroll,
+                                                scrollableContent = scrollableContent,
+                                                toolbar = {
+                                                    if (leadingButton != null || titleContent != null || trailingButton != null) {
+                                                        SheetToolbar(leadingButton, titleContent, trailingButton)
+                                                    }
+                                                },
+                                                content = content,
+                                            )
                                         }
                                     }
                                 }
@@ -398,21 +418,39 @@ fun ModalBottomSheet(
 }
 
 @Composable
-private fun SheetOverscrollContent(
-    modifier: Modifier,
+private fun ColumnScope.SheetContent(
+    fixedHeight: Boolean,
     enabled: Boolean,
+    fullPageOverscroll: Boolean,
+    scrollableContent: Boolean,
+    toolbar: @Composable () -> Unit,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val effect = rememberCouiOverscrollEffect()
+    val pageEffect = if (fullPageOverscroll) rememberCouiOverscrollEffect() else null
+    val sheetContent: @Composable ColumnScope.() -> Unit = {
+        toolbar()
+        if (scrollableContent) {
+            val state = rememberScrollState()
+            val modifier = Modifier.fillMaxWidth()
+            val scroll = if (pageEffect == null) modifier.couiVerticalScroll(state, enabled = enabled)
+                else modifier.couiVerticalScrollInput(state, enabled, pageEffect)
+            Column(scroll, content = content)
+        } else content()
+    }
+    if (pageEffect == null) {
+        sheetContent()
+        return
+    }
+    val modifier = if (fixedHeight) Modifier.weight(1f) else Modifier
     Column(
-        modifier.fillMaxWidth().clipToBounds().overscroll(effect).scrollable(
+        modifier.fillMaxWidth().clipToBounds().overscroll(pageEffect).scrollable(
             state = rememberScrollableState { 0f },
             orientation = Orientation.Vertical,
-            overscrollEffect = effect,
+            overscrollEffect = pageEffect,
             enabled = enabled,
             reverseDirection = true,
         ),
-        content = content,
+        content = sheetContent,
     )
 }
 

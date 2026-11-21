@@ -72,6 +72,7 @@ import androidx.dynamicanimation.animation.FloatValueHolder
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
 import com.itos.coui.backdrop.CouiBackdrop
+import com.itos.coui.backdrop.LocalCouiBackdrop
 import com.itos.coui.effect.CouiFloatingRenderer
 import com.itos.coui.effect.LocalCouiContourGlowEnabled
 import com.itos.coui.input.isCouiTouchCancelled
@@ -122,7 +123,9 @@ fun ChipTabRow(
     items: List<CouiChipTabItem>,
     selectedKey: Any?,
     onSelectedKeyChange: (Any) -> Unit,
-    backdrop: CouiBackdrop,
+    backdrop: CouiBackdrop = checkNotNull(LocalCouiBackdrop.current) {
+        "ChipTabRow 需要显式 backdrop 或容器提供的背景源"
+    },
     dark: Boolean = CouiTheme.isDark,
     enabled: Boolean = true,
     leadingAction: (@Composable () -> Unit)? = null,
