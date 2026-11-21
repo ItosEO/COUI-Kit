@@ -67,6 +67,8 @@ object CouiTopAppBarDefaults {
     val fadeHeight = 96.dp
     val referenceBlurRadius = 10.8.dp
     val bottomExtension = 12.dp
+    internal const val systemBlurRadiusPx = 30f
+    internal const val systemGradientSpeed = 3f
     internal val searchActionGap = 12.dp
     internal val searchActionMinWidth = 40.dp
     internal val searchActionMaxWidth = 152.dp

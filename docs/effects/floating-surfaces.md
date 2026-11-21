@@ -101,6 +101,7 @@ fun FloatingSurfaceSample(
 ### 合成模式与扩展绘制
 
 - **`foregroundComposition` 模式**：单主体 `couiFloatingSurface` 与双主体 `couiFloatingPair` 支持 `foregroundComposition = true`。启用后，材质与光晕仅输出透明前景并以 `SrcOver` 叠到已绘制页面，避免矩形背景回填覆盖相邻兄弟节点；前提是 `backdrop` 必须覆盖**不透明 SDR 页面**（且不含当前所有浮动主体）。三主体 `couiFloatingSurfaces` 保留完整 `destination` 合成。
+- **双主体采样**：后绘制的材质可以采样同一节点中之前画出的图层。启用 `foregroundComposition` 时，仍通过 SrcOver 绘制各主体的材质与光晕。
 - **`beforeContent` 回调**：在对应主体的材质之后、前景内容之前直接混合到目标（双主体回调另接收列表下标 `Int`）。回调处于当前绘制节点本地坐标系，传入的缓存 `Path` 描述未缩放主体的局部轮廓；调用方负责位移、缩放和裁剪，**不得修改该 `Path`**。完整双主体装配见 [SearchBar.kt](../../coui/src/main/java/com/itos/coui/search/SearchBar.kt)，完整单主体装配见 [Fab.kt](../../coui/src/main/java/com/itos/coui/floatingactionbutton/Fab.kt)。
 
 ## 资源与错误

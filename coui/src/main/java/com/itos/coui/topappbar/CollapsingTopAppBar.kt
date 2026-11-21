@@ -85,10 +85,10 @@ fun CollapsingTopAppBar(
         state.updateSearch(hasSearchBar && searchState.expanded, searchActive)
     }
     TopAppBarSurface(modifier.fillMaxWidth(), backdrop,
-        referenceBlurRadius = with(density) { CouiCollapsingAppBarDefaults.referenceBlurRadiusPx.toDp() },
+        referenceBlurRadius = with(density) { CouiTopAppBarDefaults.systemBlurRadiusPx.toDp() },
         bottomExtension = if (hasSearchBar) CouiCollapsingAppBarDefaults.searchBlurExtension
             else CouiCollapsingAppBarDefaults.titleOnlyBlurExtension,
-        gradientSpeed = 3f, gradientColor = backgroundColor, dark = dark,
+        gradientSpeed = CouiTopAppBarDefaults.systemGradientSpeed, gradientColor = backgroundColor, dark = dark,
         // 正文直接跟随已接受的滚动，标题保留弹簧跟随；模糊不能等标题追上后才补亮。
         backgroundAlpha = if (!hasSearchBar || searchActive) 1f else
             (state.contentOffsetPx / (30 * density.density)).coerceIn(0f, 1f),

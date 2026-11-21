@@ -31,7 +31,7 @@ data class CouiDialogColors(
 /**
  * 弹窗材质。
  *
- * 在 API 33 及以上，按窗口遮罩强度压暗宿主窗口源，再执行 Fast Kawase、亮度混色和 blendMode。
+ * 在 API 33 及以上，先压暗并模糊宿主窗口源，再按 mix 的 alpha 逐通道混合 RGB，最后执行 blendMode。
  * 缺少窗口源或平台不支持时明确拒绝，避免用不同的窗口高斯与 SrcOver 叠色冒充同一材质。
  */
 @Immutable

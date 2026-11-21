@@ -31,7 +31,7 @@ fun BasicFabExample(
 
 - **必传 `onClick`**：`onClick` 为必传参数，同时注册点击与 `Role.Button` 语义；仅展示交互效果时可传入 `onClick = {}`。
 - **拖拽与滚动隔离**：拖拽超过系统触摸阈值后，`Fab` 会接管指针移动事件，避免带动父级滚动容器；轻触仍正常触发 `onClick`。
-- **强调色与材质**：`Fab` 不叠加页面 `themeTint`。强调色生成策略（如 HCT）由宿主持有，主题规则见[外观与预设](../guide/appearance.md)。
+- 省略 `material` 时，FAB 以半透明主题强调色混合模糊后的背景。调用 `CouiFabDefaults.material(color, dark)` 可以显式指定第一层颜色和透明度。主题规则见[外观与预设](../guide/appearance.md)。
 
 ## 使用配色预设与自定义底色
 
@@ -124,7 +124,7 @@ fun RoundedSquareFabExample(
 }
 ~~~
 
-- **`CouiShape` 与矩形扩展**：使用 `CouiShape` 时，其圆角半径（按实际短边的一半上限裁剪）与角权重会同步应用于内容裁剪、浮动材质与轮廓光；配合 `Modifier.size(width, height)` 可改为圆角矩形。普通投影会按同半径的圆角矩形遮罩生成（该路径按不透明主体绘制，若使用自定义半透明材质会透出内部阴影）。
+- **`CouiShape` 与矩形扩展**：使用 `CouiShape` 时，其圆角半径（按实际短边的一半上限裁剪）与角权重会同步应用于内容裁剪、浮动材质与轮廓光；配合 `Modifier.size(width, height)` 可改为圆角矩形。普通投影会按同半径的圆角矩形遮罩生成，半透明材质会透出内部阴影。
 - **其他 `Shape` 类型**：非 `CouiShape` 的普通 `Shape` 仅用于内容裁剪，浮动材质与外围轮廓仍采用圆形或胶囊几何。
 
 ## 参数与行为速查

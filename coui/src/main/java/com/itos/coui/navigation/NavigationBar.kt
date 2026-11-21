@@ -158,9 +158,9 @@ fun NavigationBar(
     val contour = LocalCouiContourGlowEnabled.current
     val material = remember(dark, lightColor, themeTint) {
         CouiFloatingMaterial(
-            firstColor = if (dark) Color(0x80666666) else Color(0xA3666666),
+            firstColor = if (dark) Color(0x80666666) else Color(0xB3666666),
             firstBlendMode = if (dark) BlendMode.OVERLAY else BlendMode.COLOR_DODGE,
-            secondColor = if (dark) Color(0xB3262626) else Color(0x80F0F0F0),
+            secondColor = if (dark) Color(0xB3262626) else Color(0x99F5F5F5),
             edgeAlpha = if (dark) 0.8f else 0.25f,
             innerGlowAlpha = if (dark) 0.03f else 0.1f,
             lightColor = lightColor,
@@ -168,12 +168,17 @@ fun NavigationBar(
         )
     }
     val foreground = if (dark) Color.White else Color.Black
-    val coloredFab = if (rightContainerColor.isSpecified) rightContainerColor else CouiTheme.colorSchemeFor(dark).accent
-    val materials = remember(material, coloredFab, dark, density) {
-        val extension = with(density) { 4.dp.roundToPx() }
-        listOf(material.copy(index = 2, extension = extension), material.copy(index = 1, extension = extension),
-            CouiFabDefaults.material(coloredFab, dark, extension))
+    val accent = CouiTheme.colorSchemeFor(dark).accent
+    val extension = with(density) { 4.dp.roundToPx() }
+    val fabMaterial = remember(rightContainerColor, accent, dark, extension) {
+        if (rightContainerColor.isSpecified) CouiFabDefaults.material(rightContainerColor, dark, extension)
+        else CouiFabDefaults.themeMaterial(accent, dark, extension)
     }
+    val materials = remember(material, fabMaterial, extension) {
+        listOf(material.copy(index = 2, extension = extension), material.copy(index = 1, extension = extension),
+            fabMaterial)
+    }
+    val coloredFab = fabMaterial.firstColor
     val shadows = remember(coloredFab, density, lightColor, dark, contour) {
         fun pixelOffset(dp: Float): Float = (dp * density.density).toInt().toFloat()
         fun pixelSize(dp: Float): Float {

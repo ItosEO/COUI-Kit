@@ -189,6 +189,8 @@ fun Modifier.couiFloatingPair(
     require(drawOrder.sorted() == listOf(0, 1))
     return floatingSurfaces(backdrop, renderer, materials, shadows, shapes, contentLayers, contourGlowEnabled,
         foregroundComposition = foregroundComposition,
+        // 成对胶囊在同一绘制节点内，后绘制的材质可读取下层已画出的胶囊和投影。
+        sampleDrawnSurfaces = true,
         beforeContent = beforeContent, drawOrder = drawOrder, surfaces = surfaces)
 }
 

@@ -66,7 +66,7 @@ internal fun CouiSheetSurface(
     val blur = if (material != null) {
         val source = checkNotNull(backdrop)
         source.RetainWhileComposed()
-        rememberCouiKawaseBlur(source, colors.surface, material.blurRadius, nativeGrid = true)
+        rememberCouiKawaseBlur(source, colors.surface, material.blurRadius)
     } else null
     val surfaceEffect = remember(materialEffect) { materialEffect?.asComposeRenderEffect() }
     val materialLayer = if (surfaceEffect != null) {

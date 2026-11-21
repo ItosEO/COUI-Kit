@@ -39,11 +39,8 @@ private data class FastKawaseSpec(
     val kawasePasses: Int,
     val step: Float,
 ) {
-    fun downsampleCount(nativeGrid: Boolean): Int = when (scaleDivisor) {
-        16 -> if (nativeGrid) 2 else 3
-        8 -> if (nativeGrid) 1 else 2
-        else -> 1
-    }
+    val downsampleCount: Int
+        get() = if (scaleDivisor == 16) 2 else 1
 }
 
 /** 对齐 RenderEngine BlurGenerator::fastKawaseGenerator 的三档尺度、轮数与步长。 */
@@ -84,14 +81,13 @@ internal fun rememberCouiKawaseBlur(
     backdrop: CouiBackdrop,
     background: Color,
     radius: Int,
-    nativeGrid: Boolean = false,
 ): CouiMenuBlur? {
     if (Build.VERSION.SDK_INT < 33) return null
     val spec = remember(radius) { fastKawaseSpec(radius) }
-    val layerCount = if (radius <= 0) 0 else spec.downsampleCount(nativeGrid) + spec.kawasePasses.coerceAtLeast(1)
+    val layerCount = if (radius <= 0) 0 else spec.downsampleCount + spec.kawasePasses.coerceAtLeast(1)
     val layers = key(layerCount) { List(layerCount) { rememberGraphicsLayer() } }
-    return remember(backdrop, background, radius, nativeGrid, layers) {
-        CouiMenuBlur(backdrop, background, radius, nativeGrid, layers)
+    return remember(backdrop, background, radius, layers) {
+        CouiMenuBlur(backdrop, background, radius, layers)
     }
 }
 
@@ -101,12 +97,10 @@ class CouiMenuBlur internal constructor(
     private val backdrop: CouiBackdrop,
     private val background: Color,
     private val radius: Int,
-    private val nativeGrid: Boolean,
     private val layers: List<GraphicsLayer>,
 ) {
     private val spec = fastKawaseSpec(radius)
-    private val downsampleCount = spec.downsampleCount(nativeGrid)
-    private val boxDownsample = if (nativeGrid && radius > 0) RuntimeShader(KawaseDownsampleShader) else null
+    private val boxDownsample = if (radius > 0) RuntimeShader(KawaseDownsampleShader) else null
     private val kawase = RuntimeShader(KawasePassShader)
     private var effectBlurSize = IntSize.Zero
     private var recordedBlocks = IntSize.Zero
@@ -175,7 +169,7 @@ class CouiMenuBlur internal constructor(
         val blocksX = ceil(deviceWidth / 16f).toInt().coerceAtLeast(1)
         val blocksY = ceil(deviceHeight / 16f).toInt().coerceAtLeast(1)
         // 原厂 1/8 档先把输入双线性缩到半尺寸。1/4 与 1/16 档直接在原尺寸输入上取四点。
-        val captureSize = if (nativeGrid && spec.scaleDivisor != 8) {
+        val captureSize = if (spec.scaleDivisor != 8) {
             IntSize(ceil(deviceWidth).toInt(), ceil(deviceHeight).toInt())
         } else {
             IntSize(blocksX * 8, blocksY * 8)
@@ -235,12 +229,8 @@ class CouiMenuBlur internal constructor(
         var previousSize = captureSize
         for (index in 1..layers.lastIndex) {
             val previous = layers[index - 1]
-            val shrink = index <= downsampleCount
-            val size = when {
-                !shrink || index == downsampleCount -> blurSize
-                nativeGrid -> IntSize(blocksX * 4, blocksY * 4)
-                else -> IntSize(previousSize.width / 2, previousSize.height / 2)
-            }
+            val shrink = index <= spec.downsampleCount
+            val size = if (index < spec.downsampleCount) IntSize(blocksX * 4, blocksY * 4) else blurSize
             if (shrink && boxDownsample != null) {
                 boxDownsample.setFloatUniform("inputSize", previousSize.width.toFloat(), previousSize.height.toFloat())
                 boxDownsample.setFloatUniform("inputScale", previousSize.width.toFloat() / size.width,
@@ -250,11 +240,7 @@ class CouiMenuBlur internal constructor(
                     RenderEffect.createRuntimeShaderEffect(boxDownsample, "child").asComposeRenderEffect()
             }
             layers[index].record(recordingDensity, layoutDirection, size) {
-                if (shrink && !nativeGrid) {
-                    withTransform({ scale(0.5f, 0.5f, Offset.Zero) }) { drawLayer(previous) }
-                } else {
-                    drawLayer(previous)
-                }
+                drawLayer(previous)
             }
             previousSize = size
         }
@@ -269,7 +255,7 @@ class CouiMenuBlur internal constructor(
         kawase.setFloatUniform("inputSize", blurSize.width.toFloat(), blurSize.height.toFloat())
         for (pass in 1..spec.kawasePasses) {
             kawase.setFloatUniform("in_blurOffset", pass * spec.step)
-            layers[downsampleCount + pass - 1].renderEffect =
+            layers[spec.downsampleCount + pass - 1].renderEffect =
                 RenderEffect.createRuntimeShaderEffect(kawase, "child").asComposeRenderEffect()
         }
         effectBlurSize = blurSize

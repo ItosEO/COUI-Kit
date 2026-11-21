@@ -38,6 +38,9 @@ object CouiFabDefaults {
             innerGlowAlpha = 0.3f,
         )
 
+    internal fun themeMaterial(accent: Color, dark: Boolean, extension: Int = 0): CouiFloatingMaterial =
+        material(accent.copy(alpha = (if (dark) 230f else 229f) / 255f), dark, extension)
+
     fun shadow(color: Color, density: Float, contourGlowEnabled: Boolean): CouiFloatingShadow {
         fun pixelOffset(dp: Float): Float = (dp * density).toInt().toFloat()
         fun pixelSize(dp: Float): Float {

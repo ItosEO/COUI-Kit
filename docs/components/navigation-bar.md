@@ -108,7 +108,7 @@ fun NavigationBarWithAccessoriesExample(
 | `leftIcon` / `leftDescription` | `null` / `null` | `leftVisible = true` 时**必须同时提供**图标与无障碍描述，否则校验失败 |
 | `rightIcon` / `rightDescription` | `null` / `null` | `rightVisible = true` 时**必须同时提供**图标与无障碍描述，否则校验失败 |
 | `onLeftClick` / `onRightClick` | `null` / `null` | 省略回调（`null`）时仍保留图标展示与拖拽形变反馈，但不注册点击或 `Role.Button` 语义 |
-| `rightContainerColor` | `Color.Unspecified` | 右侧附件底色；未指定时自动解析为 COUI 主题强调色 `accent` |
+| `rightContainerColor` | `Color.Unspecified` | 右侧有色附件的 FAB 底色。未指定时使用半透明主题强调色，指定时使用传入颜色的透明度 |
 
 - **保留收起动画内容**：从可见切换为隐藏（`leftVisible = false` 或 `rightVisible = false`）时，请**继续传入**对应侧的图标参数，只切换布尔值，以便退场缩放融合期间图标内容完整保留。
 - **右侧图标固定白色**：右侧附件图标按设计固定为白色（`Color.White`），即使底色自动取主题强调色也不读取 `onAccent`；自定义 `rightContainerColor` 时应确保与白色图标保持足够对比度。当页面同时包含独立 `Fab` 时，可传入同一个颜色保持视觉一致。

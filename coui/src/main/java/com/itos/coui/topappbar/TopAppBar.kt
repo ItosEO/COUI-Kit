@@ -51,8 +51,10 @@ fun TopAppBar(
         "顶栏需要显式 backdrop 或 ProvideCouiBackdrop 作用域"
     },
 ) {
+    val density = LocalDensity.current
     TopAppBarSurface(modifier.fillMaxWidth(), backdrop,
-        gradientColor = colors.backgroundColor, dark = dark) {
+        referenceBlurRadius = with(density) { CouiTopAppBarDefaults.systemBlurRadiusPx.toDp() },
+        gradientSpeed = CouiTopAppBarDefaults.systemGradientSpeed, gradientColor = colors.backgroundColor, dark = dark) {
         CompositionLocalProvider(LocalCouiDarkTheme provides dark) {
             AppBarLayout(title, navigationIcon, actions, colors, windowInsets,
                 CouiTopAppBarDefaults.height, CouiTopAppBarDefaults.height, null)
@@ -107,9 +109,9 @@ fun LargeTopAppBar(
         state?.updateSearch(expanded = false, active = false)
     }
     TopAppBarSurface(modifier.fillMaxWidth(), backdrop,
-        referenceBlurRadius = with(density) { CouiCollapsingAppBarDefaults.referenceBlurRadiusPx.toDp() },
+        referenceBlurRadius = with(density) { CouiTopAppBarDefaults.systemBlurRadiusPx.toDp() },
         bottomExtension = CouiCollapsingAppBarDefaults.titleOnlyBlurExtension,
-        gradientSpeed = 3f, gradientColor = colors.backgroundColor, dark = dark,
+        gradientSpeed = CouiTopAppBarDefaults.systemGradientSpeed, gradientColor = colors.backgroundColor, dark = dark,
         topExtension = {
             with(density) {
                 val range = (expandedHeight.roundToPx() - collapsedHeight.roundToPx()).coerceAtLeast(0)

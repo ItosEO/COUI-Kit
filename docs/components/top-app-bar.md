@@ -39,8 +39,9 @@ fun PageToolbarExample(
 接入说明：
 
 - **槽位与排版职责**：`navigationIcon` 放置返回等导航按钮，`actions` 位于 `RowScope` 中。`TopAppBar` 会向 `title` 提供 `18.sp`、基础字重 `700` 与 `sans-serif-semibold` 排版（与带导航按钮的 `LargeTopAppBar` 收起时一致，均跟随系统字体大小与粗体设置）；纯 Compose 文本请写为 `BasicText(title, style = LocalCouiTextStyle.current)`，自定义 `TopAppBarSurface` 可调用 `CouiTopAppBarDefaults.titleTextStyle()` 复用这套排版。
-- **按钮默认值**：`TopAppBarButton` 默认使用 `CouiTopAppBarButtonDefaults.style()`；`TopAppBarSearchButton` 和 `TopAppBarSearch` 默认使用 `CouiTopAppBarButtonDefaults.style(search = true)`，显式传入 `style` 可覆盖默认样式。
+- **按钮默认值**：`TopAppBarButton` 默认使用 `CouiTopAppBarButtonDefaults.style()`，搜索使用 `style(search = true)`。默认材质取顶栏背景并执行两层混色，附加模糊半径为零。显式传入 `style` 可覆盖默认样式。
 - **背景遮罩配色**：`CouiTopAppBarDefaults.colors(dark = dark)` 控制顶部渐变遮罩、标题、导航与操作颜色。默认在浅色模式使用白色、深色模式使用黑色向下渐隐；传入 `backgroundColor = Color.Transparent` 可关闭遮罩并仅保留模糊。
+- API 33+ 的完整顶栏按设备像素应用全高渐进模糊。直接使用 `TopAppBarSurface` 时，也可以指定参考半径、渐隐长度和曲线。
 - **大标题顶栏**：普通大标题页面的滚动折叠装配见[折叠顶栏](collapsing-app-bar.md#普通大标题)。
 
 ## 自定义表面与最小按钮（`TopAppBarSurface`）

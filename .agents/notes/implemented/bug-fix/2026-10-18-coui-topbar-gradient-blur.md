@@ -8,11 +8,13 @@ Status: implemented
 
 ## Decision
 
+完整顶栏的模糊参数见[材质分支](2026-11-21-coui-bar-sampling-and-material.md)。低层入口仍允许宿主配置渐隐方式。
+
 TopAppBar 在相应平台通过 CouiGradientBlur 移植位置可变 Gaussian。横、纵两遍分别记录到原尺寸 GraphicsLayer，前一遍栅格化后再进入后一遍。保留整数核、对称权重、中心剩余权重和末端返回，不改成均匀模糊与原图混合。不进行 Bitmap 回读，也不在低分辨率图层重绘矢量源。
 
 独立 Density 用于采样录制，不能让 DrawScope 成为自己的密度代理。背景源、坐标和裁剪继续复用 CouiBackdrop；渐进输出排除标题与按钮，按钮采样该输出并通过 parent 补足源区域外底图。
 
-通用预设使用固定逻辑渐隐长度、下沿锚定和 smoothstep，最大强度按 density 装配；LargeTopAppBar 与 CollapsingTopAppBar 使用固定像素参考半径和全高幂曲线。折叠时完整背景只平移，不随当前栏高压缩。模糊强度由项目调校，两遍使用固定噪声种子，透明边界恢复有效样本颜色但不扩张中心 alpha。旧平台的 Gaussian/遮罩分支继续存在，不称为原厂路径等价。
+低层入口可使用固定逻辑渐隐长度、下沿锚定和 smoothstep。完整顶栏使用固定像素参考半径和全高幂曲线。折叠时完整背景只平移，不随当前栏高压缩。两遍使用固定噪声种子，透明边界恢复有效样本颜色但不扩张中心 alpha。旧平台使用分层 Gaussian 和遮罩。
 
 TopAppBarSurface 在模糊结果之上、标题和按钮之下叠加独立背景遮罩，以 GradientBackgroundDrawable 的深浅色透明度节点为基准。浅色连接处采用斜率连续的插值，深浅色均在底端以零斜率淡出，避免分段线性变化留下接痕；颜色节点使用扩展色彩编码，不先量化为 8 位。这些平滑处理属于项目定制。默认浅色白色、深色黑色；显式颜色覆盖默认值，Transparent 关闭遮罩。遮罩与模糊结果一起进入按钮背景源，使按钮采样到实际显示的顶栏背景。
 

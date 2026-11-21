@@ -40,7 +40,7 @@ COUIButtonBarLayout.setBlurBackgroundWindow 将材质门控传到 COUIButton；c
 
 窗口复用既有 CouiBackdrop 与菜单 Fast Kawase 后端。弹窗传入自己的引擎等级，菜单工厂提供菜单等级。等级由 Fast Kawase 消费，单位见代码。
 
-材质复用 rememberCouiMaterialEffect。operateBlur → COUIBackgroundBlurBuilder → OplusBlurParam → MaterialFilter 的目标分支为浅色 ColorDodge、深色 Overlay，混色只作用于面板底图。图层录制传入独立 Density，避免 DrawScope 成为自己的密度代理。RuntimeShader 材质创建、模糊绘制及轮廓调用点均显式检查 API 33，材质参数的入口校验拒绝旧平台。
+材质复用 [BottomSheet 的混色路径](2026-11-07-modal-bottom-sheet.md#原厂依据与适配)。operateBlur → COUIBackgroundBlurBuilder → OplusBlurParam → MaterialFilter 的目标分支为浅色 ColorDodge、深色 Overlay。PJZ110 的两个入口都先调用 appendMixShader，按 mix alpha 逐通道混合 RGB。混色在模糊图恢复到面板尺寸后执行，启用模糊时在这一尺寸加入轻微抖动。图层录制传入独立 Density，避免 DrawScope 成为自己的密度代理。RuntimeShader 材质创建、模糊绘制及轮廓调用点均显式检查 API 33，材质参数的入口校验拒绝旧平台。
 
 PJZ110 `17.0.0.103(CN01)` 的 Settings 底部确认框中，SurfaceFlinger 按页面、系统遮罩、弹窗模糊区域的顺序合成。浅色和深色的面板实测颜色均与先压暗再混色的预测一致。[弹窗窗口](../../../../coui/src/main/java/com/itos/coui/dialog/CouiDialogWindow.kt)沿用系统窗口遮罩，并在[独立采样层](../../../../coui/src/main/java/com/itos/coui/menu/CouiMenuBlur.kt)绘入同强度的黑色，供降采样、模糊和后续混色使用。宿主背景源可继续供其他控件使用。面板采样取配置的遮罩强度，窗口遮罩渐变由系统独立驱动。
 

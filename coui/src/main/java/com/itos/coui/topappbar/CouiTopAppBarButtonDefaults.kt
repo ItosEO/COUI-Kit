@@ -27,7 +27,10 @@ object CouiTopAppBarButtonDefaults {
         val contour = LocalCouiContourGlowEnabled.current
         val colors = CouiTheme.colorSchemeFor(dark)
         return CouiToolbarStyle(dark, circleShape, CouiCapsuleShape,
-            material = { capsule -> material(dark, capsule, search) },
+            material = { capsule ->
+                val material = systemMaterial(dark, capsule)
+                if (search) material else material.copy(innerGlowAlpha = material.innerGlowAlpha * .85f)
+            },
             shadow = { capsule -> shadow(dark, capsule, density, contour, search) },
             contentColor = LocalCouiToolbarContentColor.current.takeOrElse { colors.onSurface },
             textStyle = CouiTheme.typography.body,
@@ -46,6 +49,7 @@ object CouiTopAppBarButtonDefaults {
         innerGlowScale = if (capsule && !dark) 1.15f else 1f,
     )
 
+    /** 延续已采用底栏混色的宿主样式。 */
     fun material(dark: Boolean, capsule: Boolean, search: Boolean = false): CouiFloatingMaterial = CouiFloatingMaterial(
         firstColor = Color(if (dark) 0x80666666 else 0xA3666666),
         firstBlendMode = if (dark) BlendMode.OVERLAY else BlendMode.COLOR_DODGE,

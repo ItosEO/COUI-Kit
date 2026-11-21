@@ -38,8 +38,6 @@ object CouiSearchBarDefaults {
     val textEnd = 4.dp
     val shape = CouiCapsuleShape
     internal const val cancelTranslationPx = 20f
-    // TYPE_FRAMEWORK_TOP_BAR_BLUR；原始像素半径，不再乘 density。
-    internal const val blurRadius = 20f
     internal const val cancelContentBlurRadius = 30f
 
 }

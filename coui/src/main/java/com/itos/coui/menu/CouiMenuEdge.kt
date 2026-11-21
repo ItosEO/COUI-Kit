@@ -38,7 +38,7 @@ internal class CouiMenuEdge(private val edge: CouiEdge) {
     private var cachedEffect: androidx.compose.ui.graphics.RenderEffect? = null
 
     fun renderEffect(size: Size, density: Float): androidx.compose.ui.graphics.RenderEffect {
-        val effect = edge.renderEffect(size, density)
+        val effect = edge.renderEffect(size, density, slightDither = true)
         cachedEffect?.let { if (lastEdge === effect) return it }
         return effect.asComposeRenderEffect().also {
             lastEdge = effect

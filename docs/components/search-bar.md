@@ -98,7 +98,7 @@ fun PersistentSearchBarExample(
 
 ## 装配注意事项
 
-- **背景源位置**：放在 `TopAppBarSurface`（例如 `CollapsingTopAppBar`）内部时，优先读取顶栏渐进处理后的背景；独立使用时读取显式 `backdrop` 或当前默认源。**注意**：COUI `Scaffold` 只向 `topBar`、`bottomBar` 与 `floatingActionButton` 提供默认源，若把 `SearchBar` 放在正文 `content` 内部，必须手动为其提供不包含自身的正文背景源，详见[背景采样](../effects/backdrop.md)。
+- 省略 `backdrop` 时，搜索栏优先采样所在顶栏的渐进背景，其次使用当前页面源。显式传入时使用指定的源。API 34+ 的两个胶囊使用零半径顶栏材质，仍执行两层混色。放在 COUI `Scaffold` 的正文时，请提供一个排除搜索栏自身的采样源。 [背景采样](../effects/backdrop.md)
 - **独立实例资源与失败边界**：每个 `SearchBar` 实例内部各自持有双主体 `renderer` 与内容图层。在 API 34+ 若设备图形后端创建 `renderer` 失败，异常会向上传播。**当前 `SearchBar` 没有公开 `renderer` 参数，也没有创建失败后的内置降级分支**，宿主不能像 `Fab` / `NavigationBar` 那样预先创建并传入渲染器来处理失败。需要覆盖此类设备时，应另备普通搜索 UI；API 31–33 的普通填色模式是按系统版本选择的分支，不会在 API 34+ 构造失败后自动启用。
 
 ## 源码与完整示例

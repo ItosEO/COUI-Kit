@@ -69,26 +69,43 @@ internal const val CouiMaterialShaderFunctions = """
         );
     }
 
-    half4 couiMaterial(half4 inColor, float4 mixColor, float4 blendColor) {
-        float3 luminosityColor = luminosity(mixColor.rgb, inColor.rgb);
-        inColor.rgb = mix(inColor.rgb, luminosityColor, mixColor.a);
-        float3 overlayColor = overlay(blendColor.rgb, inColor.rgb);
-        inColor.rgb = mix(inColor.rgb, overlayColor, blendColor.a);
-        return inColor;
-    }
-"""
-
-private const val CouiMaterialShader = CouiMaterialShaderFunctions + """
-    uniform shader content;
-    uniform float4 uMixColor;
-    uniform float4 uBlendColor;
-    uniform float uColorDodge;
-
-    half rgbOverlay(half source, half destination) {
+    half materialOverlay(half source, half destination) {
         return destination < 0.5
             ? 2.0 * source * destination
             : 1.0 - 2.0 * (1.0 - source) * (1.0 - destination);
     }
+
+    half3 materialOverlay(half3 source, half3 destination) {
+        return half3(
+            materialOverlay(source.r, destination.r),
+            materialOverlay(source.g, destination.g),
+            materialOverlay(source.b, destination.b)
+        );
+    }
+
+    half4 couiMaterial(half4 inColor, float4 mixColor, float4 blendColor) {
+        half4 tint = half4(mixColor);
+        half4 blend = half4(blendColor);
+        half3 luminosityColor = luminosity(tint.rgb, inColor.rgb);
+        inColor.rgb = mix(inColor.rgb, luminosityColor, tint.a);
+        inColor.rgb = mix(inColor.rgb, materialOverlay(blend.rgb, inColor.rgb), blend.a);
+        return inColor;
+    }
+"""
+
+// SkiaDitherEffect::createSlightDitherShader 在输出位置施加共享 RGB 扰动。
+internal const val CouiSlightDitherShaderFunction = """
+    float slightDither(float2 coordinate) {
+        float noise = fract(sin(dot(coordinate, float2(12.9898, 78.233))) * 43758.5453);
+        return mix(-0.005, 0.005, noise);
+    }
+"""
+
+private const val CouiMaterialShader = CouiMaterialShaderFunctions + CouiSlightDitherShaderFunction + """
+    uniform shader content;
+    uniform float4 uMixColor;
+    uniform float4 uBlendColor;
+    uniform float uColorDodge;
 
     half4 main(float2 coordinate) {
         half4 color = content.eval(coordinate);
@@ -103,8 +120,7 @@ private const val CouiMaterialShader = CouiMaterialShaderFunctions + """
             half4 blendColor = half4(uBlendColor);
             color.rgb = mix(color.rgb, mixColor.rgb, mixColor.a);
             half3 blend = uColorDodge < 0.5
-                ? half3(rgbOverlay(blendColor.r, color.r), rgbOverlay(blendColor.g, color.g),
-                    rgbOverlay(blendColor.b, color.b))
+                ? materialOverlay(blendColor.rgb, color.rgb)
                 : color.rgb / (half3(1.0) - blendColor.rgb);
             color.rgb = mix(color.rgb, blend, blendColor.a);
         } else {
@@ -116,9 +132,7 @@ private const val CouiMaterialShader = CouiMaterialShaderFunctions + """
             color.rgb = mix(color.rgb, blend, uBlendColor.a);
         }
         if (SLIGHT_DITHER) {
-            // SkiaDitherEffect::createSlightDitherShader：输出像素上共享 RGB 扰动，避免引入彩色噪点。
-            float noise = fract(sin(dot(coordinate, float2(12.9898, 78.233))) * 43758.5453);
-            color.rgb = (color.rgb + mix(-0.005, 0.005, noise)) * color.a;
+            color.rgb = (color.rgb + slightDither(coordinate)) * color.a;
         }
         return color;
     }
