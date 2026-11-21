@@ -69,7 +69,7 @@ fun TimeWheelExample(
 - **尺寸、字号与视觉区域**：
   - 高度通过 `Modifier.height(...)` 设置（省略时默认为 `CouiPickerDefaults.height`，即 `135.dp`）；多列预设宽度可使用 `CouiPickerDefaults.columnWidth`、`dateYearWidth`、`dateMonthWidth`。
   - `textSize`、`focusTextSize` 和 `diffusion` 单位均为 `Dp`，不随系统 `sp` 放大；`diffusion` 参与滚轮步长和中间选中带宽度，不能用外部 `padding` 替代。
-  - `visualWidth` 与 `visualAlignment` 控制宽列内数字的视觉绘制区域与水平对齐（例如让双列时间数字向中线靠拢），同时保持整列触摸命中范围不变，外部尺寸仍使用标准 `Modifier`；省略或传入 `Dp.Unspecified` 时在整列居中。
+  - `visualWidth` 与 `visualAlignment` 控制宽列内数字的视觉绘制宽度与水平对齐位置（例如让双列时间数字向中线靠拢），同时保持整列触摸命中范围不变，外部尺寸仍使用标准 `Modifier`；`visualWidth` 省略或传入 `Dp.Unspecified` 时按整列宽度绘制并居中。
   - `verticalFading = true` 开启上下边缘渐隐（会额外使用离屏合成）；`clockTypeface = true` 使用时钟数字字体（实际字形受设备字体支持情况影响）。
 - **选择线留白顺序**：`couiPickerSelectionLines(color, horizontalInset)` 绘制在内容后方，不改变高度、裁剪与输入。对称的垂直留白应放在 `couiPickerSelectionLines` 内侧，非对称留白放在外侧；大字号与较大 `diffusion` 的倒计时组合不适用这组标准选择线。
 

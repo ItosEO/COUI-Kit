@@ -80,9 +80,9 @@ fun LitSurface(
 
 ### 单位、叠色与资源生命周期
 
-- `size`、`radiusPx`、`bottomRadiusPx`、`lineWidthPx` 均使用节点本地 px。半径须为有限非负数，`density` 须为有限正数。`innerGlowAlpha`、`lineAlpha` 与 `effectAlpha` 的范围为 `0f..1f`。
-- `bottomRadiusPx` 默认取 `radiusPx`。可以在 `cornerWeight >= 2f` 的 `Dialog`、`Button`、`CircleButton`、`Panel` 预设中分别设置上下角，例如为底部面板传 `0f` 得到直角下沿。菜单、浮动轮廓和 `cornerWeight < 2f` 的胶囊要求上下等角。
-- `innerGlowScale` 缩放 Drawable 和浮动轮廓的内晕距离，须为有限正数，默认 `1f`。普通 `Menu` 预设固定使用 `1f`。
+- **输入单位与取值范围**：`size`、`radiusPx`、`bottomRadiusPx`、`lineWidthPx`（默认 `2.5f * density`）均使用**节点本地 px**，半径须为有限非负数，`density` 须为有限正数；`innerGlowAlpha`、`lineAlpha` 与 `effectAlpha` 须在 `0f..1f` 范围内。
+- **上下圆角独立控制（`bottomRadiusPx`）**：默认取 `radiusPx`。可在 `cornerWeight >= 2f` 的 `Dialog`、`Button`、`CircleButton`、`Panel` 预设中分别设置上下角（例如为底部面板传入 `0f` 得到直角下沿）；`Menu`、浮动轮廓（`floating = true`）与 `cornerWeight < 2f` 的胶囊轮廓要求上下等角。
+- **内晕缩放（`innerGlowScale`）**：缩放 Drawable 与浮动轮廓的内晕渐变距离，须为有限正数，默认 `1f`；普通 `Menu` 预设固定使用 `1f`。
 - **透明覆盖 vs 带底色输出**：仅需独立覆盖光效时，传入 `surfaceColor = Color.Transparent`，再覆盖到已有表面上；传入真实 `surfaceColor` 时，输出已包含该底色，**不得再重复叠加底色**。独立轮廓使用白光 `SrcOver`，需要后景颜色参与混合时应使用 `CouiEdge`。
 - **节点资源归属**：每个独立绘制节点持有自己的 `CouiContour` 或 `CouiEdge`；尺寸、几何、`density` 或颜色改变时应调用 `shader(...)` / `renderEffect(size, density)` 更新参数，不复用旧尺寸或旧参数的 uniform 快照。外部裁剪 `Shape` 须与传入距离场的圆角和 `cornerWeight` 匹配。
 

@@ -114,13 +114,13 @@ object CouiSheetDefaults {
         blendMode = if (dark) CouiMaterialBlendMode.Overlay else CouiMaterialBlendMode.ColorDodge,
     )
 
-    /** Panel 内工具栏走 Drawable 材质，使用 CAPSULE_8 / CIRCLE_4 的窗口内轮廓。 */
+    /** 按钮在面板底图上使用半透明模糊材质，轮廓沿用 CAPSULE_8 / CIRCLE_4。 */
     fun toolbarMaterial(dark: Boolean, capsule: Boolean) = CouiFloatingMaterial(
-        firstColor = Color(if (dark) 0xFF333333 else 0xFFF0F0F0),
+        firstColor = Color(if (dark) 0xBF333333 else 0x99F0F0F0),
         firstBlendMode = BlendMode.SRC_OVER,
         secondColor = Color.Transparent,
         secondBlendMode = BlendMode.SRC_OVER,
-        blurRadius = 0f, strokeType = if (capsule) 1 else 2,
+        strokeType = if (capsule) 1 else 2,
         edgeAlpha = if (dark) .15f else .8f, edgeWidthDp = 1.8f,
         innerGlowAlpha = if (dark) .01f else .1f,
         innerGlowScale = 1f,

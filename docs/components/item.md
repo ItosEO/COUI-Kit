@@ -88,7 +88,7 @@ fun AboutRowExample(
 
 - **排版角色（`CouiTextKind`）**：选择固定的 COUI 系统字体与度量预设（不读取 `CouiTypography` 的普通文本样式）。`ItemTitle`、`ItemSummary` 与 `GroupFooter` 默认按逻辑起始边对齐（`TextAlign.Start`），其余角色默认居中，均可传入 `textAlign` 覆盖。从旧版升级时，将 `CouiTextKind.PreferenceTitle` 改为 `CouiTextKind.ItemTitle`。
 - **颜色优先级**：省略 `Text.color` 或传入 `Color.Unspecified` 时，依次使用已提供的 `LocalCouiContentColor.current` 与当前 `CouiTheme.colorScheme.onSurface`；显式传入 `color` 始终优先。未包 `CouiTheme` 时也能跟随系统深浅色。
-- **行数与溢出**　`CouiTextKind.SheetTitle` 用于 [Sheet](bottom-sheet.md) 的居中单行标题，溢出时显示省略号。其余角色默认 `maxLines = Int.MAX_VALUE`、`overflow = TextOverflow.Clip`。可传入 `maxLines`（须大于 `0`）和 `overflow` 覆盖默认值，`onLineCount` 返回实际排版行数。
+- **行数与溢出**：`CouiTextKind.SheetTitle` 用于 [Sheet 面板](bottom-sheet.md)的居中单行标题，默认 `maxLines = 1`、`overflow = TextOverflow.Ellipsis`；其余角色默认 `maxLines = Int.MAX_VALUE`、`overflow = TextOverflow.Clip`。可传入 `maxLines`（须大于 `0`）和 `overflow` 覆盖默认值，`onLineCount` 返回实际排版行数。
 - **自定义文本复用**：在 `BasicText` 或输入框中使用同一排版时，调用 `rememberCouiTextStyle(kind)` 获取 `TextStyle`。
 
 ## 参数速查

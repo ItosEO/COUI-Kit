@@ -25,7 +25,7 @@ Menu(
 `Menu` 支持两种常见的锚点定位方式：
 
 - **方式一：按触点弹出（`rememberCouiMenuAnchor()`）**：适合列表项、设置行或大面积按钮，菜单会根据手指按下的位置与窗口可见范围自适应弹出。
-- **方式二：顶栏按钮同 `Box` 定位（省略 `anchor`）**：适合顶栏更多按钮等紧凑图标，只需用 `Box` 包住触发按钮与 `Menu`，菜单会按父级 `Box` 的位置和 `offset` 定位。
+- **方式二：相对按钮固定弹出**：适合[顶栏按钮](#顶栏按钮菜单)，菜单位置以按钮的布局范围为基准。
 
 下面展示带触点锚点的菜单按钮，选择菜单项后回调 `onSelect` 并收起菜单：
 
@@ -63,39 +63,33 @@ fun TouchAnchorMenuButton(
 }
 ~~~
 
-若使用顶栏按钮同 `Box` 定位，直接省略 `anchor` 即可：
+`Modifier.couiMenuAnchor(anchor)` 只记录按下的位置。键盘和无障碍操作会按触发按钮的容器定位。
+
+### 顶栏按钮菜单
+
+在 [TopAppBar](top-app-bar.md) 的 `actions` 中，为触发按钮单独放一个 `Box`，把按钮和 `Menu` 作为它的两个子项。省略 `anchor`，菜单就会按整个按钮所在容器定位。建议传 `DpOffset(0.dp, 4.dp)`，下方空间足够时在按钮底边留出 `4.dp`。
+
+下面的片段用于支持 `TopAppBarButton` 的 API 34+ 顶栏。`moreIcon`、`items` 和 `onSelect` 由页面提供。
 
 ~~~kotlin
-@Composable
-fun ToolbarMenuButton(
-    modifier: Modifier = Modifier,
-    label: String,
-    items: List<CouiMenuItem<Int>>,
-    onSelect: (Int) -> Unit,
-) {
-    var expanded by remember { mutableStateOf(false) }
+var expanded by remember { mutableStateOf(false) }
 
-    Box(modifier) {
-        Button(onClick = { expanded = true }) {
-            Text(label)
-        }
-        Menu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            items = items,
-            onItemClick = { item ->
-                onSelect(item.value)
-                expanded = false
-            },
-        )
+Box {
+    TopAppBarButton(onClick = { expanded = true }) {
+        moreIcon()
     }
+    Menu(
+        expanded = expanded,
+        onDismissRequest = { expanded = false },
+        items = items,
+        onItemClick = { item ->
+            expanded = false
+            onSelect(item.value)
+        },
+        offset = DpOffset(0.dp, 4.dp),
+    )
 }
 ~~~
-
-定位时注意以下两点：
-
-1. **只包裹触发按钮**：省略 `anchor` 时，菜单按 `Popup` 父布局的范围定位，因此外层 `Box` 应只包住触发按钮本身，不要包住整行或整个顶栏。
-2. **触点观察与无障碍回退**：`Modifier.couiMenuAnchor(anchor)` 只观察按下坐标，不会消费点击事件；通过键盘或无障碍服务触发 `anchor.open { ... }` 时没有触点坐标，菜单自动回退到默认锚点定位。示例中的 `Button` 和 `Text` 来自 Material 3，宿主需自行声明该依赖（最小调用不依赖 Material 3）。
 
 ### 菜单选择行的图标
 
@@ -242,7 +236,7 @@ fun rememberMenuStyle(
 - **圆角与轮廓（`shape` 与 `radius`）**：默认 `shape` 为 `CouiShape(28.dp)`，`radius` 为 `Dp.Unspecified`（自动从 `CouiShape` 读取半径与权重）。更换为非 `CouiShape` 的自定义 `Shape` 时，须显式提供有限非负的 `radius`，轮廓权重使用菜单预设；`itemShape`、`checkboxShape`、`checkboxBorderShape` 分别控制菜单项与内置复选框圆角。
 - **顶部提示文本（`headerText`）**：通过 `Menu(..., headerText = ...)` 显示顶部不可选提示文案（最多两行）。修改 `CouiTheme.typography.label` 或 `CouiMenuStyle.headerTextStyle` 可调整字体、字号、字重与行距，文字颜色由菜单按深浅色控制。
 - **菜单限高与滚动**：`Menu` 默认不设固定最大高度；长菜单可在 `Menu` 的 `modifier` 中传入 `Modifier.heightIn(max = 320.dp)`，使其在限定高度内纵向滚动（子菜单会自动受可用窗口高度约束）。
-- 在 [Sheet](bottom-sheet.md) 内，主菜单和子菜单都在面板可见区域内定位和滚动，主菜单的缩放和平移也受该区域约束。窄面板的子菜单上下展开，独立 `Dialog` 中的菜单按各自窗口定位。
+- **Sheet 面板内定位**：在 [Sheet 面板](bottom-sheet.md)内弹出时，主菜单与子菜单均在面板当前可见区域内定位与滚动，主菜单的缩放与平移也受该区域约束；窄面板中的子菜单改为上下展开，而面板内另行打开的独立 `Dialog` 中的菜单仍按各自窗口定位。
 
 ## 装配注意事项
 

@@ -3,7 +3,7 @@
 `ChipTabRow` 用于横向排列单选分类胶囊，支持超宽惯性滚动、边缘渐隐与前置独立动作按钮（`ChipTabButton`）；也提供可单独使用的 `ChipTab`。
 
 - **系统版本要求**：要求 Android 14（**API 34+**），公开组件均标注 `@RequiresApi(34)`。
-- **前置依赖**：必须传入覆盖不透明页面内容的 `CouiBackdrop` 背景源，且分类栏自身必须位于采样源节点之外。
+- **前置依赖**：需要覆盖不透明页面内容的 `CouiBackdrop` 背景源，且分类栏自身必须位于采样源节点之外。`ChipTabRow` 在 [Sheet 面板](bottom-sheet.md)或 `ProvideCouiBackdrop` 作用域内可省略 `backdrop`（自动读取容器提供的背景源），其余情况及 `ChipTab` / `ChipTabButton` 需显式传入。
 
 ## 基本用法
 
@@ -85,7 +85,7 @@ fun CategoryChipTabWithActionExample(
 | `items` | 必填 | `CouiChipTabItem(key, label, enabled, icon)` 列表；`key` 须唯一且稳定。 |
 | `selectedKey` | 必填 | 当前选中的 `key`；非空列表须有效，空列表须为 `null`。 |
 | `onSelectedKeyChange` | 必填 | 点击未选中分类项时的选择回调。 |
-| `backdrop` | 容器提供的背景源 | 在 Sheet 内可省略，自动使用面板底图。容器未提供背景源时必填。源须覆盖不透明背景，并排除分类栏自身。 |
+| `backdrop` | `LocalCouiBackdrop.current`（无作用域时必填） | `ChipTabRow` 在 [Sheet 面板](bottom-sheet.md)或 `ProvideCouiBackdrop` 内可省略（自动使用容器底图），其余情况必填；`ChipTab` 与 `ChipTabButton` 始终必填。源须覆盖不透明背景，并排除分类栏自身。 |
 | `dark` | `CouiTheme.isDark` | 明暗外观模式。 |
 | `enabled` | `true` | 整栏启用状态（单项可由 `CouiChipTabItem.enabled` 单独禁用）。 |
 | `leadingAction` | `null` | 前置独立动作槽位，通常放置 `ChipTabButton`。 |
@@ -96,10 +96,10 @@ fun CategoryChipTabWithActionExample(
 | `textStyle` | `CouiChipTabDefaults.themeTextStyle()` | 文字排版样式（可选 M3 适配仅接入 `labelLarge` 字体族，保留 `14.sp` 字号与 `Medium` 字重；显式传入则完整覆盖）。 |
 | `contourGlowEnabled` | `LocalCouiContourGlowEnabled.current` | 是否启用边缘轮廓光效。 |
 | `renderers` | 自动按 `items.key` 创建 | 各个 `ChipTab` 对应的 `CouiFloatingRenderer` 列表；显式传入时数量须与 `items` 一致且实例不可重复。 |
-| `selectedColor` | `null` | 选中背景色。省略时使用中性玻璃材质。 |
-| `selectedContentColor` | `contentColor` | 随选中进度过渡的前景色。`Color.Unspecified` 继承当前内容色，禁用项取 `disabledContentColor`，图标和文字的显式着色优先。 |
+| `selectedColor` | `null` | 可选选中背景色；省略或传 `null` 时使用中性玻璃材质。 |
+| `selectedContentColor` | `contentColor` | 随选中进度过渡的前景色；传 `Color.Unspecified` 时继承当前内容色，禁用项统一取 `disabledContentColor`（内部图标与文字的显式着色优先）。 |
 
-`ChipTab` 和 `ChipTabRow` 均可分别设置选中背景色与前景色。需要强调色时可搭配 `CouiTheme.colorScheme.accent` 和 `onAccent`，Material 3 宿主可使用 `primary` 和 `onPrimary`。
+- **选中配色定制**：`ChipTab` 与 `ChipTabRow` 均可分别设置 `selectedColor` 与 `selectedContentColor`。需要跟随强调色时，可传入 `CouiTheme.colorScheme.accent` 与 `onAccent`，Material 3 宿主可传入 `primary` 与 `onPrimary`。
 
 ## 装配注意事项
 

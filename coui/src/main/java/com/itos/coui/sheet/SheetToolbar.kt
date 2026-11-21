@@ -52,13 +52,14 @@ internal val LocalCouiSheetSurfaceBackdrop = staticCompositionLocalOf<CouiBackdr
 fun rememberCouiSheetSurfaceBackdrop(): CouiBackdrop =
     checkNotNull(LocalCouiSheetSurfaceBackdrop.current) { "面板背景源必须在 BottomSheet 内容中读取" }
 
-/** 面板顶部的单个操作按钮。label 和 icon 选其一，modifier 可用于安装菜单锚点。 */
+/** 面板顶部的单个操作按钮。label 和 icon 选其一。popupContent 以整个按钮为锚点。 */
 data class CouiSheetButton(
     val onClick: () -> Unit,
     val label: String? = null,
     val icon: (@Composable () -> Unit)? = null,
     val enabled: Boolean = true,
     val modifier: Modifier = Modifier,
+    val popupContent: (@Composable () -> Unit)? = null,
 ) {
     init {
         require((label != null) xor (icon != null)) { "按钮必须提供文字或图标之一" }
@@ -156,4 +157,5 @@ private fun SheetToolbarButton(button: CouiSheetButton, style: CouiToolbarStyle)
             ProvideCouiContent(color = color, textStyle = style.textStyle, content = content)
         }
     }
+    button.popupContent?.invoke()
 }

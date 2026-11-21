@@ -30,7 +30,7 @@ Status: implemented
 
 外形复用 CouiShape，平滑上圆角与下半部矩形用 PathOperation.Union 合并。内容路径保留浮点半径，模糊区域与轮廓光采用 PixelOffset 取整，三个绘制阶段使用完整测量边界和两个直角下角。清晰内容绘制完成后，由公共 Contour 绘制 SHADOW_STYLE_2 并处理边缘覆盖率，线宽采用 PixelSize 取整。
 
-Panel 工具栏按其窗口内 Drawable 分支选择按钮底色和 CAPSULE_8 / CIRCLE_4，胶囊与圆形的描边、内晕分别使用对应 Drawable 预设。TopAppBarButton 在公共浮动表面的材质之后、清晰内容之前装配公共 Contour，保留按压、跟手光与阴影；普通顶栏未选择该配置时保持自己的浮动轮廓。标题与菜单文字持有各自原厂角色和字体留白，不能借用警告弹窗按钮字号。主题只提供默认颜色与字体族，显式 Style 和标题配置优先。两侧操作先测量，居中标题对称避让较宽一侧并采用单行省略。顶部拖动条是拖动提示和手势入口，默认隐藏，显示时保持固定外观。
+Panel 工具栏沿用窗口内 Drawable 分支的 CAPSULE_8 / CIRCLE_4 轮廓。顶部按钮的模糊见[定制行为](../../../../docs/guide/customizations.md#其他组件)。TopAppBarButton 在公共浮动表面的材质之后、清晰内容之前装配公共 Contour，保留按压、跟手光与阴影；普通顶栏未选择该配置时保持自己的浮动轮廓。标题与菜单文字持有各自原厂角色和字体留白，不能借用警告弹窗按钮字号。主题只提供默认颜色与字体族，显式 Style 和标题配置优先。两侧操作先测量，居中标题对称避让较宽一侧并采用单行省略。顶部拖动条是拖动提示和手势入口，默认隐藏，显示时保持固定外观。
 
 WheelPicker 的 visualWidth / visualAlignment 只控制数字绘制，不缩小输入列；TimeLimitPicker 与 MiniTimePicker 的选择线保留选择器自身的水平内缩，独立于外部卡片留白。闹钟类型组合 ChipTabRow，宿主分别提供 selectedColor 与 selectedContentColor，不由背景参数强制白色前景；默认中性材质不变，不将该组合声称为新增的原厂 Choice 控件。
 

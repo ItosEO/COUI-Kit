@@ -52,6 +52,7 @@ Demo 二级页统一使用 `LargeTopAppBar`（参考的原厂设置二级页使�
 
 | 组件 | 定制行为 | 作用范围与依据 |
 | --- | --- | --- |
+| [BottomSheet](../components/bottom-sheet.md) | 顶部两侧按钮对面板底图做局部模糊，并叠加半透明底色。 | Android 14（API 34）及以上生效。原厂 Panel 的窗口内 Drawable 分支关闭按钮自身的模糊。 |
 | 菜单、底栏与搜索栏 | 可叠加宿主页面色相，保留材质亮度。 | 仅在宿主提供 `tint` 或启用 M3 主题策略时生效；原生默认不加额外染色。见[外观与预设](appearance.md#菜单底栏搜索栏与-fab-的染色)。 |
 | `ChipTab` | 投影复用库内顶栏胶囊按钮预设并随选中进度变化，减轻浅色背景上的底部亮带。 | 仅代表投影预设选择，不表示分类间距、滚动或边缘渐隐属于主动视觉定制。见 [CouiChipTabDefaults](../../coui/src/main/java/com/itos/coui/chip/CouiChipTabDefaults.kt) 与[装配依据](../../.agents/notes/implemented/feature/2026-10-24-chip-tab.md)。 |
 | [分段选择器](../components/segmented-control.md) | 亮色透明模式下，胶囊外轮廓沿用本库菜单的颜色处理（过亮描边按比例压低，内晕按透明度与模糊底色混合，减轻边缘泛白）。 | 混色属于本库定制，轮廓形状沿用原厂分段选择器的胶囊预设。见[分段选择器依据](../../.agents/notes/implemented/feature/2026-11-07-coui-segmented-control.md)。 |

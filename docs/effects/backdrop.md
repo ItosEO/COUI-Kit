@@ -105,8 +105,8 @@ fun MaterialScaffoldWithCouiTopBar(
 | 入口 | 作用域与行为 | 使用约束 |
 | --- | --- | --- |
 | `rememberCouiBackdrop(parent, diagnosticName, drawSource)` | 创建并记住一个背景录制源；`parent` 用于叠加所属父窗口的源，`drawSource` 默认为 `{ drawContent() }` | 每个 `CouiBackdrop` 只挂到一个内容节点；自定义 `drawSource` 时必须绘制真实内容，不能只录制补底 |
-| `ProvideCouiBackdrop(backdrop)` | 向子树提供已有 `CouiBackdrop`；`TopAppBar`、`LargeTopAppBar`、`TopAppBarSurface`、`CollapsingTopAppBar`、`NavigationBar`、`Fab`、`SearchBar` 会读取最近作用域 | 只提供引用，不创建或挂载节点；显式 `backdrop` 参数优先。未传参且无作用域时会抛异常；不要向源自己的内容子树提供它自身 |
-| `ProvideCouiMenuBackdrop(isolateContent, content)` / `rememberCouiWindowBackdrop()` | 录制当前窗口内容供[菜单](../components/menu.md)（`Popup`）或材质[弹窗](../components/dialog.md)采样 | `Popup` 与独立窗口自身不进入该采样树；页面源不会从窗口源隐式获取，COUI `Scaffold` 也不会自动安装窗口源 |
+| `ProvideCouiBackdrop(backdrop)` | 向子树提供已有 `CouiBackdrop`；`TopAppBar`、`LargeTopAppBar`、`TopAppBarSurface`、`CollapsingTopAppBar`、`NavigationBar`、`Fab`、`SearchBar`、`ChipTabRow` 会读取最近作用域 | 只提供引用，不创建或挂载节点；显式 `backdrop` 参数优先。未传参且无作用域时会抛异常；不要向源自己的内容子树提供它自身 |
+| `ProvideCouiMenuBackdrop(isolateContent, content)` / `rememberCouiWindowBackdrop()` | 录制当前窗口内容供[菜单](../components/menu.md)（`Popup`）、材质[弹窗](../components/dialog.md)或 [Sheet 面板](../components/bottom-sheet.md)采样 | `Popup` 与独立窗口自身不进入该采样树；页面源不会从窗口源隐式获取，COUI `Scaffold` 也不会自动安装窗口源 |
 
 坐标系与窗口嵌套契约：
 
@@ -120,7 +120,7 @@ fun MaterialScaffoldWithCouiTopBar(
 | 阶段 | `isolateContent = true`（默认） | `isolateContent = false` |
 | --- | --- | --- |
 | 空闲（无材质消费者） | `CompositingStrategy.Offscreen` | `CompositingStrategy.Auto` |
-| 菜单 / 材质弹窗消费期间（含退场动画） | `CompositingStrategy.Offscreen`，保留该源及全部 `parent` 源 | 自动恢复 `CompositingStrategy.Offscreen`，保留该源及全部 `parent` 源 |
+| 菜单 / 材质弹窗 / 材质 Sheet 消费期间（含退场动画） | `CompositingStrategy.Offscreen`，保留该源及全部 `parent` 源 | 自动恢复 `CompositingStrategy.Offscreen`，保留该源及全部 `parent` 源 |
 | 最后一个消费者结束后 | 保持 `Offscreen` | 恢复 `CompositingStrategy.Auto` |
 
 > [!NOTE]

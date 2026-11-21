@@ -17,16 +17,14 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.itos.coui.dialog.CouiDialogDefaults
 import com.itos.coui.dialog.CouiDialogMaterial
 import com.itos.coui.effect.couiButtonFeedback
 import com.itos.coui.icons.CouiIcons
-import com.itos.coui.menu.CouiMenuAnchor
 import com.itos.coui.menu.CouiMenuItem
 import com.itos.coui.menu.Menu
-import com.itos.coui.menu.couiMenuAnchor
-import com.itos.coui.menu.rememberCouiMenuAnchor
 import com.itos.coui.menu.rememberCouiWindowBackdrop
 import com.itos.coui.layout.Divider
 import com.itos.coui.layout.Group
@@ -150,7 +148,6 @@ private fun HalfSheetSample(
 ) {
     val visible = rememberSaveable { mutableStateOf(false) }
     val title = stringResource(R.string.sheet_half)
-    val menuAnchor = rememberCouiMenuAnchor()
     var menuExpanded by remember { mutableStateOf(false) }
 
     Group {
@@ -178,25 +175,25 @@ private fun HalfSheetSample(
         ),
         titleContent = { CouiText(text = title, kind = CouiTextKind.SheetTitle) },
         trailingButton = CouiSheetButton(
-            onClick = { menuAnchor.open { menuExpanded = true } },
+            onClick = { menuExpanded = true },
             icon = {
                 Icon(CouiIcons.Outlined.More, stringResource(R.string.sheet_more_actions),
                     Modifier.size(24.dp), tint = LocalCouiContentColor.current)
             },
             enabled = visible.value,
-            modifier = Modifier.couiMenuAnchor(menuAnchor),
+            popupContent = {
+                HalfSheetMoreMenu(
+                    dark = dark,
+                    expanded = menuExpanded && visible.value,
+                    onDismissRequest = { menuExpanded = false },
+                    blurAvailable = blurAvailable,
+                    blurEnabled = blurEnabled,
+                    onToggleBlur = onToggleBlur,
+                    onClose = { visible.value = false },
+                )
+            },
         ),
     ) {
-        HalfSheetMoreMenu(
-            anchor = menuAnchor,
-            dark = dark,
-            expanded = menuExpanded && visible.value,
-            onDismissRequest = { menuExpanded = false },
-            blurAvailable = blurAvailable,
-            blurEnabled = blurEnabled,
-            onToggleBlur = onToggleBlur,
-            onClose = { visible.value = false },
-        )
         Group(footer = stringResource(R.string.sheet_half_usage)) {
             blurControl()
             Divider()
@@ -222,7 +219,6 @@ private fun HalfSheetSample(
 
 @Composable
 private fun HalfSheetMoreMenu(
-    anchor: CouiMenuAnchor,
     dark: Boolean,
     expanded: Boolean,
     onDismissRequest: () -> Unit,
@@ -235,7 +231,7 @@ private fun HalfSheetMoreMenu(
     Menu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
-        anchor = anchor,
+        offset = DpOffset(0.dp, 4.dp),
         style = demoMenuStyle(dark),
         items = buildList {
             add(CouiMenuItem(onToggleBlur, stringResource(R.string.sheet_blur_title),
