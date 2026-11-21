@@ -128,24 +128,23 @@ object CouiSheetDefaults {
 }
 
 /**
- * COUI 底部面板，提供一个展开位置及隐藏位置。visible 由宿主持有，必须持续调用本组件以完成退场。
+ * COUI 底部面板。修改 visible.value 控制显隐，持续调用本组件以完成退场。
  * sheetHeight 为包含 handle、内容及底部安全区的可见目标高度；null 按内容测量。
  * 普通手机窗口顶部使用状态栏高度，无状态栏时保留 40dp；屏外绘制余量不占内容高度。
  * leadingButton、titleContent、trailingButton 位于正文上方。正文默认由面板负责滚动、回弹和上沿裁剪；
  * 正文自带纵向滚动容器时传 scrollableContent = false。
- * draggable 开启时可从留白处下拉关闭。nestedScrollEnabled 开启后，正文到顶后的下拉也可交给面板关闭。
+ * draggable 允许从留白处下拉关闭，nestedScrollEnabled 也允许正文到顶后的下拉关闭。
  * fullPageOverscroll 开启时，顶部与正文共享回弹，留白也可发起回弹。内置拖动条保持在回弹区域之外。
- * title 默认为空；提供非空白标题时用于窗口与无障碍。dismissDescription 可覆盖遮罩的默认关闭文案。
+ * 关闭请求默认将 visible.value 设为 false，可通过 onDismissRequest 接管。
  * 确认、草稿、页面导航和二级面板属于宿主。
  * API 33 及以上且有宿主窗口源时，默认模糊背景并应用材质混色，material = null 可关闭。
  * 窗口源须排除当前面板和遮罩。
  */
 @Composable
-fun ModalBottomSheet(
+fun BottomSheet(
     modifier: Modifier = Modifier,
-    visible: Boolean,
-    onDismissRequest: () -> Unit,
-    title: String = "",
+    visible: MutableState<Boolean>,
+    onDismissRequest: (() -> Unit)? = null,
     dismissDescription: String = stringResource(R.string.coui_sheet_dismiss),
     dark: Boolean = CouiTheme.isDark,
     sheetHeight: Dp? = null,
@@ -165,24 +164,29 @@ fun ModalBottomSheet(
     trailingButton: CouiSheetButton? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val isVisible = visible.value
     require(sheetHeight == null || (sheetHeight.value.isFinite() && sheetHeight > 0.dp)) { "面板高度必须为有限正值" }
     val windowBackdrop = backdrop ?: LocalCouiMenuBackdrop.current
     if (material != null) {
         check(Build.VERSION.SDK_INT >= 33) { "面板材质要求 Android 13 或更高版本" }
         checkNotNull(windowBackdrop) { "面板材质需要不包含面板与遮罩的宿主窗口源" }
     }
-    var mounted by remember { mutableStateOf(visible) }
-    if (!visible && !mounted) return
-    val requestDismiss by rememberUpdatedState(onDismissRequest)
-    val currentVisible by rememberUpdatedState(visible)
+    var mounted by remember { mutableStateOf(isVisible) }
+    if (!isVisible && !mounted) return
+    val requestDismiss by rememberUpdatedState<() -> Boolean> {
+        if (!visible.value) false else {
+            if (onDismissRequest != null) onDismissRequest() else visible.value = false
+            true
+        }
+    }
     val motion = remember { CouiSheetMotion() }
     SideEffect {
-        if (visible) mounted = true
-        motion.onHidden = { if (!currentVisible) mounted = false }
+        if (isVisible) mounted = true
+        motion.onHidden = { if (!visible.value) mounted = false }
     }
     DisposableEffect(motion) { onDispose { motion.dispose() } }
-    Dialog(onDismissRequest = { if (visible) requestDismiss() }, properties = DialogProperties(
-        dismissOnClickOutside = false, usePlatformDefaultWidth = false, decorFitsSystemWindows = false, windowTitle = title,
+    Dialog(onDismissRequest = { requestDismiss() }, properties = DialogProperties(
+        dismissOnBackPress = isVisible, dismissOnClickOutside = false, usePlatformDefaultWidth = false, decorFitsSystemWindows = false,
     )) {
         val view = LocalView.current
         val window = checkNotNull((view.parent as? DialogWindowProvider)?.window)
@@ -265,7 +269,7 @@ fun ModalBottomSheet(
         val parentInsets = if (gestureNavigation) ime.only(WindowInsetsSides.Bottom)
             else ime.union(WindowInsets.navigationBars).only(WindowInsetsSides.Bottom)
         val topSpacingPx = with(density) { topSpacing.toPx() }
-        LaunchedEffect(visible, density, ime, topSpacingPx, peek) {
+        LaunchedEffect(isVisible, density, ime, topSpacingPx, peek) {
             snapshotFlow {
                 if (!geometryReady || windowHeight < 0 || parentHeight < 0 || panelHeight < 0) return@snapshotFlow null
                 val imeHeight = if (ime.getBottom(density) > 0) {
@@ -274,7 +278,7 @@ fun ModalBottomSheet(
                 SheetMeasurement(windowHeight, parentHeight, panelHeight, imeHeight)
             }.filterNotNull().collect { measured ->
                 motion.update(
-                    visible = visible,
+                    visible = isVisible,
                     height = measured.panelHeight.toFloat(),
                     parentHeight = measured.parentHeight.toFloat(),
                     windowHeight = measured.windowHeight.toFloat(),
@@ -302,7 +306,7 @@ fun ModalBottomSheet(
                 layout(placeable.width, placeable.height) { placeable.placeRelative(0, 0) }
             }
         }
-        val interactive = visible && motion.entered
+        val interactive = isVisible && motion.entered
         val canDrag = draggable && interactive
         val canNestedDrag = canDrag && nestedScrollEnabled && !fullPageOverscroll
         val canNestedDragNow by rememberUpdatedState(canNestedDrag)
@@ -334,7 +338,7 @@ fun ModalBottomSheet(
                 Box(Modifier.fillMaxSize().onSizeChanged { windowHeight = it.height }
                     .onGloballyPositioned { windowCoordinates = it }.then(source)) {
                     val outside = remember { MutableInteractionSource() }
-                    val dismissOnScrim = if (visible && motion.entered && dismissOnClickOutside) {
+                    val dismissOnScrim = if (interactive && dismissOnClickOutside) {
                         Modifier.clickable(outside, null, onClickLabel = dismissDescription) { requestDismiss() }
                             .semantics { contentDescription = dismissDescription }
                     } else Modifier
@@ -377,8 +381,7 @@ fun ModalBottomSheet(
                                         }
                                     }
                                 }.semantics {
-                                    if (title.isNotBlank()) paneTitle = title
-                                    if (visible) dismiss { requestDismiss(); true }
+                                    if (isVisible) dismiss { requestDismiss() }
                                 }) {
                                 CouiSheetSurface(Modifier.fillMaxWidth(), material, windowBackdrop, colors, dark,
                                     surfaceBackdrop = surfaceBackdrop,

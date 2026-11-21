@@ -16,10 +16,7 @@
     <string name="sheet_snooze">Snooze</string>
     <string name="sheet_snooze_default">Every 5 minutes, 3 times</string>
     <string name="sheet_snooze_off">Off</string>
-    <string name="sheet_timer">Add timer</string>
-    <string name="sheet_timer_name">Timer name</string>
-    <string name="sheet_timer_preset">Add to preset timers</string>
-    <string name="sheet_usage">Try the alarm editor, timer editor, or half-height sheet. Done saves clock drafts in this demo.</string>
+    <string name="sheet_usage">Tap Done to save the alarm draft in this demo.</string>
     <string name="sheet_half">Half-height sheet</string>
     <string name="sheet_half_usage">Drag down from the handle or an empty part of the sheet, or tap Close.</string>
     <string name="sheet_close">Close</string>

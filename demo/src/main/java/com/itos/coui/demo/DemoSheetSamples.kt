@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.itos.coui.dialog.CouiDialogDefaults
+import com.itos.coui.dialog.CouiDialogMaterial
 import com.itos.coui.effect.couiButtonFeedback
 import com.itos.coui.icons.CouiIcons
 import com.itos.coui.menu.CouiMenuAnchor
@@ -31,9 +32,9 @@ import com.itos.coui.layout.Divider
 import com.itos.coui.layout.Group
 import com.itos.coui.layout.CouiPageDefaults
 import com.itos.coui.segmentbutton.SegmentedControl
+import com.itos.coui.sheet.BottomSheet
 import com.itos.coui.sheet.CouiSheetButton
 import com.itos.coui.sheet.CouiSheetDefaults
-import com.itos.coui.sheet.ModalBottomSheet
 import com.itos.coui.text.CouiTextKind
 import com.itos.coui.text.Text as CouiText
 import com.itos.coui.theme.CouiTheme
@@ -41,179 +42,180 @@ import com.itos.coui.theme.LocalCouiContentColor
 import java.time.LocalTime
 import java.util.Locale
 
-private const val AlarmSheet = 0
-private const val TimerSheet = 1
-private const val HalfSheet = 2
-
 @Composable
 internal fun SheetSamples(dark: Boolean) {
-    var panel by rememberSaveable { mutableIntStateOf(-1) }
-    var retainedPanel by rememberSaveable { mutableIntStateOf(AlarmSheet) }
-    var duration by rememberSaveable { mutableIntStateOf(5 * 60) }
-    var draftTime by rememberSaveable { mutableIntStateOf(0) }
-    var alarmOptions by rememberSaveable(stateSaver = DemoAlarmOptions.Saver) { mutableStateOf(DemoAlarmOptions()) }
-    var draftAlarmOptions by rememberSaveable(stateSaver = DemoAlarmOptions.Saver) { mutableStateOf(DemoAlarmOptions()) }
-    var timerOptions by rememberSaveable(stateSaver = DemoTimerOptions.Saver) { mutableStateOf(DemoTimerOptions()) }
-    var draftTimerOptions by rememberSaveable(stateSaver = DemoTimerOptions.Saver) { mutableStateOf(DemoTimerOptions()) }
-    var saved by rememberSaveable { mutableStateOf("") }
     var blurEnabled by rememberSaveable { mutableStateOf(true) }
-    var halfSheetMenuExpanded by remember { mutableStateOf(false) }
-    val halfSheetMenuAnchor = rememberCouiMenuAnchor()
     val windowBackdrop = rememberCouiWindowBackdrop()
-    val blurAvailable = Build.VERSION.SDK_INT >= 33 && windowBackdrop != null
-    val blurTitle = stringResource(R.string.sheet_blur_title)
+    val supportsBlur = CouiDialogDefaults.isMaterialSupported()
+    val blurAvailable = supportsBlur && windowBackdrop != null
     val blurSummary = stringResource(when {
-        Build.VERSION.SDK_INT < 33 -> R.string.requires_api_33
+        !supportsBlur -> R.string.requires_api_33
         windowBackdrop == null -> R.string.sheet_blur_no_source
         else -> R.string.sheet_blur_summary
     })
     val blurControl: @Composable () -> Unit = {
-        DemoSwitchPreference(title = blurTitle, summary = blurSummary, enabled = blurAvailable,
-            checked = blurAvailable && blurEnabled, onCheckedChange = { blurEnabled = it })
+        DemoSwitchPreference(
+            title = stringResource(R.string.sheet_blur_title),
+            summary = blurSummary,
+            enabled = blurAvailable,
+            checked = blurAvailable && blurEnabled,
+            onCheckedChange = { blurEnabled = it },
+        )
     }
-    val labels = listOf(
-        stringResource(R.string.sheet_alarm),
-        stringResource(R.string.sheet_timer),
-        stringResource(R.string.sheet_half),
-    )
-    val open: (Int) -> Unit = { index ->
-        when (index) {
-            AlarmSheet -> {
-                val now = LocalTime.now()
-                draftTime = now.hour * 60 + now.minute
-                draftAlarmOptions = alarmOptions
-            }
-            TimerSheet -> {
-                draftTime = duration
-                draftTimerOptions = timerOptions
-            }
-        }
-        retainedPanel = index
-        panel = index
-    }
+    val material = if (blurAvailable && blurEnabled) CouiSheetDefaults.material(dark) else null
+
     Group { blurControl() }
-    val addIcon: @Composable () -> Unit = {
-        Icon(CouiIcons.Filled.Add, null, Modifier.size(24.dp), tint = MaterialTheme.colorScheme.onSurface)
-    }
-    Group(footer = stringResource(R.string.sheet_usage)) {
-        labels.forEachIndexed { index, label ->
-            SheetEntry(
-                title = label,
-                dark = dark,
-                icon = if (index == HalfSheet) null else addIcon,
-                isOpen = { panel == index },
-                onClick = { open(index) },
-            )
-            if (index < labels.lastIndex) Divider()
-        }
-    }
-    // 色块属于宿主页面；现有窗口源直接录入，面板内容不参与自己的采样。
+    AlarmSheetSample(dark, material)
+    HalfSheetSample(
+        dark = dark,
+        material = material,
+        blurAvailable = blurAvailable,
+        blurEnabled = blurAvailable && blurEnabled,
+        onToggleBlur = { blurEnabled = !blurEnabled },
+        blurControl = blurControl,
+    )
+
+    // 色块由宿主页面录制，供面板对照模糊效果。
     Group {
         val swatches = if (dark) listOf(Color(0xFF315C99), Color(0xFF91445F), Color(0xFF287461))
             else listOf(Color(0xFF7EB1F4), Color(0xFFF19AB5), Color(0xFF76C6AD))
         Row(Modifier.fillMaxWidth().height(120.dp)) {
-            swatches.forEach { color -> Box(Modifier.weight(1f).fillMaxHeight().background(color))
-            }
+            swatches.forEach { color -> Box(Modifier.weight(1f).fillMaxHeight().background(color)) }
         }
     }
-    if (saved.isNotEmpty()) Group {
-        DemoPreference(title = stringResource(R.string.sheet_saved), value = saved, showChevron = false)
+}
+
+@Composable
+private fun AlarmSheetSample(dark: Boolean, material: CouiDialogMaterial?) {
+    val visible = rememberSaveable { mutableStateOf(false) }
+    var draftTime by rememberSaveable { mutableIntStateOf(0) }
+    var alarmOptions by rememberSaveable(stateSaver = DemoAlarmOptions.Saver) { mutableStateOf(DemoAlarmOptions()) }
+    var draftAlarmOptions by rememberSaveable(stateSaver = DemoAlarmOptions.Saver) { mutableStateOf(DemoAlarmOptions()) }
+    var savedTime by rememberSaveable { mutableStateOf("") }
+
+    Group(footer = stringResource(R.string.sheet_usage)) {
+        SheetEntry(
+            title = stringResource(R.string.sheet_alarm),
+            dark = dark,
+            icon = { Icon(CouiIcons.Filled.Add, null, Modifier.size(24.dp), tint = MaterialTheme.colorScheme.onSurface) },
+            isOpen = { visible.value },
+            onClick = {
+                val now = LocalTime.now()
+                draftTime = now.hour * 60 + now.minute
+                draftAlarmOptions = alarmOptions
+                visible.value = true
+            },
+        )
     }
-    val halfScreen = retainedPanel == HalfSheet
-    val sheetColors = CouiDialogDefaults.themeColors(dark)
-    // 两个 Clock 编辑面板以 elevatedWithCard 作为不透明回退底色。
-    val colors = if (halfScreen) sheetColors else sheetColors.copy(
-        surface = if (dark) Color(0xFF1E1E1E) else Color(0xFFF0F1F2),
-    )
-    val title = if (retainedPanel == AlarmSheet) stringResource(R.string.sheet_alarm_editor)
-        else labels.getOrNull(retainedPanel).orEmpty()
-    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
-    val opened = panel in labels.indices
-    val dismiss: () -> Unit = {
-        halfSheetMenuExpanded = false
-        panel = -1
+    if (savedTime.isNotEmpty()) Group {
+        DemoPreference(title = stringResource(R.string.sheet_saved), value = savedTime, showChevron = false)
     }
-    val saveDraft: () -> Unit = {
-        if (retainedPanel == AlarmSheet) {
-            alarmOptions = draftAlarmOptions
-            saved = String.format(Locale.getDefault(), "%02d:%02d", draftTime / 60, draftTime % 60)
-        } else {
-            duration = draftTime
-            timerOptions = draftTimerOptions
-            saved = String.format(Locale.getDefault(), "%02d:%02d:%02d", duration / 3600, duration / 60 % 60, duration % 60)
-        }
-        dismiss()
-    }
-    ModalBottomSheet(
-        visible = opened,
-        onDismissRequest = dismiss,
-        title = title,
-        colors = colors,
-        sheetHeight = if (halfScreen) screenHeight / 2 else screenHeight,
-        showDragHandle = halfScreen,
-        material = if (blurAvailable && blurEnabled) CouiSheetDefaults.material(dark) else null,
+
+    BottomSheet(
+        visible = visible,
+        sheetHeight = LocalConfiguration.current.screenHeightDp.dp,
+        colors = CouiDialogDefaults.themeColors(dark).copy(surface = if (dark) Color(0xFF1E1E1E) else Color(0xFFF0F1F2)),
+        material = material,
         leadingButton = CouiSheetButton(
-            label = stringResource(if (halfScreen) R.string.sheet_close else R.string.dialog_cancel),
-            onClick = dismiss,
-            enabled = opened,
+            label = stringResource(R.string.dialog_cancel),
+            onClick = { visible.value = false },
+            enabled = visible.value,
             modifier = Modifier.widthIn(max = 104.dp),
         ),
+        titleContent = { CouiText(text = stringResource(R.string.sheet_alarm_editor), kind = CouiTextKind.SheetTitle) },
+        trailingButton = CouiSheetButton(
+            label = stringResource(R.string.sheet_done),
+            onClick = {
+                alarmOptions = draftAlarmOptions
+                savedTime = String.format(Locale.getDefault(), "%02d:%02d", draftTime / 60, draftTime % 60)
+                visible.value = false
+            },
+            enabled = visible.value,
+            modifier = Modifier.widthIn(max = 104.dp),
+        ),
+    ) {
+        DemoClockAlarmContent(dark, draftTime, { draftTime = it }, draftAlarmOptions, { draftAlarmOptions = it })
+        Spacer(Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun HalfSheetSample(
+    dark: Boolean,
+    material: CouiDialogMaterial?,
+    blurAvailable: Boolean,
+    blurEnabled: Boolean,
+    onToggleBlur: () -> Unit,
+    blurControl: @Composable () -> Unit,
+) {
+    val visible = rememberSaveable { mutableStateOf(false) }
+    val title = stringResource(R.string.sheet_half)
+    val menuAnchor = rememberCouiMenuAnchor()
+    var menuExpanded by remember { mutableStateOf(false) }
+
+    Group {
+        SheetEntry(
+            title = title,
+            dark = dark,
+            icon = null,
+            isOpen = { visible.value },
+            onClick = {
+                menuExpanded = false
+                visible.value = true
+            },
+        )
+    }
+
+    BottomSheet(
+        visible = visible,
+        sheetHeight = LocalConfiguration.current.screenHeightDp.dp / 2,
+        showDragHandle = true,
+        material = material,
+        leadingButton = CouiSheetButton(
+            label = stringResource(R.string.sheet_close),
+            onClick = { visible.value = false },
+            enabled = visible.value,
+        ),
         titleContent = { CouiText(text = title, kind = CouiTextKind.SheetTitle) },
-        trailingButton = if (halfScreen) CouiSheetButton(
-            onClick = { halfSheetMenuAnchor.open { halfSheetMenuExpanded = true } },
+        trailingButton = CouiSheetButton(
+            onClick = { menuAnchor.open { menuExpanded = true } },
             icon = {
                 Icon(CouiIcons.Outlined.More, stringResource(R.string.sheet_more_actions),
                     Modifier.size(24.dp), tint = LocalCouiContentColor.current)
             },
-            enabled = opened,
-            modifier = Modifier.couiMenuAnchor(halfSheetMenuAnchor),
-        ) else CouiSheetButton(
-            label = stringResource(R.string.sheet_done),
-            onClick = saveDraft,
-            enabled = opened && (retainedPanel != TimerSheet || draftTime > 0),
-            modifier = Modifier.widthIn(max = 104.dp),
+            enabled = visible.value,
+            modifier = Modifier.couiMenuAnchor(menuAnchor),
         ),
     ) {
-        if (halfScreen) {
-            HalfSheetMoreMenu(
-                anchor = halfSheetMenuAnchor,
-                dark = dark,
-                expanded = halfSheetMenuExpanded,
-                onDismissRequest = { halfSheetMenuExpanded = false },
-                blurAvailable = blurAvailable,
-                blurEnabled = blurAvailable && blurEnabled,
-                onToggleBlur = { blurEnabled = !blurEnabled },
-                onClose = dismiss,
-            )
-            Group(footer = stringResource(R.string.sheet_half_usage)) {
-                blurControl()
-                Divider()
-                if (Build.VERSION.SDK_INT >= 34) {
-                    var selected by rememberSaveable { mutableIntStateOf(0) }
-                    SegmentedControl(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
-                        labels = listOf(
-                            stringResource(R.string.segment_all),
-                            stringResource(R.string.segment_current_week),
-                            stringResource(R.string.segment_not_scheduled),
-                        ),
-                        selectedIndex = selected,
-                        onSelected = { selected = it },
-                    )
-                } else {
-                    Text(stringResource(R.string.requires_api_34), Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-        } else {
-            if (retainedPanel == AlarmSheet) {
-                DemoClockAlarmContent(dark, draftTime, { draftTime = it },
-                    draftAlarmOptions, { draftAlarmOptions = it })
+        HalfSheetMoreMenu(
+            anchor = menuAnchor,
+            dark = dark,
+            expanded = menuExpanded && visible.value,
+            onDismissRequest = { menuExpanded = false },
+            blurAvailable = blurAvailable,
+            blurEnabled = blurEnabled,
+            onToggleBlur = onToggleBlur,
+            onClose = { visible.value = false },
+        )
+        Group(footer = stringResource(R.string.sheet_half_usage)) {
+            blurControl()
+            Divider()
+            if (Build.VERSION.SDK_INT >= 34) {
+                var selected by rememberSaveable { mutableIntStateOf(0) }
+                SegmentedControl(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
+                    labels = listOf(
+                        stringResource(R.string.segment_all),
+                        stringResource(R.string.segment_current_week),
+                        stringResource(R.string.segment_not_scheduled),
+                    ),
+                    selectedIndex = selected,
+                    onSelected = { selected = it },
+                )
             } else {
-                DemoClockTimerContent(dark, draftTime, { draftTime = it },
-                    draftTimerOptions, { draftTimerOptions = it })
+                Text(stringResource(R.string.requires_api_34), Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Spacer(Modifier.height(16.dp))
         }
     }
 }

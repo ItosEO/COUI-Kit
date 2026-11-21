@@ -131,7 +131,7 @@ internal class CouiSheetMotion {
         if (!dragging) return false
         dragging = false
         lastNestedDelta = null
-        // 只有宿主改变 visible 才能隐藏；拒绝或异步处理期间先按 Behavior 的展开分支复位。
+        // 关闭请求更新显示目标；等待确认期间先按 Behavior 的展开分支复位。
         dismissVelocity = if (hide) velocity.coerceAtLeast(0f) else null
         if (offset == 0f) {
             // 原厂 settleCapturedViewAt 在当前位置已经是目标时直接结束，不把抬手速度带进弹簧。

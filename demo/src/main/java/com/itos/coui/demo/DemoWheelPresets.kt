@@ -131,32 +131,6 @@ internal fun DemoCountdownPicker(
     }
 }
 
-/** 新建倒计时的 MiniTimePickerView：135dp 三列，不使用主页的大号数字与冒号。 */
-@Composable
-internal fun DemoTimerEditorPicker(
-    modifier: Modifier = Modifier,
-    value: DemoDuration,
-    onValueChange: (DemoDuration) -> Unit,
-    labels: List<String>,
-) {
-    val locale = LocalConfiguration.current.locales[0]
-    var latest by remember { mutableStateOf(value) }
-    SideEffect { if (latest != value) latest = value }
-    fun submit(next: DemoDuration) { latest = next; onValueChange(next) }
-    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-        Row(modifier.fillMaxWidth().couiPickerSelectionLines(CouiTheme.colorScheme.outlineVariant),
-            horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-            listOf(value.hour, value.minute, value.second).forEachIndexed { index, number ->
-                WheelPicker(Modifier.width(58.dp), number, { next -> submit(when (index) {
-                    0 -> latest.copy(hour = next); 1 -> latest.copy(minute = next); else -> latest.copy(second = next)
-                }) }, if (index == 0) 0..23 else 0..59, labels[index],
-                    repeatIntervalMillis = if (index == 0) 300 else 100,
-                    formatter = { String.format(locale, "%02d", it) })
-            }
-        }
-    }
-}
-
 /** 公历日期滚轮；日期范围是宿主约束，年月改变时按实际月份夹紧 day。 */
 @Composable
 internal fun DemoDatePicker(

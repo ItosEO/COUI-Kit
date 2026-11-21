@@ -50,7 +50,7 @@ internal val LocalCouiSheetSurfaceBackdrop = staticCompositionLocalOf<CouiBackdr
 /** 当前面板已绘制的纯背景源，供同窗口浮动控件使用；独立弹窗仍消费窗口内容源。 */
 @Composable
 fun rememberCouiSheetSurfaceBackdrop(): CouiBackdrop =
-    checkNotNull(LocalCouiSheetSurfaceBackdrop.current) { "面板背景源必须在 ModalBottomSheet 内容中读取" }
+    checkNotNull(LocalCouiSheetSurfaceBackdrop.current) { "面板背景源必须在 BottomSheet 内容中读取" }
 
 /** 面板顶部的单个操作按钮。label 和 icon 选其一，modifier 可用于安装菜单锚点。 */
 data class CouiSheetButton(

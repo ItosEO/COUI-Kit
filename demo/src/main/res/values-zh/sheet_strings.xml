@@ -16,10 +16,7 @@
     <string name="sheet_snooze">稍后提醒</string>
     <string name="sheet_snooze_default">响铃间隔 5 分钟，响铃次数 3 次</string>
     <string name="sheet_snooze_off">已关闭</string>
-    <string name="sheet_timer">添加倒计时</string>
-    <string name="sheet_timer_name">倒计时名称</string>
-    <string name="sheet_timer_preset">添加到常用倒计时</string>
-    <string name="sheet_usage">可打开闹钟、倒计时编辑器或半屏面板。点「完成」会在本 Demo 保存时钟草稿。</string>
+    <string name="sheet_usage">点「完成」会在本 Demo 保存闹钟草稿。</string>
     <string name="sheet_half">半屏面板</string>
     <string name="sheet_half_usage">向下拖动顶部手柄或面板空白处，也可点「关闭」。</string>
     <string name="sheet_close">关闭</string>
