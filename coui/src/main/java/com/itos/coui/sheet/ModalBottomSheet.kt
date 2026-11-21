@@ -6,18 +6,19 @@ import android.graphics.Rect
 import android.os.Build
 import android.view.WindowManager
 import android.view.WindowInsetsController
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.awaitVerticalPointerSlopOrCancellation
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.gestures.verticalDrag
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.overscroll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,6 +70,7 @@ import com.itos.coui.menu.CouiMenuVisibleBounds
 import com.itos.coui.menu.ProvideCouiMenuBackdrop
 import com.itos.coui.input.isCouiTouchCancelled
 import com.itos.coui.motion.CouiVelocityTracker
+import com.itos.coui.scroll.rememberCouiOverscrollEffect
 import com.itos.coui.theme.CouiTheme
 import com.itos.coui.theme.LocalCouiDarkTheme
 import kotlinx.coroutines.CoroutineStart
@@ -77,8 +79,6 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import kotlin.math.abs
-
-private val SheetEase = CubicBezierEasing(.33f, 0f, .67f, 1f)
 
 object CouiSheetDefaults {
     // Clock 普通手机的 NEW_G2 分支，Oplus API > 37。
@@ -126,9 +126,9 @@ object CouiSheetDefaults {
  * COUI 底部面板，提供一个展开位置及隐藏位置。visible 由宿主持有，必须持续调用本组件以完成退场。
  * sheetHeight 为包含 handle、内容及底部安全区的可见目标高度；null 按内容测量。
  * 普通手机窗口顶部使用状态栏高度，无状态栏时保留 40dp；屏外绘制余量不占内容高度。
- * 内容自行选择一个滚动容器；nestedScrollEnabled 为 true 时内容到顶后交接向下拖动，
- * 设为 false 时仅保留拖动条或非滚动头部区域的直接拖动，便于内容区配合 couiVerticalScroll 保留双向越界回弹。
- * title 来自宿主资源；dismissDescription 可覆盖遮罩的默认关闭文案。
+ * draggable 开启时，面板可接收未被内容消费的直接拖动。nestedScrollEnabled 控制滚动内容到顶后的手势交接。
+ * fullPageOverscroll 开启时，正文留白也能触发回弹，纵向越界交给正文处理。
+ * title 默认为空；提供非空白标题时用于窗口与无障碍。dismissDescription 可覆盖遮罩的默认关闭文案。
  * 确认、草稿、页面导航和二级面板属于宿主。
  * 可选材质先模糊窗口背景，再按 mix 逐通道混合 RGB 并执行 blendMode。
  * 要求 API 33 及不含面板和遮罩的窗口源。
@@ -138,7 +138,7 @@ fun ModalBottomSheet(
     modifier: Modifier = Modifier,
     visible: Boolean,
     onDismissRequest: () -> Unit,
-    title: String,
+    title: String = "",
     dismissDescription: String = stringResource(R.string.coui_sheet_dismiss),
     dark: Boolean = CouiTheme.isDark,
     sheetHeight: Dp? = null,
@@ -147,9 +147,9 @@ fun ModalBottomSheet(
     colors: CouiDialogColors = CouiDialogDefaults.themeColors(dark),
     material: CouiDialogMaterial? = null,
     backdrop: CouiBackdrop? = null,
-    showDragHandle: Boolean = true,
-    isolateContent: Boolean = true,
+    showDragHandle: Boolean = false,
     nestedScrollEnabled: Boolean = true,
+    fullPageOverscroll: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     require(sheetHeight == null || (sheetHeight.value.isFinite() && sheetHeight > 0.dp)) { "面板高度必须为有限正值" }
@@ -289,8 +289,9 @@ fun ModalBottomSheet(
                 layout(placeable.width, placeable.height) { placeable.placeRelative(0, 0) }
             }
         }
-        val canDrag = draggable && visible && motion.entered
-        val canNestedDrag = canDrag && nestedScrollEnabled
+        val interactive = visible && motion.entered
+        val canDrag = draggable && interactive
+        val canNestedDrag = canDrag && nestedScrollEnabled && !fullPageOverscroll
         val canNestedDragNow by rememberUpdatedState(canNestedDrag)
         val touch = remember { SheetTouchSession() }
         LaunchedEffect(canDrag) { if (!canDrag) motion.cancelDrag() }
@@ -316,7 +317,7 @@ fun ModalBottomSheet(
         } }
         // 自身表面仍采样外层窗口；新窗口源只供内容里的后续 Popup/Dialog 使用。
         CompositionLocalProvider(LocalCouiMenuBackdrop provides windowBackdrop) {
-            ProvideCouiMenuBackdrop(isolateContent = isolateContent) { source ->
+            ProvideCouiMenuBackdrop(isolateContent = false) { source ->
                 Box(Modifier.fillMaxSize().onSizeChanged { windowHeight = it.height }
                     .onGloballyPositioned { windowCoordinates = it }.then(source)) {
                     val outside = remember { MutableInteractionSource() }
@@ -343,7 +344,7 @@ fun ModalBottomSheet(
                             Box(Modifier.fillMaxWidth().graphicsLayer {
                                     translationY = sheetTranslation()
                                 }
-                                .nestedScroll(nested).sheetDrag(motion, touch, canDrag && !showDragHandle) { requestDismiss() }.pointerInput(motion, touch) {
+                                .nestedScroll(nested).sheetDrag(motion, touch, canDrag) { requestDismiss() }.pointerInput(motion, touch) {
                                     awaitEachGesture {
                                         val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
                                         // UserInput 也包含键盘、滚轮和无障碍滚动；这些输入没有触摸释放阶段。
@@ -363,7 +364,7 @@ fun ModalBottomSheet(
                                         }
                                     }
                                 }.semantics {
-                                    paneTitle = title
+                                    if (title.isNotBlank()) paneTitle = title
                                     if (visible) dismiss { requestDismiss(); true }
                                 }) {
                                 CouiSheetSurface(Modifier.fillMaxWidth(), material, windowBackdrop, colors, dark,
@@ -376,8 +377,14 @@ fun ModalBottomSheet(
                                         LocalCouiSheetSurfaceBackdrop provides surfaceBackdrop) {
                                         Column(Modifier.fillMaxWidth().then(if (sheetHeight != null) Modifier.fillMaxHeight() else Modifier)
                                             .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))) {
-                                            if (showDragHandle) SheetDragHandle(motion, touch, canDrag, dark) { requestDismiss() }
-                                            content()
+                                            if (showDragHandle) SheetDragHandle(dark)
+                                            if (fullPageOverscroll) {
+                                                SheetOverscrollContent(
+                                                    modifier = if (sheetHeight != null) Modifier.weight(1f) else Modifier,
+                                                    enabled = interactive,
+                                                    content = content,
+                                                )
+                                            } else content()
                                         }
                                     }
                                 }
@@ -391,50 +398,27 @@ fun ModalBottomSheet(
 }
 
 @Composable
-private fun SheetDragHandle(
-    motion: CouiSheetMotion,
-    touch: SheetTouchSession,
-    canDrag: Boolean,
-    dark: Boolean,
-    onDismiss: () -> Unit,
+private fun SheetOverscrollContent(
+    modifier: Modifier,
+    enabled: Boolean,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
-    var handlePressed by remember { mutableStateOf(false) }
-    val handlePressAlpha by animateFloatAsState(
-        targetValue = if (handlePressed) 1f else 0f,
-        animationSpec = tween(200, easing = SheetEase),
-        label = "拖手柄按压",
+    val effect = rememberCouiOverscrollEffect()
+    Column(
+        modifier.fillMaxWidth().clipToBounds().overscroll(effect).scrollable(
+            state = rememberScrollableState { 0f },
+            orientation = Orientation.Vertical,
+            overscrollEffect = effect,
+            enabled = enabled,
+            reverseDirection = true,
+        ),
+        content = content,
     )
-    Canvas(Modifier.fillMaxWidth().height(CouiSheetDefaults.handleHeight)
-        .pointerInput(canDrag) {
-            if (!canDrag) return@pointerInput
-            awaitEachGesture {
-                awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                handlePressed = true
-                try {
-                    while (true) {
-                        val event = awaitPointerEvent(PointerEventPass.Final)
-                        if (event.isCouiTouchCancelled() ||
-                            event.changes.none { it.pressed }) break
-                    }
-                } finally {
-                    handlePressed = false
-                }
-            }
-        }
-        .sheetDrag(motion, touch, canDrag, onDismiss)) {
-        val press = handlePressAlpha
-        if (press > 0f) {
-            val shadowWidth = 70.dp.toPx()
-            val shadowHeight = 20.dp.toPx()
-            val color = Color(if (dark) 0x33FFFFFF else 0x1F000000)
-            drawRoundRect(
-                color = color.copy(alpha = color.alpha * press),
-                topLeft = Offset((size.width - shadowWidth) / 2f,
-                    (size.height - shadowHeight) / 2f),
-                size = Size(shadowWidth, shadowHeight),
-                cornerRadius = CornerRadius(16.dp.toPx()),
-            )
-        }
+}
+
+@Composable
+private fun SheetDragHandle(dark: Boolean) {
+    Canvas(Modifier.fillMaxWidth().height(CouiSheetDefaults.handleHeight)) {
         val width = 36.dp.toPx()
         val height = 4.dp.toPx()
         drawRoundRect(Color(if (dark) 0x40FFFFFF else 0x29000000),

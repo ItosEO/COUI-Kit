@@ -11,7 +11,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontSynthesis
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
@@ -43,13 +46,17 @@ enum class CouiTextKind(internal val size: Float, internal val family: String, i
 
     /** 分组下方的说明文字，默认从起始侧对齐。 */
     GroupFooter(12f, "sans-serif", 400),
+
+    /** 底部面板的居中标题，默认单行省略。 */
+    SheetTitle(18f, "sans-serif-medium", 550),
 }
 
 /** 系统资源决定排版；列表项标题和说明文字默认起始对齐。 */
 @Composable
 fun Text(modifier: Modifier = Modifier, text: String, kind: CouiTextKind, color: Color = Color.Unspecified,
     onLineCount: (Int) -> Unit = {}, textAlign: TextAlign? = null,
-    maxLines: Int = Int.MAX_VALUE, overflow: TextOverflow = TextOverflow.Clip) {
+    maxLines: Int = if (kind == CouiTextKind.SheetTitle) 1 else Int.MAX_VALUE,
+    overflow: TextOverflow = if (kind == CouiTextKind.SheetTitle) TextOverflow.Ellipsis else TextOverflow.Clip) {
     val style = rememberCouiTextStyle(kind)
     BasicText(text, modifier,
         style = style.copy(color = color.takeOrElse { CouiTheme.contentColor },
@@ -78,13 +85,18 @@ internal fun rememberCouiSystemTextStyle(kind: CouiTextKind, size: Float = kind.
 private fun rememberCouiTextStyle(kind: CouiTextKind, weight: Int, size: Float = kind.size): TextStyle {
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
-    return remember(kind, weight, size, configuration, density) {
-        val typeface = Typeface.create(Typeface.create(kind.family, Typeface.NORMAL), weight, false)
+    val family = if (kind == CouiTextKind.SheetTitle) CouiTheme.typography.dialogTitleFontFamily else null
+    val themedTypeface = family?.let {
+        LocalFontFamilyResolver.current.resolve(it, FontWeight(weight), fontSynthesis = FontSynthesis.None).value as Typeface
+    }
+    return remember(kind, weight, size, configuration, density, themedTypeface) {
+        val typeface = themedTypeface ?: Typeface.create(Typeface.create(kind.family, Typeface.NORMAL), weight, false)
         val pixels = if (kind == CouiTextKind.ItemValue) size * density.density
             else with(density) { size.sp.toPx().roundToInt().toFloat() }
-        couiTextStyle(typeface, weight, pixels, couiLineSpacing(kind),
+        val style = couiTextStyle(typeface, weight, pixels, couiLineSpacing(kind),
             includeFontPadding = kind != CouiTextKind.TopBar && kind != CouiTextKind.HomeTitle,
             density = density)
+        if (kind == CouiTextKind.SheetTitle) style.copy(letterSpacing = 0.sp) else style
     }
 }
 
@@ -92,7 +104,7 @@ private fun couiLineSpacing(kind: CouiTextKind): Float = when (kind) {
     CouiTextKind.GroupTitle -> if (Build.VERSION.SDK_INT >= 35) 1.143f else 1f
     CouiTextKind.GroupFooter -> if (Build.VERSION.SDK_INT >= 35) 1.143f else 1f
     CouiTextKind.ItemTitle -> if (Build.VERSION.SDK_INT >= 35) 1.158f else 1.05f
-    CouiTextKind.TopBar -> if (Build.VERSION.SDK_INT >= 35) 1.1429f else 1.15f
+    CouiTextKind.TopBar, CouiTextKind.SheetTitle -> if (Build.VERSION.SDK_INT >= 35) 1.1429f else 1.15f
     CouiTextKind.ItemSummary -> if (Build.VERSION.SDK_INT >= 35) 1.1739f else 1.1f
     CouiTextKind.HomeTitle -> 1f
     CouiTextKind.Search -> if (Build.VERSION.SDK_INT >= 35) 1.1321f else 1.1f

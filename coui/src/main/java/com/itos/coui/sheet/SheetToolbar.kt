@@ -31,6 +31,8 @@ import com.itos.coui.dialog.CouiDialogDefaults
 import com.itos.coui.effect.CouiContourStyle
 import com.itos.coui.effect.LocalCouiContourGlowEnabled
 import com.itos.coui.shape.CouiCapsuleShape
+import com.itos.coui.text.CouiTextKind
+import com.itos.coui.text.rememberCouiTextStyle
 import com.itos.coui.theme.CouiTheme
 import com.itos.coui.theme.LocalCouiDarkTheme
 import com.itos.coui.topappbar.CouiToolbarStyle
@@ -62,7 +64,7 @@ fun SheetToolbar(
     val backdrop = rememberCouiSheetSurfaceBackdrop()
     val density = LocalDensity.current.density
     val contour = LocalCouiContourGlowEnabled.current
-    val buttonTextStyle = rememberSheetTextStyle(SheetTextKind.Button)
+    val buttonTextStyle = rememberSheetButtonTextStyle()
     val colors = CouiDialogDefaults.themeColors(dark)
     val resolvedStyle = style ?: remember(dark, density, contour, buttonTextStyle, colors.action) {
         CouiToolbarStyle(dark, CouiTopAppBarButtonDefaults.circleShape, CouiCapsuleShape,
@@ -72,7 +74,7 @@ fun SheetToolbar(
             cursorColor = colors.action, contourGlowEnabled = contour,
             contourStyle = { capsule -> if (capsule) CouiContourStyle.Button else CouiContourStyle.CircleButton })
     }
-    val resolvedTitleStyle = rememberSheetTextStyle(SheetTextKind.Title).copy(textAlign = TextAlign.Center).merge(titleStyle)
+    val resolvedTitleStyle = rememberCouiTextStyle(CouiTextKind.SheetTitle).copy(textAlign = TextAlign.Center).merge(titleStyle)
     val resolvedTitleColor = titleStyle.color.takeOrElse {
         (style?.contentColor ?: Color.Unspecified).takeOrElse { colors.title }
     }
@@ -95,7 +97,7 @@ fun SheetToolbar(
                 .heightIn(min = CouiSheetDefaults.toolbarTitleMinHeight), contentAlignment = Alignment.Center) {
                 BasicText(title, Modifier.semantics { heading() },
                     style = resolvedTitleStyle.copy(color = resolvedTitleColor),
-                    maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }) { measurables, constraints ->
             val width = constraints.maxWidth
@@ -104,7 +106,7 @@ fun SheetToolbar(
                 maxHeight = constraints.maxHeight)
             val navigationPlaceable = measurables[0].measure(buttonConstraints)
             val actionPlaceable = measurables[1].measure(buttonConstraints)
-            // 两边按较宽操作区等量避让，标题保持窗口居中；长标题可自然增加高度。
+            // 两边按较宽操作区等量避让，标题保持窗口居中。
             val inset = maxOf(navigationPlaceable.width, actionPlaceable.width) + gap
             val titlePlaceable = measurables[2].measure(Constraints(
                 maxWidth = (width - 2 * inset).coerceAtLeast(0), maxHeight = constraints.maxHeight))

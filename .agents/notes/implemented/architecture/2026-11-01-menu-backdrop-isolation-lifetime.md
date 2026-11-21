@@ -18,7 +18,7 @@ ProvideCouiMenuBackdrop 的源覆盖所属窗口内容。若它始终使用 Offs
 
 源节点、clip、recorded、布局坐标、PreDraw 和 drawSource 录制继续存在。此决定只控制空闲源是否强制离屏，不删除采样节点、不冻结背景、不缩小输入，也不改变 Gaussian、Kawase 或菜单内容层的隔离。新菜单消费现有源，避免按需添加 source 带来的首帧重建。节点 detach 不清零消费者计数；即使图层已释放，消费者仍须偿还父链引用。诊断重建按 backdrop identity 迁移 Effect。
 
-接入优先限制在不透明、静态页面根。Clear、DstIn 等目标混合仍须由所属组件隔离；透明窗口、移动的 BottomSheet、缩放或分数位移容器保留默认策略，另行验证后才能选择 false。公开使用要求由[菜单](../../../../docs/components/menu.md#空闲时按需离屏)和[背景采样](../../../../docs/effects/backdrop.md#菜单窗口的离屏策略)维护。
+宿主自行安装窗口源时，优先在不透明、静态页面根采用按需离屏。透明窗口、缩放或分数位移容器需要独立验证。Clear、DstIn 等目标混合由所属组件隔离。[Sheet](../feature/2026-11-07-modal-bottom-sheet.md) 内部固定采用按需离屏。公开使用要求由[菜单](../../../../docs/components/menu.md#空闲时按需离屏)和[背景采样](../../../../docs/effects/backdrop.md#菜单窗口的离屏策略)维护。
 
 ## Evidence
 

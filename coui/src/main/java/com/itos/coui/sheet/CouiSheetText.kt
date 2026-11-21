@@ -15,26 +15,19 @@ import com.itos.coui.text.couiTextStyle
 import com.itos.coui.theme.CouiTheme
 import kotlin.math.roundToInt
 
-internal enum class SheetTextKind { Title, Button }
-
-/** Panel 标题沿 HeadlineS；菜单文字沿 COUIMenuItemStyle，不能借用警告弹窗的按钮角色。 */
+/** Panel 操作文字沿 COUIMenuItemStyle，保留 dp 字号。 */
 @Composable
-internal fun rememberSheetTextStyle(kind: SheetTextKind): TextStyle {
+internal fun rememberSheetButtonTextStyle(): TextStyle {
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
-    val title = kind == SheetTextKind.Title
-    val weight = if (title) 550 else 500
-    val typography = CouiTheme.typography
-    val family = if (title) typography.dialogTitleFontFamily else typography.dialogButtonFontFamily
+    val weight = 500
+    val family = CouiTheme.typography.dialogButtonFontFamily
     val typeface = if (family != null) {
         LocalFontFamilyResolver.current.resolve(family, FontWeight(weight), fontSynthesis = FontSynthesis.None).value as Typeface
     } else remember(weight) { Typeface.create(Typeface.create("sans-serif-medium", Typeface.NORMAL), weight, false) }
-    return remember(kind, configuration, density, typeface) {
-        // 原厂标题使用 sp，菜单的 coui_action_text_menu_size 明确为 dp。
-        val pixels = if (title) with(density) { 18.sp.toPx() } else 14f * density.density
-        val spacing = if (title) {
-            if (Build.VERSION.SDK_INT >= 35) 1.1429f else 1.15f
-        } else if (Build.VERSION.SDK_INT >= 35) 1.143f else 1f
+    return remember(configuration, density, typeface) {
+        val pixels = 14f * density.density
+        val spacing = if (Build.VERSION.SDK_INT >= 35) 1.143f else 1f
         couiTextStyle(typeface, weight, pixels.roundToInt().toFloat(), spacing,
             includeFontPadding = true, density = density).copy(letterSpacing = 0.sp)
     }

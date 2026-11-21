@@ -21,8 +21,9 @@
     <string name="sheet_timer_preset">添加到常用倒计时</string>
     <string name="sheet_usage">可打开闹钟、倒计时编辑器或半屏面板。点「完成」会在本 Demo 保存时钟草稿。</string>
     <string name="sheet_half">半屏面板</string>
-    <string name="sheet_half_usage">向下拖动顶部手柄，或点「关闭」退出面板。</string>
+    <string name="sheet_half_usage">向下拖动顶部手柄或面板空白处，也可点「关闭」。</string>
     <string name="sheet_close">关闭</string>
+    <string name="sheet_more_actions">更多选项</string>
     <string name="sheet_blur_title">面板背景模糊</string>
     <string name="sheet_blur_summary">实时采样面板后方的色块与页面内容。</string>
     <string name="sheet_blur_no_source">当前页面没有可用的背景采样源。</string>
