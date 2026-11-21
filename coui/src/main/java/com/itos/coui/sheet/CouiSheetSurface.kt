@@ -9,6 +9,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -28,7 +29,9 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.toSize
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.backdrop.couiBackdrop
 import com.itos.coui.effect.CouiContour
@@ -54,16 +57,19 @@ internal fun CouiSheetSurface(
     content: @Composable BoxScope.() -> Unit,
 ) {
     // 表面在组合期间保留外层窗口源，退场结束后与面板一并释放。
+    val materialEffect = if (Build.VERSION.SDK_INT >= 33 && material != null) {
+        rememberCouiMaterialEffect(
+            material.mix, material.blend, material.blendMode,
+            rgbMix = true, slightDither = material.blurRadius > 0,
+        )
+    } else null
     val blur = if (material != null) {
         val source = checkNotNull(backdrop)
         source.RetainWhileComposed()
-        rememberCouiKawaseBlur(source, colors.surface, material.blurRadius)
-    } else null
-    val materialEffect = if (Build.VERSION.SDK_INT >= 33 && material != null) {
-        rememberCouiMaterialEffect(material.mix, material.blend, material.blendMode, rgbMix = true)
+        rememberCouiKawaseBlur(source, colors.surface, material.blurRadius, nativeGrid = true)
     } else null
     val surfaceEffect = remember(materialEffect) { materialEffect?.asComposeRenderEffect() }
-    val layer = if (surfaceEffect != null) {
+    val materialLayer = if (surfaceEffect != null) {
         val result = rememberGraphicsLayer()
         DisposableEffect(result, surfaceEffect) {
             result.clip = true
@@ -102,21 +108,44 @@ internal fun CouiSheetSurface(
         }.couiBackdrop(surfaceBackdrop).drawWithCache {
             val window = if (blur != null) windowCoordinates() else null
             val panel = if (blur != null) panelCoordinates() else null
-            if (Build.VERSION.SDK_INT >= 33 && blur != null && layer != null &&
+            if (Build.VERSION.SDK_INT >= 33 && blur != null && materialLayer != null &&
                 window?.isAttached == true && panel?.isAttached == true &&
                 window.size.width > 0 && window.size.height > 0) {
-                // RenderEngine 以窗口与显示区的交集生成模糊图，面板区域再裁出对应位置。
+                // RenderEngine 以窗口与显示区的交集生成模糊图，面板区域再按位移裁出对应位置。
                 val windowToPanel = Matrix().also { panel.transformFrom(window, it) }
-                layer.record(this, layoutDirection, window.size) {
-                    blur.draw(this, window)
-                }
-                onDrawBehind {
-                    withTransform({
-                        translate(top = -translationY())
-                        transform(windowToPanel)
-                    }) {
-                        drawLayer(layer)
+                val prepared = blur.prepare(this, layoutDirection, window.size.toSize(), window)
+                val recordingDensity = Density(density, fontScale)
+                if (prepared != null) {
+                    val panelSize = IntSize(size.width.toInt(), size.height.toInt())
+                    val panelLayoutDirection = layoutDirection
+                    onDrawBehind {
+                        val offset = translationY()
+                        // 先放大模糊图，再在面板像素上执行混色和抖动，避免低分辨率材质量化形成色块。
+                        materialLayer.record(recordingDensity, panelLayoutDirection, panelSize) {
+                            withTransform({
+                                translate(top = -offset)
+                                transform(windowToPanel)
+                                scale(prepared.scaleX, prepared.scaleY, Offset.Zero)
+                            }) {
+                                drawLayer(prepared.layer)
+                            }
+                        }
+                        drawLayer(materialLayer)
                     }
+                } else if (material?.blurRadius == 0) {
+                    materialLayer.record(recordingDensity, layoutDirection, window.size) {
+                        blur.draw(this, window)
+                    }
+                    onDrawBehind {
+                        withTransform({
+                            translate(top = -translationY())
+                            transform(windowToPanel)
+                        }) {
+                            drawLayer(materialLayer)
+                        }
+                    }
+                } else {
+                    onDrawBehind { drawRect(colors.surface) }
                 }
             } else {
                 onDrawBehind { drawRect(colors.surface) }

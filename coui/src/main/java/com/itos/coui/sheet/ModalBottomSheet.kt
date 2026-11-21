@@ -200,10 +200,16 @@ fun ModalBottomSheet(
             val listener = view.doOnPreDraw { geometryReady = true }
             onDispose { listener.removeListener() }
         }
-        val sheetTranslation = remember(motion) {
-            { if (motion.height == 0f) windowHeight.coerceAtLeast(0).toFloat() else motion.offset }
+        // 原厂 translateUpdate 在开启背景模糊且存在遮罩时对位移取整，避免边缘亚像素错位。
+        val roundTranslation = material != null && colors.dimAmount > 0f
+        val sheetTranslation = remember(motion, roundTranslation) {
+            {
+                if (motion.height == 0f) windowHeight.coerceAtLeast(0).toFloat()
+                else if (roundTranslation) motion.offset.roundToInt().toFloat()
+                else motion.offset
+            }
         }
-        val menuBounds = remember(view, density, motion) {
+        val menuBounds = remember(view, density, motion, sheetTranslation) {
             CouiMenuVisibleBounds(view) {
                 val panel = panelCoordinates?.takeIf { it.isAttached }
                 val viewport = viewportCoordinates?.takeIf { it.isAttached }?.boundsInWindow()
@@ -215,7 +221,7 @@ fun ModalBottomSheet(
                 } else {
                     // 完整 frame 先随面板位移，再裁到真实父视口；不能先裁静态 H 再平移。
                     val width = panel.size.width.toFloat()
-                    val top = motion.offset
+                    val top = sheetTranslation()
                     val bottom = top + panel.size.height + with(density) { CouiSheetDefaults.bottomPadding.roundToPx() }
                     val topLeft = panel.localToWindow(Offset(0f, top))
                     val topRight = panel.localToWindow(Offset(width, top))

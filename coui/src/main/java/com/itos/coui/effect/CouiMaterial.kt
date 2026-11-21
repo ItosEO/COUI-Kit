@@ -24,9 +24,12 @@ internal fun rememberCouiMaterialEffect(
     blend: Color,
     blendMode: CouiMaterialBlendMode,
     rgbMix: Boolean,
+    slightDither: Boolean = false,
 ): RenderEffect =
-    remember(mix, blend, blendMode, rgbMix) {
-        val shader = RuntimeShader("const bool RGB_MIX = $rgbMix;\n" + CouiMaterialShader)
+    remember(mix, blend, blendMode, rgbMix, slightDither) {
+        val shader = RuntimeShader(
+            "const bool RGB_MIX = $rgbMix;\nconst bool SLIGHT_DITHER = $slightDither;\n" + CouiMaterialShader,
+        )
         shader.setFloatUniform("uMixColor", mix.red, mix.green, mix.blue, mix.alpha)
         shader.setFloatUniform("uBlendColor", blend.red, blend.green, blend.blue, blend.alpha)
         shader.setFloatUniform("uColorDodge", if (blendMode == CouiMaterialBlendMode.ColorDodge) 1f else 0f)
@@ -81,15 +84,42 @@ private const val CouiMaterialShader = CouiMaterialShaderFunctions + """
     uniform float4 uBlendColor;
     uniform float uColorDodge;
 
+    half rgbOverlay(half source, half destination) {
+        return destination < 0.5
+            ? 2.0 * source * destination
+            : 1.0 - 2.0 * (1.0 - source) * (1.0 - destination);
+    }
+
     half4 main(float2 coordinate) {
         half4 color = content.eval(coordinate);
-        float3 tint = RGB_MIX ? uMixColor.rgb : luminosity(uMixColor.rgb, color.rgb);
-        color.rgb = mix(color.rgb, tint, uMixColor.a);
-        // MaterialFilter::appendColorDodge：不提前限幅；在最终 SDR 输出处合成。
-        float3 blend = uColorDodge < 0.5
-            ? overlay(uBlendColor.rgb, color.rgb)
-            : color.rgb / (1.0 - uBlendColor.rgb);
-        color.rgb = mix(color.rgb, blend, uBlendColor.a);
+        if (SLIGHT_DITHER) {
+            // 面板绘制包含屏外余量；材质处理后仍须保留放大采样的覆盖度。
+            if (color.a == 0.0) return half4(0.0);
+            color.rgb /= color.a;
+        }
+        if (RGB_MIX) {
+            // 原厂的 RGB 混色与第二层混合均使用 half；ColorDodge 保留未限幅结果。
+            half4 mixColor = half4(uMixColor);
+            half4 blendColor = half4(uBlendColor);
+            color.rgb = mix(color.rgb, mixColor.rgb, mixColor.a);
+            half3 blend = uColorDodge < 0.5
+                ? half3(rgbOverlay(blendColor.r, color.r), rgbOverlay(blendColor.g, color.g),
+                    rgbOverlay(blendColor.b, color.b))
+                : color.rgb / (half3(1.0) - blendColor.rgb);
+            color.rgb = mix(color.rgb, blend, blendColor.a);
+        } else {
+            float3 tint = luminosity(uMixColor.rgb, color.rgb);
+            color.rgb = mix(color.rgb, tint, uMixColor.a);
+            float3 blend = uColorDodge < 0.5
+                ? overlay(uBlendColor.rgb, color.rgb)
+                : color.rgb / (1.0 - uBlendColor.rgb);
+            color.rgb = mix(color.rgb, blend, uBlendColor.a);
+        }
+        if (SLIGHT_DITHER) {
+            // SkiaDitherEffect::createSlightDitherShader：输出像素上共享 RGB 扰动，避免引入彩色噪点。
+            float noise = fract(sin(dot(coordinate, float2(12.9898, 78.233))) * 43758.5453);
+            color.rgb = (color.rgb + mix(-0.005, 0.005, noise)) * color.a;
+        }
         return color;
     }
 """

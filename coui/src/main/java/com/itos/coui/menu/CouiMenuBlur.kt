@@ -5,8 +5,10 @@ import android.graphics.RuntimeShader
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -28,8 +30,53 @@ fun rememberCouiMenuBlur(backdrop: CouiBackdrop, background: Color): CouiMenuBlu
 
 /** 菜单固定 radius160; 弹窗使用原厂 integer/coui_dialog_blur_radius = 200。 */
 private const val CouiMenuBlurRadius = 160
+private const val FastKawaseQuarterMaxRadius = 80
 private const val FastKawaseEighthMaxRadius = 250
-private const val KawasePassCount = 9
+private const val FastKawaseMaxPasses = 10
+
+private data class FastKawaseSpec(
+    val scaleDivisor: Int,
+    val kawasePasses: Int,
+    val step: Float,
+) {
+    fun downsampleCount(nativeGrid: Boolean): Int = when (scaleDivisor) {
+        16 -> if (nativeGrid) 2 else 3
+        8 -> if (nativeGrid) 1 else 2
+        else -> 1
+    }
+}
+
+/** 对齐 RenderEngine BlurGenerator::fastKawaseGenerator 的三档尺度、轮数与步长。 */
+private fun fastKawaseSpec(radius: Int): FastKawaseSpec {
+    if (radius <= 0) return FastKawaseSpec(scaleDivisor = 4, kawasePasses = 0, step = 0f)
+    val scaleDivisor: Int
+    val effectiveRadius: Float
+    when {
+        radius <= FastKawaseQuarterMaxRadius -> {
+            scaleDivisor = 4
+            effectiveRadius = radius.toFloat()
+        }
+        radius <= FastKawaseEighthMaxRadius -> {
+            scaleDivisor = 8
+            effectiveRadius = (radius - 10).coerceAtLeast(0).toFloat()
+        }
+        else -> {
+            scaleDivisor = 16
+            effectiveRadius = (radius - 26).coerceAtLeast(0).toFloat()
+        }
+    }
+    val tmpRadius = effectiveRadius / 9f
+    val totalPasses = ceil(tmpRadius).toInt().coerceAtMost(FastKawaseMaxPasses)
+    val kawasePasses = (totalPasses - 1).coerceAtLeast(0)
+    val step = if (totalPasses > 1) (tmpRadius / totalPasses) / scaleDivisor else 0f
+    return FastKawaseSpec(scaleDivisor, kawasePasses, step)
+}
+
+internal class PreparedKawaseBlur(
+    val layer: GraphicsLayer,
+    val scaleX: Float,
+    val scaleY: Float,
+)
 
 /** 原厂 BackgroundBlurDrawable 的 Fast Kawase 载体, radius 为引擎等级而不是像素。 */
 @Composable
@@ -37,28 +84,33 @@ internal fun rememberCouiKawaseBlur(
     backdrop: CouiBackdrop,
     background: Color,
     radius: Int,
+    nativeGrid: Boolean = false,
 ): CouiMenuBlur? {
     if (Build.VERSION.SDK_INT < 33) return null
-    val downsampleCount = if (radius > FastKawaseEighthMaxRadius) 2 else 1
-    val layers = List(downsampleCount + KawasePassCount) { rememberGraphicsLayer() }
-    return remember(backdrop, background, radius, layers) {
-        CouiMenuBlur(backdrop, background, radius, layers)
+    val spec = remember(radius) { fastKawaseSpec(radius) }
+    val layerCount = if (radius <= 0) 0 else spec.downsampleCount(nativeGrid) + spec.kawasePasses.coerceAtLeast(1)
+    val layers = key(layerCount) { List(layerCount) { rememberGraphicsLayer() } }
+    return remember(backdrop, background, radius, nativeGrid, layers) {
+        CouiMenuBlur(backdrop, background, radius, nativeGrid, layers)
     }
 }
 
-/** 移植 type 2 Fast Kawase，radius 使用原厂引擎等级，每轮保留独立像素网格。 */
+/** 移植 type 2 Fast Kawase，radius 使用原厂引擎等级，降采样后执行五点滤波。 */
 @RequiresApi(33)
 class CouiMenuBlur internal constructor(
     private val backdrop: CouiBackdrop,
     private val background: Color,
     private val radius: Int,
+    private val nativeGrid: Boolean,
     private val layers: List<GraphicsLayer>,
 ) {
-    private val sixteenth = radius > FastKawaseEighthMaxRadius
-    private val downsample = RuntimeShader(KawaseDownsampleShader)
+    private val spec = fastKawaseSpec(radius)
+    private val downsampleCount = spec.downsampleCount(nativeGrid)
+    private val boxDownsample = if (nativeGrid && radius > 0) RuntimeShader(KawaseDownsampleShader) else null
     private val kawase = RuntimeShader(KawasePassShader)
-    private var effectInputSize = IntSize.Zero
-    private var recordedBlurSize = IntSize.Zero
+    private var effectBlurSize = IntSize.Zero
+    private var recordedBlocks = IntSize.Zero
+    private var recordedCaptureSize = IntSize.Zero
     private var recordedDensity: Density? = null
     private var recordedLayoutDirection: LayoutDirection? = null
 
@@ -66,6 +118,7 @@ class CouiMenuBlur internal constructor(
         layers.forEach {
             it.compositingStrategy = CompositingStrategy.Offscreen
             it.clip = true
+            it.renderEffect = null
         }
     }
 
@@ -79,124 +132,168 @@ class CouiMenuBlur internal constructor(
         translation: Offset,
         dimAmount: Float = 0f,
     ) {
-        fun drawSource(target: DrawScope) {
-            target.withTransform({
-                scale(1f / sampleScale, 1f / sampleScale, Offset.Zero)
-                translate(-translation.x, -translation.y)
-            }) { backdrop.draw(this, coordinates) }
-        }
-        fun drawInputDim(target: DrawScope) {
-            // 宿主录制缺少系统遮罩，在采样层补上它以对齐窗口合成顺序。
-            if (dimAmount > 0f) target.drawRect(Color.Black, alpha = dimAmount)
-        }
         val menuSize = scope.size
         if (!coordinates.isAttached || menuSize.width <= 0f || menuSize.height <= 0f) return
-        if (radius == 0) {
+        val prepared = prepare(scope, scope.layoutDirection, menuSize, coordinates, sampleScale, translation, dimAmount)
+        if (prepared == null) {
             scope.drawRect(background)
-            drawSource(scope)
-            drawInputDim(scope)
+            if (radius == 0) drawSource(scope, coordinates, sampleScale, translation)
+            if (dimAmount > 0f) scope.drawRect(Color.Black, alpha = dimAmount)
             return
         }
+        scope.withTransform({
+            // 原厂用输入区域与最终网格尺寸的实际比值恢复尺寸。
+            scale(prepared.scaleX, prepared.scaleY, Offset.Zero)
+        }) {
+            drawLayer(prepared.layer)
+        }
+    }
+
+    /** 录制并更新最终小尺寸模糊层；调用方可在位移期间直接复用该层而无需整窗离屏缓存。 */
+    internal fun prepare(
+        density: Density,
+        layoutDirection: LayoutDirection,
+        targetSize: Size,
+        coordinates: LayoutCoordinates,
+        sampleScale: Float = 1f,
+        translation: Offset = Offset.Zero,
+        dimAmount: Float = 0f,
+    ): PreparedKawaseBlur? {
+        if (radius <= 0 || layers.isEmpty() || !coordinates.isAttached ||
+            targetSize.width <= 0f || targetSize.height <= 0f
+        ) return null
         val origin = coordinates.localToScreen(Offset.Zero)
-        val right = coordinates.localToScreen(Offset(menuSize.width, 0f))
-        val bottom = coordinates.localToScreen(Offset(0f, menuSize.height))
+        val right = coordinates.localToScreen(Offset(targetSize.width, 0f))
+        val bottom = coordinates.localToScreen(Offset(0f, targetSize.height))
         val deviceWidth = (right - origin).getDistance() * sampleScale
         val deviceHeight = (bottom - origin).getDistance() * sampleScale
         if (!deviceWidth.isFinite() || !deviceHeight.isFinite() || deviceWidth <= 0f || deviceHeight <= 0f) {
-            scope.drawRect(background)
-            drawInputDim(scope)
-            return
+            return null
         }
 
-        // RenderEngine 以设备像素计算 ceil(extent / 16)，再扩展各轮的对齐尺寸。
+        // RenderEngine 以设备像素计算 ceil(extent / 16)，再按目标档位对齐各级尺寸。
         val blocksX = ceil(deviceWidth / 16f).toInt().coerceAtLeast(1)
         val blocksY = ceil(deviceHeight / 16f).toInt().coerceAtLeast(1)
-        val captureSize = IntSize(blocksX * 8, blocksY * 8)
-        val firstSize = if (sixteenth) IntSize(blocksX * 4, blocksY * 4) else captureSize
-        val blurSize = IntSize(firstSize.width / 4, firstSize.height / 4)
-        updateEffects(captureSize, firstSize, blurSize)
+        // 原厂 1/8 档先把输入双线性缩到半尺寸。1/4 与 1/16 档直接在原尺寸输入上取四点。
+        val captureSize = if (nativeGrid && spec.scaleDivisor != 8) {
+            IntSize(ceil(deviceWidth).toInt(), ceil(deviceHeight).toInt())
+        } else {
+            IntSize(blocksX * 8, blocksY * 8)
+        }
+        val blurFactor = 16 / spec.scaleDivisor
+        val blurSize = IntSize(blocksX * blurFactor, blocksY * blurFactor)
+        updateEffects(blurSize)
 
-        layers[0].record(scope, scope.layoutDirection, captureSize) {
+        // 保存独立 Density 值，不让 GraphicsLayer 恢复回调持有 DrawScope / CacheDrawScope。
+        val recordingDensity = Density(density.density, density.fontScale)
+        layers[0].record(recordingDensity, layoutDirection, captureSize) {
             // 补底也进入采样链, 不能在材质混色之后再补不透明背景。
             drawRect(background)
             withTransform({
-                scale(captureSize.width / menuSize.width, captureSize.height / menuSize.height, Offset.Zero)
+                scale(captureSize.width / targetSize.width, captureSize.height / targetSize.height, Offset.Zero)
             }) {
-                drawSource(this)
+                drawSource(this, coordinates, sampleScale, translation)
             }
-            drawInputDim(this)
+            // 宿主录制缺少系统遮罩，在采样层补上它以对齐窗口合成顺序。
+            if (dimAmount > 0f) drawRect(Color.Black, alpha = dimAmount)
         }
-        recordBlurPasses(scope, firstSize, blurSize)
-        scope.withTransform({
-            // 原厂用输入区域与最终网格尺寸的实际比值恢复尺寸。
-            scale(menuSize.width / blurSize.width, menuSize.height / blurSize.height, Offset.Zero)
-        }) {
-            drawLayer(layers.last())
-        }
+        recordBlurPasses(recordingDensity, layoutDirection, blocksX, blocksY, captureSize, blurSize)
+        return PreparedKawaseBlur(
+            layer = layers.last(),
+            scaleX = targetSize.width / blurSize.width,
+            scaleY = targetSize.height / blurSize.height,
+        )
     }
 
-    private fun recordBlurPasses(scope: DrawScope, firstSize: IntSize, blurSize: IntSize) {
-        val density = recordedDensity
-        if (recordedBlurSize == blurSize && density != null && density.density == scope.density &&
-            density.fontScale == scope.fontScale && recordedLayoutDirection == scope.layoutDirection
+    private fun drawSource(
+        target: DrawScope,
+        coordinates: LayoutCoordinates,
+        sampleScale: Float,
+        translation: Offset,
+    ) {
+        target.withTransform({
+            scale(1f / sampleScale, 1f / sampleScale, Offset.Zero)
+            translate(-translation.x, -translation.y)
+        }) { backdrop.draw(this, coordinates) }
+    }
+
+    private fun recordBlurPasses(
+        recordingDensity: Density,
+        layoutDirection: LayoutDirection,
+        blocksX: Int,
+        blocksY: Int,
+        captureSize: IntSize,
+        blurSize: IntSize,
+    ) {
+        val blocks = IntSize(blocksX, blocksY)
+        val cachedDensity = recordedDensity
+        if (recordedBlocks == blocks && recordedCaptureSize == captureSize && cachedDensity != null &&
+            cachedDensity.density == recordingDensity.density &&
+            cachedDensity.fontScale == recordingDensity.fontScale &&
+            recordedLayoutDirection == layoutDirection
         ) return
-        // 固定指令只引用前驱层; RenderNode 继续跟踪动态内容, GraphicsLayer 负责恢复被回收的指令。
-        // 保存 Density 值, 不让恢复回调持有不断重定向的 DrawScope。
-        val recordingDensity = Density(scope.density, scope.fontScale)
+        var previousSize = captureSize
         for (index in 1..layers.lastIndex) {
             val previous = layers[index - 1]
-            val size = if (sixteenth && index == 1) firstSize else blurSize
-            layers[index].record(recordingDensity, scope.layoutDirection, size) {
-                drawLayer(previous)
+            val shrink = index <= downsampleCount
+            val size = when {
+                !shrink || index == downsampleCount -> blurSize
+                nativeGrid -> IntSize(blocksX * 4, blocksY * 4)
+                else -> IntSize(previousSize.width / 2, previousSize.height / 2)
             }
+            if (shrink && boxDownsample != null) {
+                boxDownsample.setFloatUniform("inputSize", previousSize.width.toFloat(), previousSize.height.toFloat())
+                boxDownsample.setFloatUniform("inputScale", previousSize.width.toFloat() / size.width,
+                    previousSize.height.toFloat() / size.height)
+                boxDownsample.setFloatUniform("outputSize", size.width.toFloat(), size.height.toFloat())
+                previous.renderEffect =
+                    RenderEffect.createRuntimeShaderEffect(boxDownsample, "child").asComposeRenderEffect()
+            }
+            layers[index].record(recordingDensity, layoutDirection, size) {
+                if (shrink && !nativeGrid) {
+                    withTransform({ scale(0.5f, 0.5f, Offset.Zero) }) { drawLayer(previous) }
+                } else {
+                    drawLayer(previous)
+                }
+            }
+            previousSize = size
         }
-        recordedBlurSize = blurSize
+        recordedBlocks = blocks
+        recordedCaptureSize = captureSize
         recordedDensity = recordingDensity
-        recordedLayoutDirection = scope.layoutDirection
+        recordedLayoutDirection = layoutDirection
     }
 
-    private fun updateEffects(captureSize: IntSize, firstSize: IntSize, blurSize: IntSize) {
-        if (effectInputSize == captureSize) return
-        if (sixteenth) {
-            // 1/16 分支先将 ±0.25 的四个取样点栅格化在首轮输出的两倍网格上，再做平均。
-            setDownsampleEffect(layers[0], captureSize, 2f)
-        }
-        val downsampleIndex = if (sixteenth) 1 else 0
-        setDownsampleEffect(layers[downsampleIndex], firstSize, 4f)
-        // fastKawaseGenerator 的 1/16 分支先减 26，再用 (radius / 9) / 10 计算步长。
-        val step = if (sixteenth) (radius - 26f) / 9f / 10f / 16f else (radius - 10f) / (9f * 10f) / 8f
+    private fun updateEffects(blurSize: IntSize) {
+        if (effectBlurSize == blurSize || spec.kawasePasses == 0) return
         kawase.setFloatUniform("inputSize", blurSize.width.toFloat(), blurSize.height.toFloat())
-        for (pass in 1..KawasePassCount) {
-            kawase.setFloatUniform("in_blurOffset", pass * step)
-            layers[downsampleIndex + pass].renderEffect =
+        for (pass in 1..spec.kawasePasses) {
+            kawase.setFloatUniform("in_blurOffset", pass * spec.step)
+            layers[downsampleCount + pass - 1].renderEffect =
                 RenderEffect.createRuntimeShaderEffect(kawase, "child").asComposeRenderEffect()
         }
-        effectInputSize = captureSize
-    }
-
-    private fun setDownsampleEffect(layer: GraphicsLayer, inputSize: IntSize, scale: Float) {
-        downsample.setFloatUniform("inputSize", inputSize.width.toFloat(), inputSize.height.toFloat())
-        downsample.setFloatUniform("inputScale", scale)
-        layer.renderEffect = RenderEffect.createRuntimeShaderEffect(downsample, "child").asComposeRenderEffect()
+        effectBlurSize = blurSize
     }
 }
 
-// RenderEngine 的四点下采样，矩阵与图像边界由采样网格给定。
+// 原厂在输出像素中心的 ±0.25 处取样，再经逆矩阵映射到输入像素。
 private const val KawaseDownsampleShader = """
     uniform shader child;
     uniform float2 inputSize;
-    uniform float inputScale;
-    half offset = 0.25;
+    uniform float2 inputScale;
+    uniform float2 outputSize;
 
     half4 sampleChild(float2 xy) {
         return child.eval(clamp(xy * inputScale, float2(0.5), inputSize - 0.5));
     }
 
     half4 main(float2 xy) {
-        half4 c = sampleChild(xy + float2(+offset, +offset));
-             c += sampleChild(xy + float2(+offset, -offset));
-             c += sampleChild(xy + float2(-offset, -offset));
-             c += sampleChild(xy + float2(-offset, +offset));
+        // RenderEffect 的输出仍占输入层尺寸，后续只读取原厂目标网格。
+        if (any(greaterThanEqual(xy, outputSize))) return half4(0.0);
+        half4 c = sampleChild(xy + float2(+0.25, +0.25));
+        c += sampleChild(xy + float2(+0.25, -0.25));
+        c += sampleChild(xy + float2(-0.25, -0.25));
+        c += sampleChild(xy + float2(-0.25, +0.25));
         return half4(c.rgb * 0.25, 1.0);
     }
 """
