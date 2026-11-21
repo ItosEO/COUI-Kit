@@ -2,6 +2,19 @@
 
 COUI-Kit 处于早期预览阶段。本文记录公开 API、行为、接入和兼容要求的变化。日期以提交合并时间为准；版本归档以真实 Git Tag 和发行产物为准。
 
+## [0.0.1-alpha13] - 2026-11-21
+
+### 新增与改进
+
+- 新增底部面板 `BottomSheet`，通过 `MutableState<Boolean>` 控制显隐，支持居中标题、两侧操作按钮、正文滚动回弹及下拉关闭。面板支持 API 31+，有宿主窗口背景源时可在 API 33+ 启用模糊材质，顶部按钮的浮动材质要求 API 34+。[底部面板](docs/components/bottom-sheet.md)
+- 对齐底部面板 Fast Kawase 的降采样网格与放大后的混色顺序，减轻底图的色阶块。面板内的菜单和子菜单按面板可见范围定位，顶部按钮可用 `CouiSheetButton.popupContent` 挂载固定位置的菜单。[菜单](docs/components/menu.md)
+- `ChipTabRow` 可继承容器提供的背景源，并支持分别设置选中底色与前景色。新增默认单行省略的 `CouiTextKind.SheetTitle`。[分类栏](docs/components/chip-tab.md)
+- `WheelPicker` 支持单独设置滚轮文字的可见宽度和对齐方式，整列仍可触摸拖动。[选择器](docs/components/pickers.md)
+
+### 升级说明
+
+- `coui`、`coui-material3` 和 `coui-icons` 使用同一版本。升级后重新编译宿主模块。
+
 ## [0.0.1-alpha12] - 2026-11-18
 
 ### 新增与改进
