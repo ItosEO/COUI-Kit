@@ -112,7 +112,7 @@ fun rememberToolbarStyle(
 
 - `circleShape` 用于圆形图标按钮，`capsuleShape` 用于文字按钮与搜索胶囊；搜索框材质配置见[顶栏搜索](search.md#搜索框样式)。
 - `contourGlowEnabled` 与 `shadow` 工厂中的 `contour` 应保持同一个状态，避免轮廓光与阴影策略不一致。
-- **`contourStyle`（独立 Drawable 轮廓）**：`CouiToolbarStyle.contourStyle` 为 `TopAppBarButton` 选择独立 Drawable 轮廓，省略（`null`）时沿用浮动材质轮廓。此配置仅替换光效预设，沿用按钮既有的圆形/胶囊几何；按当前形状返回 `CouiContourStyle`，不接受 `CouiContourStyle.Menu`。轮廓在材质之后、清晰内容之前合成，同样遵守 `contourGlowEnabled`。[SheetToolbar](bottom-sheet.md) 自动选择面板内工具栏所需的预设，宿主无需重复装配。
+- `CouiToolbarStyle.contourStyle` 为 `TopAppBarButton` 指定独立 Drawable 轮廓，`null` 时沿用浮动材质轮廓。按按钮形状返回 `CouiContourStyle`，可选预设见[轮廓光](../effects/lighting.md#独立-drawable-轮廓)。`TopAppBarButton` 仅接受非 `Menu` 的独立预设。轮廓在材质之后、内容之前绘制，受 `contourGlowEnabled` 控制。[SheetToolbar](bottom-sheet.md) 会按面板内的按钮形状选择预设。
 
 ## 添加操作与显隐动画
 

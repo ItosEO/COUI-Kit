@@ -92,12 +92,14 @@ fun CategoryChipTabWithActionExample(
 | `leadingActionVisible` | `true` | 控制 `leadingAction` 的动画显隐并联动列表起始留白。 |
 | `itemSpacing` | `8.dp` | 分类胶囊间距，必须为有限非负 `Dp`。 |
 | `animationLevel` | `1` | 横向滚动物理动画等级，范围 `1..4`（`1` 最明显，`4` 最弱）。 |
-| `contentColor` / `disabledContentColor` | `CouiChipTabDefaults.contentColor(...)` | 正常态与禁用态前景颜色；传入 `Color.Unspecified` 时继承当前内容色；禁用项统一使用 `disabledContentColor`，不被选中前景覆盖。 |
+| `contentColor` / `disabledContentColor` | `CouiChipTabDefaults.contentColor(...)` | 正常态和禁用态前景色。传入 `Color.Unspecified` 时继承当前内容色。禁用项统一取 `disabledContentColor`。 |
 | `textStyle` | `CouiChipTabDefaults.themeTextStyle()` | 文字排版样式（可选 M3 适配仅接入 `labelLarge` 字体族，保留 `14.sp` 字号与 `Medium` 字重；显式传入则完整覆盖）。 |
 | `contourGlowEnabled` | `LocalCouiContourGlowEnabled.current` | 是否启用边缘轮廓光效。 |
 | `renderers` | 自动按 `items.key` 创建 | 各个 `ChipTab` 对应的 `CouiFloatingRenderer` 列表；显式传入时数量须与 `items` 一致且实例不可重复。 |
-| `selectedColor` | `null` | `ChipTab` 与 `ChipTabRow` 的可选选中背景色。为 `null` 时保留中性玻璃材质；仅覆盖选中背景，不自动改动前景色。 |
-| `selectedContentColor` | `contentColor` | `ChipTab` 与 `ChipTabRow` 的可选选中前景色，随选中进度过渡；传 `Color.Unspecified` 时继承当前内容色。禁用项统一使用 `disabledContentColor`；图标与文字显式着色优先。需要强调色分类时，可成对传入 `CouiTheme.colorScheme.accent` 与 `CouiTheme.colorScheme.onAccent`（M3 宿主可传入 `primary` 与 `onPrimary`）。 |
+| `selectedColor` | `null` | 选中背景色。省略时使用中性玻璃材质。 |
+| `selectedContentColor` | `contentColor` | 随选中进度过渡的前景色。`Color.Unspecified` 继承当前内容色，禁用项取 `disabledContentColor`，图标和文字的显式着色优先。 |
+
+`ChipTab` 和 `ChipTabRow` 均可分别设置选中背景色与前景色。需要强调色时可搭配 `CouiTheme.colorScheme.accent` 和 `onAccent`，Material 3 宿主可使用 `primary` 和 `onPrimary`。
 
 ## 装配注意事项
 

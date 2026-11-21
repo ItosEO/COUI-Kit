@@ -8,55 +8,43 @@
 
 ## 基本用法
 
-在宿主 Composable 中**常驻调用** `ModalBottomSheet`，通过 `visible` 控制展开与收起。下面展示一个固定高度的底部编辑面板，文案、深浅色模式与状态回调均由宿主传入：
+在宿主中常驻调用 `ModalBottomSheet`，通过 `visible` 控制展收。`content` 按 `ColumnScope` 排版，可直接放入标题、正文或其他组件。
 
 ~~~kotlin
 @Composable
-fun DraftSheetExample(
+fun BasicSheetExample(
     modifier: Modifier = Modifier,
     visible: Boolean,
     title: String,
-    cancelDescription: String,
-    draftText: String,
-    saveLabel: String,
-    dark: Boolean = CouiTheme.isDark,
+    bodyText: String,
     onDismissRequest: () -> Unit,
-    onSave: () -> Unit,
 ) {
     ModalBottomSheet(
         modifier = modifier,
         visible = visible,
         onDismissRequest = onDismissRequest,
         title = title,
-        dismissDescription = cancelDescription,
-        dark = dark,
-        sheetHeight = 520.dp,
     ) {
-        Text(title)
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState()),
-        ) {
-            Text(draftText)
-        }
-        TextButton(onClick = onSave) {
-            Text(saveLabel)
-        }
+        Text(text = title, kind = CouiTextKind.SheetTitle)
+        BasicText(bodyText)
     }
 }
 ~~~
 
-接入时注意以下三点：
+收到 `onDismissRequest` 后，由宿主将 `visible` 设为 `false`。保持 Sheet 在组合中，窗口会在退场动画结束后释放。示例的标题使用 `com.itos.coui.text.Text`。
 
-1. **不要用 `if (visible)` 包裹组件**：`visible = false` 时组件会先执行退场动画，动画结束后自动释放底层 `Dialog` 窗口。如果在外层写 `if (visible) { ModalBottomSheet(...) }`，关闭时会直接销毁窗口、跳过退场动画。
-2. **高度与容器约束**：`modifier` 作用于面板容器本身（居中贴底并受 `CouiSheetDefaults.maxWidth` 约束），不作用于全屏遮罩。`sheetHeight` 指定具体 `Dp` 时包含顶部拖动条、正文与底部安全区；传入 `null`（默认）时按内容高度自适应，且始终受父容器可用高度与顶部留白限制（横屏及键盘弹出时同样生效）。
-3. **单层纵向滚动**：`content` 槽位运行在 `ColumnScope` 中（可直接使用 `Modifier.weight(1f)`）。长内容请放入单个滚动容器（如 `verticalScroll`、`LazyColumn` 或 [couiVerticalScroll](../effects/overscroll.md)），固定标题或底部操作区放在滚动容器外，避免嵌套多层纵向滚动。需要在内容区保留上下越界回弹而不触发面板下拉关闭时，使用 `Modifier.clipToBounds().couiVerticalScroll(...)` 并将 `nestedScrollEnabled` 设为 `false`（或在完全禁用面板拖动时将 `draggable` 设为 `false`）。示例中的 `Text` 和 `TextButton` 来自 Material 3，可按宿主设计体系替换或使用 `BasicText`（`ModalBottomSheet` 本身不依赖 Material 3）。
+`modifier` 作用于贴底居中的面板，宽度受 `CouiSheetDefaults.maxWidth` 约束。默认按内容测量高度，也可设置 `sheetHeight`，该高度包含拖动条、正文和底部安全区。横屏和键盘弹出时，面板受窗口可用高度限制。
+
+### 滚动与回弹
+
+长正文放进一个纵向滚动容器，例如 `LazyColumn` 或 [couiVerticalScroll](../effects/overscroll.md)。可给容器加 `Modifier.weight(1f)`，把固定标题和操作区放在容器外。
+
+- 默认从空白处下拉可以关闭，滚动组件各自处理回弹。将 `nestedScrollEnabled` 设为 `false` 可让正文到顶后的下拉留在滚动组件内。
+- `fullPageOverscroll = true` 时，从正文空白处拖动也能触发弹簧回弹。此时正文的嵌套拖动交给内容处理。若显示了拖动条，仍可从拖动条下拉关闭。
 
 ## 搭配面板工具栏（`SheetToolbar`）
 
-当面板需要居中标题与两侧操作按钮（如“取消 / 完成”）时，在面板顶部放入 `SheetToolbar`。面板默认隐藏拖动条。在 API 34 及以上可将槽位收到的 `CouiToolbarStyle` 传给 [TopAppBarButton](top-app-bar.md)，较低版本放置读取 `style.textStyle` 与 `style.contentColor` 的普通按钮：
+需要居中标题和“取消 / 完成”等操作时，在面板顶部放入 `SheetToolbar`。API 34 及以上可将槽位收到的样式传给 [TopAppBarButton](top-app-bar.md)，较低版本可用读取槽位样式的普通按钮。以下示例的普通按钮使用 Material 3 的 `TextButton` 和 `Text`。
 
 ~~~kotlin
 @Composable
@@ -123,13 +111,12 @@ fun SheetWithToolbarExample(
 }
 ~~~
 
-- **槽位样式传递**：`navigation` 和 `actions` 槽位会收到适配面板内部对比度的 `CouiToolbarStyle`。API 34+ 直接传给 `TopAppBarButton` 时，按钮会向其内容插槽提供 `LocalCouiTextStyle.current` 与 `LocalCouiContentColor.current`；较低版本或放置其他自定义按钮时，请从收到的 `style` 读取 `style.textStyle` 与 `style.contentColor`。
-- **标题与样式覆盖**：`SheetToolbar` 默认继承面板的 `dark` 设置，可通过 `style` 覆盖按钮外观、通过 `titleStyle` 覆盖标题排版与颜色。标题颜色依次取 `titleStyle.color`、`style?.contentColor` 与主题标题色。标题沿用 `CouiTextKind.SheetTitle`，默认 `18sp`、字重 `550`，居中显示一行，溢出时显示省略号。操作文字默认 `14dp`、字重 `500`。标题和操作文字可分别通过 `CouiTheme.typography.dialogTitleFontFamily` 与 `dialogButtonFontFamily` 指定字体族。
-- **使用范围**：`SheetToolbar` 必须在 `ModalBottomSheet` 内容中调用，它会自动读取面板已绘制的纯背景源（不包含按钮自身与同层控件）。若面板内容已自带其他顶栏，无需同时装配 `SheetToolbar`。
+- `navigation` 和 `actions` 接收 `CouiToolbarStyle`。`TopAppBarButton` 会向自己的内容提供 `LocalCouiTextStyle` 和 `LocalCouiContentColor`，普通按钮可直接读取 `style.textStyle` 和 `style.contentColor`。
+- `SheetToolbar` 继承面板的深浅色设置，并自动采样面板纯背景。用 `style` 覆盖按钮外观，用 `titleStyle` 覆盖标题排版。标题居中、单行省略，颜色依次取 `titleStyle.color`、显式传入的 `style.contentColor` 和主题标题色。标题与操作文字分别使用 `CouiTheme.typography` 的 `dialogTitleFontFamily` 和 `dialogButtonFontFamily`。
 
-## 开启背景模糊材质（API 33+）
+## 背景模糊材质
 
-面板默认使用不透明表面。需要半透明模糊材质时，在宿主页面外层使用 `ProvideCouiMenuBackdrop` 录制窗口背景，并在支持平台传入 `CouiSheetDefaults.material(dark)`（保留同一个 `ModalBottomSheet` 调用并在 `material` 与 `null` 之间切换时，可保留窗口与草稿状态）：
+Android 13（API 33）及以上且有宿主窗口背景源时，面板默认开启背景模糊。宿主可用 `ProvideCouiMenuBackdrop` 提供窗口源。系统版本较低或没有窗口源时，面板使用不透明表面。传入 `material = null` 可关闭模糊。
 
 ~~~kotlin
 @Composable
@@ -143,21 +130,9 @@ fun HostPageWithSheet(
     pageContent: @Composable () -> Unit,
     sheetContent: @Composable ColumnScope.() -> Unit,
 ) {
-    val supported = CouiDialogDefaults.isMaterialSupported()
     ProvideCouiMenuBackdrop { windowSource ->
-        Box(
-            Modifier
-                .fillMaxSize()
-                .then(if (supported) windowSource else Modifier),
-        ) {
+        Box(Modifier.fillMaxSize().then(windowSource)) {
             pageContent()
-        }
-
-        val backdrop = rememberCouiWindowBackdrop()
-        val material = if (supported && backdrop != null) {
-            CouiSheetDefaults.material(dark)
-        } else {
-            null
         }
 
         ModalBottomSheet(
@@ -167,8 +142,6 @@ fun HostPageWithSheet(
             title = title,
             dismissDescription = cancelLabel,
             dark = dark,
-            material = material,
-            backdrop = backdrop,
             content = sheetContent,
         )
     }
@@ -177,10 +150,10 @@ fun HostPageWithSheet(
 
 ### 背景源与嵌套浮层规则
 
-- **宿主背景源边界**：当 `material != null` 时，面板优先使用显式 `backdrop`，否则读取 `LocalCouiMenuBackdrop`；该源必须是不包含本面板及遮罩的宿主窗口源。若系统低于 API 33 或未提供有效背景源，组件会直接抛出异常。详见[背景采样](../effects/backdrop.md)。
-- **面板内再弹菜单或弹窗**：在面板内容中调用 [Menu](menu.md) 或材质 `Dialog`，组件会自动采样 `ModalBottomSheet` 提供的窗口背景。该背景包含当前面板、遮罩和外层宿主页。需要显式读取时，在内容中调用 `rememberCouiWindowBackdrop()`。当前面板自己的 `backdrop` 应来自面板外部的宿主窗口。
-- **面板内其他同窗口浮动控件**：若在面板内容中放置其他需要采样“面板纯背景（不含面板内文字和按钮）”的浮动控件（如 `ChipTabRow`），可在面板内容作用域内调用 `rememberCouiSheetSurfaceBackdrop()`；在 `ModalBottomSheet` 内容之外调用该函数或 `SheetToolbar` 会抛出异常。
-- **按需离屏**：Sheet 在菜单或材质弹窗采样期间为窗口背景启用离屏绘制，最后一个采样方完成退场后恢复为 `CompositingStrategy.Auto`。使用 `Clear`、`DstIn`、`DstOut` 等混合模式的控件应隔离自己的绘制层。详见[菜单窗口的离屏策略](../effects/backdrop.md#菜单窗口的离屏策略)。
+- **面板材质**优先使用显式 `backdrop`，否则读取宿主提供的窗口源。这个源须排除当前面板和遮罩。在 API 33 以下或缺少窗口源时，显式传入非空 `material` 会抛出异常。详见[背景采样](../effects/backdrop.md)。
+- **面板内的 [Menu](menu.md) 和材质 `Dialog`** 自动采样 Sheet 提供的窗口源，其中包含面板、遮罩和宿主背景。需要显式读取时，在 `content` 里调用 `rememberCouiWindowBackdrop()`。
+- **面板内的 `ChipTabRow` 等浮动控件**可通过 `rememberCouiSheetSurfaceBackdrop()` 取得排除正文与按钮的面板纯背景。该函数和 `SheetToolbar` 须在 `ModalBottomSheet` 的 `content` 中调用。
+- **窗口源在浮层采样期间离屏绘制**，最后一个采样方退场后恢复到 `CompositingStrategy.Auto`。使用 `Clear`、`DstIn` 等混合模式的控件应隔离自己的绘制层。详见[菜单窗口的离屏策略](../effects/backdrop.md#菜单窗口的离屏策略)。
 
 ## 参数与交互行为速查
 
@@ -193,20 +166,19 @@ fun HostPageWithSheet(
 | `dark` | `CouiTheme.isDark` | 控制面板深浅色，并通过 `LocalCouiDarkTheme` 向面板内容提供一致模式。 |
 | `sheetHeight` | `null` | `null` 时按内容测量；指定有限正数 `Dp` 时固定面板高度（含拖动条、内容与底部安全留白）。 |
 | `showDragHandle` | `false` | 设为 `true` 时显示顶部拖动条。手势下拉由 `draggable` 控制。 |
-| `draggable` | `true` | 是否允许手势下拉关闭。开启时可从面板空白处、拖动条和工具栏标题区直接拖动。配合 `nestedScrollEnabled = true` 时，滚动内容到顶后可将下拉交给面板，上推时优先推回展开位再滚动内容。 |
+| `draggable` | `true` | 允许通过下拉手势关闭面板。 |
 | `nestedScrollEnabled` | `true` | 是否允许可滚动子内容把到顶后的向下拖动交给面板。该交接在 `draggable = true` 且 `fullPageOverscroll = false` 时生效。 |
-| `fullPageOverscroll` | `false` | 默认由各内容组件处理自己的回弹，空白处可下拉关闭。设为 `true` 时，正文空白处的纵向拖动也可触发整块内容回弹。显示拖动条时仍可从拖动条下拉关闭。 |
+| `fullPageOverscroll` | `false` | 开启后，正文空白处的纵向拖动也会触发整块内容回弹。 |
 | `dismissOnClickOutside` | `true` | 是否允许点击暗色遮罩触发 `onDismissRequest`。设为 `false` 仅屏蔽遮罩点击，系统返回键与无障碍关闭仍有效。 |
 | `colors` | `CouiDialogDefaults.themeColors(dark)` | 控制面板不透明底色与遮罩最大透明度（`dimAmount`）。需要固定原生面板配色时传入 `CouiSheetDefaults.colors(dark)`。 |
-| `material` | `null` | 传 `CouiSheetDefaults.material(dark)` 启用 API 33+ 半透明模糊与轮廓光；切回 `null` 可释放模糊图层与源引用。 |
+| `material` | API 33+ 且有窗口源时使用 `CouiSheetDefaults.material(dark)`，其余情况为 `null` | 控制面板的模糊与轮廓光。传 `null` 使用不透明表面。 |
 
 ## 装配注意事项
 
-- **正文回弹**：COUI 使用与 [couiVerticalScroll](../effects/overscroll.md) 相同的弹簧曲线处理正文回弹。普通组件可以直接放在 Sheet 的 `content` 中，传 `fullPageOverscroll = true` 即可让空白也跟随回弹。长内容使用一个 `LazyColumn` 或其他纵向滚动容器。
 - **请勿重复添加系统 Insets**：面板窗口内部已处理顶部边距、底部导航栏安全区与 `IME` 键盘避让。面板内容与内嵌的 `Scaffold` **不要**再次叠加 `navigationBarsPadding()` 或 `imePadding()`。如果宿主页容器使用了 `imePadding()`，建议按[宿主页的键盘避让](dialog.md#宿主页的键盘避让)仅在宿主窗口获焦时启用。
 - **面板内菜单高度自适应**：在面板内容中弹出的 [Menu](menu.md) 与子菜单会自动将面板当前可见区域作为弹出边界，并在可用高度内滚动；从面板内另行打开的独立 `Dialog` 按自身窗口定位。
 - **手势与状态收尾**：向下快速甩动或拖过面板中线释放会触发 `onDismissRequest`；未过关闭阈值、系统取消或节点移除会停止或回到展开位置，不会自行修改 `visible`。
-- **窗口形态边界**：组件基于公开平台 `Dialog` 窗口实现，仅提供“展开”与“隐藏”两态（对应 `skipCollapsed`），暂未覆盖半折叠停靠、OEM 小折叠屏多窗协议或锚点跟手弹出。
+- **窗口形态边界**：组件基于公开平台 `Dialog` 窗口实现，仅提供“展开”与“隐藏”两态，暂不支持半折叠停靠、OEM 小折叠屏多窗协议或锚点跟手弹出。
 - **兼容性对照**：完整平台门槛对照见[兼容要求](../guide/compatibility.md#效果门槛)。
 
 ## 源码与完整示例

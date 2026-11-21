@@ -242,7 +242,7 @@ fun rememberMenuStyle(
 - **圆角与轮廓（`shape` 与 `radius`）**：默认 `shape` 为 `CouiShape(28.dp)`，`radius` 为 `Dp.Unspecified`（自动从 `CouiShape` 读取半径与权重）。更换为非 `CouiShape` 的自定义 `Shape` 时，须显式提供有限非负的 `radius`，轮廓权重使用菜单预设；`itemShape`、`checkboxShape`、`checkboxBorderShape` 分别控制菜单项与内置复选框圆角。
 - **顶部提示文本（`headerText`）**：通过 `Menu(..., headerText = ...)` 显示顶部不可选提示文案（最多两行）。修改 `CouiTheme.typography.label` 或 `CouiMenuStyle.headerTextStyle` 可调整字体、字号、字重与行距，文字颜色由菜单按深浅色控制。
 - **菜单限高与滚动**：`Menu` 默认不设固定最大高度；长菜单可在 `Menu` 的 `modifier` 中传入 `Modifier.heightIn(max = 320.dp)`，使其在限定高度内纵向滚动（子菜单会自动受可用窗口高度约束）。
-- **在 [ModalBottomSheet](bottom-sheet.md) 内定位**：主菜单与子菜单共用面板的可见区域，长列表可在区域内滚动；子菜单展开时，主菜单的缩小与平移也受该区域约束。窄面板内的子菜单上下展开；独立 Dialog 内的菜单按自己的窗口定位。
+- 在 [Sheet](bottom-sheet.md) 内，主菜单和子菜单都在面板可见区域内定位和滚动，主菜单的缩放和平移也受该区域约束。窄面板的子菜单上下展开，独立 `Dialog` 中的菜单按各自窗口定位。
 
 ## 装配注意事项
 
