@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import android.view.ViewTreeObserver
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -70,21 +71,40 @@ fun Modifier.couiFabFeedback(dark: Boolean, interactionSource: MutableInteractio
     }
 }
 
-/** 原厂顶栏材质过滤 pressed 通知, 仅保留 hover/focus 蒙层; 按压形变独立处理。 */
+/**
+ * 原厂顶栏材质过滤 pressed 通知, 仅保留 hover/focus 蒙层; 按压形变独立处理。
+ * [pressFeedback] 打开后补上按压蒙层, 供原厂自带 item ripple 的悬浮操作栏使用;
+ * 顶栏与搜索胶囊保持过滤, 避免和栏本身的按压形变叠加。
+ */
 @Composable
 fun Modifier.couiToolbarFeedback(
     dark: Boolean,
     interactionSource: MutableInteractionSource,
     enabled: Boolean,
+    pressFeedback: Boolean = false,
+    maskInset: Dp = 0.dp,
 ): Modifier {
     val hovered by interactionSource.collectIsHoveredAsState()
     val focused by interactionSource.collectIsFocusedAsState()
+    val pressed by interactionSource.collectIsPressedAsState()
     val hover = rememberMaskProgress(enabled && hovered)
     val focus = rememberMaskProgress(enabled && focused)
+    val press = rememberMaskProgress(enabled && pressed && pressFeedback)
     return hoverable(interactionSource, enabled).drawBehind {
-        val radius = CornerRadius(size.minDimension * 0.5f)
-        drawRoundRect(maskColor(hover.value, if (dark) 0x26FFFFFF else 0x14000000), cornerRadius = radius)
-        drawRoundRect(maskColor(focus.value, if (dark) 0x331A8CFF else 0x1F0080FF), cornerRadius = radius)
+        // 原厂 COUIMaskRippleDrawable 的蒙版矩形：hover、focus、press 共用，圆角按项高一半。
+        // 负值表示向两侧外扩（工具栏多项时外扩一个项间距）。
+        val side = maskInset.toPx()
+        val topLeft = Offset(side, 0f)
+        val maskSize = Size((size.width - side * 2f).coerceAtLeast(0f), size.height)
+        val radius = CornerRadius(size.height * 0.5f)
+        drawRoundRect(maskColor(hover.value, if (dark) 0x26FFFFFF else 0x14000000), topLeft = topLeft,
+            size = maskSize, cornerRadius = radius)
+        drawRoundRect(maskColor(focus.value, if (dark) 0x331A8CFF else 0x1F0080FF), topLeft = topLeft,
+            size = maskSize, cornerRadius = radius)
+        if (pressFeedback) {
+            drawRoundRect(maskColor(press.value, if (dark) 0x33FFFFFF else 0x1F000000), topLeft = topLeft,
+                size = maskSize, cornerRadius = radius)
+        }
     }
 }
 

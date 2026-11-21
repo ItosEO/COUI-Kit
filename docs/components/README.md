@@ -17,6 +17,7 @@
 | [常驻搜索](search-bar.md) | `SearchBar` 常驻搜索胶囊与分裂取消按钮，支持联动页面与结果层 | API 31+（API 34+ 启用浮动模糊材质）；需 `backdrop` |
 | [底栏](navigation-bar.md) | `NavigationBar` 底部胶囊导航项与左右可折叠融合附件 | API 34+；需 `backdrop`（可选独立三主体 `renderer`） |
 | [FAB](fab.md) | `Fab` 独立浮动操作按钮，支持主题强调色、内置配色预设与自定义形状 | API 34+；需 `backdrop`（可选独立 `standalone` `renderer`） |
+| [悬浮操作栏](floating-toolbar.md) | `FloatingToolbar` 胶囊浮动操作栏，同级操作并列、按列数收放并支持反馈蒙版 | API 34+；需 `backdrop`（可选独立 `standalone` `renderer`） |
 
 ## 列表与分组
 

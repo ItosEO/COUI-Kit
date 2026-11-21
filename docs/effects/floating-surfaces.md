@@ -1,6 +1,6 @@
 # 浮动表面
 
-浮动表面接口用于在单一渲染链中组合**背景采样材质、普通 Mesh 投影、caustic 外光晕、轮廓内晕与前景内容**，并支持多主体按 Z 分组与互相融合。需要现成控件时，优先使用[顶栏按钮](../components/top-app-bar.md)、[底栏](../components/navigation-bar.md)、[FAB](../components/fab.md)与[搜索栏](../components/search-bar.md)。
+浮动表面接口用于在单一渲染链中组合**背景采样材质、普通 Mesh 投影、caustic 外光晕、轮廓内晕与前景内容**，并支持多主体按 Z 分组与互相融合。需要现成控件时，优先使用[顶栏按钮](../components/top-app-bar.md)、[底栏](../components/navigation-bar.md)、[悬浮操作栏](../components/floating-toolbar.md)、[FAB](../components/fab.md)与[搜索栏](../components/search-bar.md)。
 
 - **平台门槛**：全部接口要求 Android 14（**API 34**）及以上，并需要覆盖**不透明 SDR 页面**的 `CouiBackdrop` 背景源。
 - **公开入口**：

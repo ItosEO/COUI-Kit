@@ -34,7 +34,7 @@
 | 菜单 Fast Kawase 模糊 | 工厂在 API 33 以下返回 `null`，菜单内部使用既有 Gaussian 分支（该分支不等价于 Fast Kawase）。 |
 | [Sheet 面板 `BottomSheet`](../components/bottom-sheet.md) | 基础面板和顶部按钮支持 **API 31+**；面板材质需要 **API 33+** 和宿主窗口背景源，顶部按钮的浮动材质需要 **API 34+**。 |
 | 跟手光（`Spotlight`） | API 33 以下不提供 Shader 光效回调。 |
-| 浮动 `NavigationBar`、`Fab`、`TopAppBarButton`、顶栏展开式搜索、`ChipTab`、`SegmentedControl`、普通 Mesh 阴影 | 需要 **API 34+**（标记 `@RequiresApi(34)`）；调用前须检查系统版本，并处理 `renderer` 创建失败。 |
+| 浮动 `NavigationBar`、`Fab`、`FloatingToolbar`、`TopAppBarButton`、顶栏展开式搜索、`ChipTab`、`SegmentedControl`、普通 Mesh 阴影 | 需要 **API 34+**（标记 `@RequiresApi(34)`）；调用前须检查系统版本，并处理 `renderer` 创建失败。 |
 | [消息输入栏 `MessageInputBar`](../components/message-input-bar.md) | 需要 **API 34+** 和所属页面的不透明 SDR 正文背景源。输入栏补足底部导航栏占位，宿主页处理 IME 避让和其余安全区。 |
 | fast 胶囊 Shader 裁剪 | API 35+ 使用公开 `Canvas.clipShader`；API 34 保留 `RenderNode` / `RenderEffect` 承载。 |
 

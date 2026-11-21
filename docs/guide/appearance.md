@@ -89,12 +89,13 @@ CouiTheme(darkTheme = dark, colorScheme = colors) {
 - **COUI 文本组件（`com.itos.coui.text.Text`）**：提供固定 COUI 排版角色（`kind` 必填），文字颜色依次取「显式 `color` → 已提供的 `LocalCouiContentColor` → 当前 `CouiTheme.colorScheme.onSurface`」，在独立布局中省略颜色即可跟随主题（详见 [Item](../components/item.md#配色与文字)）。菜单项则读取 `CouiTheme.typography.menuItem` 的字号、字重与字体族。
 - **`LocalCouiContentColor` 约定**：缺省值为 `Color.Unspecified`（表示未提供内容色）。直接读取该 Local 的宿主应在未指定时自行取当前主题色；COUI 的文字和图标已在消费处完成解析。显式颜色（包含 `Color.Transparent`）始终优先；图标显式传入 `tint = Color.Unspecified` 时保留不染色语义。
 
-## 菜单、底栏、搜索栏与 FAB 的染色
+## 菜单、底栏、悬浮操作栏、搜索栏与 FAB 的染色
 
 | 组件 | 原生默认 | M3 适配默认 | 关闭染色 / 自定义方式 |
 | --- | --- | --- | --- |
 | `Menu` | 透明（不染色） | 使用宿主 `surface` 染色（保留材质亮度） | 传入 `CouiMenuDefaults.style().copy(themeTint = Color.Transparent)` |
 | `NavigationBar` | 透明（不染色） | 使用宿主 `surface` 染色（保留材质亮度） | 显式传入 `themeTint = Color.Transparent`；右附件图标固定为白色 |
+| `FloatingToolbar`（API 34+） | 透明（不染色） | 使用宿主 `surface` 染色（保留材质亮度） | 通过局部 `CouiTheme` 的 `materialTint` 调整或关闭染色 |
 | `SearchBar`（API 34+） | 透明（不染色） | 使用宿主 `surface` 染色（保留材质亮度） | 通过局部 `CouiTheme` 的 `materialTint` 调整或关闭染色 |
 | `Fab` | 取主题强调色，不叠加页面 `themeTint` | 取 M3 `primary`，不叠加页面 `themeTint` | 日夜默认内容色均为不透明白色（显式 `material` 同样适用）；可通过 `contentColor` 覆盖（传 `Color.Unspecified` 继承外部内容色），子图标显式 `tint` 优先 |
 
@@ -104,7 +105,7 @@ CouiTheme(darkTheme = dark, colorScheme = colors) {
 
 ## 内容插槽与最小交互尺寸
 
-- **M3 插槽 Local 桥接**：启用 `CouiMaterial3Style` 后，`TopAppBarButton`、搜索表面、`ChipTab` 与 `Fab` 的内容插槽会自动提供 M3 内容 Local，直接放置 M3 `Text`、`Icon` 即可继承颜色与文字样式。
+- **M3 插槽 Local 桥接**：启用 `CouiMaterial3Style` 后，`TopAppBarButton`、搜索表面、`ChipTab`、`Fab` 与 `FloatingToolbar` 操作项的内容插槽会自动提供 M3 内容 Local，直接放置 M3 `Text`、`Icon` 即可继承颜色与文字样式；`FloatingToolbar` 的内容色默认取 `onSurface` 的 80%，显式传入 `Color.Unspecified` 时不提供。
   - 组件局部 `TextStyle` 按 M3 `ProvideTextStyle` 顺序与宿主 ambient 样式合并；`CouiTheme` 的完整基线则会替换外层样式。
   - 子 `Text` 的显式颜色/样式、子 `Icon` 的 `tint` 以及内层 Local 始终优先。
   - 未启用 `coui-material3` 却在纯原生插槽中使用 M3 `Text`/`Icon` 时，需由宿主自行桥接 M3 内容 Local。
