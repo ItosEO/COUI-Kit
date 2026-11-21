@@ -589,7 +589,7 @@ internal fun <T> CouiMenuWithSubMenu(
         expanded, motion, mainTouch, anchor,
         onDismissRequest = { if (state.open) state.hide() else dismiss() },
         offset = offset, shape = shape, containerColor = color,
-        modifier = modifier.then(mainMaterial.drawing).widthIn(min = CouiMenuMinWidth, max = CouiMenuMaxWidth),
+        modifier = modifier.then(mainMaterial.drawing).widthIn(min = CouiMenuMinWidthWithSubMenu, max = CouiMenuMaxWidth),
         properties = properties, rootModifier = input, touchInputOnRoot = true,
         mainTransition = Modifier.graphicsLayer {
             val geometry = state.layout
@@ -660,7 +660,7 @@ internal fun <T> CouiMenuWithSubMenu(
                                 .background(color, childShape).clip(childShape).then(childMaterial.drawing)
                                 .then(provider?.menuSize?.let { mainSize ->
                                     Modifier.width(with(density) { mainSize.width.toDp() })
-                                } ?: Modifier.widthIn(min = CouiMenuMinWidth, max = CouiMenuMaxWidth))
+                                } ?: Modifier.widthIn(min = CouiMenuMinWidthWithSubMenu, max = CouiMenuMaxWidth))
                                 .heightIn(max = with(density) { (menuBounds.height - 48.dp.roundToPx()).coerceAtLeast(0).toDp() })
                                 .width(IntrinsicSize.Max)
                                 .then(couiMenuScrollBar(child.scrollBar, expanded, state.open,

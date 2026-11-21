@@ -93,8 +93,9 @@ import com.itos.coui.motion.couiTouchMotion
 import com.itos.coui.motion.rememberCouiTouchMotion
 
 internal val CouiMenuItemHeight = 40.dp
-internal val CouiMenuMinWidth = 128.dp
-internal val CouiMenuMaxWidth = 280.dp
+internal val CouiMenuMinWidth = 168.dp
+internal val CouiMenuMinWidthWithSubMenu = 196.dp
+internal val CouiMenuMaxWidth = 256.dp
 private val CouiMenuItemStateHorizontalInset = 8.dp
 private val CouiMenuItemStateVerticalInset = 1.5.dp
 private val CouiMenuItemContentHorizontalPadding = 12.dp
