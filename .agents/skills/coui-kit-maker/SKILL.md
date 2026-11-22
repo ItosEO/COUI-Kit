@@ -7,7 +7,7 @@ description: COUI-Kit 组件库完整制作技能。在 COUI-Kit 仓库（参考
 
 ## 0. 适用范围与本 skill 文件地图
 
-仓库根目录是 `COUI-Kit/`（含 `coui`、`coui-icons`、`coui-material3`、`demo`、`docs`、`gradle`、`.github`、`Pages`、`.agents` 等）。所有输出、文档和提交说明使用简体中文；UTF-8 无 BOM。（`COUI-Kit/AGENTS.md`）
+本 skill 位于 `.agents/skills/coui-kit-maker/`，分册在其 `references/` 下。仓库根目录包含 `coui`、`coui-icons`、`coui-material3`、`demo`、`docs`、`gradle`、`.github`、`Pages`、`.agents` 等。所有输出、文档和提交说明使用简体中文；UTF-8 无 BOM。（`AGENTS.md`）
 
 | 需要做什么 | 读哪个分册 |
 | --- | --- |
