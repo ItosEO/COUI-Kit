@@ -1,12 +1,12 @@
 # 发布渠道与开发快照
 
-推送一次发行 Tag，由“发布 COUI”工作流按版本选择渠道。正式版同号发布到 JitPack 和 Maven Central，Alpha 只发布到 JitPack。开发快照通过独立的 GitHub Packages 工作流手动发布。
+推送一次发行 Tag，由“发布 COUI”工作流按版本选择渠道。正式版同号发布到 JitPack 和 Maven Central，Alpha 默认只发布到 JitPack；需要为指定 Alpha Tag 同步发 Maven Central 时，在 Actions 手动触发“发布 COUI”并填入已推送 Tag。开发快照通过独立的 GitHub Packages 工作流手动发布。
 
 ## 渠道与版本来源
 
 | 渠道 | 用途 | 来源与注意事项 |
 | --- | --- | --- |
-| Maven Central | 正式版 | [发布 COUI](../../.github/workflows/publish-central.yml) 构建、签名并提交发布 |
+| Maven Central | 正式版，及手动触发补发的 Alpha | [发布 COUI](../../.github/workflows/publish-central.yml) 构建、签名并提交发布 |
 | JitPack | Alpha 和正式版 | 同一工作流按发行版本请求构建并检查三个模块的远端产物 |
 | GitHub Packages | 手动发布当前提交的开发快照 | 仓库 [publish-preview.yml](../../.github/workflows/publish-preview.yml) 生成带短 SHA 的 `-SNAPSHOT`，接入需认证 |
 | 本地文件仓库 | CI/开发检查 AAR、POM、Module Metadata、源码包及 Dokka | 各模块的 `build/repository`；不上传远端，不视为真实发行 |
@@ -50,7 +50,9 @@ Release 正文按 `demo` 和实际有改动的库模块分组。每条以“新�
 | Tag 示例 | 渠道 |
 | --- | --- |
 | `v0.0.1` | JitPack 和 Maven Central 并行发布 `0.0.1` |
-| `v0.0.1-alpha18` | JitPack 发布 `0.0.1-alpha18` |
+| `v0.0.1-alpha18` | 推送 Tag 时只发布到 JitPack |
+
+Alpha Tag 默认只触发 JitPack；如需同时发布到 Maven Central，在 Actions 手动运行“发布 COUI”，填入已推送的 Tag 并选择 `maven-central`（补发）或 `both`（双渠道）。
 
 例如发布 Alpha：
 

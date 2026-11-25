@@ -3,12 +3,26 @@ name: 发布 COUI
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '已推送的发行 Tag（例如 v0.0.1-alpha20）'
+        required: true
+        type: string
+      target:
+        description: '本次手动发布的渠道'
+        required: true
+        default: 'maven-central'
+        type: choice
+        options:
+          - maven-central
+          - both
 
 permissions:
   contents: read
 
 concurrency:
-  group: publish-coui-${{ github.ref }}
+  group: publish-coui-${{ github.event_name == 'workflow_dispatch' && format('refs/tags/{0}', inputs.tag) || github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -32,18 +46,31 @@ jobs:
           node-version: '24'
       - name: 检查版本与主线归属
         id: version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
-          node .github/scripts/central-release-version.cjs
-          git merge-base --is-ancestor HEAD origin/main || {
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            GITHUB_REF_TYPE=tag GITHUB_REF_NAME="$INPUT_TAG" node .github/scripts/central-release-version.cjs
+            commit=$(git rev-parse --verify "refs/tags/${INPUT_TAG}^{commit}") || {
+              echo "发行 Tag 不存在: $INPUT_TAG" >&2
+              exit 1
+            }
+          else
+            node .github/scripts/central-release-version.cjs
+            commit=$(git rev-parse HEAD)
+          fi
+          git merge-base --is-ancestor "$commit" origin/main || {
             echo '发行 Tag 必须指向已合入 main 的提交' >&2
             exit 1
           }
-          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
 
   jitpack:
     name: 发布三模块到 JitPack
     needs: release
+    if: github.event_name == 'push' || inputs.target == 'both'
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
@@ -93,7 +120,7 @@ jobs:
   publish:
     name: 发布三模块到 Maven Central
     needs: release
-    if: needs.release.outputs.stable == 'true'
+    if: (github.event_name == 'push' && needs.release.outputs.stable == 'true') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     env:

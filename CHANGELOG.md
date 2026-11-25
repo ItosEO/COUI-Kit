@@ -2,6 +2,23 @@
 
 COUI-Kit 处于早期预览阶段。本文记录公开 API、行为、接入和兼容要求的变化。日期以提交合并时间为准；版本归档以真实 Git Tag 和发行产物为准。
 
+## [0.0.1-alpha20] - 2026-11-26
+
+### 新增与改进
+
+- 新增悬浮操作栏 `FloatingToolbar`（Android 14 / API 34+），支持 `CouiFloatingToolbarItem` 列表动态增删回弹、宽度不足时自动收进“更多”溢出菜单、整栏 `visible` 缩放显隐、跟手形变与单项反馈。内置 `WindowInsets.tappableElement` 安全区及悬浮留白，支持通过 `style` 与 `themeTint` 配置玻璃材质或纯色外观，且 `themeTint` 同步作用于溢出菜单。[悬浮操作栏](docs/components/floating-toolbar.md)
+- 新增缩放显隐动效入口 `rememberCouiScaleVisibility`、`Modifier.couiScaleVisibility` 与 `CouiScaleVisibilityState`，供同一绘制主体在显示与退场期间同步驱动双轴缩放和透明度。[运动与输入](docs/effects/motion.md)
+- 优化 Material 3 强调色映射：`CouiMaterial3Style` 新增 `useHctColors`（默认 `true`），默认基于宿主 `primary` 生成 HCT 强调色——`accent`（菜单选中文字、光标等）增强彩度并保留原色调，搭配白色前景的实色控件与复选框使用按浅/深模式固定色调的 `controlAccent`。传入 `useHctColors = false` 可直接沿用 Material 3 原始强调色。[外观与预设](docs/guide/appearance.md#接入-material-3)
+- 优化 `Dialog` 按钮配色：`CouiDialogActionStyle.Primary` 省略 `colors` 时默认采用主题强调填色（`controlAccent`），不再强制传入 `colors`；普通按钮在纯色面板和已染色模糊面板上透出底色（浅色压暗、深色提亮），关闭模糊染色时保留原生半透明白底。[弹窗](docs/components/dialog.md#多操作主操作配色与自定义正文)
+- `CouiColorScheme` 新增 `controlAccent` 角色（缺省回退至 `accent`），`Dialog` 主操作、默认 `Fab`、`NavigationBar` 有色附件、`Switch`、`Slider`、`RadioButton` 与 `SingleChoiceDialog` 单选框统一使用该角色。
+- `Modifier.couiToolbarFeedback` 新增可选的 `pressFeedback` 与 `maskInset` 参数，支持按压波纹与蒙版外扩；同步更新相关组件文档、外观指南与 `coui-kit` 外部接入 Skill。
+
+### 升级说明
+
+- `CouiMaterial3Style()` 默认启用 HCT 强调色增强；如需继续直接沿用 Material 3 原始 `primary`（深色复选框取 `inversePrimary`），在初始化时改为 `Coui.initialize(defaultStyle = CouiMaterial3Style(useHctColors = false))`。
+- `CouiDialogActionStyle.Primary` 已支持省略 `colors` 跟随主题，现有显式传入 `CouiDialogDefaults.primaryActionColors(accent)` 的调用仍可沿用并保持优先。
+- Alpha20 通过 Maven Central 与 JitPack 发布，坐标分别为 `io.github.itoseo:coui:0.0.1-alpha20` 与 `com.github.itoseo.coui-kit:coui:0.0.1-alpha20`；使用 `coui-material3` 或 `coui-icons` 时请同步升级至同渠道 `0.0.1-alpha20`。
+
 ## [0.0.1-alpha19] - 2026-11-24
 
 ### 新增与改进
