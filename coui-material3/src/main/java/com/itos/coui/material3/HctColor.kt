@@ -17,11 +17,15 @@ import kotlin.math.exp
  * @return 不透明的 sRGB 颜色。
  * @throws IllegalArgumentException 种子色未指定，或 [tone] 超出范围。
  */
-fun enhanceHctColor(seed: Color, tone: Double): Color {
+fun enhanceHctColor(seed: Color, tone: Double): Color = enhancedHctColor(seed, tone)
+
+internal fun enhanceHctColor(seed: Color): Color = enhancedHctColor(seed, tone = null)
+
+private fun enhancedHctColor(seed: Color, tone: Double?): Color {
     require(seed.isSpecified) { "种子色必须已指定" }
-    require(tone in 0.0..100.0) { "HCT 色调必须在 0 到 100 之间" }
+    require(tone == null || tone in 0.0..100.0) { "HCT 色调必须在 0 到 100 之间" }
     val hct = Hct.fromInt(seed.toArgb())
     val grayscale = seed.red == seed.green && seed.green == seed.blue
     val chroma = if (grayscale) 0.0 else 80.0 * (1.0 - exp(-3.0 * hct.chroma / 80.0))
-    return Color(Hct.from(hct.hue, chroma, tone).toInt())
+    return Color(Hct.from(hct.hue, chroma, tone ?: hct.tone).toInt())
 }

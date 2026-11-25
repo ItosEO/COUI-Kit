@@ -147,7 +147,7 @@ private fun <T : Any> SingleChoiceList(
         "单选弹窗需要至少一个选项，且选项值必须唯一"
     }
     val colorScheme = CouiTheme.colorSchemeFor(dark)
-    val radioColors = CouiRadioButtonDefaults.colors(colorScheme.accent, dark)
+    val radioColors = CouiRadioButtonDefaults.colors(colorScheme.controlAccent, dark)
     Column(Modifier.fillMaxWidth().selectableGroup()) {
         items.forEachIndexed { index, item ->
             key(item.value) {

@@ -7,9 +7,7 @@ import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.dialog.CouiDialogActionStyle
 import com.itos.coui.dialog.Dialog
 import com.itos.coui.dialog.CouiDialogAction
-import com.itos.coui.dialog.CouiDialogDefaults
 import com.itos.coui.dialog.CouiDialogPlacement
-import com.itos.coui.theme.CouiTheme
 
 /**
  * 标准选择弹窗：项目材质、原厂标题/操作区及主题色确认。content 放置任意选择器。
@@ -31,7 +29,7 @@ internal fun DemoPickerDialog(
 ) {
     Dialog(modifier, onDismissRequest, visible = visible,
         confirmAction = CouiDialogAction(confirmText, onConfirm, confirmEnabled,
-            style = CouiDialogActionStyle.Primary, colors = CouiDialogDefaults.primaryActionColors(CouiTheme.colorScheme.accent)),
+            style = CouiDialogActionStyle.Primary),
         dismissAction = CouiDialogAction(cancelText, onDismissRequest),
         title = title, placement = placement,
         material = demoDialogMaterial(backdrop),

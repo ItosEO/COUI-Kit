@@ -23,7 +23,6 @@ import com.itos.coui.menu.CouiMenuStyle
 import com.itos.coui.menu.couiMenuAnchor
 import com.itos.coui.menu.rememberCouiMenuAnchor
 import com.itos.coui.slider.Slider
-import com.itos.coui.slider.CouiSliderDefaults
 import com.itos.coui.text.CouiTextKind
 import com.itos.coui.text.rememberCouiTextStyle
 import com.itos.coui.theme.CouiTheme
@@ -94,7 +93,6 @@ internal fun DemoSliderPreference(
     trailing: (@Composable () -> Unit)? = null,
 ) {
     val dark = CouiTheme.isDark
-    val colors = CouiPageDefaults.themeColors(dark)
     Column(modifier.fillMaxWidth()) {
         DemoPreference(title = title, summary = summary, value = valueText, enabled = enabled)
         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 8.dp),
@@ -102,7 +100,7 @@ internal fun DemoSliderPreference(
             leading?.invoke()
             Slider(Modifier.weight(1f).semantics { contentDescription = title }, value, onValueChange,
                 dark = dark, enabled = enabled,
-                colors = CouiSliderDefaults.colors(colors.accent, dark, enabled), shape = CouiCapsuleShape,
+                shape = CouiCapsuleShape,
                 valueRange = valueRange, steps = steps, showTickMarks = showTickMarks,
                 onValueChangeFinished = onValueChangeFinished)
             trailing?.invoke()

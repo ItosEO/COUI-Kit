@@ -1,11 +1,9 @@
 package com.itos.coui.demo
 
 import android.os.Build
-import com.itos.coui.dialog.CouiDialogDefaults
 import com.itos.coui.dialog.CouiDialogActionStyle
 import com.itos.coui.dialog.CouiDialogAction
 import com.itos.coui.dialog.Dialog
-import com.itos.coui.theme.CouiTheme
 import com.itos.coui.menu.rememberCouiWindowBackdrop
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.selection.selectableGroup
@@ -139,12 +137,10 @@ internal fun SettingsDemo(dark: Boolean, preferences: DemoPreferences,
         DemoPreference(title = stringResource(R.string.settings_reset), onClick = { reset = true })
     }
     val backdrop = rememberCouiWindowBackdrop()
-    val accent = CouiTheme.colorScheme.accent
     Dialog(visible = reset, onDismissRequest = { reset = false }, dark = dark,
         title = stringResource(R.string.settings_reset), message = stringResource(R.string.settings_reset_message),
         confirmAction = CouiDialogAction(stringResource(R.string.dialog_confirm),
-            { onReset(); reset = false }, style = CouiDialogActionStyle.Primary,
-            colors = CouiDialogDefaults.primaryActionColors(accent)),
+            { onReset(); reset = false }, style = CouiDialogActionStyle.Primary),
         dismissAction = CouiDialogAction(stringResource(R.string.dialog_cancel), { reset = false }),
         material = demoDialogMaterial(backdrop),
         backdrop = backdrop)

@@ -105,7 +105,6 @@ private fun DemoHome(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
         canScroll = { scrolls[index].maxValue > 0 }) }
     val colors = MaterialTheme.colorScheme
     val background = CouiPageDefaults.themeColors(dark).background
-    val color = CouiFabDefaults.containerColor(CouiFabColor.Notes, dark)
     // 源 Activity 在窗口转场中仍可见，导航不拆掉结果行及其按压退场；返回时保留查询。
     val open: (String) -> Unit = openPage
     BackHandler(page == 0 && searching) { searching = false; query = "" }
@@ -154,7 +153,11 @@ private fun DemoHome(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
                                 contentDescription = stringResource(R.string.catalog_fab),
                                 onClick = { openPage("fab") },
                                 visible = rightAccessory,
-                                style = CouiNavigationBarDefaults.coloredActionStyle(color, dark),
+                                style = CouiNavigationBarDefaults.coloredActionStyle(
+                                    containerColor = if (preferences.materialTheme) Color.Unspecified
+                                        else CouiFabDefaults.containerColor(CouiFabColor.Notes, dark),
+                                    dark = dark,
+                                ),
                             ),
                             dark = dark,
                             onSelection = selectPage,

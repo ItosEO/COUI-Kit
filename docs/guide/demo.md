@@ -55,7 +55,7 @@ Demo 首页包含三个底栏页签（API 34+ 使用浮动 `NavigationBar`，左
 
 ## 主题与页面装配
 
-- **主题切换**：`DemoApplication` 初始化可选 `CouiMaterial3Style`。开启 Material 配色时组件读取宿主主题；关闭时局部 `CouiTheme` 切换为原生外观，Demo 的 M3 内容也映射到 COUI 表面与强调色；显式 `Fab` 配色预设优先于主题（见[外观与预设](appearance.md)）。
+- **主题切换**：`DemoApplication` 初始化 `CouiMaterial3Style`。开启「设置 → 使用 Material 主题配色」后，控件（开关、滑条、单/复选框、弹窗主操作与首页右下角按钮）跟随宿主 Material 主题；关闭后通过局部 `CouiTheme` 切换为原生外观。`FAB` 示例页中的固定预设优先于主题，详见[外观与预设](appearance.md)。
 - **页面容器与背景源**：首页和详情页使用公开的 [Scaffold](../components/scaffold.md) 测量栏位并处理横向安全区，Demo 在容器外处理 `IME` 避让，正文应用测量所得 `Padding`。容器自动向顶栏、底栏和 `FAB` 槽位提供正文背景源，正文内的 `ChipTab` 与模糊演示保留独立源；Activity 根部安装 `ProvideCouiMenuBackdrop` 窗口源供菜单、弹窗与 Sheet 面板使用（见[宿主页面接入](secondary-pages.md)）。
 - **导航边界**：效果目录通过 [Nav3 页面转场](../components/predictive-back.md) 打开效果详情。其余目录入口通过标准 `Intent` 启动、`finish()` 退出。
 

@@ -58,7 +58,7 @@ object CouiNavigationBarDefaults {
     ): CouiNavigationBarActionStyle {
         val density = LocalDensity.current.density
         val contour = LocalCouiContourGlowEnabled.current
-        val accent = CouiTheme.colorSchemeFor(dark).accent
+        val accent = CouiTheme.colorSchemeFor(dark).controlAccent
         return remember(containerColor, dark, density, contour, accent) {
             val material = if (containerColor.isSpecified) CouiFabDefaults.material(containerColor, dark)
                 else CouiFabDefaults.themeMaterial(accent, dark)

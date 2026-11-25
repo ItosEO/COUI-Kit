@@ -21,7 +21,6 @@ import com.itos.coui.checkbox.CouiCheckboxDefaults
 import com.itos.coui.radiobutton.RadioButton
 import com.itos.coui.effect.couiButtonFeedback
 import com.itos.coui.switch.Switch
-import com.itos.coui.switch.CouiSwitchDefaults
 import com.itos.coui.text.Text
 import com.itos.coui.text.CouiTextKind
 import androidx.compose.ui.platform.LocalView
@@ -70,7 +69,6 @@ internal fun DemoSwitchPreference(
     hapticFeedbackEnabled: Boolean = true,
 ) {
     val dark = CouiTheme.isDark
-    val colors = CouiPageDefaults.themeColors(dark)
     val view = LocalView.current
     val source = remember { MutableInteractionSource() }
     DemoPreferenceRow(modifier.couiButtonFeedback(dark, source, enabled && !loading, list = true)
@@ -79,7 +77,7 @@ internal fun DemoSwitchPreference(
             onCheckedChange(target)
         }, title, summary, enabled, icon) {
         Switch(Modifier.padding(start = 16.dp), checked, null, dark,
-            CouiSwitchDefaults.colors(colors.accent, dark), enabled, source,
+            enabled = enabled, interactionSource = source,
             onDragCheckedChange = onCheckedChange,
             loading = loading, loadingDescription = loadingDescription,
             hapticFeedbackEnabled = hapticFeedbackEnabled)
@@ -100,13 +98,11 @@ internal fun DemoCheckboxPreference(
     icon: (@Composable () -> Unit)? = null,
 ) {
     val dark = CouiTheme.isDark
-    val colors = CouiPageDefaults.themeColors(dark)
     val source = remember { MutableInteractionSource() }
     DemoPreferenceRow(modifier.couiButtonFeedback(dark, source, enabled, list = true)
         .toggleable(checked, source, null, enabled, Role.Checkbox, onCheckedChange), title, summary, enabled, icon, contentPadding) {
         Checkbox(modifier = Modifier.padding(start = 16.dp).size(24.dp),
             checked = checked, enabled = enabled,
-            colors = CouiCheckboxDefaults.colors(colors.accent, dark),
             shape = CouiCheckboxDefaults.shape, borderShape = CouiCheckboxDefaults.borderShape)
     }
 }

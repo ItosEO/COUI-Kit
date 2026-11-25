@@ -88,7 +88,7 @@ fun CheckboxRowExample(
 }
 ~~~
 
-- **默认主题解析**：省略 `colors` 时，`Checkbox(checked = checked)` 读取 `CouiTheme.colorScheme.checkboxAccent`（原生主题为强调色；M3 适配在浅色取 `primary`、深色取 `inversePrimary`，详见[外观与预设](../guide/appearance.md)）。
+- **默认主题解析**：省略 `colors` 时，`Checkbox(checked = checked)` 读取 `CouiTheme.colorScheme.checkboxAccent`；使用默认 `CouiMaterial3Style()` 时，与其余实色控件共用 HCT 强调填色（`controlAccent`），详见[外观与预设](../guide/appearance.md)。
 - **自定义形状**：`shape` 控制选中时的内部填充块形状（默认 `CouiCheckboxDefaults.shape`，即 `CouiShape(4.dp)`），`borderShape` 控制未选中时的外框形状（默认 `CouiCheckboxDefaults.borderShape`，即 `CouiShape(3.2.dp)`）。
 
 ## 只放一个复选框
@@ -138,7 +138,7 @@ fun StandaloneCheckboxExample(
 | `modifier` | `Modifier` | 外层修饰符（基准绘制尺寸为 `24.dp`）。 |
 | `selected` | 必填 | 当前是否处于选中状态。 |
 | `enabled` | `true` | 控制启用态或禁用态外观。 |
-| `colors` | `CouiRadioButtonDefaults.colors(CouiTheme.colorScheme.accent, CouiTheme.isDark)` | 选中、未选中、中心圆点及禁用态配色。 |
+| `colors` | `CouiRadioButtonDefaults.colors(CouiTheme.colorScheme.controlAccent, CouiTheme.isDark)` | 选中、未选中、中心圆点及禁用态配色。 |
 
 ### `Checkbox`
 

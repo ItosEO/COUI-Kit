@@ -70,7 +70,6 @@ fun MultiActionDialogExample(
     modifier: Modifier = Modifier,
     visible: Boolean,
     dark: Boolean,
-    accent: Color,
     title: String,
     confirmLabel: String,
     cancelLabel: String,
@@ -92,7 +91,6 @@ fun MultiActionDialogExample(
             onClick = onConfirm,
             enabled = canConfirm,
             style = CouiDialogActionStyle.Primary,
-            colors = CouiDialogDefaults.primaryActionColors(accent),
         ),
         dismissAction = CouiDialogAction(cancelLabel, onDismissRequest),
         neutralAction = CouiDialogAction(resetLabel, onReset),
@@ -102,7 +100,7 @@ fun MultiActionDialogExample(
 ~~~
 
 - **按钮排布规则**：两个短按钮自动横排（`dismissAction` 在左、`confirmAction` 在右）；单个按钮、三个按钮，或任意按钮文案在均分宽度下放不下时，自动转为竖排（自上而下依次为 `neutralAction`、`confirmAction`、`dismissAction`）。
-- **主操作与破坏性配色**：设置 `CouiDialogActionStyle.Primary` 时**必须**传入 `colors`（可通过 `CouiDialogDefaults.primaryActionColors(accent)` 创建），否则会抛出异常。`neutralAction` 默认使用破坏性文字色（`colors.destructive`），`enabled = false` 仅禁用对应按钮。
+- **主操作与破坏性配色**：`CouiDialogActionStyle.Primary` 默认使用当前主题的强调填色（`controlAccent`），需要覆盖时传入 `colors = CouiDialogDefaults.primaryActionColors(accent)`；`neutralAction` 默认使用破坏性文字色（`colors.destructive`）；`enabled = false` 仅禁用对应按钮。
 - 普通按钮透出纯色面板或已染色模糊面板的底色，浅色主题压暗按钮，深色主题提亮按钮。关闭模糊材质的染色时，普通按钮使用原生半透明白底。传入 `CouiDialogAction.colors` 可指定该按钮的底色与文字色。
 - **正文滚动隔离**：`content` 位于正文可滚动区域内，操作按钮区独立固定在底部；正文较长时按钮仍保留在窗口内，不会滚出视口。若正文使用 Material 3 的 `Text` 等组件，宿主需自行声明 Material 3 依赖。
 
@@ -121,7 +119,6 @@ Dialog(
             text = confirmLabel,
             onClick = onConfirm,
             style = CouiDialogActionStyle.Primary,
-            colors = CouiDialogDefaults.primaryActionColors(accent),
         )),
         listOf(
             CouiDialogAction(cancelLabel, onDismiss),
@@ -314,7 +311,7 @@ fun HostPageWithDialogExample(
 | --- | --- | --- |
 | `visible` | `null` | `Boolean?` 可选参数。传 `Boolean` 时常驻组合执行入退场动画并实时同步背景采样；省略（`null`）时由外层 `if (visible)` 控制，使用系统窗口动画。 |
 | `onDismissRequest` | 必填 | 系统返回键或点击弹窗外遮罩时触发；不会自动关闭弹窗，需由宿主更新状态。 |
-| `confirmAction` | 必填 | 确认按钮配置；`text` 不能为空白，使用 `Primary` 样式时必须提供 `colors`。 |
+| `confirmAction` | 必填 | 确认按钮配置；`text` 不能为空白，使用 `Primary` 样式且省略 `colors` 时默认采用主题强调填色。 |
 | `dismissAction` / `neutralAction` | `null` | 可选取消与第三操作；`neutralAction` 默认使用破坏性文字色。 |
 | `placement` | `CouiDialogPlacement.Bottom` | 弹窗位置：底部（`Bottom`）或居中（`Center`）。 |
 | `material` / `backdrop` | `null` | API 33+ 背景材质配置与窗口背景源；`material` 非空时必须同时具备 API 33+ 与有效背景源。 |

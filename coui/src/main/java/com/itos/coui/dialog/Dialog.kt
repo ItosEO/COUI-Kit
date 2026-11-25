@@ -35,12 +35,11 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
 import com.itos.coui.backdrop.CouiBackdrop
 
-/** 受控操作。确认后的关闭、状态变更及业务提交由 onClick 的宿主处理。 */
+/** 受控操作。主操作省略 [colors] 时使用主题填色。关闭、状态变更及业务提交由宿主处理。 */
 data class CouiDialogAction(val text: String, val onClick: () -> Unit, val enabled: Boolean = true,
     val style: CouiDialogActionStyle = CouiDialogActionStyle.Secondary, val colors: CouiDialogActionColors? = null) {
     init {
         require(text.isNotBlank()) { "操作文案不能为空" }
-        require(style != CouiDialogActionStyle.Primary || colors != null) { "主操作必须由宿主提供主题配色" }
     }
 }
 
@@ -219,6 +218,7 @@ internal fun DialogActions(
             } else listOf(row)
         }
         SideEffect { onMultipleRows(rows.size > 1) }
+        val primaryColors = DialogButtonDefaults.primaryColors(CouiTheme.colorSchemeFor(dark).controlAccent)
         fun buttonHeight(action: CouiDialogAction, width: Int, multiline: Boolean): Int {
             val textHeight = measurer.measure(action.text, textStyle, maxLines = 2, overflow = TextOverflow.Ellipsis,
                 constraints = Constraints(maxWidth = width)).size.height
@@ -246,9 +246,13 @@ internal fun DialogActions(
                         horizontalArrangement = Arrangement.spacedBy(gap),
                     ) {
                         row.forEach { action ->
+                            val actionColors = action.colors ?: when {
+                                action === destructiveAction -> secondaryColors.copy(content = colors.destructive)
+                                action.style == CouiDialogActionStyle.Primary -> primaryColors
+                                else -> secondaryColors
+                            }
                             DialogActionButton(
-                                action, action.colors ?: if (action === destructiveAction)
-                                    secondaryColors.copy(content = colors.destructive) else secondaryColors,
+                                action, actionColors,
                                 dark, material, Modifier.weight(1f), row.size == 1 && textWidths.getValue(action) > available,
                                 interactive,
                             )

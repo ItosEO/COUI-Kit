@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -99,6 +100,6 @@ private fun AlarmTypeChoices(selected: Int, onSelected: (Int) -> Unit, dark: Boo
         items = labels.mapIndexed { index, label -> CouiChipTabItem(index, label) },
         selectedKey = selected, onSelectedKeyChange = { onSelected(it as Int) },
         dark = dark, itemSpacing = 8.dp,
-        selectedColor = MaterialTheme.colorScheme.primary,
-        selectedContentColor = MaterialTheme.colorScheme.onPrimary)
+        selectedColor = CouiTheme.colorSchemeFor(dark).controlAccent,
+        selectedContentColor = Color.White)
 }

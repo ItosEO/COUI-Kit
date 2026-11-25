@@ -12,7 +12,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.DialogProperties
 import com.itos.coui.dialog.Dialog
 import com.itos.coui.dialog.CouiDialogAction
-import com.itos.coui.dialog.CouiDialogDefaults
 import com.itos.coui.dialog.CouiDialogPlacement
 import com.itos.coui.dialog.CouiDialogActionStyle
 import com.itos.coui.dialog.CouiSingleChoiceItem
@@ -21,7 +20,6 @@ import com.itos.coui.dialog.SingleChoiceDialog
 import com.itos.coui.icons.CouiIcons
 import com.itos.coui.menu.rememberCouiWindowBackdrop
 import com.itos.coui.layout.*
-import com.itos.coui.theme.CouiTheme
 import kotlinx.coroutines.delay
 
 @Composable
@@ -114,7 +112,6 @@ internal fun DialogSample(dark: Boolean, onToggleTheme: (() -> Unit)? = null) {
                         text = stringResource(R.string.dialog_confirm),
                         onClick = dismiss,
                         style = CouiDialogActionStyle.Primary,
-                        colors = CouiDialogDefaults.primaryActionColors(CouiTheme.colorScheme.accent),
                     )),
                     listOf(
                         CouiDialogAction(stringResource(R.string.dialog_cancel), dismiss),
@@ -133,8 +130,7 @@ internal fun DialogSample(dark: Boolean, onToggleTheme: (() -> Unit)? = null) {
             title = title,
             message = if (variant == "long") List(12) { regularMessage }.joinToString("\n\n") else regularMessage,
             confirmAction = CouiDialogAction(stringResource(R.string.dialog_confirm), dismiss, variant != "disabled",
-                style = if (variant == "primary") CouiDialogActionStyle.Primary else CouiDialogActionStyle.Secondary,
-                colors = if (variant == "primary") CouiDialogDefaults.primaryActionColors(CouiTheme.colorScheme.accent) else null),
+                style = if (variant == "primary") CouiDialogActionStyle.Primary else CouiDialogActionStyle.Secondary),
             dismissAction = CouiDialogAction(stringResource(R.string.dialog_cancel), dismiss),
             neutralAction = when {
                 variant == "theme" && onToggleTheme != null -> CouiDialogAction(stringResource(R.string.toggle_theme), onToggleTheme)

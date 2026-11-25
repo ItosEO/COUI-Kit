@@ -28,6 +28,14 @@ fun NativeSwitchExample(
 
 依赖配置、启动初始化（`Coui.initialize(defaultStyle = CouiMaterial3Style())`）与独立深浅模式开关（`LocalCouiDarkTheme`）见 [README：接入 Material 3](../../README.md#接入-material-3)。下文说明局部主题覆盖、M3 角色映射、染色规则与插槽行为。
 
+`CouiMaterial3Style()` 默认基于宿主 `primary` 生成 HCT 强调色。如需直接沿用 Material 3 原始强调色角色，可在 `Application.onCreate()` 初始化时关闭 HCT：
+
+~~~kotlin
+Coui.initialize(defaultStyle = CouiMaterial3Style(useHctColors = false))
+~~~
+
+关闭后，强调色、实色控件填色、菜单选中文字与光标均直接取 `primary`；普通与菜单 `Checkbox` 在浅色模式取 `primary`、深色模式取 `inversePrimary`。页面背景、表面色、材质染色与字体映射不变。
+
 ## 局部原生或自定义外观
 
 使用 `CouiTheme` 可以为局部子树建立原生或自定义外观，退出作用域后恢复外层策略，同时提供自身的深浅模式；即使全局启用了 Material 3 适配，局部 `CouiTheme` 内仍会保持对 M3 内容插槽的桥接：
@@ -71,17 +79,18 @@ CouiTheme(darkTheme = dark, colorScheme = colors) {
 
 ## Material 颜色与字体角色
 
-启用 `CouiMaterial3Style` 后，COUI 语义角色与 Material 3 角色的映射如下：
+默认配置（`CouiMaterial3Style()`，启用 HCT）下，COUI 语义角色与 Material 3 角色的映射如下（关闭 HCT 时的差异见[接入 Material 3](#接入-material-3)）：
 
 | COUI 用途 | Material 3 来源 |
 | --- | --- |
-| 强调色 / 强调色上的内容 | `primary` / `onPrimary` |
-| 菜单选中态（`selected`） | `primary` |
-| 普通与菜单 `Checkbox` | 浅色模式 `primary`，深色模式 `inversePrimary` |
+| 强调色（含菜单选中文字、光标） / 强调色上的内容 | `primary` 经 HCT 增强彩度并保留原色调 / `onPrimary` |
+| 弹窗主操作、默认 `Fab` 与底栏有色附件、开关、滑条、单选与复选填色 | `primary` 经 HCT 增强并按浅/深模式固定色调（`controlAccent`，适配白色前景） |
 | 表面、文字、次要文字、分隔线 | `surface`、`onSurface`、`onSurfaceVariant`、`outlineVariant` |
 | 页面背景 / 分组卡片 | `background` / `surfaceBright` |
 | 菜单模糊补底 / 无 `Backdrop` 的容器 | `surface` / `surfaceBright` |
 | 普通内容 / 菜单项 / 菜单头部标签 | `bodyLarge` / `labelLarge` / `bodySmall` |
+
+显式传入的组件颜色与局部 `CouiTheme` 仍按[外观解析优先级](#外观解析优先级)生效。
 
 字体与内容色解析补充规则：
 
@@ -109,7 +118,7 @@ CouiTheme(darkTheme = dark, colorScheme = colors) {
 | `MessageInputBar`（API 34+ 且开启系统模糊） | 透明（不染色） | 使用宿主 `surface` 基准色染色 | 显式传入 `themeTint`；系统模糊关闭退回不透明底色时自动关闭染色 |
 | `SegmentedControl`（API 34+ `backdrop != null` 透明模糊模式） | 透明（不染色） | 使用宿主 `surface` 基准色染色 | 显式传入 `themeTint`；普通填色模式（`backdrop == null`）与指示器不受影响 |
 | `ChipTab` / `ChipTabButton` / `ChipTabRow`（API 34+） | 透明（不染色） | 使用宿主 `surface` 基准色染色 | 显式传入 `themeTint`；仅作用于中性玻璃底层，不干扰 `selectedColor` |
-| `Fab` | 取主题强调色，不叠加页面 `themeTint` | 取 M3 `primary`，不叠加页面 `themeTint` | 日夜默认内容色均为不透明白色（显式 `material` 同样适用）；自装透明材质可通过 `CouiFloatingMaterial.themeTint` 传入染色基准色 |
+| `Fab` | 取原生强调色，不叠加页面 `themeTint` | 取 `controlAccent`，不叠加页面 `themeTint` | 默认内容色为不透明白色；自装透明材质可通过 `CouiFloatingMaterial.themeTint` 传入染色基准色 |
 
 - 局部 `CouiTheme(materialTint = ...)` 同样可提供整树自定义染色（`Color.Transparent` 表示关闭）；单组件显式传入的 `themeTint` 优先级更高。
 - 关闭染色后，背景采样仍会自然包含后方页面颜色；显式传入其他 `material` 参数（`mix`、`blend` 等）仍然优先，但其 `themeTint` 也使用同一基准色与固定强度规则。

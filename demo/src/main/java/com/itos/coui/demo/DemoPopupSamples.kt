@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -33,7 +34,6 @@ import com.itos.coui.menu.CouiMenuStyle
 import com.itos.coui.menu.Menu
 import com.itos.coui.menu.ProvideCouiMenuBackdrop
 import com.itos.coui.menu.rememberCouiWindowBackdrop
-import com.itos.coui.theme.CouiTheme
 
 @Composable
 internal fun MenuSamples(dark: Boolean) {
@@ -75,7 +75,7 @@ internal fun MenuSamples(dark: Boolean) {
                 options = (1..16).map { stringResource(R.string.menu_item_number, it) })
         }
         Group {
-            val accent = CouiTheme.colorScheme.accent
+            val tint = MaterialTheme.colorScheme.primary
             val swatches = if (dark) listOf(Color(0xFF315C99), Color(0xFF91445F), Color(0xFF287461))
                 else listOf(Color(0xFF7EB1F4), Color(0xFFF19AB5), Color(0xFF76C6AD))
             Box(Modifier.fillMaxWidth()) {
@@ -88,7 +88,7 @@ internal fun MenuSamples(dark: Boolean) {
                             shape = RoundedCornerShape(16.dp),
                             radius = 16.dp,
                             itemShape = RoundedCornerShape(8.dp),
-                            themeTint = accent,
+                            themeTint = tint,
                         ))
                 }
             }
