@@ -59,7 +59,7 @@ Dialog(visible = visible, onDismissRequest = { visible = false }, title = title,
     dismissAction = CouiDialogAction(cancelText, { visible = false }), material = material, backdrop = backdrop)
 ```
 
-- 多行操作用 `Dialog(actionRows = ...)`（1–4 行，每行非空）。
+- `Dialog` 的 `message` 和 `content` 共用滚动区，标题和底部操作区保持固定。多行操作用 `Dialog(actionRows = ...)`（1–4 行，每行非空）。
 - 普通按钮跟随纯色面板或已染色模糊面板的底色；主操作（`CouiDialogActionStyle.Primary`）默认取主题强调填色，需要覆盖时传 `colors = CouiDialogDefaults.primaryActionColors(accent)`。单独指定任意按钮配色可传 `CouiDialogAction.colors`。
 - **`SingleChoiceDialog`** 使用 `CouiSingleChoiceItem(value, text)` 描述选项。`actionRows` 为空时省略按钮区，各按钮执行自己的 `onClick`。返回和外点触发 `onDismissRequest`。
   - **说明文字**。可选参数 `message` 默认是 `null`。非空白时显示在标题下、选项前并随选项滚动，标题和底部操作区保持固定。

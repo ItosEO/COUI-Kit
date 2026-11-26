@@ -102,7 +102,7 @@ fun MultiActionDialogExample(
 - **按钮排布规则**：两个短按钮自动横排（`dismissAction` 在左、`confirmAction` 在右）；单个按钮、三个按钮，或任意按钮文案在均分宽度下放不下时，自动转为竖排（自上而下依次为 `neutralAction`、`confirmAction`、`dismissAction`）。
 - **主操作与破坏性配色**：`CouiDialogActionStyle.Primary` 默认使用当前主题的强调填色（`controlAccent`），需要覆盖时传入 `colors = CouiDialogDefaults.primaryActionColors(accent)`；`neutralAction` 默认使用破坏性文字色（`colors.destructive`）；`enabled = false` 仅禁用对应按钮。
 - 普通按钮透出纯色面板或已染色模糊面板的底色，浅色主题压暗按钮，深色主题提亮按钮。关闭模糊材质的染色时，普通按钮使用原生半透明白底。传入 `CouiDialogAction.colors` 可指定该按钮的底色与文字色。
-- **正文滚动隔离**：`content` 位于正文可滚动区域内，操作按钮区独立固定在底部；正文较长时按钮仍保留在窗口内，不会滚出视口。若正文使用 Material 3 的 `Text` 等组件，宿主需自行声明 Material 3 依赖。
+- 正文超出可用高度时，`message` 和 `content` 一起滚动，标题和底部操作区保持固定。若正文使用 Material 3 的 `Text` 等组件，宿主需自行声明 Material 3 依赖。
 
 ### 自定义底部操作行
 

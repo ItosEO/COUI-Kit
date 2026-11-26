@@ -45,6 +45,7 @@ data class CouiDialogAction(val text: String, val onClick: () -> Unit, val enabl
 
 /**
  * 普通警告弹窗。两短按钮横排，单个、三个或放不下的按钮竖排。
+ * 标题与底部操作区独立于正文滚动区，message 和 content 一起滚动。
  * content 可装配列表、输入和选择器；不提供推荐/AI Payment 专用按钮及原厂高内容标题合并协议。
  * CouiShape 自动提供轮廓半径；其他 Shape 使用材质时须显式提供 cornerRadius。
  * visible 非空时由库保留退场窗口，调用须留在组合中；null 使用外层条件和系统窗口动画。
@@ -82,7 +83,7 @@ fun Dialog(
 
 /**
  * 按行排列底部操作。每行等分可用宽度，文案放不下的行会按声明顺序拆成竖排。
- * 操作区独立于可滚动的正文，关闭弹窗由各操作的回调决定。
+ * 标题与操作区独立于正文滚动区，关闭弹窗由各操作的回调决定。
  * themeTint 为模糊材质染色基准色（强度由库统一控制，Color.Transparent 关闭染色，仅 material != null 时生效）。
  *
  * @param actionRows 从上到下声明 1 至 4 行，行内从布局起始侧到末端排列，每行至少一个操作。
@@ -139,9 +140,8 @@ private fun DialogWithActions(
         var multipleRows by remember(actionRows.size) { mutableStateOf(actionRows.size > 1) }
         val tall = messageLines > 1 || multipleRows
         Column(Modifier.fillMaxWidth()) {
-            // 对应正文/标题的滚动区与独立 buttonPanel；操作不随长文滚出窗口。
+            if (!title.isNullOrEmpty()) DialogTitle(title, colors.title)
             Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
-                if (!title.isNullOrEmpty()) DialogTitle(title, colors.title)
                 if (!message.isNullOrEmpty()) DialogText(text = message, kind = DialogTextKind.Message, color = colors.message, modifier =
                     Modifier.fillMaxWidth().padding(horizontal = CouiDialogDefaults.contentPadding)
                         .padding(top = if (title.isNullOrEmpty() && !tall) CouiDialogDefaults.messageTopWithoutTitle else 0.dp,
