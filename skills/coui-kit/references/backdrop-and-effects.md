@@ -57,6 +57,6 @@ Modifier.couiButtonFeedback(CouiTheme.isDark, source, enabled, list = true, hove
     .clickable(source, indication = null, enabled = enabled, role = Role.Button, onClick = onOpen)
 ```
 
-- **缩放显隐**：用 `rememberCouiScaleVisibility(visible)`，在 `isPresent` 期间保留内容并挂 `Modifier.couiScaleVisibility(motion)`（自绘链可直接读取 `scale.value` 与 `alpha.value`）。宿主按 `visible` 控制交互。
+- **缩放显隐**：用 `rememberCouiScaleVisibility(visible)`，在 `isPresent` 期间保留内容并挂 `Modifier.couiScaleVisibility(motion)`。自绘链读取 `scale.value` 和 `alpha.value`，并将 `foregroundBlurEffect` 赋给前景图层。宿主按 `visible` 控制交互。
 - **纵向回弹**：普通 `Column` 用 `.couiVerticalScroll(rememberScrollState())` 且 `.padding(padding)` 放滚动**之后**；`LazyColumn` 传独立 `overscrollEffect = rememberCouiOverscrollEffect()`。禁止跨列表共享、双层纵向滚动，或用于横向分页/侧滑。
 - **横向融合（API 33+）**：同坐标系准备两个 `CouiMetaballBody`，背景与 `BlendMode.DstIn` 内容遮罩各自持有独立 `CouiMetaballRenderer`。跟随位移用 `rememberCouiMetaballFollowingTranslation`（像素），业务触发在松手完成时决定。

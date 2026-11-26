@@ -79,7 +79,7 @@ fun BasicScaffoldPageExample(
   - 普通非滚动正文：使用 `Modifier.padding(padding).consumeWindowInsets(padding)`。
   - 可滚动 `Column`：将 `.padding(padding)` 放在 `.verticalScroll(...)` **之后**，保留栏位下方的绘制采样区域。
   - 折叠顶栏页面：使用 `state.contentPadding(padding, density)` 补偿顶部，同时 `consumeWindowInsets(padding)` 仍传入 `Scaffold` 给出的原始 `padding`，详见[折叠顶栏](collapsing-app-bar.md)。
-- **IME 键盘避让**：默认 `windowInsets` 不包含 `IME`。含输入框的页面请在 `Scaffold` 外侧添加 `Modifier.imePadding()`，让软键盘弹出时缩小实际视口（若父级已处理 IME 则沿用父级分工）；切勿仅靠增加列表底部空白代替焦点避让。若页面还会弹出输入型弹窗，请按[宿主窗口焦点启用键盘避让](dialog.md#宿主页的键盘避让)配置。
+- **IME 键盘避让**：默认 `windowInsets` 不包含 `IME`。导航栏需要固定在屏幕底部时，在正文视口消费 `padding` 后应用 `imePadding()`，可滚动正文应在滚动修饰符之前处理。底部输入栏需要紧贴键盘时，在整个 `Scaffold` 外侧应用 `imePadding()`。父级已避让时沿用父级分工。输入型弹窗的处理见[宿主窗口焦点与键盘避让](dialog.md#宿主页的键盘避让)。
 
 ## 放置 FAB
 

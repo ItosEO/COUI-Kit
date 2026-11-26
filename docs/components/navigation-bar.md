@@ -19,6 +19,7 @@ NavigationBar(
 
 - `CouiNavigationItem` 的 `icon` 与 `selectedIcon` 推荐配对同名 `Outlined` 和 `Filled` 图标（见[图标选用与接入](icons.md)）；省略 `selectedIcon` 时两种状态共用 `icon`。
 - 组件内部按选中状态绘制 `24.dp` 图标与透明度和文字颜色，图标资源勿预乘透明度；`selectedColor` / `unselectedColor` 可按需显式覆盖。
+- 传入 `visible` 可让胶囊和两侧附件一起原地缩放显隐。收起时立即停用交互，底栏始终保留布局高度。搜索时需要把底栏固定在窗口底部，可让正文处理 `imePadding()`，由宿主按键盘的目标状态驱动 `visible`。
 
 ## 左右附件
 

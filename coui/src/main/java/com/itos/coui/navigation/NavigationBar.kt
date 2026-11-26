@@ -89,6 +89,7 @@ import com.itos.coui.motion.CouiTouchMotion
 import com.itos.coui.motion.couiPressMotion
 import com.itos.coui.motion.couiTouchMotion
 import com.itos.coui.motion.rememberCouiPressMotion
+import com.itos.coui.motion.rememberCouiScaleVisibility
 import com.itos.coui.motion.rememberCouiTouchMotion
 import com.itos.coui.theme.CouiTheme
 import com.itos.coui.theme.ProvideCouiContent
@@ -124,17 +125,46 @@ fun NavigationBar(
     selectedColor: Color = (if (dark) Color.White else Color.Black).copy(alpha = 230f / 255f),
     unselectedColor: Color = (if (dark) Color.White else Color.Black).copy(alpha = 184f / 255f),
     onSelection: (Int) -> Unit,
+) = NavigationBar(
+    modifier = modifier, backdrop = backdrop, renderer = renderer, items = items, selectedIndex = selectedIndex,
+    visible = true, leftAction = leftAction, rightAction = rightAction, dark = dark, material = material,
+    lightColor = lightColor, themeTint = themeTint, selectedColor = selectedColor, unselectedColor = unselectedColor,
+    onSelection = onSelection,
+)
+
+/** [visible] 控制整栏在槽位内缩放显隐。收起时立即停用交互，槽位继续提供原有布局高度。 */
+@RequiresApi(34)
+@Composable
+fun NavigationBar(
+    modifier: Modifier = Modifier,
+    backdrop: CouiBackdrop = checkNotNull(LocalCouiBackdrop.current) {
+        "底栏需要显式 backdrop 或 COUI Scaffold 的独立栏位"
+    },
+    renderer: CouiFloatingRenderer = remember { CouiFloatingRenderer() },
+    items: List<CouiNavigationItem>,
+    selectedIndex: Int,
+    visible: Boolean,
+    leftAction: CouiNavigationBarAction? = null,
+    rightAction: CouiNavigationBarAction? = null,
+    dark: Boolean = CouiTheme.isDark,
+    material: CouiFloatingMaterial = CouiNavigationBarDefaults.material(dark),
+    lightColor: Color = material.lightColor,
+    themeTint: Color = material.themeTint,
+    selectedColor: Color = (if (dark) Color.White else Color.Black).copy(alpha = 230f / 255f),
+    unselectedColor: Color = (if (dark) Color.White else Color.Black).copy(alpha = 184f / 255f),
+    onSelection: (Int) -> Unit,
 ) {
     require(items.isNotEmpty() && selectedIndex in items.indices)
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
     val leftVisible = leftAction?.visible == true
     val rightVisible = rightAction?.visible == true
+    val visibility = rememberCouiScaleVisibility(visible)
     val leftExpansion = remember(density, layoutDirection, leftAction != null) { CouiFabExpansion(leftVisible) }
     val rightExpansion = remember(density, layoutDirection, rightAction != null) { CouiFabExpansion(rightVisible) }
-    // 融合完成会先隐藏附件, 点击不能继续等待缩放弹簧结束。
-    val leftInteractive = leftExpansion.present && leftExpansion.interactive
-    val rightInteractive = rightExpansion.present && rightExpansion.interactive
+    // 附件融合完成或整栏开始收起时就停用交互，避免退场中的按钮拦截点击。
+    val leftInteractive = visible && leftExpansion.present && leftExpansion.interactive
+    val rightInteractive = visible && rightExpansion.present && rightExpansion.interactive
     DisposableEffect(leftExpansion) {
         onDispose { leftExpansion.dispose() }
     }
@@ -163,9 +193,9 @@ fun NavigationBar(
         listOf(leftStyle.shape, CouiCapsuleShape, rightStyle.shape)
     }
     val contentLayers = List(3) { rememberGraphicsLayer() }
-    val menuMotion = rememberCouiTouchMotion(true)
-    val leftMotion = rememberCouiTouchMotion(leftExpansion.touchMotionEnabled)
-    val rightMotion = rememberCouiTouchMotion(rightExpansion.touchMotionEnabled)
+    val menuMotion = rememberCouiTouchMotion(visible)
+    val leftMotion = rememberCouiTouchMotion(visible && leftExpansion.touchMotionEnabled)
+    val rightMotion = rememberCouiTouchMotion(visible && rightExpansion.touchMotionEnabled)
     val menuPress = rememberCouiPressMotion()
     val leftPress = rememberCouiPressMotion()
     val rightPress = rememberCouiPressMotion()
@@ -224,18 +254,41 @@ fun NavigationBar(
                 modifier = Modifier.fillMaxWidth().height(56.dp)
                     .onGloballyPositioned { rowCoordinates = it }
                     .couiFloatingSurfaces(backdrop, renderer, materials, shadows, shapes, contentLayers, contour) {
+                        val blur = visibility.foregroundBlurEffect
+                        contentLayers.forEach { it.renderEffect = blur }
                         val left = leftSurface()
                         val menu = menuSurface()
                         val right = rightSurface()
-                        listOf(
-                            left.copy(alpha = left.alpha * couiFabOverlapAlpha(
-                                couiFabOverlapRatio(left.couiDrawingBounds(), menu.couiDrawingBounds()),
-                            )),
-                            menu,
-                            right.copy(alpha = right.alpha * couiFabOverlapAlpha(
-                                couiFabOverlapRatio(right.couiDrawingBounds(), menu.couiDrawingBounds()),
-                            )),
-                        )
+                        if (!visibility.isPresent) {
+                            listOf(
+                                left.copy(alpha = 0f, visible = false),
+                                menu.copy(alpha = 0f, visible = false),
+                                right.copy(alpha = 0f, visible = false),
+                            )
+                        } else {
+                            val barCenter = menuBounds.center
+                            val barScale = visibility.scale.value.coerceAtLeast(0.001f)
+                            val barAlpha = visibility.alpha.value.coerceIn(0f, 1f)
+                            fun CouiFloatingSurface.applyBarVisibility(): CouiFloatingSurface {
+                                if (!this.visible) return this
+                                val offset = (bounds.center - barCenter) * (barScale - 1f)
+                                return copy(
+                                    bounds = bounds.translate(offset),
+                                    scaleX = scaleX * barScale,
+                                    scaleY = scaleY * barScale,
+                                    alpha = alpha * barAlpha,
+                                )
+                            }
+                            listOf(
+                                left.copy(alpha = left.alpha * couiFabOverlapAlpha(
+                                    couiFabOverlapRatio(left.couiDrawingBounds(), menu.couiDrawingBounds()),
+                                )).applyBarVisibility(),
+                                menu.applyBarVisibility(),
+                                right.copy(alpha = right.alpha * couiFabOverlapAlpha(
+                                    couiFabOverlapRatio(right.couiDrawingBounds(), menu.couiDrawingBounds()),
+                                )).applyBarVisibility(),
+                            )
+                        }
                     },
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
@@ -248,6 +301,7 @@ fun NavigationBar(
                     dark = dark,
                     contentLayer = contentLayers[0],
                     interactive = leftInteractive,
+                    present = visibility.isPresent,
                     expansion = leftExpansion,
                     onBounds = { node -> rowCoordinates?.let { leftBounds = it.localBoundingBoxOf(node, false) } },
                 )
@@ -256,13 +310,17 @@ fun NavigationBar(
                     shape = CouiCapsuleShape,
                     lightColor = lightColor,
                     contentLayer = contentLayers[1],
+                    interactive = visible,
+                    present = visibility.isPresent,
                     onBounds = { node -> rowCoordinates?.let { menuBounds = it.localBoundingBoxOf(node, false) } },
                 ) {
                     val itemBounds = remember(items.size) { mutableMapOf<Int, Rect>() }
                     var menuCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
                     Row(
-                        Modifier.fillMaxSize().selectableGroup().onGloballyPositioned { menuCoordinates = it }
-                            .pointerInput(items.size) {
+                        Modifier.fillMaxSize()
+                            .then(if (visible) Modifier.selectableGroup() else Modifier)
+                            .onGloballyPositioned { menuCoordinates = it }
+                            .then(if (visible) Modifier.pointerInput(items.size) {
                                 var active: PointerId? = null
                                 var pending: Int? = null
                                 var downItem: Int? = null
@@ -310,7 +368,7 @@ fun NavigationBar(
                                     // 节点移除不等于原厂 ACTION_CANCEL, 不能在离开页面时触发导航。
                                     previewSelection = currentSelection
                                 }
-                            }.padding(horizontal = 12.dp),
+                            } else Modifier).padding(horizontal = 12.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -321,19 +379,25 @@ fun NavigationBar(
                             Box(
                                 Modifier.weight(1f).height(48.dp)
                                     .onGloballyPositioned { node -> menuCoordinates?.let { itemBounds[index] = it.localBoundingBoxOf(node, false) } }
-                                    .semantics(mergeDescendants = true) {
-                                        role = Role.Tab
-                                        selected = isSelected
-                                        onClick {
-                                            if (index != currentSelection) onSelect(index)
-                                            true
-                                        }
-                                    }.onKeyEvent {
-                                        if (it.type == KeyEventType.KeyUp && (it.key == Key.Enter || it.key == Key.Spacebar)) {
-                                            if (index != currentSelection) onSelect(index)
-                                            true
-                                        } else false
-                                    }.focusable(interactionSource = interactionSource),
+                                    .then(
+                                        if (visible) {
+                                            Modifier.semantics(mergeDescendants = true) {
+                                                role = Role.Tab
+                                                selected = isSelected
+                                                onClick {
+                                                    if (index != currentSelection) onSelect(index)
+                                                    true
+                                                }
+                                            }.onKeyEvent {
+                                                if (it.type == KeyEventType.KeyUp && (it.key == Key.Enter || it.key == Key.Spacebar)) {
+                                                    if (index != currentSelection) onSelect(index)
+                                                    true
+                                                } else false
+                                            }.focusable(interactionSource = interactionSource)
+                                        } else {
+                                            Modifier.clearAndSetSemantics {}
+                                        },
+                                    ),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Column(
@@ -361,6 +425,7 @@ fun NavigationBar(
                     dark = dark,
                     contentLayer = contentLayers[2],
                     interactive = rightInteractive,
+                    present = visibility.isPresent,
                     expansion = rightExpansion,
                     onBounds = { node -> rowCoordinates?.let { rightBounds = it.localBoundingBoxOf(node, false) } },
                 )
@@ -378,6 +443,7 @@ private fun NavigationActionNode(
     dark: Boolean,
     contentLayer: GraphicsLayer,
     interactive: Boolean,
+    present: Boolean,
     expansion: CouiFabExpansion,
     onBounds: (LayoutCoordinates) -> Unit,
 ) {
@@ -385,7 +451,7 @@ private fun NavigationActionNode(
         width = 56.dp, motion = motion, press = press, dark = dark,
         shape = style.shape, contentLayer = contentLayer, spotlight = style.spotlight,
         lightColor = style.material.lightColor, interactive = interactive,
-        expansion = expansion, onBounds = onBounds,
+        present = present, expansion = expansion, onBounds = onBounds,
     ) {
         if (action != null) {
             val interactionSource = remember { MutableInteractionSource() }
@@ -418,6 +484,7 @@ private fun FloatingNode(
     spotlight: SpotlightPreset = SpotlightPreset.OpaqueSmall2,
     lightColor: Color = Color.White,
     interactive: Boolean = true,
+    present: Boolean = true,
     expansion: CouiFabExpansion? = null,
     onBounds: (LayoutCoordinates) -> Unit,
     content: @Composable () -> Unit,
@@ -448,7 +515,7 @@ private fun FloatingNode(
                     .couiPressMotion(press, touchMotionEnabled).then(lightInput)
                 else Modifier.clearAndSetSemantics {},
             ).drawWithContent {
-                contentLayer.record { this@drawWithContent.drawContent() }
+                if (present) contentLayer.record { this@drawWithContent.drawContent() }
             }.clip(shape)
                 .drawBehind { drawLight?.invoke(this) },
         ) { content() }

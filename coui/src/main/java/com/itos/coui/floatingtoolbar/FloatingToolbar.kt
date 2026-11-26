@@ -143,6 +143,7 @@ internal fun ToolbarSurface(
                         .then(lightInput)
                         .drawWithContent {
                             contentLayer.pivotOffset = Offset(width / 2f, height / 2f)
+                            contentLayer.renderEffect = visibility.foregroundBlurEffect
                             contentLayer.record { this@drawWithContent.drawContent() }
                         }
                         .clip(shape).drawBehind { drawLight?.invoke(this) },

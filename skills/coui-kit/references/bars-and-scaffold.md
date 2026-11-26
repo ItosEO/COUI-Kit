@@ -86,7 +86,7 @@ NavigationBar(
 ### 避坑
 
 - **顶层 `material` / `themeTint` 不作用于透明附件**：它们只影响中间胶囊；透明附件需同步材质或关闭染色时，传 `style = CouiNavigationBarDefaults.transparentActionStyle(material = customMaterial)`。
-- **附件收起动画 vs 立即移除**：播收起动画须保留 `CouiNavigationBarAction` 实例并将 `visible = false`；传 `null` 会立即移除并释放动画。
+- 整栏显隐使用 `NavigationBar(visible = …)`，布局保留原高度。仅收起附件时保留 `CouiNavigationBarAction` 实例并将其 `visible` 设为 `false`。传 `null` 会立即移除该附件。
 - **自定义附件样式**：`CouiNavigationBarActionStyle.shape` 须使用 `CouiShape`，`shadow` 须同步读取 `LocalCouiContourGlowEnabled.current`。
 - **门槛与稳定位置**：API 31–33 或 `CouiFloatingRenderer()`（**不可用 `standalone()`**）创建失败时同槽位回退宿主普通底栏；切页保持底栏与 `renderer` 处于稳定组合位置。
 - `items` 非空且 `selectedIndex` 有效；勿对图标预乘状态透明度。

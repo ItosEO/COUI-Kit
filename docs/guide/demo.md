@@ -26,6 +26,7 @@ Demo 首页包含三个底栏页签（API 34+ 使用浮动 `NavigationBar`，左
 
 ### 搜索与返回
 
+- 首页搜索唤起键盘时，底栏在屏幕底部原地收起，结果列表随键盘调整可滚动区域。键盘开始收起时，底栏即在原位回弹。
 - **筛选与入口**：组件页搜索直接筛选首页组件分组，空查询显示完整目录（不显示效果或隐藏的独立类型条目）；搜索“时间”“倒计时”或“日期”时通过滚轮选择器条目进入对应类型。筛选列表使用独立滚动位置，清空查询或取消搜索后恢复原目录位置。
 - **清除、取消与返回**：清空按钮仅清除查询文本；点击取消或在搜索展开时按系统返回键会关闭搜索并清除查询。点击条目仅打开目标页，返回后保留来源页的查询与展开状态（状态和路由由 Demo 持有，组件用法见[常驻搜索](../components/search-bar.md)）。
 
@@ -56,7 +57,7 @@ Demo 首页包含三个底栏页签（API 34+ 使用浮动 `NavigationBar`，左
 ## 主题与页面装配
 
 - **主题切换**：`DemoApplication` 初始化 `CouiMaterial3Style`。开启「设置 → 使用 Material 主题配色」后，控件（开关、滑条、单/复选框、弹窗主操作与首页右下角按钮）跟随宿主 Material 主题；关闭后通过局部 `CouiTheme` 切换为原生外观。`FAB` 示例页中的固定预设优先于主题，详见[外观与预设](appearance.md)。
-- **页面容器与背景源**：首页和详情页使用公开的 [Scaffold](../components/scaffold.md) 测量栏位并处理横向安全区，Demo 在容器外处理 `IME` 避让，正文应用测量所得 `Padding`。容器自动向顶栏、底栏和 `FAB` 槽位提供正文背景源，正文内的 `ChipTab` 与模糊演示保留独立源；Activity 根部安装 `ProvideCouiMenuBackdrop` 窗口源供菜单、弹窗与 Sheet 面板使用（见[宿主页面接入](secondary-pages.md)）。
+- **页面容器与背景源**：首页和详情页使用公开的 [Scaffold](../components/scaffold.md) 测量栏位并处理横向安全区，正文应用测量所得 `Padding`。首页由正文单独避让键盘，需要抬升底部输入栏的详情页由外层容器避让。容器自动向顶栏、底栏和 `FAB` 槽位提供正文背景源，正文内的 `ChipTab` 与模糊演示保留独立源；Activity 根部安装 `ProvideCouiMenuBackdrop` 窗口源供菜单、弹窗与 Sheet 面板使用（见[宿主页面接入](secondary-pages.md)）。
 - **导航边界**：效果目录通过 [Nav3 页面转场](../components/predictive-back.md) 打开效果详情。其余目录入口通过标准 `Intent` 启动、`finish()` 退出。
 
 ## 源码导航

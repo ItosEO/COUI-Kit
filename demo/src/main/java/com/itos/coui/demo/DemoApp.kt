@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import com.itos.coui.effect.CouiFloatingRenderer
 import com.itos.coui.effect.LocalCouiContourGlowEnabled
@@ -47,6 +48,8 @@ import com.itos.coui.layout.CouiPageDefaults
 import com.itos.coui.menu.CouiMenuItem
 import com.itos.coui.layout.Group
 import com.itos.coui.layout.Scaffold
+import com.itos.coui.motion.couiScaleVisibility
+import com.itos.coui.motion.rememberCouiScaleVisibility
 import com.itos.coui.navigation3.CouiBackPreset
 import com.itos.coui.navigation3.PredictiveBackNavDisplay
 import com.itos.coui.topappbar.CollapsingTopAppBar
@@ -80,6 +83,7 @@ internal fun DemoApp(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
     )
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DemoHome(dark: Boolean, preferences: DemoPreferences, onToggleTheme: () -> Unit,
     openPage: (String) -> Unit, openEffect: (String) -> Unit) {
@@ -114,9 +118,10 @@ private fun DemoHome(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
         val header = behavior.state
         val search = key(page) { rememberCouiSearchBarState(page == 0 && searching) }
         val density = LocalDensity.current
-        // 弹窗持有输入时，后面的页面不为其键盘提前腾空背景。
+        // 输入法以目标高度通知显隐，让底栏从键盘开始收起的那一帧就在原处回弹。
+        val bottomBarVisible = !(page == 0 && searching && WindowInsets.imeAnimationTarget.getBottom(density) > 0)
         val imePadding = if (LocalWindowInfo.current.isWindowFocused) Modifier.imePadding() else Modifier
-        Scaffold(modifier = Modifier.fillMaxSize().then(imePadding)
+        Scaffold(modifier = Modifier.fillMaxSize()
             .nestedScroll(behavior.nestedScrollConnection), containerColor = background,
             topBar = {
                 if (page == 0) {
@@ -142,6 +147,7 @@ private fun DemoHome(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
                                 CouiNavigationItem(title = title, icon = navigation[index], selectedIcon = selectedNavigation[index])
                             },
                             selectedIndex = page,
+                            visible = bottomBarVisible,
                             leftAction = CouiNavigationBarAction(
                                 icon = CouiIcons.Filled.DarkLight,
                                 contentDescription = stringResource(R.string.toggle_theme),
@@ -163,12 +169,12 @@ private fun DemoHome(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
                             onSelection = selectPage,
                         )
                     }
-                } else PlainDemoBottomBar(titles, navigation, selectedNavigation, page, selectPage, dark)
+                } else PlainDemoBottomBar(titles, navigation, selectedNavigation, page, selectPage, dark, bottomBarVisible)
             } ) { innerPadding ->
             pageState.SaveableStateProvider(page) {
                 val contentPadding = remember(header, innerPadding, density) { header.contentPadding(innerPadding, density) }
-                Column(Modifier.fillMaxSize().couiVerticalScroll(contentScroll)
-                    .padding(contentPadding).consumeWindowInsets(innerPadding)
+                Column(Modifier.fillMaxSize().consumeWindowInsets(innerPadding).then(imePadding)
+                    .couiVerticalScroll(contentScroll).padding(contentPadding)
                     .padding(bottom = 16.dp)) {
                     rendering?.exceptionOrNull()?.let { failure ->
                         Text(stringResource(R.string.renderer_error, failure.message ?: failure.javaClass.simpleName),
@@ -210,18 +216,23 @@ private fun DemoHome(dark: Boolean, preferences: DemoPreferences, onToggleTheme:
 
 @Composable
 private fun PlainDemoBottomBar(titles: List<String>, icons: List<ImageVector>, selectedIcons: List<ImageVector>, page: Int,
-    select: (Int) -> Unit, dark: Boolean) {
-    Row(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface)
-        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)).height(64.dp).selectableGroup(),
-        verticalAlignment = Alignment.CenterVertically) {
-        titles.forEachIndexed { index, title ->
-            val source = remember { MutableInteractionSource() }
-            Column(Modifier.weight(1f).clip(DemoShapes.couiCapsule).couiNavigationFeedback(dark, source)
-                .selectable(index == page, source, null, true, Role.Tab, onClick = { select(index) }).padding(vertical = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally) {
-                val color = if (index == page) com.itos.coui.theme.CouiTheme.colorScheme.accent else MaterialTheme.colorScheme.onSurfaceVariant
-                Icon(if (index == page) selectedIcons[index] else icons[index], null, Modifier.size(24.dp), tint = color)
-                Text(title, style = MaterialTheme.typography.labelMedium, color = color)
+    select: (Int) -> Unit, dark: Boolean, visible: Boolean) {
+    val visibility = rememberCouiScaleVisibility(visible)
+    Box(Modifier.fillMaxWidth().couiScaleVisibility(visibility).background(MaterialTheme.colorScheme.surface)
+        .windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.displayCutout).only(WindowInsetsSides.Bottom))
+        .height(64.dp)) {
+        if (!visibility.isPresent) return@Box
+        Row(Modifier.fillMaxSize().then(if (visible) Modifier.selectableGroup() else Modifier.clearAndSetSemantics {}),
+            verticalAlignment = Alignment.CenterVertically) {
+            titles.forEachIndexed { index, title ->
+                val source = remember { MutableInteractionSource() }
+                Column(Modifier.weight(1f).clip(DemoShapes.couiCapsule).couiNavigationFeedback(dark, source)
+                    .selectable(index == page, source, null, visible, Role.Tab, onClick = { select(index) }).padding(vertical = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                    val color = if (index == page) com.itos.coui.theme.CouiTheme.colorScheme.accent else MaterialTheme.colorScheme.onSurfaceVariant
+                    Icon(if (index == page) selectedIcons[index] else icons[index], null, Modifier.size(24.dp), tint = color)
+                    Text(title, style = MaterialTheme.typography.labelMedium, color = color)
+                }
             }
         }
     }

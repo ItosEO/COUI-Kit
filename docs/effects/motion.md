@@ -11,7 +11,7 @@
 
 ## 缩放显隐
 
-工具栏或浮动内容出现时从较小的尺寸放大并回弹，收起时向中心缩小并淡出。宿主改变 `visible` 即可触发动画。在绘制阶段读取倍率和透明度，让整个主体一起变化。
+工具栏或浮动内容出现时放大回弹、淡入并恢复清晰，收起时向中心缩小、淡出并变模糊。改变 `visible` 即可触发动画，中途反向会从当前画面接续。前景模糊跟随系统材质和省电设置。
 
 ~~~kotlin
 val motion = rememberCouiScaleVisibility(visible = showBar)
@@ -22,7 +22,9 @@ if (motion.isPresent) {
 }
 ~~~
 
-首次组合直接显示对应的稳定状态。收起后，`isPresent` 保持到淡出完成，让宿主保留退场内容。宿主可以用 `showBar` 当即禁用按钮等交互。需要固定占位时，将动画内容放在尺寸固定的外层容器中。带模糊或投影的自绘组件可以在自己的绘制链直接读取 `motion.scale.value` 和 `motion.alpha.value`。
+首次组合直接呈现目标状态。收起后，`isPresent` 保持到缩放、透明度和前景模糊全部结束。宿主可以用 `showBar` 当即禁用按钮。需要固定占位时，将动画内容放在尺寸固定的外层容器中。
+
+自绘组件可以读取 `motion.scale.value` 和 `motion.alpha.value`，并将 `motion.foregroundBlurEffect` 赋给前景图层的 `renderEffect`。独立绘制的浮动图标共用同一效果，页面背景由原有材质单独采样。
 
 ## 双主体跟随
 
