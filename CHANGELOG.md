@@ -2,6 +2,18 @@
 
 COUI-Kit 处于早期预览阶段。本文记录公开 API、行为、接入和兼容要求的变化。日期以提交合并时间为准；版本归档以真实 Git Tag 和发行产物为准。
 
+## [0.0.1-alpha21] - 2026-11-26
+
+### 新增与改进
+
+- 修复 `Dialog` 和 `InputDialog` 的长正文滚动布局。标题和底部操作区保持固定，说明文字和自定义内容共用滚动区。[弹窗](docs/components/dialog.md)
+- 为缩放显隐动效增加随系统材质设置启用的前景模糊，并接入 `FloatingToolbar`。自绘组件可通过 `CouiScaleVisibilityState.foregroundBlurEffect` 将效果应用到前景图层。[缩放显隐](docs/effects/motion.md#缩放显隐)
+- 为 `NavigationBar` 增加整栏 `visible` 控制。胶囊和两侧附件在原位一起缩放显隐，收起时立即停用交互并保留底栏占位。[底栏](docs/components/navigation-bar.md)
+
+### 升级说明
+
+- Alpha21 通过 JitPack 发布，核心库坐标为 `com.github.itoseo.coui-kit:coui:0.0.1-alpha21`。`coui-material3` 和 `coui-icons` 请同步升级到同一版本。[JitPack 接入](docs/guide/getting-started.md#jitpack)
+
 ## [0.0.1-alpha20] - 2026-11-26
 
 ### 新增与改进
