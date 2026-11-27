@@ -100,7 +100,7 @@ private fun rememberCouiTextStyle(kind: CouiTextKind, weight: Int, size: Float =
     }
 }
 
-private fun couiLineSpacing(kind: CouiTextKind): Float = when (kind) {
+internal fun couiLineSpacing(kind: CouiTextKind): Float = when (kind) {
     CouiTextKind.GroupTitle -> if (Build.VERSION.SDK_INT >= 35) 1.143f else 1f
     CouiTextKind.GroupFooter -> if (Build.VERSION.SDK_INT >= 35) 1.143f else 1f
     CouiTextKind.ItemTitle -> if (Build.VERSION.SDK_INT >= 35) 1.158f else 1.05f

@@ -27,4 +27,4 @@ description: 在 Android Jetpack Compose 应用接入或使用 COUI-Kit（组件
 | 正文/窗口源、模糊、阴影、浮动表面、反馈、回弹、融球 | [backdrop-and-effects.md](references/backdrop-and-effects.md) |
 | `Scaffold`、顶栏/折叠/自定义、`NavigationBar`、`Fab`、搜索、输入栏 | [bars-and-scaffold.md](references/bars-and-scaffold.md) |
 | `Menu`（行/按钮锚点）、`Dialog` 系列、`BottomSheet` | [overlays.md](references/overlays.md) |
-| `Group`/`Item`/`Divider`、`Switch`、`Checkbox`/`RadioButton`、`Slider`、`ChipTabRow`、`SegmentedControl`、选择器 | [list-and-controls.md](references/list-and-controls.md) |
+| `Group`/`Item`/`Divider`、`TextField`、`Switch`、`Checkbox`/`RadioButton`、`Slider`、`ChipTabRow`、`SegmentedControl`、选择器 | [list-and-controls.md](references/list-and-controls.md) |

@@ -20,6 +20,10 @@ Group(title = groupTitle, footer = note, colors = colors) {
 - **禁用态文字未变灰**：`Item.enabled` 只控点击反馈，不改文字色；须手动按 `enabled` 切 `colors.title`/`colors.disabled`。
 - **双重反馈**：自定义 `toggleable`/`selectable`/`clickable` 行，省略 `Item.onClick`。带前导图标时给 `Divider` 设对齐标题起始边的 `startIndent`。
 
+## TextField
+
+页面内输入使用 `com.itos.coui.textfield.TextField(value = value, onValueChange = onChange, label = fieldName)`。编辑事务或 `OutputTransformation` 交给 `TextFieldState` 重载。占位提示按格式化后的可见文本判断空态，独立多行提示受 `maxLines` 限制。密码示例的输入值和明文开关使用 `remember`。
+
 ## Switch
 
 独立即时生效：`Switch(checked = checked, onCheckedChange = onChange)`（包 `com.itos.coui.switch`）。
