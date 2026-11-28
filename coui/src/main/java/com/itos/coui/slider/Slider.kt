@@ -1,10 +1,7 @@
 package com.itos.coui.slider
 
-import android.os.Build
-import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.VelocityTracker
-import android.view.View
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -44,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.itos.coui.effect.SpotlightPreset
 import com.itos.coui.effect.rememberCouiSpotlight
 import com.itos.coui.input.isCouiTouchCancelled
+import com.itos.coui.input.performCouiSeekBarHaptic
 import com.itos.coui.motion.CouiTouchMotion
 import com.itos.coui.shape.CouiCapsuleShape
 import com.itos.coui.theme.CouiTheme
@@ -81,7 +79,7 @@ fun Slider(
     val onFinished by rememberUpdatedState(onValueChangeFinished)
     val motion = remember(valueRange, steps, showTickMarks, density, view) {
         CouiSliderMotion(valueRange, steps, showTickMarks, density, value, { onChange(it) }, { onFinished() }) { code, section ->
-            performSliderHaptic(view, code, section)
+            view.performCouiSeekBarHaptic(code, section)
         }
     }
     val touch = remember(scope, density) { CouiTouchMotion(scope, density, deformationEnabled = false) }
@@ -242,16 +240,4 @@ private fun VelocityTracker.addChange(downTime: Long, change: PointerInputChange
     val event = MotionEvent.obtain(downTime, change.uptimeMillis, action, change.position.x, change.position.y, 0)
     addMovement(event)
     event.recycle()
-}
-
-private fun performSliderHaptic(view: View, code: Int, section: Boolean) {
-    if (view.performHapticFeedback(code)) return
-    if (section && code == 308 && view.performHapticFeedback(302)) return
-    val standard = when {
-        code == 306 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> HapticFeedbackConstants.GESTURE_END
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE ->
-            if (section) HapticFeedbackConstants.SEGMENT_TICK else HapticFeedbackConstants.SEGMENT_FREQUENT_TICK
-        else -> HapticFeedbackConstants.CLOCK_TICK
-    }
-    view.performHapticFeedback(standard)
 }

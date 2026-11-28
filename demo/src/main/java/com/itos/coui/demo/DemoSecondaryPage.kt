@@ -45,6 +45,7 @@ internal fun DemoSecondaryPage(page: String, dark: Boolean, preferences: DemoPre
             when (page) {
                 "sheets" -> SheetSamples(dark)
                 "sliders", "switch", "checkbox", "dialogs", "menu" -> ComponentDetail(page, dark, toggleTheme)
+                "glow_progress" -> ConicGlowProgressSample()
                 "chip" -> ChipTabSample(dark)
                 "segment" -> SegmentedControlSample(dark)
                 "effect_backdrop" -> BlurTutorial(dark)

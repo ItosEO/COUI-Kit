@@ -60,6 +60,10 @@ Item(Modifier.couiButtonFeedback(CouiTheme.isDark, source, enabled, list = true)
 
 - **避坑**：`steps` 只计端点**之间**点数（`0f..4f` 要 5 档传 `steps = 3`）；隐藏刻度设 `showTickMarks = false` 并保留 `steps`，删 `steps` 会失量化步进。
 
+## ConicGlowProgressBar
+
+**API 33+**。流体云播放进度用 `ConicGlowProgressBar(progress = fraction, playing = playing, onSeek = seek)`。宿主更新 0 至 1 的位置，赋空回调提供只读展示。锥光越过轨道，裁剪应用在有留白的卡片上。详见[锥光进度条](../../../docs/components/conic-glow-progress-bar.md)。
+
 ## ChipTabRow
 
 **API 34+**。放在背景源之外并留足投影空间；前置筛选菜单按钮放 `leadingAction` 避免切走分类：

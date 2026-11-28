@@ -35,6 +35,7 @@ internal val DemoComponentGroups = listOf(
     listOf(DemoCatalogEntry("switch", R.string.switch_title) { DemoIcons.Switch },
         DemoCatalogEntry("segment", R.string.segment_title) { DemoIcons.Switch },
         DemoCatalogEntry("sliders", R.string.slider_title) { DemoIcons.Tune },
+        DemoCatalogEntry("glow_progress", R.string.glow_progress_title) { DemoIcons.Tune },
         DemoCatalogEntry("message_input", R.string.message_input_title) { CouiIcons.Outlined.Keyboard },
         DemoCatalogEntry("checkbox", R.string.checkbox_title) { DemoIcons.Checkbox }),
     listOf(DemoCatalogEntry("sheets", R.string.sheet_title) { DemoIcons.Dialogs },
@@ -105,6 +106,7 @@ internal fun catalogDescription(page: String): Int = when (page) {
     "chip" -> R.string.intro_chip
     "switch" -> R.string.intro_switch
     "sliders" -> R.string.intro_sliders
+    "glow_progress" -> R.string.intro_glow_progress
     "segment" -> R.string.intro_segment
     "message_input" -> R.string.intro_message_input
     "checkbox" -> R.string.intro_checkbox

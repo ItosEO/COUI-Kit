@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="glow_progress_title">Glowing playback progress</string>
+    <string name="intro_glow_progress">The conic light follows the playback position. Tap or drag to seek.</string>
+    <string name="glow_progress_playing">Playing</string>
+    <string name="glow_progress_seekable">Allow seeking</string>
+</resources>
