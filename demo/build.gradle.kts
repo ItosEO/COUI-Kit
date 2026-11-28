@@ -39,7 +39,7 @@ android {
         minSdk = 31
         targetSdk = 37
         versionCode = gitCommitCount.get()
-        versionName = "0.0.1-alpha21"
+        versionName = "0.0.1-alpha22"
     }
     buildFeatures {
         compose = true

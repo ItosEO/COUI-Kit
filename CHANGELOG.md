@@ -2,6 +2,17 @@
 
 COUI-Kit 处于早期预览阶段。本文记录公开 API、行为、接入和兼容要求的变化。日期以提交合并时间为准；版本归档以真实 Git Tag 和发行产物为准。
 
+## [0.0.1-alpha22] - 2026-11-28
+
+### 新增与改进
+
+- 优化 `BottomSheet` 打开性能与组件着色器资源复用。`CouiShadowRenderer` 改为复用无状态网格规范与静态 LUT 表，浮动表面焦散、无状态目标滤镜与跟手光（`Spotlight`）着色器改为按需惰性创建；面板纯背景采用按需离屏以削减重复全屏离屏缓冲，上圆角裁剪改为复用 `CouiShape` 同源单路径替代 `PathOperation.Union` 布尔运算，并收敛入场结束重组作用域与退场期顶栏点击防重。[Sheet 面板](docs/components/bottom-sheet.md)
+- 修复 `BottomSheet` 收起动画期间阻挡背景内容点击与焦点的问题。退场开始即释放窗口触摸与焦点，退场期间下层页面可正常点击、滚动及响应返回键，中途反向重开时立即恢复。
+
+### 升级说明
+
+- Alpha22 仅通过 JitPack 发布，核心库坐标为 `com.github.itoseo.coui-kit:coui:0.0.1-alpha22`。`coui-material3` 和 `coui-icons` 请同步升级到同一版本。[JitPack 接入](docs/guide/getting-started.md#jitpack)
+
 ## [0.0.1-alpha21] - 2026-11-26
 
 ### 新增与改进
