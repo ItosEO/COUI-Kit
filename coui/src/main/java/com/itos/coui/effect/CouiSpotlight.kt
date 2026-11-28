@@ -135,8 +135,7 @@ private fun runtimeSpotlight(
     val visible by remember(light) {
         derivedStateOf(structuralEqualityPolicy()) { light.progress > 0f }
     }
-    val shader = remember { RuntimeShader(SpotlightShader) }
-    val paint = remember(style.blendMode) { Paint().apply { blendMode = style.blendMode } }
+    val drawing = remember { SpotlightDrawing() }
     var inputCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val touchModifier = Modifier
         .onGloballyPositioned { inputCoordinates = it }
@@ -218,6 +217,8 @@ private fun runtimeSpotlight(
         }
         if (progress > 0f && size.width > 0f && size.height > 0f && canvas.isHardwareAccelerated) {
             val position = light.position
+            val shader = drawing.shader()
+            val paint = drawing.paint(style.blendMode)
             shader.setFloatUniform("resolution", size.width, size.height)
             shader.setFloatUniform(
                 "u_lightPosAndHeight", position.x * size.width, position.y * size.height,
@@ -231,6 +232,21 @@ private fun runtimeSpotlight(
         }
     }
     return touchModifier to if (visible) drawSpotlight else null
+}
+
+/** 静态展示时不提前编译跟手光片段，首次实际点亮绘制时再为当前节点按需创建。 */
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+private class SpotlightDrawing {
+    private var shader: RuntimeShader? = null
+    private var paint: Paint? = null
+
+    fun shader(): RuntimeShader = shader ?: RuntimeShader(SpotlightShader).also { shader = it }
+
+    fun paint(blendMode: BlendMode): Paint {
+        val target = paint ?: Paint().also { paint = it }
+        if (target.blendMode != blendMode) target.blendMode = blendMode
+        return target
+    }
 }
 
 private class SpotlightState(

@@ -117,7 +117,6 @@ private fun AlarmSheetSample(dark: Boolean, material: CouiDialogMaterial?) {
         leadingButton = CouiSheetButton(
             label = stringResource(R.string.dialog_cancel),
             onClick = { visible.value = false },
-            enabled = visible.value,
             modifier = Modifier.widthIn(max = 104.dp),
         ),
         titleContent = { CouiText(text = stringResource(R.string.sheet_alarm_editor), kind = CouiTextKind.SheetTitle) },
@@ -128,7 +127,6 @@ private fun AlarmSheetSample(dark: Boolean, material: CouiDialogMaterial?) {
                 savedTime = String.format(Locale.getDefault(), "%02d:%02d", draftTime / 60, draftTime % 60)
                 visible.value = false
             },
-            enabled = visible.value,
             modifier = Modifier.widthIn(max = 104.dp),
         ),
     ) {
@@ -171,7 +169,6 @@ private fun HalfSheetSample(
         leadingButton = CouiSheetButton(
             label = stringResource(R.string.sheet_close),
             onClick = { visible.value = false },
-            enabled = visible.value,
         ),
         titleContent = { CouiText(text = title, kind = CouiTextKind.SheetTitle) },
         trailingButton = CouiSheetButton(
@@ -180,7 +177,6 @@ private fun HalfSheetSample(
                 Icon(CouiIcons.Outlined.More, stringResource(R.string.sheet_more_actions),
                     Modifier.size(24.dp), tint = LocalCouiContentColor.current)
             },
-            enabled = visible.value,
             popupContent = {
                 HalfSheetMoreMenu(
                     dark = dark,

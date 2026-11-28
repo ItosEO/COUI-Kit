@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.IntOffset
@@ -89,16 +90,28 @@ class CouiFloatingRenderer private constructor(internal val surfaceCount: Int) {
     internal val standalone = surfaceCount == 1
     internal val shaders = if (standalone) listOf(RuntimeShader(couiFloatingStandaloneShader()))
         else listOf(RuntimeShader(couiFloatingShader(1)), RuntimeShader(couiFloatingShader(2)))
-    internal val causticShaders = List(surfaceCount) { RuntimeShader(CouiCausticShader) }
+    private val causticShaders = arrayOfNulls<RuntimeShader>(surfaceCount)
     internal val shadowRenderer = CouiShadowRenderer(surfaceCount)
-    internal val destinationEffect = RenderEffect.createRuntimeShaderEffect(
-        RuntimeShader("uniform shader image; half4 main(float2 p) { return image.eval(p); }"), "image",
-    )
+    internal val destinationEffect: RenderEffect = SharedFloatingResources.destinationEffect
+
+    internal fun causticShader(index: Int): RuntimeShader =
+        causticShaders[index] ?: RuntimeShader(CouiCausticShader).also { causticShaders[index] = it }
 
     companion object {
         fun standalone(): CouiFloatingRenderer = CouiFloatingRenderer(1)
         /** 搜索框与取消按钮的真实双主体链；不创建第三个布局或内容节点。 */
         fun pair(): CouiFloatingRenderer = CouiFloatingRenderer(2)
+    }
+}
+
+/** 仅共享无 uniform 状态的不可变滤镜并首次校验焦散片段；可变 Shader 仍由各节点按需独立持有。 */
+@RequiresApi(34)
+private object SharedFloatingResources {
+    val destinationEffect: RenderEffect by lazy {
+        RuntimeShader(CouiCausticShader)
+        RenderEffect.createRuntimeShaderEffect(
+            RuntimeShader("uniform shader image; half4 main(float2 p) { return image.eval(p); }"), "image",
+        )
     }
 }
 
@@ -212,9 +225,11 @@ private fun Modifier.floatingSurfaces(
     drawOrder: List<Int>? = null,
     surfaces: () -> List<CouiFloatingSurface>,
 ): Modifier {
+    val configuration = LocalConfiguration.current
     val recordingDensity = LocalDensity.current
     val density = recordingDensity.density
     val view = LocalView.current
+    val lightZCache = remember(configuration, density, view) { FloatArray(1) { Float.NaN } }
     val shadowLayers = List(renderer.surfaceCount) { rememberGraphicsLayer() }
     val causticLayers = List(renderer.surfaceCount) { rememberGraphicsLayer() }
     val materialLayers = List(renderer.surfaceCount) { rememberGraphicsLayer() }
@@ -279,12 +294,14 @@ private fun Modifier.floatingSurfaces(
             val beforeClips = if (beforeContent != null) outlines.map { outline ->
                 if (outline is Outline.Generic) outline.path else Path().apply { addOutline(outline) }
             } else emptyList()
-            val metrics = DisplayMetrics()
-            @Suppress("DEPRECATION")
-            checkNotNull(view.display).getRealMetrics(metrics)
-            // PJZ110 renderer 的默认资源与显示尺寸校准; 不继承其他 OEM 的不同光照主题。
-            val defaultLightZ = 500f * density * (2f + min(metrics.widthPixels, metrics.heightPixels) /
-                (450f * metrics.density)) / 3f
+            val defaultLightZ = if (lightZCache[0].isNaN()) {
+                val metrics = DisplayMetrics()
+                @Suppress("DEPRECATION")
+                checkNotNull(view.display).getRealMetrics(metrics)
+                // PJZ110 renderer 的默认资源与显示尺寸校准; 不继承其他 OEM 的不同光照主题。
+                (500f * density * (2f + min(metrics.widthPixels, metrics.heightPixels) /
+                    (450f * metrics.density)) / 3f).also { lightZCache[0] = it }
+            } else lightZCache[0]
             val windowOrigin = target.localToWindow(Offset.Zero)
             nodes.forEachIndexed { index, node ->
                 if (!node.visible) return@forEachIndexed
@@ -324,7 +341,7 @@ private fun Modifier.floatingSurfaces(
                         // 顶栏不回填背景; 默认路径仍保留完整 destination, 不改成 PLUS 光贡献。
                         appendPatch(causticLayers[index], node.mapRect(optical),
                             blendMode = if (foregroundComposition) ComposeBlendMode.SrcOver else ComposeBlendMode.Src) { bounds ->
-                            renderer.causticShaders[index].apply {
+                            renderer.causticShader(index).apply {
                                 setIntUniform("u_foregroundComposition", if (foregroundComposition) 1 else 0)
                                 setFloatUniform("u_offset", bounds.left - node.bounds.left, bounds.top - node.bounds.top)
                                 setFloatUniform("u_invScale", 1f / node.scaleX, 1f / node.scaleY)

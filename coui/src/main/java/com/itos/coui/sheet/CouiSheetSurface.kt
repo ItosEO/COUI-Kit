@@ -10,13 +10,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathOperation
-import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
@@ -30,7 +27,6 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.toSize
 import com.itos.coui.backdrop.CouiBackdrop
 import com.itos.coui.backdrop.couiBackdrop
@@ -105,7 +101,7 @@ internal fun CouiSheetSurface(
         // 材质区域用 PixelOffset 半径；背景采样层保留完整、未裁剪的纯表面。
         Box(Modifier.graphicsLayer().drawWithCache {
             val radius = CouiSheetDefaults.cornerRadius.toPx()
-            val path = sheetPath(size, layoutDirection, if (blur != null) radius.toInt().toFloat() else radius)
+            val path = sheetPath(size, if (blur != null) radius.toInt().toFloat() else radius)
             onDrawWithContent { clipPath(path) { this@onDrawWithContent.drawContent() } }
         }.couiBackdrop(surfaceBackdrop).drawWithCache {
             val window = if (blur != null) windowCoordinates() else null
@@ -155,7 +151,7 @@ internal fun CouiSheetSurface(
         })
         Box(Modifier.drawWithCache {
             val fullSize = size.copy(height = size.height + CouiSheetDefaults.bottomPadding.roundToPx())
-            val path = sheetPath(fullSize, layoutDirection, CouiSheetDefaults.cornerRadius.toPx())
+            val path = sheetPath(fullSize, CouiSheetDefaults.cornerRadius.toPx())
             onDrawWithContent { clipPath(path) { this@onDrawWithContent.drawContent() } }
         }, content = content)
     }) { measurables, constraints ->
@@ -170,9 +166,5 @@ internal fun CouiSheetSurface(
     }
 }
 
-private fun Density.sheetPath(size: Size, layoutDirection: LayoutDirection, radiusPx: Float): Path {
-    val shape = CouiShape(radiusPx.toDp(), CouiSheetDefaults.edgeWeight)
-    val roundedPath = Path().apply { addOutline(shape.createOutline(size, layoutDirection, this@sheetPath)) }
-    val bottom = Path().apply { addRect(Rect(0f, size.height / 2f, size.width, size.height)) }
-    return Path.combine(PathOperation.Union, roundedPath, bottom)
-}
+private fun Density.sheetPath(size: Size, radiusPx: Float): Path =
+    CouiShape(radiusPx.toDp(), CouiSheetDefaults.edgeWeight).createTopRoundedPath(size, this)

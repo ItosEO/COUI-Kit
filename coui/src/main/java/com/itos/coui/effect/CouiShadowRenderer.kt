@@ -31,32 +31,11 @@ enum class CouiShadowOutline { Oval, SmoothCapsule, RoundRect }
 /** 原 Skia 网格、A8 表与厂商 inverse clip 的公开 API 承载; 每个主体仅保留当前两路资源。 */
 @RequiresApi(34)
 class CouiShadowRenderer(surfaceCount: Int = 1) {
-    private val specifications = Array(4) { index ->
-        MeshSpecification.make(arrayOf(
-            MeshSpecification.Attribute(MeshSpecification.TYPE_FLOAT2, 0, "position"),
-            MeshSpecification.Attribute(MeshSpecification.TYPE_FLOAT3, 8, "shadow")), 20,
-            arrayOf(MeshSpecification.Varying(MeshSpecification.TYPE_FLOAT3, "shadow")),
-            ShadowVertexShader, shadowFragmentShader(fast = index < 2, oval = index % 2 == 0))
-    }
-    private val lut = Bitmap.createBitmap(128, 1, Bitmap.Config.ALPHA_8).apply {
-        val bytes = ByteBuffer.allocate(rowBytes)
-        repeat(128) { i ->
-            val d = 1f - i / 127f
-            bytes.put(floor((exp(-4f * d * d) - 0.018f) * 255f + 0.5f).toInt().toByte())
-        }
-        bytes.rewind()
-        copyPixelsFromBuffer(bytes)
-    }
-    private val lutShader = BitmapShader(lut, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-    private val clipShaders = arrayOf(RuntimeShader(shadowClipShader(oval = true, image = true)),
-        RuntimeShader(shadowClipShader(oval = false, image = true)))
-    private val materialClipSource = shadowClipShader(oval = false, image = false)
+    private val shared = SharedShadowResources.bundle
+    private val specifications = shared.specifications
+    private val lutShader = shared.lutShader
+    private val clipShaders = arrayOfNulls<RuntimeShader>(2)
     private val slots = Array(surfaceCount) { arrayOfNulls<ProjectionDraw>(2) }
-
-    init {
-        // 创建时检查裁剪片段, 不把失败延迟到首次绘制。
-        RuntimeShader(materialClipSource)
-    }
 
     /** 长度均为像素; 网格包含轴向缩放, Canvas 只承接平移, alpha 不再由外层重复相乘。 */
     fun draw(canvas: Canvas, slot: Int, width: Float, height: Float, sx: Float, sy: Float,
@@ -121,7 +100,7 @@ class CouiShadowRenderer(surfaceCount: Int = 1) {
             paint.shader = lutShader
             return ProjectionDraw(key, projection, paint, mesh = mesh, node = node)
         }
-        val capsuleClip = if (!oval && key.clipping) RuntimeShader(materialClipSource).apply {
+        val capsuleClip = if (!oval && key.clipping) RuntimeShader(SharedShadowResources.materialClipSource).apply {
             setFloatUniform("u_rect", rect.left, rect.top, rect.right, rect.bottom)
         } else null
         paint.shader = if (projection.fast) lutShader else capsuleClip
@@ -183,9 +162,14 @@ class CouiShadowRenderer(surfaceCount: Int = 1) {
         val right = ceil(bounds.right).toInt()
         val bottom = ceil(bounds.bottom).toInt()
         // RenderEffect 保存 uniform 快照, 两路投影可复用同一 Shader 程序。
-        val clip = if (clipping) clipShaders[if (oval) 0 else 1].apply {
-            setFloatUniform("u_rect", caster.left - left, caster.top - top, caster.right - left, caster.bottom - top)
-        }.let { RenderEffect.createRuntimeShaderEffect(it, "image") } else null
+        val clip = if (clipping) {
+            val clipIndex = if (oval) 0 else 1
+            val shader = clipShaders[clipIndex] ?: RuntimeShader(SharedShadowResources.clipSource(oval)).also {
+                clipShaders[clipIndex] = it
+            }
+            shader.setFloatUniform("u_rect", caster.left - left, caster.top - top, caster.right - left, caster.bottom - top)
+            RenderEffect.createRuntimeShaderEffect(shader, "image")
+        } else null
         val blur = if (sigma > 0f) RenderEffect.createBlurEffect(sigma, sigma, Shader.TileMode.DECAL) else null
         val effect = when {
             clip != null && blur != null -> RenderEffect.createChainEffect(clip, blur)
@@ -209,4 +193,45 @@ class CouiShadowRenderer(surfaceCount: Int = 1) {
         val clipShader: RuntimeShader? = null) {
         var color: Int? = null
     }
+}
+
+/** 仅共享无状态、不可变的网格规范与静态 LUT 表；各节点仍独立持有可变槽位与裁剪着色器。 */
+@RequiresApi(34)
+private object SharedShadowResources {
+    val materialClipSource: String = shadowClipShader(oval = false, image = false)
+    private val ovalClipSource: String = shadowClipShader(oval = true, image = true)
+    private val capsuleClipSource: String = shadowClipShader(oval = false, image = true)
+
+    fun clipSource(oval: Boolean): String = if (oval) ovalClipSource else capsuleClipSource
+
+    val bundle: Bundle by lazy {
+        val specifications = Array(4) { index ->
+            MeshSpecification.make(arrayOf(
+                MeshSpecification.Attribute(MeshSpecification.TYPE_FLOAT2, 0, "position"),
+                MeshSpecification.Attribute(MeshSpecification.TYPE_FLOAT3, 8, "shadow")), 20,
+                arrayOf(MeshSpecification.Varying(MeshSpecification.TYPE_FLOAT3, "shadow")),
+                ShadowVertexShader, shadowFragmentShader(fast = index < 2, oval = index % 2 == 0))
+        }
+        val lut = Bitmap.createBitmap(128, 1, Bitmap.Config.ALPHA_8).apply {
+            val bytes = ByteBuffer.allocate(rowBytes)
+            repeat(128) { i ->
+                val d = 1f - i / 127f
+                bytes.put(floor((exp(-4f * d * d) - 0.018f) * 255f + 0.5f).toInt().toByte())
+            }
+            bytes.rewind()
+            copyPixelsFromBuffer(bytes)
+        }
+        val lutShader = BitmapShader(lut, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+        // 首次构造时一次性校验裁剪片段可编译，不把设备不兼容延迟到首次绘制。
+        RuntimeShader(ovalClipSource)
+        RuntimeShader(capsuleClipSource)
+        RuntimeShader(materialClipSource)
+        Bundle(specifications, lut, lutShader)
+    }
+
+    class Bundle(
+        val specifications: Array<MeshSpecification>,
+        @Suppress("unused") val lut: Bitmap,
+        val lutShader: BitmapShader,
+    )
 }

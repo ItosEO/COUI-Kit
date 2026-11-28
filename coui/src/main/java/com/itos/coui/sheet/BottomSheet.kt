@@ -205,9 +205,18 @@ fun BottomSheet(
             val barAppearance = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
                 WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
             window.insetsController?.setSystemBarsAppearance(if (dark) 0 else barAppearance, barAppearance)
+            // 退场动画保留窗口以完成位移，同时立即释放触摸与焦点，避免拦截背景点击和返回键；反向重开时恢复。
+            val inputFlags = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+            val targetFlags = if (isVisible) 0 else inputFlags
+            if ((window.attributes.flags and inputFlags) != targetFlags) {
+                window.setFlags(targetFlags, inputFlags)
+            }
         }
         val density = LocalDensity.current
         val surfaceBackdrop = rememberCouiBackdrop(parent = windowBackdrop)
+        // 面板纯背景只录制已离屏的 materialLayer 或不透明纯色底，避免再叠加整块面板 Offscreen 缓冲。
+        SideEffect { surfaceBackdrop.setIsolateWhenIdle(false) }
         var windowHeight by remember { mutableIntStateOf(-1) }
         var parentHeight by remember { mutableIntStateOf(-1) }
         var panelHeight by remember { mutableIntStateOf(-1) }
@@ -309,29 +318,36 @@ fun BottomSheet(
                 layout(placeable.width, placeable.height) { placeable.placeRelative(0, 0) }
             }
         }
-        val interactive = isVisible && motion.entered
-        val canDrag = draggable && interactive
-        val canNestedDrag = canDrag && nestedScrollEnabled && !fullPageOverscroll
-        val canNestedDragNow by rememberUpdatedState(canNestedDrag)
+        val isVisibleNow by rememberUpdatedState(isVisible)
+        val draggableNow by rememberUpdatedState(draggable)
+        val nestedScrollEnabledNow by rememberUpdatedState(nestedScrollEnabled)
+        val fullPageOverscrollNow by rememberUpdatedState(fullPageOverscroll)
+        val acceptToolbarClicks = remember { { isVisibleNow } }
+        val canDragNow = remember(motion) { { draggableNow && isVisibleNow && motion.entered } }
+        val canNestedDragNow = remember(motion) { { canDragNow() && nestedScrollEnabledNow && !fullPageOverscrollNow } }
         val touch = remember { SheetTouchSession() }
-        LaunchedEffect(canDrag) { if (!canDrag) motion.cancelDrag() }
-        LaunchedEffect(canNestedDrag) { if (!canNestedDrag && motion.hasNestedDrag) motion.cancelDrag() }
+        LaunchedEffect(motion) {
+            snapshotFlow { canDragNow() to canNestedDragNow() }.collect { (drag, nestedDrag) ->
+                if (!drag) motion.cancelDrag()
+                else if (!nestedDrag && motion.hasNestedDrag) motion.cancelDrag()
+            }
+        }
         val nested = remember(motion) { object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset =
-                if (canNestedDragNow && touch.canDrag && source == NestedScrollSource.UserInput && available.y < 0f &&
+                if (canNestedDragNow() && touch.canDrag && source == NestedScrollSource.UserInput && available.y < 0f &&
                     (motion.offset > 0f || motion.hasNestedDrag))
                     Offset(0f, motion.drag(available.y, nested = true)) else Offset.Zero
             override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset =
-                if (canNestedDragNow && touch.canDrag && source == NestedScrollSource.UserInput && available.y > 0f)
+                if (canNestedDragNow() && touch.canDrag && source == NestedScrollSource.UserInput && available.y > 0f)
                     Offset(0f, motion.drag(available.y, nested = true)) else Offset.Zero
             override suspend fun onPreFling(available: Velocity): Velocity {
-                if (!canNestedDragNow || touch.firstPointer != null || !motion.hasNestedDrag) return Velocity.Zero
+                if (!canNestedDragNow() || touch.firstPointer != null || !motion.hasNestedDrag) return Velocity.Zero
                 val consume = motion.offset > 0f
                 if (motion.releaseNested(available.y)) requestDismiss()
                 return if (consume) Velocity(0f, available.y) else Velocity.Zero
             }
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                if (canNestedDragNow && touch.firstPointer == null && motion.releaseNested(available.y)) requestDismiss()
+                if (canNestedDragNow() && touch.firstPointer == null && motion.releaseNested(available.y)) requestDismiss()
                 return Velocity.Zero
             }
         } }
@@ -340,17 +356,14 @@ fun BottomSheet(
             ProvideCouiMenuBackdrop(isolateContent = false) { source ->
                 Box(Modifier.fillMaxSize().onSizeChanged { windowHeight = it.height }
                     .onGloballyPositioned { windowCoordinates = it }.then(source)) {
-                    val outside = remember { MutableInteractionSource() }
-                    val dismissOnScrim = if (interactive && dismissOnClickOutside) {
-                        Modifier.clickable(outside, null, onClickLabel = dismissDescription) { requestDismiss() }
-                            .semantics { contentDescription = dismissDescription }
-                    } else Modifier
-                    Box(Modifier.fillMaxSize().graphicsLayer {
-                        // 遮罩只有一个黑色矩形，直接调制 alpha 可省去整窗离屏合成。
-                        compositingStrategy = CompositingStrategy.ModulateAlpha
-                        alpha = motion.dim
-                    }
-                        .background(Color.Black.copy(alpha = colors.dimAmount)).then(dismissOnScrim))
+                    SheetScrim(
+                        motion = motion,
+                        isVisible = isVisible,
+                        dismissOnClickOutside = dismissOnClickOutside,
+                        dimAmount = colors.dimAmount,
+                        dismissDescription = dismissDescription,
+                        onDismiss = { requestDismiss() },
+                    )
                     // 三键导航在父容器避让，手势导航在内容留白；IME 与导航取并集并由 Insets 统一消费。
                     Box(Modifier.fillMaxSize().windowInsetsPadding(parentInsets)
                         // 原厂 Coordinator 不裁顶部留白，上甩回弹只在实际窗口可用区裁切。
@@ -364,7 +377,7 @@ fun BottomSheet(
                             Box(Modifier.fillMaxWidth().graphicsLayer {
                                     translationY = sheetTranslation()
                                 }
-                                .nestedScroll(nested).sheetDrag(motion, touch, canDrag) { requestDismiss() }.pointerInput(motion, touch) {
+                                .nestedScroll(nested).sheetDrag(motion, touch, canDragNow) { requestDismiss() }.pointerInput(motion, touch) {
                                     awaitEachGesture {
                                         val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
                                         // UserInput 也包含键盘、滚轮和无障碍滚动；这些输入没有触摸释放阶段。
@@ -402,12 +415,13 @@ fun BottomSheet(
                                             if (showDragHandle) SheetDragHandle(dark)
                                             SheetContent(
                                                 fixedHeight = sheetHeight != null,
-                                                enabled = interactive,
+                                                isVisible = isVisible,
+                                                motion = motion,
                                                 fullPageOverscroll = fullPageOverscroll,
                                                 scrollableContent = scrollableContent,
                                                 toolbar = {
                                                     if (leadingButton != null || titleContent != null || trailingButton != null) {
-                                                        SheetToolbar(leadingButton, titleContent, trailingButton)
+                                                        SheetToolbar(leadingButton, titleContent, trailingButton, acceptToolbarClicks)
                                                     }
                                                 },
                                                 content = content,
@@ -424,15 +438,39 @@ fun BottomSheet(
     }
 }
 
+/** 仅在遮罩叶子节点读取入场完成状态，避免入场结束时重组面板表面与内容树。 */
+@Composable
+private fun SheetScrim(
+    motion: CouiSheetMotion,
+    isVisible: Boolean,
+    dismissOnClickOutside: Boolean,
+    dimAmount: Float,
+    dismissDescription: String,
+    onDismiss: () -> Unit,
+) {
+    val outside = remember { MutableInteractionSource() }
+    val dismissOnScrim = if (isVisible && motion.entered && dismissOnClickOutside) {
+        Modifier.clickable(outside, null, onClickLabel = dismissDescription, onClick = onDismiss)
+            .semantics { contentDescription = dismissDescription }
+    } else Modifier
+    Box(Modifier.fillMaxSize().graphicsLayer {
+        // 遮罩只有一个黑色矩形，直接调制 alpha 可省去整窗离屏合成。
+        compositingStrategy = CompositingStrategy.ModulateAlpha
+        alpha = motion.dim
+    }.background(Color.Black.copy(alpha = dimAmount)).then(dismissOnScrim))
+}
+
 @Composable
 private fun ColumnScope.SheetContent(
     fixedHeight: Boolean,
-    enabled: Boolean,
+    isVisible: Boolean,
+    motion: CouiSheetMotion,
     fullPageOverscroll: Boolean,
     scrollableContent: Boolean,
     toolbar: @Composable () -> Unit,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val enabled = isVisible && motion.entered
     val pageEffect = if (fullPageOverscroll) rememberCouiOverscrollEffect() else null
     val sheetContent: @Composable ColumnScope.() -> Unit = {
         toolbar()
@@ -491,10 +529,11 @@ internal val LocalSheetTouchSession = staticCompositionLocalOf<SheetTouchSession
 private fun Modifier.sheetDrag(
     motion: CouiSheetMotion,
     touch: SheetTouchSession,
-    enabled: Boolean,
+    canDrag: () -> Boolean,
     onDismiss: () -> Unit,
 ): Modifier {
-    if (!enabled) return this
+    val currentCanDrag by rememberUpdatedState(canDrag)
+    val currentOnDismiss by rememberUpdatedState(onDismiss)
     var coordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val configuration = android.view.ViewConfiguration.get(LocalView.current.context)
     return onGloballyPositioned { coordinates = it }.pointerInput(motion, touch, configuration) {
@@ -510,6 +549,7 @@ private fun Modifier.sheetDrag(
                 launch(start = CoroutineStart.UNDISPATCHED) {
                     awaitEachGesture {
                         val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                        if (!currentCanDrag()) return@awaitEachGesture
                         var tracker = CouiVelocityTracker(down.uptimeMillis)
                         cancelled = false
                         dragVelocity = 0f
@@ -519,7 +559,7 @@ private fun Modifier.sheetDrag(
                         try {
                             while (true) {
                                 val event = awaitPointerEvent(PointerEventPass.Initial)
-                                if (event.isCouiTouchCancelled()) { cancelled = true; break }
+                                if (event.isCouiTouchCancelled() || !currentCanDrag()) { cancelled = true; break }
                                 val change = event.changes.firstOrNull { it.id == pointerId }
                                 if (change == null) { cancelled = true; break }
                                 track(tracker, change)
@@ -554,18 +594,31 @@ private fun Modifier.sheetDrag(
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
                     // 工具栏在 Initial 标记首指，点击和反馈继续处理原事件。
-                    if (touch.toolbarOwnsTouch) return@awaitEachGesture
+                    if (!currentCanDrag() || touch.toolbarOwnsTouch) return@awaitEachGesture
+                    var aborted = false
                     val drag = awaitVerticalPointerSlopOrCancellation(down.id, down.type) { change, overSlop ->
+                        if (aborted || !currentCanDrag()) {
+                            aborted = true
+                            return@awaitVerticalPointerSlopOrCancellation
+                        }
                         change.consume()
                         motion.drag(overSlop, velocity = dragVelocity)
                     } ?: return@awaitEachGesture
+                    if (aborted || !currentCanDrag()) {
+                        motion.cancelDrag()
+                        return@awaitEachGesture
+                    }
                     val released = verticalDrag(drag.id) { change ->
+                        if (aborted || !currentCanDrag()) {
+                            aborted = true
+                            return@verticalDrag
+                        }
                         val delta = change.positionChange().y
                         change.consume()
                         motion.drag(delta, velocity = dragVelocity)
                     }
-                    if (!released || cancelled) motion.cancelDrag()
-                    else if (motion.release(releaseVelocity)) onDismiss()
+                    if (!released || cancelled || aborted || !currentCanDrag()) motion.cancelDrag()
+                    else if (motion.release(releaseVelocity)) currentOnDismiss()
                 }
             }
         } finally {

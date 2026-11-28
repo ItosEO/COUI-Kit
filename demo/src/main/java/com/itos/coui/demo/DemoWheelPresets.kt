@@ -65,8 +65,10 @@ internal fun DemoTimePicker(
     var latest by remember { mutableStateOf(value) }
     SideEffect { if (latest != value) latest = value }
     fun submit(next: DemoTime) { latest = next; onValueChange(next) }
-    val periods = DateFormatSymbols(locale).amPmStrings
-    val periodFirst = DateFormat.getBestDateTimePattern(locale, "hm").startsWith("a")
+    val periods = remember(locale, is24Hour) { if (is24Hour) emptyArray() else DateFormatSymbols(locale).amPmStrings }
+    val periodFirst = remember(locale, is24Hour) {
+        !is24Hour && DateFormat.getBestDateTimePattern(locale, "hm").startsWith("a")
+    }
     val period: @Composable () -> Unit = {
         WheelPicker(Modifier.width(CouiPickerDefaults.columnWidth), value.hour / 12,
             { submit(latest.copy(hour = latest.hour % 12 + it * 12)) }, 0..1, periods[value.hour / 12],

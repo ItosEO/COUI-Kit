@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -72,6 +74,7 @@ internal fun SheetToolbar(
     leadingButton: CouiSheetButton?,
     titleContent: @Composable (() -> Unit)?,
     trailingButton: CouiSheetButton?,
+    acceptClicks: () -> Boolean = { true },
 ) {
     val backdrop = rememberCouiSheetSurfaceBackdrop()
     val dark = CouiTheme.isDark
@@ -100,8 +103,8 @@ internal fun SheetToolbar(
     CompositionLocalProvider(LocalCouiToolbarBackdrop provides backdrop) {
         Layout(modifier = Modifier.fillMaxWidth().padding(top = CouiSheetDefaults.toolbarTopSpacing)
             .padding(horizontal = CouiSheetDefaults.toolbarHorizontalPadding), content = {
-            Box(actionInput) { if (leadingButton != null) SheetToolbarButton(leadingButton, style) }
-            Box(actionInput) { if (trailingButton != null) SheetToolbarButton(trailingButton, style) }
+            Box(actionInput) { if (leadingButton != null) SheetToolbarButton(leadingButton, style, acceptClicks) }
+            Box(actionInput) { if (trailingButton != null) SheetToolbarButton(trailingButton, style, acceptClicks) }
             Box(Modifier.padding(vertical = CouiSheetDefaults.toolbarTitleVerticalPadding)
                 .heightIn(min = CouiSheetDefaults.toolbarTitleMinHeight)
                 .semantics { if (titleContent != null) heading() }, contentAlignment = Alignment.Center) {
@@ -132,8 +135,16 @@ internal fun SheetToolbar(
 }
 
 @Composable
-private fun SheetToolbarButton(button: CouiSheetButton, style: CouiToolbarStyle) {
+private fun SheetToolbarButton(
+    button: CouiSheetButton,
+    style: CouiToolbarStyle,
+    acceptClicks: () -> Boolean,
+) {
     val label = button.label
+    val currentOnClick by rememberUpdatedState(button.onClick)
+    val currentAcceptClicks by rememberUpdatedState(acceptClicks)
+    // 面板退场期间屏蔽重复点击提交，避免宿主被迫在父作用域读取 visible.value 触发整页重组。
+    val guardedClick = remember { { if (currentAcceptClicks()) currentOnClick() } }
     val content: @Composable () -> Unit = {
         if (label != null) {
             BasicText(
@@ -145,14 +156,14 @@ private fun SheetToolbarButton(button: CouiSheetButton, style: CouiToolbarStyle)
         } else button.icon?.invoke()
     }
     if (Build.VERSION.SDK_INT >= 34) {
-        TopAppBarButton(button.modifier, button.onClick, enabled = button.enabled, text = label != null, style = style) {
+        TopAppBarButton(button.modifier, guardedClick, enabled = button.enabled, text = label != null, style = style) {
             content()
         }
     } else {
         val size = if (label != null) Modifier.widthIn(min = 60.dp).height(40.dp) else Modifier.size(40.dp)
         val color = if (button.enabled) style.contentColor else style.contentColor.copy(alpha = style.contentColor.alpha * .38f)
         Box(button.modifier.then(Coui.defaultStyle.minimumInteractiveComponentSize()).then(size)
-            .clickable(enabled = button.enabled, role = Role.Button, onClick = button.onClick)
+            .clickable(enabled = button.enabled, role = Role.Button, onClick = guardedClick)
             .padding(horizontal = if (label != null) 12.dp else 0.dp), contentAlignment = Alignment.Center) {
             ProvideCouiContent(color = color, textStyle = style.textStyle, content = content)
         }

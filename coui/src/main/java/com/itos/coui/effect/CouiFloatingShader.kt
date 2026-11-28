@@ -1,10 +1,22 @@
 package com.itos.coui.effect
 
 // PJZ110 libhwui OplusMaterialEffectMetaBallShader: setCornerParams 对应 cornerType=4。
-internal fun couiFloatingShader(index: Int): String {
-    require(index in 1..3)
+internal fun couiFloatingShader(index: Int): String = when (index) {
+    1 -> FloatingShader1Source
+    2 -> FloatingShader2Source
+    3 -> FloatingShader3Source
+    else -> throw IllegalArgumentException("浮动着色器下标必须在 1 到 3 之间: $index")
+}
+
+// BaseShader 的非融球 cornerType=4 分支, 不声明关联主体或计算 pair。
+internal fun couiFloatingStandaloneShader(): String = FloatingStandaloneShaderSource
+
+// 只复用浮动组件的表面光效, 不接入采样、融球、投影或导数抗锯齿。
+internal fun couiFloatingContourShader(): String = FloatingContourShaderSource
+
+private fun buildCouiFloatingShader(index: Int): String =
     // 原片段使用 fwidth; 保留导数抗锯齿, 不改成固定像素宽度。
-    return "#version 300\nconst int MATERIAL_INDEX = $index;\n" + CouiMaterialShaderFunctions +
+    "#version 300\nconst int MATERIAL_INDEX = $index;\n" + CouiMaterialShaderFunctions +
         FloatingBaseUniforms + FloatingBallUniforms + FloatingLightingUniforms + FloatingShapeFunctions +
         FloatingPairFunctions + FloatingLightingFunctions + FloatingSdf + when (index) {
         1 -> FloatingIndex1
@@ -15,17 +27,20 @@ internal fun couiFloatingShader(index: Int): String {
         2 -> FloatingRect2
         else -> FloatingRect3
     } + "return rectData;}" + FloatingMain
+
+private val FloatingShader1Source by lazy { buildCouiFloatingShader(1) }
+private val FloatingShader2Source by lazy { buildCouiFloatingShader(2) }
+private val FloatingShader3Source by lazy { buildCouiFloatingShader(3) }
+private val FloatingStandaloneShaderSource by lazy {
+    "#version 300\n" + CouiMaterialShaderFunctions +
+        FloatingBaseUniforms + "uniform float u_baseShapeCtxArray[12];\n" + FloatingLightingUniforms +
+        FloatingShapeFunctions + FloatingLightingFunctions + FloatingRect + FloatingStandaloneRect +
+        "return rectData;}" + FloatingStandaloneMain
 }
-
-// BaseShader 的非融球 cornerType=4 分支, 不声明关联主体或计算 pair。
-internal fun couiFloatingStandaloneShader(): String = "#version 300\n" + CouiMaterialShaderFunctions +
-    FloatingBaseUniforms + "uniform float u_baseShapeCtxArray[12];\n" + FloatingLightingUniforms +
-    FloatingShapeFunctions + FloatingLightingFunctions + FloatingRect + FloatingStandaloneRect +
-    "return rectData;}" + FloatingStandaloneMain
-
-// 只复用浮动组件的表面光效, 不接入采样、融球、投影或导数抗锯齿。
-internal fun couiFloatingContourShader(): String = CouiMaterialShaderFunctions + FloatingLightingUniforms + FloatingShapeFunctions +
-    FloatingLightingFunctions + FloatingContourMain
+private val FloatingContourShaderSource by lazy {
+    CouiMaterialShaderFunctions + FloatingLightingUniforms + FloatingShapeFunctions +
+        FloatingLightingFunctions + FloatingContourMain
+}
 
 private const val FloatingBaseUniforms = """
 uniform shader u_originShader;

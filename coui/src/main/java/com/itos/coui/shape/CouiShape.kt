@@ -27,34 +27,65 @@ data class CouiShape(val radius: Dp, val cornerWeight: Float = CouiCornerWeight)
     override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
         val r = (radius.value * density.density).coerceIn(0f, size.minDimension.coerceAtLeast(0f) / 2f)
         if (r == 0f) return Outline.Rectangle(Rect(0f, 0f, size.width, size.height))
-        val weight = cornerWeight.toDouble()
-        val diagonal = 0.5.pow(1.0 / weight)
-        // 每半角在斜率不超过 1 的区间采样, 线段相对原曲线的误差上限为 0.05px。
-        val segments = ceil(sqrt(r * (weight - 1.0) * diagonal / (4.0 * 0.05))).toInt().coerceAtLeast(1)
-        val halfCorner = DoubleArray(segments + 1) { index ->
-            (1.0 - (diagonal * index / segments).pow(weight)).pow(1.0 / weight)
-        }
+        val sample = sampleHalfCorner(r, cornerWeight.toDouble())
         val path = Path()
         path.moveTo(r, 0f)
         repeat(4) { corner ->
-            for (index in 0..segments * 2) {
-                val firstHalf = index <= segments
-                val halfIndex = if (firstHalf) index else segments * 2 - index
-                val a = diagonal * halfIndex / segments
-                val b = halfCorner[halfIndex]
-                val x = (r * if (firstHalf) a else b).toFloat()
-                val y = (r * if (firstHalf) b else a).toFloat()
-                when (corner) {
-                    0 -> path.lineTo(size.width - r + x, r - y)
-                    1 -> path.lineTo(size.width - r + y, size.height - r + x)
-                    2 -> path.lineTo(r - x, size.height - r + y)
-                    else -> path.lineTo(r - y, r - x)
-                }
-            }
+            appendCorner(path, size, r, corner, sample)
         }
         path.close()
         // shortcut: Path 使用公开光栅化抗锯齿, 不是厂商 fwidth 覆盖率; 可用同等 GPU 裁剪时替换。
         return Outline.Generic(path)
+    }
+
+    /** 仅上两角使用平滑超椭圆、下两角直角的单条闭合路径，几何上等价于四角轮廓与下半矩形的并集。 */
+    internal fun createTopRoundedPath(size: Size, density: Density): Path {
+        val r = (radius.value * density.density).coerceIn(0f, size.minDimension.coerceAtLeast(0f) / 2f)
+        if (r == 0f || size.width <= 0f || size.height <= 0f) {
+            return Path().apply { addRect(Rect(0f, 0f, size.width, size.height)) }
+        }
+        val sample = sampleHalfCorner(r, cornerWeight.toDouble())
+        val path = Path()
+        path.moveTo(r, 0f)
+        appendCorner(path, size, r, corner = 0, sample)
+        path.lineTo(size.width, size.height)
+        path.lineTo(0f, size.height)
+        path.lineTo(0f, r)
+        appendCorner(path, size, r, corner = 3, sample)
+        path.close()
+        return path
+    }
+}
+
+private class HalfCornerSample(val segments: Int, val diagonal: Double, val halfCorner: DoubleArray)
+
+private fun sampleHalfCorner(r: Float, weight: Double): HalfCornerSample {
+    val diagonal = 0.5.pow(1.0 / weight)
+    // 每半角在斜率不超过 1 的区间采样, 线段相对原曲线的误差上限为 0.05px。
+    val segments = ceil(sqrt(r * (weight - 1.0) * diagonal / (4.0 * 0.05))).toInt().coerceAtLeast(1)
+    val halfCorner = DoubleArray(segments + 1) { index ->
+        (1.0 - (diagonal * index / segments).pow(weight)).pow(1.0 / weight)
+    }
+    return HalfCornerSample(segments, diagonal, halfCorner)
+}
+
+private fun appendCorner(path: Path, size: Size, r: Float, corner: Int, sample: HalfCornerSample) {
+    val segments = sample.segments
+    val diagonal = sample.diagonal
+    val halfCorner = sample.halfCorner
+    for (index in 0..segments * 2) {
+        val firstHalf = index <= segments
+        val halfIndex = if (firstHalf) index else segments * 2 - index
+        val a = diagonal * halfIndex / segments
+        val b = halfCorner[halfIndex]
+        val x = (r * if (firstHalf) a else b).toFloat()
+        val y = (r * if (firstHalf) b else a).toFloat()
+        when (corner) {
+            0 -> path.lineTo(size.width - r + x, r - y)
+            1 -> path.lineTo(size.width - r + y, size.height - r + x)
+            2 -> path.lineTo(r - x, size.height - r + y)
+            else -> path.lineTo(r - y, r - x)
+        }
     }
 }
 
