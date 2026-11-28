@@ -36,6 +36,7 @@
 | [开关](switch.md) | 二值切换、拖动吸附与加载状态 |
 | [单/复选框](checkbox.md) | 单选、复选状态与切换动画 |
 | [滑动选择条](slider.md) | 连续、分段与隐藏点位的步进选择 |
+| [锥光进度条](conic-glow-progress-bar.md) | 流体云歌曲进度样式，支持只读展示与播放位置跳转 |
 | [ChipTab](chip-tab.md) | 单选分类标签栏、横向滚动与独立图标动作 |
 | [分段选择器](segmented-control.md) | 胶囊内单选滑块、不等宽标签与拖动回弹 |
 | [消息输入栏](message-input-bar.md) | `MessageInputBar` 消息编辑、操作与底部渐变遮罩 |
